@@ -2,7 +2,7 @@
     "name": "hermes",
     "publishName": "@gov.nasa.jpl.hermes/vscode-core",
     "displayName": "Hermes",
-    "description": "Robot Sequencing and Visualization Program (Lite) in VSCode",
+    "description": "Hermes Telemetry & Command Frontend for VSCode",
     "version": "2.8.3",
     "icon": "icons/rover-color-512.png",
     "files": [
