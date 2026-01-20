@@ -1,0 +1,20 @@
+enum EU U32 {
+	V1 = 1
+	V3 = 3
+	V10 = 10
+	V11 = 11
+	VAD = 0xad
+	VFF = 0xFF
+}
+
+enum ES I16 {
+	V1 = -1
+	V3 = 3
+	V10 = -10
+	V11 = 11
+}
+
+struct S_Enum * {
+	ES: ES
+	EU: EU
+}

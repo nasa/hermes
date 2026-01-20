@@ -1,0 +1,5 @@
+struct S_Pad * {
+    I: U32
+    [4]
+    U: U64
+}

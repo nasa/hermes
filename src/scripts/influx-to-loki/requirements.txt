@@ -1,0 +1,6 @@
+tqdm
+influxdb-client
+datetime
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-exporter-otlp

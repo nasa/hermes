@@ -1,0 +1,13 @@
+{
+    "name": "@gov.nasa.jpl.hermes/vscode",
+    "version": "2.10.5",
+    "description": "Reusable code for VSCode extensions related to Hermes",
+    "main": "src/index.ts",
+    "license": "Apache-2.0",
+    "sideEffects": false,
+    "repository": {
+        "url": "https://github.com/nasa/hermes.git",
+        "type": "git"
+    },
+    "gitHead": "ae5d9bc28a728716fe9a9f81930c9ad8be87f55e"
+}

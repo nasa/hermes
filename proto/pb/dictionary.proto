@@ -1,0 +1,179 @@
+syntax = "proto3";
+option go_package = "github.com/nasa/hermes/pkg/pb";
+
+import "type.proto";
+
+message ParameterDef {
+  int32 id = 1;
+
+  /**
+   * Component or module that owns this parameter
+   */
+  string component = 2;
+
+  /**
+   * Name of the parameter
+   * Scoped by its component
+   */
+  string name = 3;
+
+  Type type = 4;
+
+  string metadata = 5;
+}
+
+message CommandDef {
+  int32 opcode = 1;
+
+  /**
+   * Mnemonic command used to identify this command.
+   * FSW may or may not include the module name in the mnemonic and its
+   * up to the language parsing software to identify the proper command from mnemonic information.
+   *
+   * This may have varying meaning across missions
+   */
+  string mnemonic = 2;
+
+  /**
+   * Parent component or module owning this command
+   */
+  string component = 3;
+
+  /**
+   * Command arguments
+   */
+  repeated Field arguments = 4;
+
+  string metadata = 5;
+}
+
+enum EvrSeverity {
+  EVR_DIAGNOSTIC = 0;
+  EVR_ACTIVITY_LOW = 1;
+  EVR_ACTIVITY_HIGH = 2;
+  EVR_WARNING_LOW = 3;
+  EVR_WARNING_HIGH = 4;
+  EVR_COMMAND = 5;
+  EVR_FATAL = 6;
+}
+
+message EventDef {
+  int32 id = 1;
+
+  /**
+   * Component or module
+   */
+  string component = 2;
+
+  /**
+   * Name of the EVR.
+   * Scoped by its component
+   */
+  string name = 3;
+
+  /**
+   * Log severity usually stored in the FSW event dictionary
+   * For the most part this information is not held in the
+   * EVR packet since its redundant for ground software.
+   */
+  EvrSeverity severity = 4;
+
+  /**
+     * printf format string that will be formatted via sprintf
+     */
+  string formatString = 5;
+
+  /**
+   * Arguments used inside the format string
+   */
+  repeated Field arguments = 6;
+
+  string metadata = 7;
+}
+
+message EventRef {
+  int32 id = 1;
+  string name = 2;
+  string component = 3;
+  EvrSeverity severity = 4;
+  repeated string arguments = 5;
+
+  // (optional) dictionary ID this comes from
+  string dictionary = 10;
+}
+
+message TelemetryDef {
+  /**
+   * Raw ID used for identifying incoming serialized telemetry
+   */
+  int32 id = 1;
+
+  /**
+   * Telemetry name
+   */
+  string name = 2;
+
+  /**
+   * Component or module that owns this telemetry
+   */
+  string component = 3;
+
+  /**
+   * Serialization type
+   */
+  Type type = 4;
+
+  reserved 5;
+
+  string metadata = 6;
+}
+
+// Lightweight reference for passing dictionary items through message busses
+message TelemetryRef {
+  int32 id = 1;
+  string name = 2;
+  string component = 3;
+
+  // (optional) dictionary ID this comes from
+  string dictionary = 10;
+}
+
+message DictionaryHead {
+  /**
+   * Type associated with the Fsw.type
+   * This will filter the user's selection
+   * of dictionaries that can be tracked.
+   *
+   * This is set by the provider.
+   */
+  string type = 1;
+
+  /**
+   * Name given to dictionary, can be changed by the user
+   */
+  string name = 2;
+
+  /**
+   * (optional) Dictionary/FSW release version
+   */
+  string version = 3;
+}
+
+message DictionaryNamespace {
+  // Map keys have per-dictionary/mission meaning
+  // All items will be constructor into a DualKeyMap with id+key
+  map<string, CommandDef> commands = 1;
+  map<string, EventDef> events = 2;
+  map<string, TelemetryDef> telemetry = 3;
+  map<string, ParameterDef> parameters = 4;
+
+  // Types that are externally referenced
+  // These are resolved on loading
+  map<string, Type> types = 5;
+}
+
+message Dictionary {
+  DictionaryHead head = 1;
+  map<string, DictionaryNamespace> content = 2;
+  map<string, string> metadata = 3;
+}

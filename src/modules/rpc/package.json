@@ -1,0 +1,32 @@
+{
+    "name": "@gov.nasa.jpl.hermes/rpc",
+    "version": "2.10.5",
+    "description": "gRPC/Protobuf implementation of Hermes API",
+    "main": "src/index.ts",
+    "module": "src/index.ts",
+    "sideEffects": false,
+    "scripts": {
+        "test": "echo \"Error: no test specified\"",
+        "schema": "typescript-json-schema --required --noExtraProps -o schemas/middleware.json src/types.ts MiddlewareJson",
+        "build-proto-js": "sh -c 'yarn pbjs -t static-module -w commonjs src/${0}.proto -o src/proto/${0}.js'",
+        "build-proto-ts": "sh -c 'yarn pbts src/proto/${0}.js -o src/proto/${0}.d.ts'",
+        "build-proto": "sh -c 'yarn build-proto-js ${0} && yarn build-proto-ts ${0}'",
+        "proto": "yarn build-proto-hermes && yarn build-proto-hermes-json"
+    },
+    "dependencies": {
+        "@grpc/grpc-js": "1.12.2",
+        "@grpc/proto-loader": "^0.7.13",
+        "@types/uuid": "^9.0.0",
+        "async": "^3.2.4",
+        "buffer": "^6.0.3",
+        "eslint": "^9.5.0",
+        "globals": "^15.6.0",
+        "typescript": "^5.5.2",
+        "uuid": "^9.0.0"
+    },
+    "gitHead": "ae5d9bc28a728716fe9a9f81930c9ad8be87f55e",
+    "devDependencies": {
+        "@types/json-schema": "^7.0.15",
+        "typescript-json-schema": "^0.63.0"
+    }
+}

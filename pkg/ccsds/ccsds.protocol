@@ -1,0 +1,196 @@
+import "github.com/nasa/hermes/pkg/hash"
+
+extern PayloadLength: "PayloadLength"
+
+enum PacketType U8 {
+    # A telemetry packet reporting some kind of status.
+    # This is usually used for downlink.
+    # The exact meaning of this must be defined by the project.
+    TELEMETRY = 0
+
+    # A command (or request) packet usually used for uplink.
+    # The exact meaning of this must be defined by the project.
+    TELECOMMAND = 1
+}
+
+enum SequenceFlag U8 {
+    # Space Packet contains a continuation segment of User Data
+    CONTINUE = 0
+
+    # Space Packet contains the first segment of User Data
+    FIRST = 1
+
+    # Space Packet contains the last segment of User Data
+    LAST = 2
+
+    # Space Packet contains unsegmented User Data
+    UNSEGMENTED = 3
+}
+
+struct Packet * {
+    bitmask {
+        Version: 3
+        Type: 1 -> PacketType
+
+        # If there is a secondary header, it will be included
+        # in the prefix of the data. Secondary headers are always
+        # mission specific.
+        SecondaryHeader: 1
+
+        # Mission specific packet identifier
+        # Only the least significant 11-bits are used
+        Apid: 11
+
+        SequenceFlags: 2 -> SequenceFlag
+
+        # Sequence counts are used to get an idea of packet loss rate
+        SequenceCount: 14
+    }
+
+    # Includes the mission specific packet payload data
+    # If [SecondaryHeader] is [true], this data is prefixed
+    # with the mission specific second header data.
+    Payload: [PayloadLength]byte
+}
+
+struct TmFrameSecondaryHeader * {
+    bitmask {
+        Version: 2
+        headerLength: 6 = `len(s.Data)`
+    }
+
+    Data: [`headerLength`]byte
+}
+
+struct TmFrame(crc) * {
+    marshal (crc: `bool`)
+    unmarshal (crc: `bool`)
+
+    # Validate the crc before continuing
+    unmarshal `if crc {
+    |	crc16R := ro.WithByteOrder(binary.BigEndian)
+    |
+    |	crcBytes, err := crc16R.Read(crc16R.BytesLeft() - 2)
+    |	if err != nil {
+    |		return err
+    |	}
+    |
+    |	received, err := crc16R.U16()
+    |	if err != nil {
+    |		return fmt.Errorf("failed to read crc16: %%w", err)
+    |	}
+    |
+    |	h := hash.NewCRC16()
+    |	h.Update(crcBytes)
+    |	computed := h.Finish()
+    |	if computed != received {
+    |		return hash.NewChecksumFailedErr(received, computed)
+    |	}
+    |}`
+
+    bitmask {
+        Version: 2
+        SpacecraftId: 10
+        VirtualChannelId: 3
+        ocfFlag: 1 = `0`
+    }
+
+    MasterChannelFrameCount: U8
+    VirtualChannelFrameCount: U8
+
+    # Transfer Frame Data Field Status
+    bitmask {
+        # The Transfer Frame Secondary Header Flag shall signal the presence or absence
+        # of the Transfer Frame Secondary Header. It shall be ‘1’ if a Transfer Frame Secondary
+        # Header is present; it shall be ‘0’ if a Transfer Frame Secondary Header is not present.
+        secondaryHeaderFlag: 1 = `0
+if len(s.SecondaryHeader.Data) > 0 {
+	secondaryHeaderFlag = 1
+}`
+
+        # The Synchronization Flag shall signal the type of data which are
+        # inserted into the Transfer Frame Data Field. It shall be ‘0’
+        # if octet-synchronized and forward-ordered Packets or Idle Data are
+        # inserted; it shall be ‘1’ if a VCA_SDU is inserted.
+        SyncFlag: 1
+
+        # If the Synchronization Flag is set to ‘0’, the Packet Order Flag is reserved for future
+        # use by the CCSDS and is set to ‘0’. If the Synchronization Flag is set to ‘1’, the
+        # use of the Packet Order Flag is undefined.
+        PacketOrderFlag: 1
+
+        # This Identifier was required for earlier versions of this Recommended Standard to allow
+        # for the use of Source Packet Segments, which are no longer defined. Its value has been
+        # set to the value used to denote non-use of Source Packet Segments in previous versions.
+        SegmentLengthId: 2
+
+        # The purpose of the First Header Pointer is to facilitate delimiting of variable-length
+        # Packets contained within the Transfer Frame Data Field by pointing directly to the
+        # location of the first Packet from which its length may be determined.
+        FirstHeaderPointer: 11
+    }
+
+    SecondaryHeader: `secondaryHeaderFlag == 1`? TmFrameSecondaryHeader
+
+    # Reserve some room for the footer
+    unmarshal `var payloadLen = r.BytesLeft()
+    |if crc {
+    |	// Reserve 2 bytes for CRC
+    |	payloadLen -= 2
+    |}
+    |
+    |if ocfFlag == 1 {
+    |	// Reserve 4 bytes for OCF
+    |	payloadLen -= 4
+    |}`
+
+    marshal `var payloadLen = len(s.Payload)`
+
+    Payload: [`payloadLen`]byte
+
+    # The association of an Operational Control Field with a Master Channel allows
+    # data to be transferred synchronized with this Master Channel. The association of
+    # an Operational Control Field with a Virtual Channel allows data to be transferred
+    # synchronized with this Virtual Channel.
+    OperationalControlField: `ocfFlag == 1`? U32
+
+    marshal `if crc {
+    |	// TODO(tumbar)
+    |	return fmt.Errorf("crc16 encoding not implemented for TmFrame marshalling yet")
+    |}`
+
+    CRC: `crc`? U16
+
+}
+
+struct TcFrame(crc) * {
+    unmarshal (crc: `bool`)
+    marshal (crc: `bool`)
+
+    unmarshal `footerSize := 0
+    |if crc {
+    |	footerSize = 2
+    |}`
+
+    marshal `footerSize := 0
+    |if crc {
+    |	footerSize = 2
+    |}`
+
+    bitmask {
+        version: 2 = `0`
+        bypass: 1 = `1`
+        controlCommandFlag: 1 = `0`
+        :2
+        SpacecraftId: 10
+        VirtualChannelId: 6
+        frameLength: 10 = `5 + len(s.Payload) + footerSize - 1`
+        FrameSequence: 8
+    }
+
+    Payload: [`int(frameLength) + 1 - 5 - footerSize`]byte
+
+    marshal `h := hash.NewCRC16()
+            |h.Update(w.Get())
+            |w.U16(h.Finish())`
+}

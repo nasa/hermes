@@ -1,0 +1,42 @@
+{
+    // "workbench.colorCustomizations": {
+    //     "editorError.foreground": "#00000000",
+    //     "editorWarning.foreground": "#00000000",
+    //     "editorInfo.foreground": "#00000000",
+    // },
+    "search.exclude": {
+        "**/out": true,
+    },
+    // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
+    "typescript.tsc.autoDetect": "off",
+    "editor.tabSize": 4,
+    "editor.detectIndentation": true,
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "jest.runMode": "on-demand",
+    "files.exclude": {
+        "src/**/node_modules": true
+    },
+    "files.watcherExclude": {
+        "src/**/node_modules/**": true,
+        "**/target": true
+    },
+    "debug.javascript.terminalOptions": {
+        "skipFiles": [
+            "!<node_internals>/**"
+        ],
+        "smartStep": false
+    },
+    "protoc": {
+        "options": [
+            "-I ./proto"
+        ]
+    },
+    "gopls": {
+        "ui.navigation.importShortcut": "Definition",
+    },
+    "go.testTimeout": "10s",
+    "protobuf.includes": [
+        "${workspaceDir}/proto/pb/",
+        "${workspaceDir}/proto/grpc/"
+    ]
+}

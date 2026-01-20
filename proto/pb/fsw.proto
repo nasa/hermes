@@ -1,0 +1,112 @@
+syntax = "proto3";
+option go_package = "github.com/nasa/hermes/pkg/pb";
+
+import "type.proto";
+import "dictionary.proto";
+
+enum FswCapability {
+  // Parsed commands can be uplinked
+  // Commands are parsed by the frontend
+  COMMAND = 0;
+
+  // Connection supports parsing a RawCommandValue into a CommandValue
+  PARSE_COMMAND = 1;
+
+  // Connection supports uplinking and executing a CommandSequence
+  SEQUENCE = 2;
+
+  // Connection supports parsing a RawCommandSequence into a CommandSequence
+  PARSE_SEQUENCE = 3;
+
+  // Connection supports file uplink to an on-board filesystem.
+  FILE = 4;
+}
+
+message Fsw {
+  // Unique identifier, name of the FSW.
+  // This is usually a human readable value rather than a uid.
+  string id = 1;
+
+  // FSW type
+  string type = 2;
+
+  // Profile that this connection belongs to
+  // Empty if this is not from a managed profile
+  string profileId = 3;
+
+  // Telemetry from these FSW IDs should be treated as though they
+  // also came from this FSW. Useful for when you need a custom language
+  // context that wraps multiple FSWs
+  repeated string forwards = 4;
+
+  reserved 5, 6;
+
+  // The set of uplink capabilities this FSW connection implements
+  // If other requests are routed to it, they will be rejected.
+  repeated FswCapability capabilities = 7;
+}
+
+message CommandOptions {
+  /**
+   * Don't wait for the command to reply before resolving the command promise
+   * This promise will resolve once the command is sent to the FSW.
+   */
+  bool noWait = 1;
+}
+
+message CommandValue {
+  CommandDef def = 1;
+
+  /* command arguments */
+  repeated Value args = 2;
+
+  CommandOptions options = 3;
+
+  // Additional fields associated with this command
+  // This has flight-software specific meaning
+  map<string, string> metadata = 4;
+}
+
+/**
+ * RawCommandValue is meant for commanding FSWs from clients that do not parse
+ * the dictionary and command fully. This is useful for thin clients that will
+ * rely on the backend to perform type checks.
+ */
+message RawCommandValue {
+  /* command arguments */
+  string command = 2;
+
+  CommandOptions options = 3;
+
+  // Additional fields associated with this command
+  // This has flight-software specific meaning
+  map<string, string> metadata = 4;
+}
+
+message CommandSequence {
+  repeated CommandValue commands = 1;
+
+  // Cell block language to execute this command sequence with
+  // FSWs may support more than one language or controlling different behaviors
+  // of the connection or commanding the FSW directly.
+  string languageName = 2;
+
+  // Additional metadata to attach to sequence
+  // This has flight-software specific meaning
+  map<string, string> metadata = 3;
+}
+
+message RawCommandSequence {
+  string sequence = 1;
+
+  // Cell block language to execute this command sequence with
+  // FSWs may support more than one language or controlling different behaviors
+  // of the connection or commanding the FSW directly.
+  string languageName = 2;
+
+  // Additional metadata to attach to sequence
+  // This has flight-software specific meaning
+  map<string, string> metadata = 3;
+
+  string lineCommentPrefix = 4;
+}

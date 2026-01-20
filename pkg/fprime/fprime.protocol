@@ -1,0 +1,130 @@
+import "github.com/nasa/hermes/pkg/host"
+
+extern EventIdType("UM:*host.DictionaryNamespace"): "EventIdType"
+extern ChanIdType("UM:*host.DictionaryNamespace"): "ChanIdType"
+extern TlmPacketizeIdType("UM:*host.DictionaryNamespace"): "TlmPacketizeIdType"
+extern TimeBaseStoreType("UM:*host.DictionaryNamespace"): "TimeBaseStoreType"
+extern TimeContextStoreType("UM:*host.DictionaryNamespace"): "TimeContextStoreType"
+extern PacketDescriptorType("UM:*host.DictionaryNamespace"): "PacketDescriptorType"
+
+extern CommandPacket: "*CommandPacket"
+
+enum PacketType(dict) PacketDescriptorType(dict) {
+    COMMAND = 0
+    TELEM = 1
+    LOG = 2
+    FILE = 3
+    PACKETIZED_TLM = 4
+    DP = 5
+    IDLE = 6
+    HAND = 254
+    UNKNOWN = 255
+    SPP_IDLE = 2047
+}
+
+enum CommandResponse U32 {
+    OK = 0
+    INVALID_OPCODE = 1
+    VALIDATION_ERROR = 2
+    FORMAT_ERROR = 3
+    EXECUTION_ERROR = 4
+    BUSY = 5
+}
+
+enum FilePacketType U8 {
+    START = 0
+    DATA = 1
+    END = 2
+    CANCEL = 3
+}
+
+struct Packet(dict, dictTlmPkt) * {
+    Type: PacketType(dict)
+    Payload: {
+        # FPrime supports packing multiple telemetry values into a single packet
+        `s.Type == PacketType_TELEM`: [*]TelemValue(dict)
+        `s.Type == PacketType_LOG`: LogValue(dict)
+        `s.Type == PacketType_FILE`: FilePacket
+        `s.Type == PacketType_COMMAND`: CommandPacket
+        `s.Type == PacketType_PACKETIZED_TLM`: TelemPacket(dict, dictTlmPkt)
+
+        # Drop any packets we don't understand
+        [*]byte -> drop(
+            "invalid F' packet type: %v, size %d",
+            "s.Type",
+            "len(s_PayloadTmp)"
+        )
+    }
+}
+
+struct Time(dict) * {
+    Base:       TimeBaseStoreType(dict)
+    Context:    TimeContextStoreType(dict)
+    Seconds:    U32
+    USeconds:   U32
+}
+
+struct TelemValue(dict) * {
+    Id:     ChanIdType(dict)
+    Time:   Time(dict)
+
+    # Parse the value
+    Value:  Telemetry("Id", "Def", dict)
+}
+
+struct TelemPacket(dict, tlmPktDict) * {
+    Id: TlmPacketizeIdType(dict)
+    Time: Time(dict)
+
+    # Parse the value
+    Value:  Telemetry("Id", "Def", tlmPktDict)
+}
+
+struct LogValue(dict) * {
+    Id:     EventIdType(dict)
+    Time:   Time(dict)
+    Args:   Event("Id", "Def", "Dictionary", dict)
+}
+
+struct FilePacket * {
+    Type: FilePacketType
+    SequenceIndex: U32
+    Payload: {
+        `s.Type == FilePacketType_START`: FileStartPacket
+        `s.Type == FilePacketType_DATA`: FileDataPacket
+        `s.Type == FilePacketType_END`: FileEndPacket
+        `s.Type == FilePacketType_CANCEL`: FileCancelPacket
+
+        [*]byte -> drop("invalid F' file packet type: %v", "s.Type")
+    }
+}
+
+struct FileStartPacket * {
+    Size:        U32
+    Source:      [U8]string
+    Destination: [U8]string
+}
+
+struct FileDataPacket * {
+    Offset: U32
+    Data: [U16]byte
+
+    # There shouldn't be anything in here
+    # Technically we could just read the size separately
+    # and just read the full data packaet
+    # I'd rather do it this way since it catches encoding errors.
+    Drop: [*]byte -> drop(
+        "expected %d bytes in file data packet payload, got %d extra bytes",
+        "len(s.Data)",
+        "len(s_DropTmp)"
+    )
+}
+
+struct FileEndPacket * {
+    CRC: U32
+    Drop: [*]byte -> drop("invalid file end packet")
+}
+
+struct FileCancelPacket * {
+    Drop: [*]byte -> drop("invalid file cancel packet")
+}

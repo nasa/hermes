@@ -1,0 +1,28 @@
+struct TC1 * {
+    F1: U32
+    F2: [U8][U8]byte
+    Rest: [*]byte
+}
+
+struct TC2 * {
+    F1: U32
+    F2: I32
+    F3: [U16]byte
+}
+
+enum TypeCaseKind U16 {
+    C1 = 1
+    C2 = 2
+} 
+
+struct S_TypeCase * {
+    Kind: TypeCaseKind
+    Payload: {
+        `s.Kind == TypeCaseKind_C1`: TC1
+        `s.Kind == TypeCaseKind_C2`: TC2
+        [*]byte -> drop(
+            "invalid type case: %v",
+            "s.Kind"
+        )
+    }
+}

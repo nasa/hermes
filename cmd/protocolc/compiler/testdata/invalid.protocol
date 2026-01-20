@@ -1,0 +1,8 @@
+struct S_UndefinedRef * {
+	InvalidEnum: UndefinedEnum
+    AnotherInvalid: UndefinedEnum
+}
+
+# Duplicate aliases of an undefined type
+type Alias = A
+type Alias = A

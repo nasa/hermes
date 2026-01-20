@@ -1,0 +1,18 @@
+{
+    "name": "hermes-internal",
+    "version": "0.0.1",
+    "description": "Internal scripts and utilities",
+    "dependencies": {},
+    "scripts": {
+        "test": "echo \"Warn: no test specified\""
+    },
+    "sideEffects": false,
+    "devDependencies": {
+        "@octokit/core": "6.1.5",
+        "@octokit/plugin-enterprise-server": "^19.1.0",
+        "@octokit/rest": "^21.1.1",
+        "@types/semver": "^7.5.8",
+        "octokit": "^4.1.3",
+        "semver": "^7.6.3"
+    }
+}

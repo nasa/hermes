@@ -1,0 +1,9 @@
+struct S_CustomExplicitInner(arg) * {
+    Kind: I32
+    Name: C("Literal", arg)
+}
+
+struct S_CustomExplicit(arg) * {
+    S1: S_CustomExplicitInner("Literal")
+    S2: S_CustomExplicitInner(arg)
+}

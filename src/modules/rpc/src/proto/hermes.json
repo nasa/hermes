@@ -1,0 +1,1517 @@
+{
+  "options": {
+    "syntax": "proto3",
+    "go_package": "github.com/nasa/hermes/pkg/pb"
+  },
+  "nested": {
+    "Api": {
+      "methods": {
+        "Sequence": {
+          "requestType": "CommandSequence",
+          "responseType": "SequenceReply"
+        },
+        "RawSequence": {
+          "requestType": "RawCommandSequence",
+          "responseType": "SequenceReply"
+        },
+        "Command": {
+          "requestType": "CommandValue",
+          "responseType": "Reply"
+        },
+        "RawCommand": {
+          "requestType": "RawCommandValue",
+          "responseType": "Reply"
+        },
+        "Uplink": {
+          "requestType": "UplinkFileChunk",
+          "requestStream": true,
+          "responseType": "Reply"
+        },
+        "GetFsw": {
+          "requestType": "Id",
+          "responseType": "Fsw"
+        },
+        "AllFsw": {
+          "requestType": "google.protobuf.Empty",
+          "responseType": "FswList"
+        },
+        "SubscribeFsw": {
+          "requestType": "google.protobuf.Empty",
+          "responseType": "FswList",
+          "responseStream": true
+        },
+        "StartProfile": {
+          "requestType": "Id",
+          "responseType": "google.protobuf.Empty"
+        },
+        "StopProfile": {
+          "requestType": "Id",
+          "responseType": "google.protobuf.Empty"
+        },
+        "UpdateProfile": {
+          "requestType": "ProfileUpdate",
+          "responseType": "google.protobuf.Empty"
+        },
+        "AddProfile": {
+          "requestType": "Profile",
+          "responseType": "Id"
+        },
+        "RemoveProfile": {
+          "requestType": "Id",
+          "responseType": "google.protobuf.Empty"
+        },
+        "AllProfiles": {
+          "requestType": "google.protobuf.Empty",
+          "responseType": "ProfileList"
+        },
+        "AllProviders": {
+          "requestType": "google.protobuf.Empty",
+          "responseType": "ProfileProviderList"
+        },
+        "SubscribeProviders": {
+          "requestType": "google.protobuf.Empty",
+          "responseType": "ProfileProviderList",
+          "responseStream": true
+        },
+        "SubscribeProfiles": {
+          "requestType": "google.protobuf.Empty",
+          "responseType": "ProfileList",
+          "responseStream": true
+        },
+        "GetDictionary": {
+          "requestType": "Id",
+          "responseType": "Dictionary"
+        },
+        "AddDictionary": {
+          "requestType": "Dictionary",
+          "responseType": "Id"
+        },
+        "RemoveDictionary": {
+          "requestType": "Id",
+          "responseType": "google.protobuf.Empty"
+        },
+        "AllDictionary": {
+          "requestType": "google.protobuf.Empty",
+          "responseType": "DictionaryList"
+        },
+        "SubscribeDictionary": {
+          "requestType": "google.protobuf.Empty",
+          "responseType": "DictionaryList",
+          "responseStream": true
+        },
+        "SubEvent": {
+          "requestType": "BusFilter",
+          "responseType": "SourcedEvent",
+          "responseStream": true
+        },
+        "SubTelemetry": {
+          "requestType": "BusFilter",
+          "responseType": "SourcedTelemetry",
+          "responseStream": true
+        },
+        "SubFileDownlink": {
+          "requestType": "BusFilter",
+          "responseType": "FileDownlink",
+          "responseStream": true
+        }
+      }
+    },
+    "Provider": {
+      "methods": {
+        "Connection": {
+          "requestType": "FswConnectionPacket",
+          "requestStream": true,
+          "responseType": "Uplink",
+          "responseStream": true
+        },
+        "File": {
+          "requestType": "DownlinkFileChunk",
+          "requestStream": true,
+          "responseType": "google.protobuf.Empty"
+        },
+        "Event": {
+          "requestType": "SourcedEvent",
+          "requestStream": true,
+          "responseType": "google.protobuf.Empty"
+        },
+        "Telemetry": {
+          "requestType": "SourcedTelemetry",
+          "requestStream": true,
+          "responseType": "google.protobuf.Empty"
+        }
+      }
+    },
+    "ParameterDef": {
+      "fields": {
+        "id": {
+          "type": "int32",
+          "id": 1
+        },
+        "component": {
+          "type": "string",
+          "id": 2
+        },
+        "name": {
+          "type": "string",
+          "id": 3
+        },
+        "type": {
+          "type": "Type",
+          "id": 4
+        },
+        "metadata": {
+          "type": "string",
+          "id": 5
+        }
+      }
+    },
+    "CommandDef": {
+      "fields": {
+        "opcode": {
+          "type": "int32",
+          "id": 1
+        },
+        "mnemonic": {
+          "type": "string",
+          "id": 2
+        },
+        "component": {
+          "type": "string",
+          "id": 3
+        },
+        "arguments": {
+          "rule": "repeated",
+          "type": "Field",
+          "id": 4
+        },
+        "metadata": {
+          "type": "string",
+          "id": 5
+        }
+      }
+    },
+    "EvrSeverity": {
+      "values": {
+        "EVR_DIAGNOSTIC": 0,
+        "EVR_ACTIVITY_LOW": 1,
+        "EVR_ACTIVITY_HIGH": 2,
+        "EVR_WARNING_LOW": 3,
+        "EVR_WARNING_HIGH": 4,
+        "EVR_COMMAND": 5,
+        "EVR_FATAL": 6
+      }
+    },
+    "EventDef": {
+      "fields": {
+        "id": {
+          "type": "int32",
+          "id": 1
+        },
+        "component": {
+          "type": "string",
+          "id": 2
+        },
+        "name": {
+          "type": "string",
+          "id": 3
+        },
+        "severity": {
+          "type": "EvrSeverity",
+          "id": 4
+        },
+        "formatString": {
+          "type": "string",
+          "id": 5
+        },
+        "arguments": {
+          "rule": "repeated",
+          "type": "Field",
+          "id": 6
+        },
+        "metadata": {
+          "type": "string",
+          "id": 7
+        }
+      }
+    },
+    "EventRef": {
+      "fields": {
+        "id": {
+          "type": "int32",
+          "id": 1
+        },
+        "name": {
+          "type": "string",
+          "id": 2
+        },
+        "component": {
+          "type": "string",
+          "id": 3
+        },
+        "severity": {
+          "type": "EvrSeverity",
+          "id": 4
+        },
+        "arguments": {
+          "rule": "repeated",
+          "type": "string",
+          "id": 5
+        },
+        "dictionary": {
+          "type": "string",
+          "id": 10
+        }
+      }
+    },
+    "TelemetryDef": {
+      "fields": {
+        "id": {
+          "type": "int32",
+          "id": 1
+        },
+        "name": {
+          "type": "string",
+          "id": 2
+        },
+        "component": {
+          "type": "string",
+          "id": 3
+        },
+        "type": {
+          "type": "Type",
+          "id": 4
+        },
+        "metadata": {
+          "type": "string",
+          "id": 6
+        }
+      },
+      "reserved": [
+        [
+          5,
+          5
+        ]
+      ]
+    },
+    "TelemetryRef": {
+      "fields": {
+        "id": {
+          "type": "int32",
+          "id": 1
+        },
+        "name": {
+          "type": "string",
+          "id": 2
+        },
+        "component": {
+          "type": "string",
+          "id": 3
+        },
+        "dictionary": {
+          "type": "string",
+          "id": 10
+        }
+      }
+    },
+    "DictionaryHead": {
+      "fields": {
+        "type": {
+          "type": "string",
+          "id": 1
+        },
+        "name": {
+          "type": "string",
+          "id": 2
+        },
+        "version": {
+          "type": "string",
+          "id": 3
+        }
+      }
+    },
+    "DictionaryNamespace": {
+      "fields": {
+        "commands": {
+          "keyType": "string",
+          "type": "CommandDef",
+          "id": 1
+        },
+        "events": {
+          "keyType": "string",
+          "type": "EventDef",
+          "id": 2
+        },
+        "telemetry": {
+          "keyType": "string",
+          "type": "TelemetryDef",
+          "id": 3
+        },
+        "parameters": {
+          "keyType": "string",
+          "type": "ParameterDef",
+          "id": 4
+        },
+        "types": {
+          "keyType": "string",
+          "type": "Type",
+          "id": 5
+        }
+      }
+    },
+    "Dictionary": {
+      "fields": {
+        "head": {
+          "type": "DictionaryHead",
+          "id": 1
+        },
+        "content": {
+          "keyType": "string",
+          "type": "DictionaryNamespace",
+          "id": 2
+        },
+        "metadata": {
+          "keyType": "string",
+          "type": "string",
+          "id": 3
+        }
+      }
+    },
+    "IntKind": {
+      "values": {
+        "INT_U8": 0,
+        "INT_I8": 1,
+        "INT_U16": 2,
+        "INT_I16": 3,
+        "INT_U32": 4,
+        "INT_I32": 5,
+        "INT_U64": 6,
+        "INT_I64": 7
+      }
+    },
+    "NumberKind": {
+      "values": {
+        "NUMBER_U8": 0,
+        "NUMBER_I8": 1,
+        "NUMBER_U16": 2,
+        "NUMBER_I16": 3,
+        "NUMBER_U32": 4,
+        "NUMBER_I32": 5,
+        "NUMBER_U64": 6,
+        "NUMBER_I64": 7,
+        "NUMBER_F32": 8,
+        "NUMBER_F64": 9
+      }
+    },
+    "UIntKind": {
+      "values": {
+        "UINT_U8": 0,
+        "UINT_U16": 1,
+        "UINT_U32": 2,
+        "UINT_U64": 3
+      }
+    },
+    "SIntKind": {
+      "values": {
+        "SINT_I8": 0,
+        "SINT_I16": 1,
+        "SINT_I32": 2,
+        "SINT_I64": 3
+      }
+    },
+    "FloatKind": {
+      "values": {
+        "F_F32": 0,
+        "F_F64": 1
+      }
+    },
+    "ReferenceKind": {
+      "values": {
+        "REF_ENUM": 0,
+        "REF_BITMASK": 1,
+        "REF_OBJECT": 2,
+        "REF_ARRAY": 3,
+        "REF_BYTES": 4
+      }
+    },
+    "BooleanType": {
+      "fields": {
+        "encodeType": {
+          "type": "UIntKind",
+          "id": 1
+        }
+      }
+    },
+    "IntType": {
+      "fields": {
+        "kind": {
+          "type": "IntKind",
+          "id": 1
+        },
+        "min": {
+          "type": "int64",
+          "id": 2
+        },
+        "max": {
+          "type": "int64",
+          "id": 3
+        }
+      }
+    },
+    "FloatType": {
+      "fields": {
+        "kind": {
+          "type": "FloatKind",
+          "id": 1
+        },
+        "min": {
+          "type": "double",
+          "id": 2
+        },
+        "max": {
+          "type": "double",
+          "id": 3
+        }
+      }
+    },
+    "StringType": {
+      "fields": {
+        "lengthType": {
+          "type": "UIntKind",
+          "id": 1
+        },
+        "maxLength": {
+          "type": "uint32",
+          "id": 2
+        }
+      }
+    },
+    "EnumItem": {
+      "fields": {
+        "value": {
+          "type": "int32",
+          "id": 1
+        },
+        "name": {
+          "type": "string",
+          "id": 2
+        },
+        "metadata": {
+          "type": "string",
+          "id": 3
+        }
+      }
+    },
+    "EnumType": {
+      "fields": {
+        "name": {
+          "type": "string",
+          "id": 1
+        },
+        "encodeType": {
+          "type": "IntKind",
+          "id": 2
+        },
+        "items": {
+          "rule": "repeated",
+          "type": "EnumItem",
+          "id": 3
+        }
+      }
+    },
+    "BoundedArraySize": {
+      "fields": {
+        "min": {
+          "type": "uint32",
+          "id": 1
+        },
+        "max": {
+          "type": "uint32",
+          "id": 2
+        }
+      }
+    },
+    "ArrayType": {
+      "oneofs": {
+        "size": {
+          "oneof": [
+            "static",
+            "dynamic"
+          ]
+        }
+      },
+      "fields": {
+        "name": {
+          "type": "string",
+          "id": 1
+        },
+        "elType": {
+          "type": "Type",
+          "id": 2
+        },
+        "static": {
+          "type": "uint32",
+          "id": 3
+        },
+        "dynamic": {
+          "type": "BoundedArraySize",
+          "id": 4
+        },
+        "lengthType": {
+          "type": "UIntKind",
+          "id": 5
+        }
+      }
+    },
+    "BytesType": {
+      "oneofs": {
+        "size": {
+          "oneof": [
+            "static",
+            "dynamic"
+          ]
+        }
+      },
+      "fields": {
+        "name": {
+          "type": "string",
+          "id": 1
+        },
+        "kind": {
+          "type": "NumberKind",
+          "id": 2
+        },
+        "static": {
+          "type": "uint32",
+          "id": 3
+        },
+        "dynamic": {
+          "type": "BoundedArraySize",
+          "id": 4
+        },
+        "lengthType": {
+          "type": "UIntKind",
+          "id": 5
+        }
+      }
+    },
+    "Field": {
+      "fields": {
+        "name": {
+          "type": "string",
+          "id": 1
+        },
+        "type": {
+          "type": "Type",
+          "id": 2
+        },
+        "metadata": {
+          "type": "string",
+          "id": 3
+        },
+        "value": {
+          "type": "Value",
+          "id": 4
+        }
+      }
+    },
+    "ObjectType": {
+      "fields": {
+        "name": {
+          "type": "string",
+          "id": 1
+        },
+        "fields": {
+          "rule": "repeated",
+          "type": "Field",
+          "id": 2
+        }
+      }
+    },
+    "ReferenceType": {
+      "fields": {
+        "name": {
+          "type": "string",
+          "id": 1
+        },
+        "kind": {
+          "type": "ReferenceKind",
+          "id": 2
+        }
+      }
+    },
+    "VoidType": {
+      "fields": {
+        "size": {
+          "type": "uint32",
+          "id": 1
+        }
+      }
+    },
+    "Type": {
+      "oneofs": {
+        "value": {
+          "oneof": [
+            "ref",
+            "bool",
+            "int",
+            "float",
+            "string",
+            "enum",
+            "bitmask",
+            "object",
+            "array",
+            "bytes",
+            "void"
+          ]
+        }
+      },
+      "fields": {
+        "ref": {
+          "type": "ReferenceType",
+          "id": 1
+        },
+        "bool": {
+          "type": "BooleanType",
+          "id": 2
+        },
+        "int": {
+          "type": "IntType",
+          "id": 3
+        },
+        "float": {
+          "type": "FloatType",
+          "id": 4
+        },
+        "string": {
+          "type": "StringType",
+          "id": 5
+        },
+        "enum": {
+          "type": "EnumType",
+          "id": 6
+        },
+        "bitmask": {
+          "type": "EnumType",
+          "id": 7
+        },
+        "object": {
+          "type": "ObjectType",
+          "id": 8
+        },
+        "array": {
+          "type": "ArrayType",
+          "id": 9
+        },
+        "bytes": {
+          "type": "BytesType",
+          "id": 10
+        },
+        "void": {
+          "type": "VoidType",
+          "id": 11
+        },
+        "metadata": {
+          "type": "string",
+          "id": 12
+        }
+      }
+    },
+    "ObjectValue": {
+      "fields": {
+        "o": {
+          "keyType": "string",
+          "type": "Value",
+          "id": 1
+        }
+      }
+    },
+    "ArrayValue": {
+      "fields": {
+        "value": {
+          "rule": "repeated",
+          "type": "Value",
+          "id": 1
+        }
+      }
+    },
+    "BytesValue": {
+      "fields": {
+        "kind": {
+          "type": "NumberKind",
+          "id": 1
+        },
+        "bigEndian": {
+          "type": "bool",
+          "id": 2
+        },
+        "value": {
+          "type": "bytes",
+          "id": 3
+        }
+      }
+    },
+    "EnumValue": {
+      "fields": {
+        "raw": {
+          "type": "int64",
+          "id": 1
+        },
+        "formatted": {
+          "type": "string",
+          "id": 2
+        }
+      }
+    },
+    "Value": {
+      "oneofs": {
+        "value": {
+          "oneof": [
+            "i",
+            "u",
+            "f",
+            "b",
+            "s",
+            "e",
+            "o",
+            "a",
+            "r"
+          ]
+        }
+      },
+      "fields": {
+        "i": {
+          "type": "sint64",
+          "id": 1
+        },
+        "u": {
+          "type": "uint64",
+          "id": 2
+        },
+        "f": {
+          "type": "double",
+          "id": 3
+        },
+        "b": {
+          "type": "bool",
+          "id": 4
+        },
+        "s": {
+          "type": "string",
+          "id": 5
+        },
+        "e": {
+          "type": "EnumValue",
+          "id": 6
+        },
+        "o": {
+          "type": "ObjectValue",
+          "id": 7
+        },
+        "a": {
+          "type": "ArrayValue",
+          "id": 8
+        },
+        "r": {
+          "type": "BytesValue",
+          "id": 9
+        }
+      }
+    },
+    "FileHeader": {
+      "fields": {
+        "sourcePath": {
+          "type": "string",
+          "id": 1
+        },
+        "destinationPath": {
+          "type": "string",
+          "id": 2
+        },
+        "size": {
+          "type": "uint64",
+          "id": 3
+        },
+        "metadata": {
+          "keyType": "string",
+          "type": "string",
+          "id": 4
+        }
+      }
+    },
+    "UplinkFileChunk": {
+      "oneofs": {
+        "value": {
+          "oneof": [
+            "header",
+            "data"
+          ]
+        }
+      },
+      "fields": {
+        "header": {
+          "type": "FileHeader",
+          "id": 1
+        },
+        "data": {
+          "type": "bytes",
+          "id": 2
+        }
+      }
+    },
+    "DownlinkFileData": {
+      "fields": {
+        "offset": {
+          "type": "uint64",
+          "id": 1
+        },
+        "data": {
+          "type": "bytes",
+          "id": 2
+        },
+        "md": {
+          "keyType": "string",
+          "type": "string",
+          "id": 3
+        }
+      }
+    },
+    "DownlinkFileMetadata": {
+      "fields": {
+        "key": {
+          "type": "string",
+          "id": 1
+        },
+        "data": {
+          "type": "bytes",
+          "id": 2
+        }
+      }
+    },
+    "DownlinkFileValidation": {
+      "fields": {}
+    },
+    "DownlinkFileChunk": {
+      "oneofs": {
+        "value": {
+          "oneof": [
+            "header",
+            "data",
+            "metadata",
+            "validation"
+          ]
+        }
+      },
+      "fields": {
+        "header": {
+          "type": "FileHeader",
+          "id": 1
+        },
+        "data": {
+          "type": "DownlinkFileData",
+          "id": 2
+        },
+        "metadata": {
+          "type": "DownlinkFileMetadata",
+          "id": 3
+        },
+        "validation": {
+          "type": "DownlinkFileValidation",
+          "id": 4
+        }
+      }
+    },
+    "FswCapability": {
+      "values": {
+        "COMMAND": 0,
+        "PARSE_COMMAND": 1,
+        "SEQUENCE": 2,
+        "PARSE_SEQUENCE": 3,
+        "FILE": 4
+      }
+    },
+    "Fsw": {
+      "fields": {
+        "id": {
+          "type": "string",
+          "id": 1
+        },
+        "type": {
+          "type": "string",
+          "id": 2
+        },
+        "profileId": {
+          "type": "string",
+          "id": 3
+        },
+        "forwards": {
+          "rule": "repeated",
+          "type": "string",
+          "id": 4
+        },
+        "capabilities": {
+          "rule": "repeated",
+          "type": "FswCapability",
+          "id": 7
+        }
+      },
+      "reserved": [
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          6
+        ]
+      ]
+    },
+    "CommandOptions": {
+      "fields": {
+        "noWait": {
+          "type": "bool",
+          "id": 1
+        }
+      }
+    },
+    "CommandValue": {
+      "fields": {
+        "def": {
+          "type": "CommandDef",
+          "id": 1
+        },
+        "args": {
+          "rule": "repeated",
+          "type": "Value",
+          "id": 2
+        },
+        "options": {
+          "type": "CommandOptions",
+          "id": 3
+        },
+        "metadata": {
+          "keyType": "string",
+          "type": "string",
+          "id": 4
+        }
+      }
+    },
+    "RawCommandValue": {
+      "fields": {
+        "command": {
+          "type": "string",
+          "id": 2
+        },
+        "options": {
+          "type": "CommandOptions",
+          "id": 3
+        },
+        "metadata": {
+          "keyType": "string",
+          "type": "string",
+          "id": 4
+        }
+      }
+    },
+    "CommandSequence": {
+      "fields": {
+        "commands": {
+          "rule": "repeated",
+          "type": "CommandValue",
+          "id": 1
+        },
+        "languageName": {
+          "type": "string",
+          "id": 2
+        },
+        "metadata": {
+          "keyType": "string",
+          "type": "string",
+          "id": 3
+        }
+      }
+    },
+    "RawCommandSequence": {
+      "fields": {
+        "sequence": {
+          "type": "string",
+          "id": 1
+        },
+        "languageName": {
+          "type": "string",
+          "id": 2
+        },
+        "metadata": {
+          "keyType": "string",
+          "type": "string",
+          "id": 3
+        },
+        "lineCommentPrefix": {
+          "type": "string",
+          "id": 4
+        }
+      }
+    },
+    "SourceContextFilter": {
+      "values": {
+        "REALTIME_ONLY": 0,
+        "RECORDED_ONLY": 1,
+        "ALL": 2
+      }
+    },
+    "BusFilter": {
+      "fields": {
+        "source": {
+          "type": "string",
+          "id": 1
+        },
+        "names": {
+          "rule": "repeated",
+          "type": "string",
+          "id": 2
+        },
+        "context": {
+          "type": "SourceContextFilter",
+          "id": 3
+        }
+      }
+    },
+    "SourceContext": {
+      "values": {
+        "REALTIME": 0,
+        "RECORDED": 1
+      }
+    },
+    "Event": {
+      "fields": {
+        "ref": {
+          "type": "EventRef",
+          "id": 1
+        },
+        "time": {
+          "type": "Time",
+          "id": 2
+        },
+        "message": {
+          "type": "string",
+          "id": 3
+        },
+        "args": {
+          "rule": "repeated",
+          "type": "Value",
+          "id": 4
+        },
+        "tags": {
+          "keyType": "string",
+          "type": "Value",
+          "id": 5
+        }
+      }
+    },
+    "Telemetry": {
+      "fields": {
+        "ref": {
+          "type": "TelemetryRef",
+          "id": 1
+        },
+        "time": {
+          "type": "Time",
+          "id": 2
+        },
+        "value": {
+          "type": "Value",
+          "id": 3
+        },
+        "labels": {
+          "keyType": "string",
+          "type": "string",
+          "id": 4
+        }
+      },
+      "reserved": [
+        [
+          5,
+          5
+        ]
+      ]
+    },
+    "SourcedEvent": {
+      "fields": {
+        "event": {
+          "type": "Event",
+          "id": 1
+        },
+        "source": {
+          "type": "string",
+          "id": 2
+        },
+        "context": {
+          "type": "SourceContext",
+          "id": 3
+        }
+      }
+    },
+    "SourcedTelemetry": {
+      "fields": {
+        "telemetry": {
+          "type": "Telemetry",
+          "id": 1
+        },
+        "source": {
+          "type": "string",
+          "id": 2
+        },
+        "context": {
+          "type": "SourceContext",
+          "id": 3
+        }
+      }
+    },
+    "FileDownlinkCompletionStatus": {
+      "values": {
+        "DOWNLINK_COMPLETED": 0,
+        "DOWNLINK_UNKNOWN": -1,
+        "DOWNLINK_PARTIAL": 1,
+        "DOWNLINK_CRC_FAILED": 2
+      }
+    },
+    "FileDownlinkChunk": {
+      "fields": {
+        "offset": {
+          "type": "uint64",
+          "id": 1
+        },
+        "size": {
+          "type": "uint64",
+          "id": 2
+        }
+      }
+    },
+    "FileDownlink": {
+      "fields": {
+        "uid": {
+          "type": "string",
+          "id": 1
+        },
+        "timeStart": {
+          "type": "google.protobuf.Timestamp",
+          "id": 2
+        },
+        "timeEnd": {
+          "type": "google.protobuf.Timestamp",
+          "id": 3
+        },
+        "status": {
+          "type": "FileDownlinkCompletionStatus",
+          "id": 4
+        },
+        "source": {
+          "type": "string",
+          "id": 5
+        },
+        "sourcePath": {
+          "type": "string",
+          "id": 6
+        },
+        "destinationPath": {
+          "type": "string",
+          "id": 7
+        },
+        "filePath": {
+          "type": "string",
+          "id": 8
+        },
+        "missingChunks": {
+          "rule": "repeated",
+          "type": "FileDownlinkChunk",
+          "id": 9
+        },
+        "duplicateChunks": {
+          "rule": "repeated",
+          "type": "FileDownlinkChunk",
+          "id": 10
+        },
+        "size": {
+          "type": "uint64",
+          "id": 11
+        },
+        "metadata": {
+          "keyType": "string",
+          "type": "string",
+          "id": 12
+        }
+      }
+    },
+    "google": {
+      "nested": {
+        "protobuf": {
+          "nested": {
+            "Empty": {
+              "fields": {}
+            },
+            "Timestamp": {
+              "fields": {
+                "seconds": {
+                  "type": "int64",
+                  "id": 1
+                },
+                "nanos": {
+                  "type": "int32",
+                  "id": 2
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Time": {
+      "fields": {
+        "unix": {
+          "type": "google.protobuf.Timestamp",
+          "id": 1
+        },
+        "sclk": {
+          "type": "double",
+          "id": 2
+        }
+      }
+    },
+    "ProfileProvider": {
+      "fields": {
+        "name": {
+          "type": "string",
+          "id": 1
+        },
+        "schema": {
+          "type": "string",
+          "id": 2
+        },
+        "uiSchema": {
+          "type": "string",
+          "id": 3
+        }
+      }
+    },
+    "Profile": {
+      "fields": {
+        "name": {
+          "type": "string",
+          "id": 1
+        },
+        "provider": {
+          "type": "string",
+          "id": 2
+        },
+        "settings": {
+          "type": "string",
+          "id": 3
+        }
+      }
+    },
+    "ProfileState": {
+      "values": {
+        "PROFILE_IDLE": 0,
+        "PROFILE_CONNECTING": 1,
+        "PROFILE_ACTIVE": 2,
+        "PROFILE_DISCONNECT": 3
+      }
+    },
+    "Id": {
+      "fields": {
+        "id": {
+          "type": "string",
+          "id": 1
+        }
+      }
+    },
+    "FswList": {
+      "fields": {
+        "all": {
+          "rule": "repeated",
+          "type": "Fsw",
+          "id": 1
+        }
+      }
+    },
+    "Reply": {
+      "fields": {
+        "success": {
+          "type": "bool",
+          "id": 1
+        }
+      }
+    },
+    "SequenceReply": {
+      "fields": {
+        "success": {
+          "type": "bool",
+          "id": 1
+        },
+        "commandIndex": {
+          "type": "int32",
+          "id": 2
+        }
+      }
+    },
+    "StatefulProfile": {
+      "fields": {
+        "value": {
+          "type": "Profile",
+          "id": 1
+        },
+        "state": {
+          "type": "ProfileState",
+          "id": 2
+        },
+        "runtimeOnly": {
+          "type": "bool",
+          "id": 3
+        }
+      }
+    },
+    "ProfileList": {
+      "fields": {
+        "all": {
+          "keyType": "string",
+          "type": "StatefulProfile",
+          "id": 1
+        }
+      }
+    },
+    "ProfileProviderList": {
+      "fields": {
+        "all": {
+          "rule": "repeated",
+          "type": "ProfileProvider",
+          "id": 1
+        }
+      }
+    },
+    "ProfileUpdate": {
+      "fields": {
+        "id": {
+          "type": "string",
+          "id": 1
+        },
+        "settings": {
+          "type": "string",
+          "id": 2
+        }
+      }
+    },
+    "DictionaryList": {
+      "fields": {
+        "all": {
+          "keyType": "string",
+          "type": "DictionaryHead",
+          "id": 1
+        }
+      }
+    },
+    "Uplink": {
+      "oneofs": {
+        "value": {
+          "oneof": [
+            "cmd",
+            "parseCmd",
+            "seq",
+            "parseSeq",
+            "file",
+            "cancel",
+            "final"
+          ]
+        }
+      },
+      "fields": {
+        "id": {
+          "type": "string",
+          "id": 1
+        },
+        "cmd": {
+          "type": "CommandValue",
+          "id": 2
+        },
+        "parseCmd": {
+          "type": "RawCommandValue",
+          "id": 3
+        },
+        "seq": {
+          "type": "CommandSequence",
+          "id": 4
+        },
+        "parseSeq": {
+          "type": "RawCommandSequence",
+          "id": 5
+        },
+        "file": {
+          "type": "UplinkFileChunk",
+          "id": 6
+        },
+        "cancel": {
+          "type": "google.protobuf.Empty",
+          "id": 99
+        },
+        "final": {
+          "type": "google.protobuf.Empty",
+          "id": 100
+        }
+      }
+    },
+    "UplinkReply": {
+      "oneofs": {
+        "status": {
+          "oneof": [
+            "reply",
+            "error"
+          ]
+        }
+      },
+      "fields": {
+        "id": {
+          "type": "string",
+          "id": 1
+        },
+        "reply": {
+          "type": "bytes",
+          "id": 2
+        },
+        "error": {
+          "type": "string",
+          "id": 3
+        }
+      }
+    },
+    "FswInitialPacket": {
+      "fields": {
+        "info": {
+          "type": "Fsw",
+          "id": 1
+        },
+        "profile": {
+          "type": "string",
+          "id": 2
+        }
+      }
+    },
+    "FswConnectionPacket": {
+      "oneofs": {
+        "value": {
+          "oneof": [
+            "info",
+            "reply"
+          ]
+        }
+      },
+      "fields": {
+        "info": {
+          "type": "FswInitialPacket",
+          "id": 1
+        },
+        "reply": {
+          "type": "UplinkReply",
+          "id": 2
+        }
+      }
+    }
+  }
+}

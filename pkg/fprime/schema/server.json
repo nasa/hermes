@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "description": "Host a TCP server that a FSW may connect to via a tcp-client comms component",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Name of the FSW once a connection is made"
+        },
+        "address": {
+            "type": "string",
+            "description": "Address/port to bind to. 'localhost' for local bind and 0.0.0.0:8000 for external binds, use a filpath for UDS hosting"
+        },
+        "dictionary": {
+            "type": "string",
+            "description": "FPrime dictionary to send/receive data with"
+        },
+        "protocol": {
+            "type": "string",
+            "title": "Protocol",
+            "default": "fprime-ccsds",
+            "description": "Framing protocol to communicate over",
+            "enum": [
+                "fprime",
+                "ccsds"
+            ]
+        }
+    }
+}

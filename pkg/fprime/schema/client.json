@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "description": "Connect to a FSW running a TCP server to interface with comms",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Name of the FSW once a connection is made"
+        },
+        "address": {
+            "type": "string",
+            "description": "Address/port connect to"
+        },
+        "dictionary": {
+            "type": "string",
+            "description": "FPrime dictionary to send/receive data with"
+        },
+        "protocol": {
+            "type": "string",
+            "title": "Protocol",
+            "default": "ccsds",
+            "description": "Framing protocol to communicate over",
+            "enum": [
+                "fprime",
+                "ccsds"
+            ]
+        }
+    }
+}

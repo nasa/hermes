@@ -1,0 +1,314 @@
+syntax = "proto3";
+option go_package = "github.com/nasa/hermes/pkg/pb";
+
+enum IntKind {
+  INT_U8 = 0;
+  INT_I8 = 1;
+  INT_U16 = 2;
+  INT_I16 = 3;
+  INT_U32 = 4;
+  INT_I32 = 5;
+  INT_U64 = 6;
+  INT_I64 = 7;
+}
+
+enum NumberKind {
+  NUMBER_U8 = 0;
+  NUMBER_I8 = 1;
+  NUMBER_U16 = 2;
+  NUMBER_I16 = 3;
+  NUMBER_U32 = 4;
+  NUMBER_I32 = 5;
+  NUMBER_U64 = 6;
+  NUMBER_I64 = 7;
+  NUMBER_F32 = 8;
+  NUMBER_F64 = 9;
+}
+
+enum UIntKind {
+  UINT_U8 = 0;
+  UINT_U16 = 1;
+  UINT_U32 = 2;
+  UINT_U64 = 3;
+}
+
+enum SIntKind {
+  SINT_I8 = 0;
+  SINT_I16 = 1;
+  SINT_I32 = 2;
+  SINT_I64 = 3;
+}
+
+enum FloatKind {
+  F_F32 = 0;
+  F_F64 = 1;
+}
+
+enum ReferenceKind {
+  REF_ENUM = 0;
+  REF_BITMASK = 1;
+  REF_OBJECT = 2;
+  REF_ARRAY = 3;
+  REF_BYTES = 4;
+}
+
+message BooleanType {
+  UIntKind encodeType = 1;
+}
+
+message IntType {
+  IntKind kind = 1;
+
+  /**
+   * Lower bound on valid values
+   */
+  int64 min = 2;
+
+  /**
+   * Upper bound on valid values
+   */
+  int64 max = 3;
+}
+
+message FloatType {
+  FloatKind kind = 1;
+
+  /**
+   * Lower bound on valid values
+   */
+  double min = 2;
+
+  /**
+   * Upper bound on valid values
+   */
+  double max = 3;
+}
+
+message StringType {
+  /**
+   * Type to serialize length of string with.
+   *
+   * When encoding strings, they will be prefixed by their
+   * length using this type. If the length does not fit within
+   * this type's representable size, it will throw an error.
+   */
+  UIntKind lengthType = 1;
+
+  /**
+   * Optional check for maximum length
+   */
+  uint32 maxLength = 2;
+}
+
+message EnumItem {
+  int32 value = 1;
+  string name = 2;
+  string metadata = 3;
+}
+
+message EnumType {
+  /**
+   * Name of the enum
+   */
+  string name = 1;
+
+  /**
+   * Type to serialize enum with.
+   * Use this on a per-enum basis. By default it will be I32. If this is
+   * specified in the reference type it will override this.
+   *
+   * You can also override this behavior programmatically by overriding
+   * `Serializable.writeEnum`.
+   */
+  IntKind encodeType = 2;
+
+  /**
+   * Members of the enum and their mapping to its
+   * numeric value.
+   */
+  repeated EnumItem items = 3;
+}
+
+message BoundedArraySize {
+  uint32 min = 1;
+  uint32 max = 2;
+}
+
+message ArrayType {
+  /**
+   * Name of the array if this is a typedef instead of
+   * an inline array.
+   */
+  string name = 1;
+
+  /**
+   * Element type
+   */
+  Type elType = 2;
+
+  /**
+   * Either `number` for static array, or a 2-tuple for
+   * a range of sizes (or undefined for unbounded).
+   *
+   * Static arrays do not prefix their encodings with sizes
+   * since encoders and decoders both agree on their length
+   * ahead of time.
+   *
+   * Dynamically sized arrays will prefix their size with
+   */
+  oneof size {
+    uint32 static = 3;
+    BoundedArraySize dynamic = 4;
+  }
+
+  /**
+   * Serialization type to use for dynamic array's prefixed length.
+   * > Ignored on statically sized arrays.
+   *
+   * Default: {@link TypeKind.u32}
+   */
+  UIntKind lengthType = 5;
+}
+
+/**
+ * Homogeneous array of numeric primitives, stored as raw bytes
+ * In Python this decodes the array using NumPy
+ * In JS/TS this decodes the array using DataView or TypedArray
+ */
+message BytesType {
+  /**
+   * Name of the bytes array if this is a typedef instead of
+   * an inline array.
+   */
+  string name = 1;
+
+  // Primtive type of each element in this array
+  NumberKind kind = 2;
+
+  /**
+   * Serialization type to use for dynamic array's prefixed length.
+   * > Ignored on statically sized arrays.
+   *
+   * Default: {@link TypeKind.u32}
+   */
+  oneof size {
+    uint32 static = 3;
+    BoundedArraySize dynamic = 4;
+  }
+
+  /**
+   * Serialization type to use for dynamic array's prefixed length.
+   * > Ignored on statically sized arrays.
+   *
+   * Default: {@link TypeKind.u32}
+   */
+  UIntKind lengthType = 5;
+}
+
+message Field {
+  string name = 1;
+  Type type = 2;
+  string metadata = 3;
+
+  // Optional field for specifying constant value associated with
+  // this field. This is when generating field/struct types via a program
+  // live and some fields come prefilled.
+  Value value = 4;
+}
+
+message ObjectType {
+  /**
+   * Name of the object/struct
+   */
+  string name = 1;
+
+  /**
+   * Fields/members inside object. Ordered in order of serialization.
+   */
+  repeated Field fields = 2;
+}
+
+message ReferenceType {
+  /**
+   * Name of the type
+   */
+  string name = 1;
+
+  ReferenceKind kind = 2;
+}
+
+message VoidType {
+  /**
+   * Size in bytes of this struct pad
+   */
+  uint32 size = 1;
+}
+
+message Type {
+  oneof value {
+    // This type is special and will be preprocessed upon loading
+    ReferenceType ref = 1;
+
+    BooleanType bool = 2;
+    IntType int = 3;
+    FloatType float = 4;
+    StringType string = 5;
+    EnumType enum = 6;
+    EnumType bitmask = 7;
+    ObjectType object = 8;
+    ArrayType array = 9;
+    BytesType bytes = 10;
+    VoidType void = 11;
+  }
+
+  string metadata = 12;
+}
+
+message ObjectValue { map<string, Value> o = 1; }
+message ArrayValue { repeated Value value = 1; }
+message BytesValue {
+  // Type of primitive elements
+  NumberKind kind = 1;
+
+  // Byte order, default = false
+  bool bigEndian = 2;
+
+  // Raw value in given byte order
+  bytes value = 3;
+}
+
+message EnumValue {
+  int64 raw = 1;
+  string formatted = 2;
+}
+
+message Value {
+  oneof value {
+    /* i8, i16, i32, i64 */
+    sint64 i = 1;
+
+    /* u8, u16, u32, u64 */
+    uint64 u = 2;
+
+    /* f32, f64 */
+    double f = 3;
+
+    /* bool */
+    bool b = 4;
+
+    /* string */
+    string s = 5;
+
+    /* enum, bitmask */
+    EnumValue e = 6;
+
+    /* object */
+    ObjectValue o = 7;
+
+    /* array */
+    ArrayValue a = 8;
+
+    /* bytes */
+    BytesValue r = 9;
+  }
+}

@@ -1,0 +1,7 @@
+{
+    "extends": "../../tsconfig.json",
+    "exclude": [
+        "vscode-fallback",
+        "**/node_modules/*"
+    ]
+}

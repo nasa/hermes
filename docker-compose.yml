@@ -1,0 +1,38 @@
+services:
+  lgtm:
+    image: grafana/otel-lgtm
+    ports:
+      - "4317:4317" # OpenTelemetry GRPC endpoint
+      - "4318:4318" # OpenTelemetry HTTP endpoint
+      - "9090:9090" # Prometheus
+      - "3100:3100" # Loki
+      - "3200:3200" # Tempo
+      - "3000:3000" # Grafana (Comment out if using another Grafana session)
+    environment:
+      - GF_INSTALL_PLUGINS=volkovlabs-image-panel
+      # - ENABLE_LOGS_GRAFANA=true
+      # - ENABLE_LOGS_LOKI=true
+      # - ENABLE_LOGS_PROMETHEUS=true
+      # - ENABLE_LOGS_TEMPO=true
+      # - ENABLE_LOGS_PYROSCOPE=true
+    links:
+      - influxdb
+    volumes:
+      - lgtm-data:/data
+      - ./config/loki-config.yaml:/otel-lgtm/loki-config.yaml
+      - ./config/grafana-config.ini:/otel-lgtm/grafana/conf/custom.ini
+      - ./config/grafana-dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/grafana-dashboards.yaml
+      - ./config/dashboards:/otel-lgtm/dashboards
+  influxdb:
+    image: influxdb
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: admin123
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: v6P34mao7UYHblkpDJYt8fmWLw1L79Z77sg3RDgScxHtiYwDO0cowbzOHnHK2ZamDljF6ehNEq8ucRQF-Hr0RA==
+      DOCKER_INFLUXDB_INIT_ORG: dev
+      DOCKER_INFLUXDB_INIT_BUCKET: dev
+    ports:
+      - 8086:8086/tcp
+volumes:
+  lgtm-data:

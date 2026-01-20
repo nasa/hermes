@@ -1,0 +1,11 @@
+with-expecter: True
+filename: "mock_{{.InterfaceName}}.go"
+dir: "mocks/"
+outpkg: "mocks"
+issue-845-fix: True
+resolve-type-alias: False
+packages:
+    github.com/nasa/hermes/pkg/host:
+        interfaces:
+            ConnectSession:
+            ProfileProvider:

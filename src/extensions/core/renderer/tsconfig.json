@@ -1,0 +1,16 @@
+{
+    "extends": "../../../../tsconfig.json",
+    "compilerOptions": {
+        "lib": [
+            "ES2020",
+            "dom"
+        ],
+        "jsx": "react",
+        "jsxFactory": "h",
+        "jsxFragmentFactory": "Fragment",
+        "types": [
+            "node",
+            "vscode-notebook-renderer"
+        ],
+    }
+}

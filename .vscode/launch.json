@@ -1,0 +1,53 @@
+// A launch configuration that compiles the extension and then opens it inside a new window
+// Use IntelliSense to learn about possible attributes.
+// Hover to view descriptions of existing attributes.
+// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(go) Attach to Process",
+            "type": "go",
+            "request": "attach",
+            "mode": "local",
+            "processId": 0
+        },
+        {
+            "name": "Node Attach",
+            "port": 9229,
+            "request": "attach",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
+            "name": "Core",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/src/extensions/core"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/src/extensions/core/out/*.js"
+            ],
+            "preLaunchTask": "${defaultBuildTask}",
+            "sourceMaps": true
+        },
+        {
+            "name": "All",
+            "type": "extensionHost",
+            "request": "launch",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/src/extensions/core",
+                "--extensionDevelopmentPath=${workspaceFolder}/src/extensions/fprime",
+            ],
+            "outFiles": [
+                "${workspaceFolder}/src/extensions/core/out/*.js",
+                "${workspaceFolder}/src/extensions/fprime/out/*.js",
+            ],
+            "preLaunchTask": "${defaultBuildTask}",
+            "sourceMaps": true
+        }
+    ]
+}
