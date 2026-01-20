@@ -1,0 +1,110 @@
+#root {
+    width: 100%;
+}
+
+table,
+tr {
+    text-align: left;
+    width: 100%;
+}
+
+td {
+    line-height: 1.6em;
+    white-space: nowrap;
+    padding-right: 3px;
+}
+
+tr {
+    padding-left: 6px;
+    position: relative;
+    color: #333;
+    white-space: nowrap;
+    border: 1px solid rgba(0, 0, 0, 0);
+}
+
+.fatal {
+    background-color: #ff5e66 !important;
+    color: #f1f1f2;
+}
+
+.fatal.ag-row-selected {
+    background-color: #f7000c !important;
+}
+
+.fatal:hover {
+    background-color: #ff2b36 !important;
+}
+
+.warning_hi {
+    background-color: #FEA500 !important;
+}
+
+.warning_hi.ag-row-selected {
+    background-color: #986300 !important;
+}
+
+.warning_hi:hover {
+    background-color: #cb8400 !important;
+}
+
+.warning_lo {
+    background-color: #F0F001 !important;
+}
+
+.warning_lo.ag-row-selected {
+    background-color: #8a8a01 !important;
+}
+
+.warning_lo:hover {
+    background-color: #bdbd01 !important;
+}
+
+.activity_hi {
+    background-color: #666666 !important;
+    color: #f1f1f2;
+}
+
+.activity_hi.ag-row-selected {
+    background-color: #333 !important;
+}
+
+.activity_hi:hover {
+    background-color: #4d4d4d !important;
+}
+
+.activity_lo {
+    background-color: #D3D3D3 !important;
+}
+
+.activity_lo.ag-row-selected {
+    background-color: #a0a0a0 !important;
+}
+
+.activity_lo:hover {
+    background-color: #bababa !important;
+}
+
+.command {
+    background-color: #0D00FF !important;
+    color: #f1f1f2;
+}
+
+.command.ag-row-selected {
+    background-color: #080099 !important;
+}
+
+.command:hover {
+    background-color: #0a00cc !important;
+}
+
+.diagnostic {
+    background-color: #90ED91 !important;
+}
+
+.diagnostic.ag-row-selected {
+    background-color: #38df3a !important;
+}
+
+.diagnostic:hover {
+    background-color: #64e666 !important;
+}

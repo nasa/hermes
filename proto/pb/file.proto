@@ -1,0 +1,60 @@
+syntax = "proto3";
+option go_package = "github.com/nasa/hermes/pkg/pb";
+
+message FileHeader {
+  // Source path of file (usually trancated for uplink bandwidth reasons)
+  string sourcePath = 1;
+
+  // Destination to tell FSW to write file to
+  string destinationPath = 2;
+
+  // File total size
+  uint64 size = 3;
+
+  // Additional fields associated with this file uplink
+  // This has flight-software specific meaning
+  map<string, string> metadata = 4;
+}
+
+message UplinkFileChunk {
+  oneof value {
+    FileHeader header = 1;
+    bytes data = 2;
+  }
+}
+
+message DownlinkFileData {
+  uint64 offset = 1;
+  bytes data = 2;
+  map<string, string> md = 3;
+}
+
+message DownlinkFileMetadata {
+  string key = 1;
+  // JSON data to associate with key
+  bytes data = 2;
+}
+
+message DownlinkFileValidation {
+  // TODO
+}
+
+message DownlinkFileChunk {
+  oneof value {
+    // The initial message initializing the downlink session.
+    // This is the first packet and should be only send once
+    FileHeader header = 1;
+    // A chunk of file data given the raw data and that byte
+    // offset in the final file
+    // Send this after the header and before the validation
+    // Should be sent 1 or more times.
+    DownlinkFileData data = 2;
+    // Mark a metadata event denoting information about the downlink
+    // Send this after the header and before the validation
+    // Can be sent 0 or more times.
+    DownlinkFileMetadata metadata = 3;
+    // An optional packet to tell the host to validate the final
+    // file against an expected hash.
+    DownlinkFileValidation validation = 4;
+  }
+}

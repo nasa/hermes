@@ -1,0 +1,5128 @@
+[
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868796000
+        },
+        "sclk": 1741981706.868796
+      },
+      "value": {
+        "Value": {
+          "F": 50.50504684448242
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868824000
+        },
+        "sclk": 1741981706.868824
+      },
+      "value": {
+        "Value": {
+          "F": 49.50495147705078
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868841000
+        },
+        "sclk": 1741981706.868841
+      },
+      "value": {
+        "Value": {
+          "F": 41.41414260864258
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868857000
+        },
+        "sclk": 1741981706.868857
+      },
+      "value": {
+        "Value": {
+          "F": 43
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868870000
+        },
+        "sclk": 1741981706.86887
+      },
+      "value": {
+        "Value": {
+          "F": 10.784314155578613
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868889000
+        },
+        "sclk": 1741981706.868889
+      },
+      "value": {
+        "Value": {
+          "F": 7.920792102813721
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868907000
+        },
+        "sclk": 1741981706.868907
+      },
+      "value": {
+        "Value": {
+          "F": 4
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868924000
+        },
+        "sclk": 1741981706.868924
+      },
+      "value": {
+        "Value": {
+          "F": 2.97029709815979
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868937000
+        },
+        "sclk": 1741981706.868937
+      },
+      "value": {
+        "Value": {
+          "F": 28.571430206298828
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868957000
+        },
+        "sclk": 1741981706.868957
+      },
+      "value": {
+        "Value": {
+          "F": 22.22222328186035
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868967000
+        },
+        "sclk": 1741981706.868967
+      },
+      "value": {
+        "Value": {
+          "F": 13
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868983000
+        },
+        "sclk": 1741981706.868983
+      },
+      "value": {
+        "Value": {
+          "F": 9
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868983000
+        },
+        "sclk": 1741981706.868983
+      },
+      "value": {
+        "Value": {
+          "F": 23.574432373046875
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868992000
+        },
+        "sclk": 1741981706.868992
+      },
+      "value": {
+        "Value": {
+          "U": 45756400
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 868993000
+        },
+        "sclk": 1741981706.868993
+      },
+      "value": {
+        "Value": {
+          "U": 45494992
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 869013000
+        },
+        "sclk": 1741981706.869013
+      },
+      "value": {
+        "Value": {
+          "U": 540790884
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981706,
+          "nanos": 869014000
+        },
+        "sclk": 1741981706.869014
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 256,
+        "name": "BD_Cycles",
+        "component": "blockDrv"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873415000
+        },
+        "sclk": 1741981707.873415
+      },
+      "value": {
+        "Value": {
+          "U": 26718
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 256,
+        "name": "BD_Cycles",
+        "component": "blockDrv"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 877832000
+        },
+        "sclk": 1741981708.877832
+      },
+      "value": {
+        "Value": {
+          "U": 26719
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873533000
+        },
+        "sclk": 1741981707.873533
+      },
+      "value": {
+        "Value": {
+          "F": 37
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873565000
+        },
+        "sclk": 1741981707.873565
+      },
+      "value": {
+        "Value": {
+          "F": 35.35353469848633
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873593000
+        },
+        "sclk": 1741981707.873593
+      },
+      "value": {
+        "Value": {
+          "F": 30.000001907348633
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873615000
+        },
+        "sclk": 1741981707.873615
+      },
+      "value": {
+        "Value": {
+          "F": 31
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873637000
+        },
+        "sclk": 1741981707.873637
+      },
+      "value": {
+        "Value": {
+          "F": 3.0303030014038086
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873657000
+        },
+        "sclk": 1741981707.873657
+      },
+      "value": {
+        "Value": {
+          "F": 3
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873676000
+        },
+        "sclk": 1741981707.873676
+      },
+      "value": {
+        "Value": {
+          "F": 2.941176414489746
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873697000
+        },
+        "sclk": 1741981707.873697
+      },
+      "value": {
+        "Value": {
+          "F": 1
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873716000
+        },
+        "sclk": 1741981707.873716
+      },
+      "value": {
+        "Value": {
+          "F": 18.81188201904297
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873734000
+        },
+        "sclk": 1741981707.873734
+      },
+      "value": {
+        "Value": {
+          "F": 15.000000953674316
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873756000
+        },
+        "sclk": 1741981707.873756
+      },
+      "value": {
+        "Value": {
+          "F": 11.88118839263916
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873774000
+        },
+        "sclk": 1741981707.873774
+      },
+      "value": {
+        "Value": {
+          "F": 8.91089153289795
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873776000
+        },
+        "sclk": 1741981707.873776
+      },
+      "value": {
+        "Value": {
+          "F": 16.494081497192383
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873793000
+        },
+        "sclk": 1741981707.873793
+      },
+      "value": {
+        "Value": {
+          "U": 45759872
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873795000
+        },
+        "sclk": 1741981707.873795
+      },
+      "value": {
+        "Value": {
+          "U": 45499520
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873814000
+        },
+        "sclk": 1741981707.873814
+      },
+      "value": {
+        "Value": {
+          "U": 540789500
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981707,
+          "nanos": 873815000
+        },
+        "sclk": 1741981707.873815
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878000000
+        },
+        "sclk": 1741981708.878
+      },
+      "value": {
+        "Value": {
+          "F": 35
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878041000
+        },
+        "sclk": 1741981708.878041
+      },
+      "value": {
+        "Value": {
+          "F": 36
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878070000
+        },
+        "sclk": 1741981708.87807
+      },
+      "value": {
+        "Value": {
+          "F": 33.66336441040039
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878097000
+        },
+        "sclk": 1741981708.878097
+      },
+      "value": {
+        "Value": {
+          "F": 30.000001907348633
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878116000
+        },
+        "sclk": 1741981708.878116
+      },
+      "value": {
+        "Value": {
+          "F": 9
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878135000
+        },
+        "sclk": 1741981708.878135
+      },
+      "value": {
+        "Value": {
+          "F": 7.070706844329834
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878158000
+        },
+        "sclk": 1741981708.878158
+      },
+      "value": {
+        "Value": {
+          "F": 4.040403842926025
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878176000
+        },
+        "sclk": 1741981708.878176
+      },
+      "value": {
+        "Value": {
+          "F": 4
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878192000
+        },
+        "sclk": 1741981708.878192
+      },
+      "value": {
+        "Value": {
+          "F": 23
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878213000
+        },
+        "sclk": 1741981708.878213
+      },
+      "value": {
+        "Value": {
+          "F": 18
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878234000
+        },
+        "sclk": 1741981708.878234
+      },
+      "value": {
+        "Value": {
+          "F": 12
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878255000
+        },
+        "sclk": 1741981708.878255
+      },
+      "value": {
+        "Value": {
+          "F": 11
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878256000
+        },
+        "sclk": 1741981708.878256
+      },
+      "value": {
+        "Value": {
+          "F": 18.564538955688477
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878275000
+        },
+        "sclk": 1741981708.878275
+      },
+      "value": {
+        "Value": {
+          "U": 45760672
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878277000
+        },
+        "sclk": 1741981708.878277
+      },
+      "value": {
+        "Value": {
+          "U": 45644784
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878293000
+        },
+        "sclk": 1741981708.878293
+      },
+      "value": {
+        "Value": {
+          "U": 540789600
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981708,
+          "nanos": 878294000
+        },
+        "sclk": 1741981708.878294
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 256,
+        "name": "BD_Cycles",
+        "component": "blockDrv"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885495000
+        },
+        "sclk": 1741981710.885495
+      },
+      "value": {
+        "Value": {
+          "U": 26721
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883028000
+        },
+        "sclk": 1741981709.883028
+      },
+      "value": {
+        "Value": {
+          "F": 50.50504684448242
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883051000
+        },
+        "sclk": 1741981709.883051
+      },
+      "value": {
+        "Value": {
+          "F": 45.45454788208008
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883063000
+        },
+        "sclk": 1741981709.883063
+      },
+      "value": {
+        "Value": {
+          "F": 49.49494934082031
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883075000
+        },
+        "sclk": 1741981709.883075
+      },
+      "value": {
+        "Value": {
+          "F": 44
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883090000
+        },
+        "sclk": 1741981709.88309
+      },
+      "value": {
+        "Value": {
+          "F": 9.90099048614502
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883100000
+        },
+        "sclk": 1741981709.8831
+      },
+      "value": {
+        "Value": {
+          "F": 6
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883110000
+        },
+        "sclk": 1741981709.88311
+      },
+      "value": {
+        "Value": {
+          "F": 5
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883119000
+        },
+        "sclk": 1741981709.883119
+      },
+      "value": {
+        "Value": {
+          "F": 4
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883129000
+        },
+        "sclk": 1741981709.883129
+      },
+      "value": {
+        "Value": {
+          "F": 27.000001907348633
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883138000
+        },
+        "sclk": 1741981709.883138
+      },
+      "value": {
+        "Value": {
+          "F": 22
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883147000
+        },
+        "sclk": 1741981709.883147
+      },
+      "value": {
+        "Value": {
+          "F": 12
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883159000
+        },
+        "sclk": 1741981709.883159
+      },
+      "value": {
+        "Value": {
+          "F": 9
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883159000
+        },
+        "sclk": 1741981709.883159
+      },
+      "value": {
+        "Value": {
+          "F": 23.6962947845459
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883168000
+        },
+        "sclk": 1741981709.883168
+      },
+      "value": {
+        "Value": {
+          "U": 45704816
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883169000
+        },
+        "sclk": 1741981709.883169
+      },
+      "value": {
+        "Value": {
+          "U": 45533232
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883194000
+        },
+        "sclk": 1741981709.883194
+      },
+      "value": {
+        "Value": {
+          "U": 540788300
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981709,
+          "nanos": 883194000
+        },
+        "sclk": 1741981709.883194
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885577000
+        },
+        "sclk": 1741981710.885577
+      },
+      "value": {
+        "Value": {
+          "F": 44.4444465637207
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885595000
+        },
+        "sclk": 1741981710.885595
+      },
+      "value": {
+        "Value": {
+          "F": 44.5544548034668
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885608000
+        },
+        "sclk": 1741981710.885608
+      },
+      "value": {
+        "Value": {
+          "F": 39.39393997192383
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885621000
+        },
+        "sclk": 1741981710.885621
+      },
+      "value": {
+        "Value": {
+          "F": 37.37373733520508
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885633000
+        },
+        "sclk": 1741981710.885633
+      },
+      "value": {
+        "Value": {
+          "F": 7
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885644000
+        },
+        "sclk": 1741981710.885644
+      },
+      "value": {
+        "Value": {
+          "F": 5.94059419631958
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885658000
+        },
+        "sclk": 1741981710.885658
+      },
+      "value": {
+        "Value": {
+          "F": 3
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885669000
+        },
+        "sclk": 1741981710.885669
+      },
+      "value": {
+        "Value": {
+          "F": 2.97029709815979
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885679000
+        },
+        "sclk": 1741981710.885679
+      },
+      "value": {
+        "Value": {
+          "F": 35.35353469848633
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885689000
+        },
+        "sclk": 1741981710.885689
+      },
+      "value": {
+        "Value": {
+          "F": 26.73267364501953
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885699000
+        },
+        "sclk": 1741981710.885699
+      },
+      "value": {
+        "Value": {
+          "F": 16
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885709000
+        },
+        "sclk": 1741981710.885709
+      },
+      "value": {
+        "Value": {
+          "F": 11.88118839263916
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885709000
+        },
+        "sclk": 1741981710.885709
+      },
+      "value": {
+        "Value": {
+          "F": 22.88707160949707
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885718000
+        },
+        "sclk": 1741981710.885718
+      },
+      "value": {
+        "Value": {
+          "U": 45706016
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885720000
+        },
+        "sclk": 1741981710.88572
+      },
+      "value": {
+        "Value": {
+          "U": 45383904
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885741000
+        },
+        "sclk": 1741981710.885741
+      },
+      "value": {
+        "Value": {
+          "U": 540788112
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981710,
+          "nanos": 885742000
+        },
+        "sclk": 1741981710.885742
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 256,
+        "name": "BD_Cycles",
+        "component": "blockDrv"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886257000
+        },
+        "sclk": 1741981711.886257
+      },
+      "value": {
+        "Value": {
+          "U": 26722
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 1280,
+        "name": "CommandsDispatched",
+        "component": "cmdDisp"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 159525000
+        },
+        "sclk": 1741981711.159525
+      },
+      "value": {
+        "Value": {
+          "U": 2
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 256,
+        "name": "BD_Cycles",
+        "component": "blockDrv"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 886876000
+        },
+        "sclk": 1741981712.886876
+      },
+      "value": {
+        "Value": {
+          "U": 26723
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886322000
+        },
+        "sclk": 1741981711.886322
+      },
+      "value": {
+        "Value": {
+          "F": 31.683168411254883
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886342000
+        },
+        "sclk": 1741981711.886342
+      },
+      "value": {
+        "Value": {
+          "F": 31.632652282714844
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886354000
+        },
+        "sclk": 1741981711.886354
+      },
+      "value": {
+        "Value": {
+          "F": 28
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886364000
+        },
+        "sclk": 1741981711.886364
+      },
+      "value": {
+        "Value": {
+          "F": 27.000001907348633
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886374000
+        },
+        "sclk": 1741981711.886374
+      },
+      "value": {
+        "Value": {
+          "F": 12
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886385000
+        },
+        "sclk": 1741981711.886385
+      },
+      "value": {
+        "Value": {
+          "F": 8
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886394000
+        },
+        "sclk": 1741981711.886394
+      },
+      "value": {
+        "Value": {
+          "F": 6.93069314956665
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886403000
+        },
+        "sclk": 1741981711.886403
+      },
+      "value": {
+        "Value": {
+          "F": 5
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886413000
+        },
+        "sclk": 1741981711.886413
+      },
+      "value": {
+        "Value": {
+          "F": 29
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886422000
+        },
+        "sclk": 1741981711.886422
+      },
+      "value": {
+        "Value": {
+          "F": 24
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886431000
+        },
+        "sclk": 1741981711.886431
+      },
+      "value": {
+        "Value": {
+          "F": 16
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886440000
+        },
+        "sclk": 1741981711.88644
+      },
+      "value": {
+        "Value": {
+          "F": 11
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886440000
+        },
+        "sclk": 1741981711.88644
+      },
+      "value": {
+        "Value": {
+          "F": 19.187210083007812
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886448000
+        },
+        "sclk": 1741981711.886448
+      },
+      "value": {
+        "Value": {
+          "U": 45706064
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886448000
+        },
+        "sclk": 1741981711.886448
+      },
+      "value": {
+        "Value": {
+          "U": 45388992
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886462000
+        },
+        "sclk": 1741981711.886462
+      },
+      "value": {
+        "Value": {
+          "U": 540788124
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 886463000
+        },
+        "sclk": 1741981711.886463
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 886951000
+        },
+        "sclk": 1741981712.886951
+      },
+      "value": {
+        "Value": {
+          "F": 31.313129425048828
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 886968000
+        },
+        "sclk": 1741981712.886968
+      },
+      "value": {
+        "Value": {
+          "F": 29
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 886981000
+        },
+        "sclk": 1741981712.886981
+      },
+      "value": {
+        "Value": {
+          "F": 25.25252342224121
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 886993000
+        },
+        "sclk": 1741981712.886993
+      },
+      "value": {
+        "Value": {
+          "F": 32.3232307434082
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887004000
+        },
+        "sclk": 1741981712.887004
+      },
+      "value": {
+        "Value": {
+          "F": 14
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887015000
+        },
+        "sclk": 1741981712.887015
+      },
+      "value": {
+        "Value": {
+          "F": 8
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887026000
+        },
+        "sclk": 1741981712.887026
+      },
+      "value": {
+        "Value": {
+          "F": 7
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887037000
+        },
+        "sclk": 1741981712.887037
+      },
+      "value": {
+        "Value": {
+          "F": 5
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887048000
+        },
+        "sclk": 1741981712.887048
+      },
+      "value": {
+        "Value": {
+          "F": 22.22222328186035
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887058000
+        },
+        "sclk": 1741981712.887058
+      },
+      "value": {
+        "Value": {
+          "F": 16.32653045654297
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887070000
+        },
+        "sclk": 1741981712.88707
+      },
+      "value": {
+        "Value": {
+          "F": 10
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887081000
+        },
+        "sclk": 1741981712.887081
+      },
+      "value": {
+        "Value": {
+          "F": 8.08080768585205
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887082000
+        },
+        "sclk": 1741981712.887082
+      },
+      "value": {
+        "Value": {
+          "F": 17.37653923034668
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887090000
+        },
+        "sclk": 1741981712.88709
+      },
+      "value": {
+        "Value": {
+          "U": 45707216
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887092000
+        },
+        "sclk": 1741981712.887092
+      },
+      "value": {
+        "Value": {
+          "U": 45318112
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887121000
+        },
+        "sclk": 1741981712.887121
+      },
+      "value": {
+        "Value": {
+          "U": 540788104
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981712,
+          "nanos": 887122000
+        },
+        "sclk": 1741981712.887122
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 256,
+        "name": "BD_Cycles",
+        "component": "blockDrv"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889415000
+        },
+        "sclk": 1741981713.889415
+      },
+      "value": {
+        "Value": {
+          "U": 26724
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 256,
+        "name": "BD_Cycles",
+        "component": "blockDrv"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 889698000
+        },
+        "sclk": 1741981714.889698
+      },
+      "value": {
+        "Value": {
+          "U": 26725
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889485000
+        },
+        "sclk": 1741981713.889485
+      },
+      "value": {
+        "Value": {
+          "F": 40.4040412902832
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889526000
+        },
+        "sclk": 1741981713.889526
+      },
+      "value": {
+        "Value": {
+          "F": 40.4040412902832
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889554000
+        },
+        "sclk": 1741981713.889554
+      },
+      "value": {
+        "Value": {
+          "F": 33
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889560000
+        },
+        "sclk": 1741981713.88956
+      },
+      "value": {
+        "Value": {
+          "F": 33
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889589000
+        },
+        "sclk": 1741981713.889589
+      },
+      "value": {
+        "Value": {
+          "F": 56
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889596000
+        },
+        "sclk": 1741981713.889596
+      },
+      "value": {
+        "Value": {
+          "F": 29
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889618000
+        },
+        "sclk": 1741981713.889618
+      },
+      "value": {
+        "Value": {
+          "F": 28
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889623000
+        },
+        "sclk": 1741981713.889623
+      },
+      "value": {
+        "Value": {
+          "F": 17.8217830657959
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889645000
+        },
+        "sclk": 1741981713.889645
+      },
+      "value": {
+        "Value": {
+          "F": 16
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889650000
+        },
+        "sclk": 1741981713.88965
+      },
+      "value": {
+        "Value": {
+          "F": 10
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889672000
+        },
+        "sclk": 1741981713.889672
+      },
+      "value": {
+        "Value": {
+          "F": 7.070706844329834
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889677000
+        },
+        "sclk": 1741981713.889677
+      },
+      "value": {
+        "Value": {
+          "F": 5
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889677000
+        },
+        "sclk": 1741981713.889677
+      },
+      "value": {
+        "Value": {
+          "F": 26.308380126953125
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889681000
+        },
+        "sclk": 1741981713.889681
+      },
+      "value": {
+        "Value": {
+          "U": 45727824
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889681000
+        },
+        "sclk": 1741981713.889681
+      },
+      "value": {
+        "Value": {
+          "U": 45551264
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889686000
+        },
+        "sclk": 1741981713.889686
+      },
+      "value": {
+        "Value": {
+          "U": 540788108
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981713,
+          "nanos": 889687000
+        },
+        "sclk": 1741981713.889687
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 889846000
+        },
+        "sclk": 1741981714.889846
+      },
+      "value": {
+        "Value": {
+          "F": 27.272727966308594
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 889886000
+        },
+        "sclk": 1741981714.889886
+      },
+      "value": {
+        "Value": {
+          "F": 25
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 889913000
+        },
+        "sclk": 1741981714.889913
+      },
+      "value": {
+        "Value": {
+          "F": 23.232322692871094
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 889940000
+        },
+        "sclk": 1741981714.88994
+      },
+      "value": {
+        "Value": {
+          "F": 22
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 889962000
+        },
+        "sclk": 1741981714.889962
+      },
+      "value": {
+        "Value": {
+          "F": 22.22222328186035
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 889997000
+        },
+        "sclk": 1741981714.889997
+      },
+      "value": {
+        "Value": {
+          "F": 11
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 890018000
+        },
+        "sclk": 1741981714.890018
+      },
+      "value": {
+        "Value": {
+          "F": 7.070706844329834
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 890042000
+        },
+        "sclk": 1741981714.890042
+      },
+      "value": {
+        "Value": {
+          "F": 4.040403842926025
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 890063000
+        },
+        "sclk": 1741981714.890063
+      },
+      "value": {
+        "Value": {
+          "F": 5
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 890085000
+        },
+        "sclk": 1741981714.890085
+      },
+      "value": {
+        "Value": {
+          "F": 3.9603960514068604
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 890106000
+        },
+        "sclk": 1741981714.890106
+      },
+      "value": {
+        "Value": {
+          "F": 3
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 890127000
+        },
+        "sclk": 1741981714.890127
+      },
+      "value": {
+        "Value": {
+          "F": 2
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 890129000
+        },
+        "sclk": 1741981714.890129
+      },
+      "value": {
+        "Value": {
+          "F": 12.983231544494629
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 890148000
+        },
+        "sclk": 1741981714.890148
+      },
+      "value": {
+        "Value": {
+          "U": 45743680
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 890151000
+        },
+        "sclk": 1741981714.890151
+      },
+      "value": {
+        "Value": {
+          "U": 45466400
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 890169000
+        },
+        "sclk": 1741981714.890169
+      },
+      "value": {
+        "Value": {
+          "U": 540788108
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981714,
+          "nanos": 890171000
+        },
+        "sclk": 1741981714.890171
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 256,
+        "name": "BD_Cycles",
+        "component": "blockDrv"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 893705000
+        },
+        "sclk": 1741981715.893705
+      },
+      "value": {
+        "Value": {
+          "U": 26726
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 256,
+        "name": "BD_Cycles",
+        "component": "blockDrv"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 897792000
+        },
+        "sclk": 1741981716.897792
+      },
+      "value": {
+        "Value": {
+          "U": 26727
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 893873000
+        },
+        "sclk": 1741981715.893873
+      },
+      "value": {
+        "Value": {
+          "F": 33
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 893904000
+        },
+        "sclk": 1741981715.893904
+      },
+      "value": {
+        "Value": {
+          "F": 33.333335876464844
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 893928000
+        },
+        "sclk": 1741981715.893928
+      },
+      "value": {
+        "Value": {
+          "F": 30.000001907348633
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 893947000
+        },
+        "sclk": 1741981715.893947
+      },
+      "value": {
+        "Value": {
+          "F": 28.712871551513672
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 893965000
+        },
+        "sclk": 1741981715.893965
+      },
+      "value": {
+        "Value": {
+          "F": 16
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 893984000
+        },
+        "sclk": 1741981715.893984
+      },
+      "value": {
+        "Value": {
+          "F": 7
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 894000000
+        },
+        "sclk": 1741981715.894
+      },
+      "value": {
+        "Value": {
+          "F": 6
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 894016000
+        },
+        "sclk": 1741981715.894016
+      },
+      "value": {
+        "Value": {
+          "F": 4
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 894031000
+        },
+        "sclk": 1741981715.894031
+      },
+      "value": {
+        "Value": {
+          "F": 3.9603960514068604
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 894044000
+        },
+        "sclk": 1741981715.894044
+      },
+      "value": {
+        "Value": {
+          "F": 3.9603960514068604
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 894057000
+        },
+        "sclk": 1741981715.894057
+      },
+      "value": {
+        "Value": {
+          "F": 2
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 894070000
+        },
+        "sclk": 1741981715.89407
+      },
+      "value": {
+        "Value": {
+          "F": 1.0101009607315063
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 894071000
+        },
+        "sclk": 1741981715.894071
+      },
+      "value": {
+        "Value": {
+          "F": 14.081425666809082
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 894087000
+        },
+        "sclk": 1741981715.894087
+      },
+      "value": {
+        "Value": {
+          "U": 45743104
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 894089000
+        },
+        "sclk": 1741981715.894089
+      },
+      "value": {
+        "Value": {
+          "U": 45443648
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 894104000
+        },
+        "sclk": 1741981715.894104
+      },
+      "value": {
+        "Value": {
+          "U": 540788104
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981715,
+          "nanos": 894105000
+        },
+        "sclk": 1741981715.894105
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 897976000
+        },
+        "sclk": 1741981716.897976
+      },
+      "value": {
+        "Value": {
+          "F": 34.693878173828125
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898014000
+        },
+        "sclk": 1741981716.898014
+      },
+      "value": {
+        "Value": {
+          "F": 31
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898043000
+        },
+        "sclk": 1741981716.898043
+      },
+      "value": {
+        "Value": {
+          "F": 28
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898089000
+        },
+        "sclk": 1741981716.898089
+      },
+      "value": {
+        "Value": {
+          "F": 27.272727966308594
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898119000
+        },
+        "sclk": 1741981716.898119
+      },
+      "value": {
+        "Value": {
+          "F": 52
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898142000
+        },
+        "sclk": 1741981716.898142
+      },
+      "value": {
+        "Value": {
+          "F": 34
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898163000
+        },
+        "sclk": 1741981716.898163
+      },
+      "value": {
+        "Value": {
+          "F": 21.782176971435547
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898186000
+        },
+        "sclk": 1741981716.898186
+      },
+      "value": {
+        "Value": {
+          "F": 14.141413688659668
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898209000
+        },
+        "sclk": 1741981716.898209
+      },
+      "value": {
+        "Value": {
+          "F": 12
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898229000
+        },
+        "sclk": 1741981716.898229
+      },
+      "value": {
+        "Value": {
+          "F": 8.08080768585205
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898248000
+        },
+        "sclk": 1741981716.898248
+      },
+      "value": {
+        "Value": {
+          "F": 7.920792102813721
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898268000
+        },
+        "sclk": 1741981716.898268
+      },
+      "value": {
+        "Value": {
+          "F": 5.882352828979492
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898269000
+        },
+        "sclk": 1741981716.898269
+      },
+      "value": {
+        "Value": {
+          "F": 23.06451416015625
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898288000
+        },
+        "sclk": 1741981716.898288
+      },
+      "value": {
+        "Value": {
+          "U": 45479968
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898289000
+        },
+        "sclk": 1741981716.898289
+      },
+      "value": {
+        "Value": {
+          "U": 45353552
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898323000
+        },
+        "sclk": 1741981716.898323
+      },
+      "value": {
+        "Value": {
+          "U": 540789348
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981716,
+          "nanos": 898324000
+        },
+        "sclk": 1741981716.898324
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 256,
+        "name": "BD_Cycles",
+        "component": "blockDrv"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906164000
+        },
+        "sclk": 1741981718.906164
+      },
+      "value": {
+        "Value": {
+          "U": 26729
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901696000
+        },
+        "sclk": 1741981717.901696
+      },
+      "value": {
+        "Value": {
+          "F": 33.66336441040039
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901752000
+        },
+        "sclk": 1741981717.901752
+      },
+      "value": {
+        "Value": {
+          "F": 27.272727966308594
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901788000
+        },
+        "sclk": 1741981717.901788
+      },
+      "value": {
+        "Value": {
+          "F": 25
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901814000
+        },
+        "sclk": 1741981717.901814
+      },
+      "value": {
+        "Value": {
+          "F": 18.18181800842285
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901847000
+        },
+        "sclk": 1741981717.901847
+      },
+      "value": {
+        "Value": {
+          "F": 30.000001907348633
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901867000
+        },
+        "sclk": 1741981717.901867
+      },
+      "value": {
+        "Value": {
+          "F": 18
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901885000
+        },
+        "sclk": 1741981717.901885
+      },
+      "value": {
+        "Value": {
+          "F": 10.1010103225708
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901902000
+        },
+        "sclk": 1741981717.901902
+      },
+      "value": {
+        "Value": {
+          "F": 12
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901918000
+        },
+        "sclk": 1741981717.901918
+      },
+      "value": {
+        "Value": {
+          "F": 12
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901946000
+        },
+        "sclk": 1741981717.901946
+      },
+      "value": {
+        "Value": {
+          "F": 9
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901961000
+        },
+        "sclk": 1741981717.901961
+      },
+      "value": {
+        "Value": {
+          "F": 8
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901979000
+        },
+        "sclk": 1741981717.901979
+      },
+      "value": {
+        "Value": {
+          "F": 3
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901981000
+        },
+        "sclk": 1741981717.901981
+      },
+      "value": {
+        "Value": {
+          "F": 17.184911727905273
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901995000
+        },
+        "sclk": 1741981717.901995
+      },
+      "value": {
+        "Value": {
+          "U": 45479568
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 901996000
+        },
+        "sclk": 1741981717.901996
+      },
+      "value": {
+        "Value": {
+          "U": 45354528
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 902024000
+        },
+        "sclk": 1741981717.902024
+      },
+      "value": {
+        "Value": {
+          "U": 540789332
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981717,
+          "nanos": 902025000
+        },
+        "sclk": 1741981717.902025
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18949,
+        "name": "CPU_00",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906367000
+        },
+        "sclk": 1741981718.906367
+      },
+      "value": {
+        "Value": {
+          "F": 31.313129425048828
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18950,
+        "name": "CPU_01",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906411000
+        },
+        "sclk": 1741981718.906411
+      },
+      "value": {
+        "Value": {
+          "F": 29
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18951,
+        "name": "CPU_02",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906439000
+        },
+        "sclk": 1741981718.906439
+      },
+      "value": {
+        "Value": {
+          "F": 24
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18952,
+        "name": "CPU_03",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906462000
+        },
+        "sclk": 1741981718.906462
+      },
+      "value": {
+        "Value": {
+          "F": 23
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18953,
+        "name": "CPU_04",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906485000
+        },
+        "sclk": 1741981718.906485
+      },
+      "value": {
+        "Value": {
+          "F": 36
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18954,
+        "name": "CPU_05",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906510000
+        },
+        "sclk": 1741981718.90651
+      },
+      "value": {
+        "Value": {
+          "F": 23.232322692871094
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18955,
+        "name": "CPU_06",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906531000
+        },
+        "sclk": 1741981718.906531
+      },
+      "value": {
+        "Value": {
+          "F": 15.000000953674316
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18956,
+        "name": "CPU_07",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906552000
+        },
+        "sclk": 1741981718.906552
+      },
+      "value": {
+        "Value": {
+          "F": 11.88118839263916
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18957,
+        "name": "CPU_08",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906584000
+        },
+        "sclk": 1741981718.906584
+      },
+      "value": {
+        "Value": {
+          "F": 11
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18958,
+        "name": "CPU_09",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906601000
+        },
+        "sclk": 1741981718.906601
+      },
+      "value": {
+        "Value": {
+          "F": 8
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18959,
+        "name": "CPU_10",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906616000
+        },
+        "sclk": 1741981718.906616
+      },
+      "value": {
+        "Value": {
+          "F": 4.95049524307251
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18960,
+        "name": "CPU_11",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906632000
+        },
+        "sclk": 1741981718.906632
+      },
+      "value": {
+        "Value": {
+          "F": 3
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18948,
+        "name": "CPU",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906633000
+        },
+        "sclk": 1741981718.906633
+      },
+      "value": {
+        "Value": {
+          "F": 18.364761352539062
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18944,
+        "name": "MEMORY_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906654000
+        },
+        "sclk": 1741981718.906654
+      },
+      "value": {
+        "Value": {
+          "U": 45407488
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18945,
+        "name": "MEMORY_USED",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906656000
+        },
+        "sclk": 1741981718.906656
+      },
+      "value": {
+        "Value": {
+          "U": 45333312
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18947,
+        "name": "NON_VOLATILE_FREE",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906707000
+        },
+        "sclk": 1741981718.906707
+      },
+      "value": {
+        "Value": {
+          "U": 540788836
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 18946,
+        "name": "NON_VOLATILE_TOTAL",
+        "component": "systemResources"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981718,
+          "nanos": 906709000
+        },
+        "sclk": 1741981718.906709
+      },
+      "value": {
+        "Value": {
+          "U": 971350180
+        }
+      }
+    },
+    "source": "tcp"
+  },
+  {
+    "telemetry": {
+      "ref": {
+        "id": 256,
+        "name": "BD_Cycles",
+        "component": "blockDrv"
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981719,
+          "nanos": 909713000
+        },
+        "sclk": 1741981719.909713
+      },
+      "value": {
+        "Value": {
+          "U": 26730
+        }
+      }
+    },
+    "source": "tcp"
+  }
+]

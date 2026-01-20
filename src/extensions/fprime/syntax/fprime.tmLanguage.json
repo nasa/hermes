@@ -1,0 +1,159 @@
+{
+  "scopeName": "source.fprime",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#numeric-literal"
+    },
+    {
+      "include": "#boolean-literal"
+    },
+    {
+      "include": "#relativeTime"
+    },
+    {
+      "include": "#absoluteTime"
+    },
+    {
+      "include": "#command"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "name": "comment.line.fprime",
+      "begin": ";",
+      "end": "\n"
+    },
+    "string": {
+      "patterns": [
+        {
+          "include": "#qstring-single"
+        },
+        {
+          "include": "#qstring-double"
+        }
+      ]
+    },
+    "qstring-double": {
+      "name": "string.quoted.double.fprime",
+      "begin": "\"",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.fprime"
+        }
+      },
+      "end": "(\")|((?:[^\\\\\\n])$)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.string.end.fprime"
+        },
+        "2": {
+          "name": "invalid.illegal.newline.fprime"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#string-character-escape"
+        }
+      ]
+    },
+    "qstring-single": {
+      "name": "string.quoted.single.fprime",
+      "begin": "'",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.fprime"
+        }
+      },
+      "end": "(\\')|((?:[^\\\\\\n])$)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.string.end.fprime"
+        },
+        "2": {
+          "name": "invalid.illegal.newline.fprime"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#string-character-escape"
+        }
+      ]
+    },
+    "numeric-literal": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.fprime",
+          "match": "\\b(?<!\\$)0(x|X)[0-9a-fA-F]+\\b(?!\\$)"
+        },
+        {
+          "name": "constant.numeric.binary.fprime",
+          "match": "\\b(?<!\\$)0(b|B)[01]+\\b(?!\\$)"
+        },
+        {
+          "name": "constant.numeric.octal.fprime",
+          "match": "\\b(?<!\\$)0(o|O)?[0-7]+\\b(?!\\$)"
+        },
+        {
+          "match": "(?x)\n(?<!\\$)(?:\n  (?:\\b[0-9]+(\\.)[0-9]+[eE][+-]?[0-9]+\\b)| # 1.1E+3\n  (?:\\b[0-9]+(\\.)[eE][+-]?[0-9]+\\b)|       # 1.E+3\n  (?:\\B(\\.)[0-9]+[eE][+-]?[0-9]+\\b)|       # .1E+3\n  (?:\\b[0-9]+[eE][+-]?[0-9]+\\b)|            # 1E+3\n  (?:\\b[0-9]+(\\.)[0-9]+\\b)|                # 1.1\n  (?:\\b[0-9]+(\\.)\\B)|                      # 1.\n  (?:\\B(\\.)[0-9]+\\b)|                      # .1\n  (?:\\b[0-9]+\\b(?!\\.))                     # 1\n)(?!\\$)",
+          "captures": {
+            "0": {
+              "name": "constant.numeric.decimal.fprime"
+            },
+            "1": {
+              "name": "meta.delimiter.decimal.period.fprime"
+            },
+            "2": {
+              "name": "meta.delimiter.decimal.period.fprime"
+            },
+            "3": {
+              "name": "meta.delimiter.decimal.period.fprime"
+            },
+            "4": {
+              "name": "meta.delimiter.decimal.period.fprime"
+            },
+            "5": {
+              "name": "meta.delimiter.decimal.period.fprime"
+            },
+            "6": {
+              "name": "meta.delimiter.decimal.period.fprime"
+            }
+          }
+        }
+      ]
+    },
+    "boolean-literal": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.true.fprime",
+          "match": "\\b(?:true|True|TRUE)\\b"
+        },
+        {
+          "name": "constant.language.boolean.false.fprime",
+          "match": "\\b(?:false|False|FALSE)\\b"
+        }
+      ]
+    },
+    "string-character-escape": {
+      "name": "constant.character.escape.fprime",
+      "match": "\\\\(x\\h{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.|$)"
+    },
+    "command": {
+      "match": "\\b([A-Za-z_][A-Za-z_0-9]*)\\.([A-Za-z_][A-Za-z_0-9]*)\\b",
+      "name": "entity.name.function"
+    },
+    "relativeTime": {
+      "name": "variable.other.property",
+      "match": "^R[0-9][0-9]?:[0-9][0-9]?:[0-9][0-9]?(?:\\.[0-9]+)?\\b"
+    },
+    "absoluteTime": {
+      "name": "variable.other.property",
+      "match": "^A[0-9]{4}-[0-9]{3}T[0-9][0-9]?:[0-9][0-9]?:[0-9][0-9]?(?:\\.[0-9]+)?\\b"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+    "name": "@gov.nasa.jpl.hermes/util",
+    "version": "2.10.5",
+    "main": "src/index.ts",
+    "module": "src/index.ts",
+    "sideEffects": false,
+    "gitHead": "ae5d9bc28a728716fe9a9f81930c9ad8be87f55e"
+}

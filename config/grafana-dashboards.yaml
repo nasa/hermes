@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: general
+    # leave empty for general folder
+    folder: ''
+    type: file
+    disableDeletion: true
+    editable: true
+    options:
+      path: /otel-lgtm/dashboards

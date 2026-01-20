@@ -1,0 +1,33 @@
+syntax = "proto3";
+option go_package = "github.com/nasa/hermes/pkg/pb";
+import "google/protobuf/timestamp.proto";
+
+/*
+ * Time, what a wonderful beast...
+ * 
+ * Time is always represented in nanoseconds since "epoch".
+ * This object has two distinct time fields: unix, sclk.
+ * The Sclk is meant to represent the time from FSW since it's epoch and Unix
+ * is meant to interface with other software in the same time base. Both may be
+ * provided but the unix must be using the Unix timestamp epoch.
+ * 
+ * Both SCLK and UNIX use continous timescales (TAI-like). Most external software
+ * uses UNIX time instead of UTC time and UTC is only displayed to the user so this
+ * _should_ be compatible with most software.
+ */
+message Time {
+    /*
+     * Nanoseconds since unix epoch 1970-1-1 (midnight)
+     * This time ignores leap seconds (i.e. a continuous timescale like TAI)
+     * Most software uses Unix time internally so this is nice to pass around.
+     */
+    google.protobuf.Timestamp unix = 1;
+
+    /*
+     * (optional) SCLK time from FSW
+     * This time is optional and it's epoch is up to the
+     * project's representation. It is useful for displaying simulation time
+     * or other time formats.
+     */
+    double sclk = 2;
+}

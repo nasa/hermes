@@ -1,0 +1,84 @@
+body {
+    padding: 0 calc(var(--design-unit) * 2px);
+}
+
+.connection-profile {
+    margin: 0 calc(var(--design-unit) * -2px);
+    padding: 0 calc(var(--design-unit) * 2px);
+}
+
+.connection-profile-header {
+    position: relative;
+    line-height: 28px;
+    display: block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.connection-progress-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 2px;
+    width: calc(100% - 24px);
+    overflow: hidden;
+    z-index: 5;
+    margin: 0 12px;
+
+    display: none;
+}
+
+.connection-progress-container.active {
+    display: block;
+}
+
+.connection-progress-container>.connection-progress {
+    background-color: var(--vscode-progressBar-background);
+    width: 12px;
+    opacity: 1;
+    animation-timing-function: steps(100);
+    animation-name: progress;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+    transform: translateZ(0);
+    height: 5px;
+    position: absolute;
+    left: 0;
+}
+
+@keyframes progress {
+    0% {
+        left: 0%
+    }
+
+    100% {
+        left: 100%
+    }
+}
+
+section.active,
+section.active .entry-actions>.actions-container>li>a {
+    background-color: #92e58e;
+    color: #000;
+}
+
+
+section.invalid,
+section.invalid .entry-actions>.actions-container>li>a {
+    background-color: #ed3c3c;
+    color: #fff;
+}
+
+section.active .entry-actions>.actions-container>li>a:hover {
+    background-color: var(--vscode-charts-green);
+}
+
+.connection-profile {
+    position: relative;
+}
+
+.connection {
+    display: flex;
+    margin: calc(var(--design-unit) * 1px) 0;
+}

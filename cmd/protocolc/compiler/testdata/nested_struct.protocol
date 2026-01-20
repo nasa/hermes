@@ -1,0 +1,20 @@
+struct Inner . {
+    InnerField: U8
+
+    # Private field must be passed in as argument during marshalling
+    pField: U32
+    ArrayField: [`pField`]U32
+
+    # Private fields with initializer are initialized automatically during marshalling
+    piField: U32 = `len(s.ArrayField2)`
+    ArrayField2: [`piField`]U32
+}
+
+struct Outer * {
+    Nested: Inner
+    Divider: F32
+    Another: Inner
+    ArrayStatic: [3]Inner
+    ArrayDynamic: [U8]Inner
+    Fill: [*]Inner
+}

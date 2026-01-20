@@ -1,0 +1,15 @@
+# Venvs
+.venv
+.smolgraph-*/
+
+# SQLite database files
+*.db
+
+# Pyinstaller build directories
+build/
+dist/
+*.spec
+
+# Image files
+*.bmp
+*.png

@@ -1,0 +1,42 @@
+{
+    "ts-node": {
+        "compilerOptions": {
+            "module": "commonjs"
+        }
+    },
+    "compilerOptions": {
+        // If this is bumped up, make sure to update libs across all `tsconfig.json`s.
+        // Also make sure to test across all parts (honeycomb, nodejs, notebook renderer)
+        "module": "ES2022",
+        "target": "ES2022",
+        "lib": [
+            "ES2022"
+        ],
+        // We are packaging everything with ESBuild meaning we
+        // never need TSC to actually emit JS
+        "noEmit": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "allowJs": true,
+        // for use with bundlers. Like node16 and nodenext,
+        // this mode supports package.json "imports" and "exports",
+        // but unlike the Node.js resolution modes, bundler never
+        // requires file extensions on relative paths in imports.
+        "moduleResolution": "bundler",
+        // The strict flag enables a wide range of type checking behavior
+        // that results in stronger guarantees of program correctness
+        "strict": true,
+        "paths": {
+            "@gov.nasa.jpl.hermes/*": [
+                "./src/modules/*"
+            ]
+        },
+        "incremental": true
+    },
+    "exclude": [
+        "**/node_modules/*",
+        "**/out/*",
+        "python/*"
+    ]
+}

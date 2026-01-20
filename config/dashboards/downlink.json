@@ -1,0 +1,417 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 7,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "center",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "DOWNLINK_COMPLETED": {
+                        "color": "dark-green",
+                        "index": 0,
+                        "text": "Completed"
+                      },
+                      "DOWNLINK_CRC_FAILED": {
+                        "color": "dark-red",
+                        "index": 2,
+                        "text": "CRC Failed"
+                      },
+                      "DOWNLINK_PARTIAL": {
+                        "color": "dark-red",
+                        "index": 1,
+                        "text": "Partial"
+                      },
+                      "DOWNLINK_UNKNOWN": {
+                        "color": "dark-red",
+                        "index": 3,
+                        "text": "Unknown"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "applyToRow": true,
+                  "mode": "basic",
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "End Time"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Agent"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Missing"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Duplicate"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              },
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Duration"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              },
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 19,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "md",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.6.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "{service_name=\"hermes-downlink\"}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "",
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "delimiter": ",",
+            "format": "json",
+            "source": "labels"
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "dateFormat": "UnixMilli",
+                "destinationType": "time",
+                "targetField": "time_start"
+              },
+              {
+                "dateFormat": "UnixMilli",
+                "destinationType": "time",
+                "targetField": "time_end"
+              },
+              {
+                "destinationType": "other",
+                "targetField": "missing_chunks"
+              },
+              {
+                "destinationType": "other",
+                "targetField": "duplicate_chunks"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "missing_bytes"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "duplicate_bytes"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "file_size"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Duration",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "time_end"
+                }
+              },
+              "operator": "-",
+              "right": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "time_start"
+                }
+              }
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "formatTime",
+          "options": {
+            "outputFormat": "YYYY-MM-DD HH:mm:ss",
+            "timeField": "time_start",
+            "useTimezone": true
+          }
+        },
+        {
+          "id": "formatTime",
+          "options": {
+            "outputFormat": "YYYY-MM-DD HH:mm:ss",
+            "timeField": "time_end",
+            "useTimezone": true
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Line": true,
+              "Time": true,
+              "destination_path": false,
+              "detected_level": true,
+              "duplicate_chunks": true,
+              "file_path": true,
+              "file_size": false,
+              "id": true,
+              "labelTypes": true,
+              "labels": true,
+              "missing_bytes": false,
+              "missing_chunks": true,
+              "observed_timestamp": true,
+              "scope_name": true,
+              "service_name": true,
+              "severity_number": true,
+              "time_end": false,
+              "time_start": true,
+              "trace_id": true,
+              "tsNs": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "Duration": 7,
+              "Line": 20,
+              "Time": 25,
+              "destination_path": 6,
+              "detected_level": 19,
+              "duplicate_bytes": 10,
+              "duplicate_chunks": 12,
+              "file_path": 14,
+              "file_size": 8,
+              "id": 23,
+              "labelTypes": 22,
+              "labels": 13,
+              "missing_bytes": 9,
+              "missing_chunks": 11,
+              "observed_timestamp": 18,
+              "scope_name": 17,
+              "service_name": 16,
+              "severity_number": 15,
+              "source": 4,
+              "source_path": 5,
+              "status": 2,
+              "time_end": 1,
+              "time_start": 0,
+              "trace_id": 24,
+              "tsNs": 21,
+              "uid": 3
+            },
+            "renameByName": {
+              "Duration": "Duration",
+              "Time": "Grafana Time",
+              "destination_path": "Destination",
+              "duplicate_bytes": "Duplicate",
+              "duplicate_chunks": "Duplicate Chunks",
+              "file_path": "File Path",
+              "file_size": "Total",
+              "missing_bytes": "Missing",
+              "missing_chunks": "Missing Chunks",
+              "source": "Agent",
+              "source_path": "Source",
+              "status": "Status",
+              "time_end": "End Time",
+              "time_start": "Start Time",
+              "uid": "UID"
+            }
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "File Downlinks",
+  "uid": "eeig0owb17qpsb",
+  "version": 19
+}

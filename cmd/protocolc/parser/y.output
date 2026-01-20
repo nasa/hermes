@@ -1,0 +1,1009 @@
+
+state 0
+	$accept: .program $end 
+	program: .    (1)
+
+	STRUCT  shift 4
+	ENUM  shift 5
+	TYPE  shift 6
+	EXTERN  shift 7
+	IMPORT  shift 8
+	.  reduce 1 (src line 107)
+
+	program  goto 1
+	nodes  goto 2
+	decl  goto 3
+
+state 1
+	$accept:  program.$end 
+
+	$end  accept
+	.  error
+
+
+state 2
+	program:  nodes.    (2)
+	nodes:  nodes.decl 
+
+	STRUCT  shift 4
+	ENUM  shift 5
+	TYPE  shift 6
+	EXTERN  shift 7
+	IMPORT  shift 8
+	.  reduce 2 (src line 114)
+
+	decl  goto 9
+
+state 3
+	nodes:  decl.    (3)
+
+	.  reduce 3 (src line 120)
+
+
+state 4
+	decl:  STRUCT.symbolDeclName byteOrder CURLY_OPEN structMembers CURLY_CLOSE 
+
+	Ident  shift 11
+	.  error
+
+	symbolDeclName  goto 10
+
+state 5
+	decl:  ENUM.symbolDeclName typeName CURLY_OPEN enumMembers CURLY_CLOSE 
+
+	Ident  shift 11
+	.  error
+
+	symbolDeclName  goto 12
+
+state 6
+	decl:  TYPE.symbolDeclName EQUAL typeName 
+
+	Ident  shift 11
+	.  error
+
+	symbolDeclName  goto 13
+
+state 7
+	decl:  EXTERN.externDeclName COLON Literal 
+
+	Ident  shift 15
+	.  error
+
+	externDeclName  goto 14
+
+state 8
+	decl:  IMPORT.Literal 
+
+	Literal  shift 16
+	.  error
+
+
+state 9
+	nodes:  nodes decl.    (4)
+
+	.  reduce 4 (src line 122)
+
+
+state 10
+	decl:  STRUCT symbolDeclName.byteOrder CURLY_OPEN structMembers CURLY_CLOSE 
+
+	DOT  shift 19
+	STAR  shift 18
+	.  error
+
+	byteOrder  goto 17
+
+state 11
+	symbolDeclName:  Ident.    (53)
+	symbolDeclName:  Ident.PAREN_OPEN paramArgs PAREN_CLOSE 
+
+	PAREN_OPEN  shift 20
+	.  reduce 53 (src line 259)
+
+
+state 12
+	decl:  ENUM symbolDeclName.typeName CURLY_OPEN enumMembers CURLY_CLOSE 
+
+	BRACKET_OPEN  shift 24
+	Ident  shift 23
+	.  error
+
+	typeSize  goto 22
+	typeName  goto 21
+
+state 13
+	decl:  TYPE symbolDeclName.EQUAL typeName 
+
+	EQUAL  shift 25
+	.  error
+
+
+state 14
+	decl:  EXTERN externDeclName.COLON Literal 
+
+	COLON  shift 26
+	.  error
+
+
+state 15
+	externDeclName:  Ident.    (57)
+	externDeclName:  Ident.PAREN_OPEN litList PAREN_CLOSE 
+
+	PAREN_OPEN  shift 27
+	.  reduce 57 (src line 272)
+
+
+state 16
+	decl:  IMPORT Literal.    (63)
+
+	.  reduce 63 (src line 291)
+
+
+state 17
+	decl:  STRUCT symbolDeclName byteOrder.CURLY_OPEN structMembers CURLY_CLOSE 
+
+	CURLY_OPEN  shift 28
+	.  error
+
+
+state 18
+	byteOrder:  STAR.    (37)
+
+	.  reduce 37 (src line 214)
+
+
+state 19
+	byteOrder:  DOT.    (38)
+
+	.  reduce 38 (src line 216)
+
+
+state 20
+	symbolDeclName:  Ident PAREN_OPEN.paramArgs PAREN_CLOSE 
+	paramArgs: .    (51)
+
+	Ident  shift 31
+	.  reduce 51 (src line 255)
+
+	paramExpr  goto 30
+	paramArgs  goto 29
+
+state 21
+	decl:  ENUM symbolDeclName typeName.CURLY_OPEN enumMembers CURLY_CLOSE 
+
+	CURLY_OPEN  shift 32
+	.  error
+
+
+state 22
+	typeName:  typeSize.STRING 
+	typeName:  typeSize.typeName 
+
+	BRACKET_OPEN  shift 24
+	STRING  shift 33
+	Ident  shift 23
+	.  error
+
+	typeSize  goto 22
+	typeName  goto 34
+
+state 23
+	typeName:  Ident.    (16)
+	typeName:  Ident.PAREN_OPEN args PAREN_CLOSE 
+
+	PAREN_OPEN  shift 35
+	.  reduce 16 (src line 149)
+
+
+state 24
+	typeSize:  BRACKET_OPEN.typeName BRACKET_CLOSE 
+	typeSize:  BRACKET_OPEN.Literal BRACKET_CLOSE 
+	typeSize:  BRACKET_OPEN.STAR BRACKET_CLOSE 
+
+	BRACKET_OPEN  shift 24
+	STAR  shift 38
+	Literal  shift 37
+	Ident  shift 23
+	.  error
+
+	typeSize  goto 22
+	typeName  goto 36
+
+state 25
+	decl:  TYPE symbolDeclName EQUAL.typeName 
+
+	BRACKET_OPEN  shift 24
+	Ident  shift 23
+	.  error
+
+	typeSize  goto 22
+	typeName  goto 39
+
+state 26
+	decl:  EXTERN externDeclName COLON.Literal 
+
+	Literal  shift 40
+	.  error
+
+
+state 27
+	externDeclName:  Ident PAREN_OPEN.litList PAREN_CLOSE 
+
+	Literal  shift 42
+	.  error
+
+	litList  goto 41
+
+state 28
+	decl:  STRUCT symbolDeclName byteOrder CURLY_OPEN.structMembers CURLY_CLOSE 
+
+	BRACKET_OPEN  shift 47
+	BITMASK  shift 46
+	MARSHAL  shift 49
+	UNMARSHAL  shift 50
+	Ident  shift 45
+	.  error
+
+	marshalOrUnmarshal  goto 48
+	structMember  goto 44
+	structMembers  goto 43
+
+state 29
+	symbolDeclName:  Ident PAREN_OPEN paramArgs.PAREN_CLOSE 
+
+	PAREN_CLOSE  shift 51
+	.  error
+
+
+state 30
+	paramExpr:  paramExpr.COMMA Ident 
+	paramArgs:  paramExpr.    (52)
+
+	COMMA  shift 52
+	.  reduce 52 (src line 257)
+
+
+state 31
+	paramExpr:  Ident.    (49)
+
+	.  reduce 49 (src line 251)
+
+
+state 32
+	decl:  ENUM symbolDeclName typeName CURLY_OPEN.enumMembers CURLY_CLOSE 
+
+	Ident  shift 55
+	.  error
+
+	enumMember  goto 54
+	enumMembers  goto 53
+
+state 33
+	typeName:  typeSize STRING.    (14)
+
+	.  reduce 14 (src line 146)
+
+
+state 34
+	typeName:  typeSize typeName.    (15)
+
+	.  reduce 15 (src line 148)
+
+
+state 35
+	typeName:  Ident PAREN_OPEN.args PAREN_CLOSE 
+	args: .    (9)
+
+	Literal  shift 60
+	Ident  shift 59
+	.  reduce 9 (src line 132)
+
+	expr  goto 58
+	args  goto 56
+	argsExpr  goto 57
+
+state 36
+	typeSize:  BRACKET_OPEN typeName.BRACKET_CLOSE 
+
+	BRACKET_CLOSE  shift 61
+	.  error
+
+
+state 37
+	typeSize:  BRACKET_OPEN Literal.BRACKET_CLOSE 
+
+	BRACKET_CLOSE  shift 62
+	.  error
+
+
+state 38
+	typeSize:  BRACKET_OPEN STAR.BRACKET_CLOSE 
+
+	BRACKET_CLOSE  shift 63
+	.  error
+
+
+state 39
+	decl:  TYPE symbolDeclName EQUAL typeName.    (61)
+
+	.  reduce 61 (src line 285)
+
+
+state 40
+	decl:  EXTERN externDeclName COLON Literal.    (62)
+
+	.  reduce 62 (src line 288)
+
+
+state 41
+	litList:  litList.COMMA Literal 
+	externDeclName:  Ident PAREN_OPEN litList.PAREN_CLOSE 
+
+	PAREN_CLOSE  shift 65
+	COMMA  shift 64
+	.  error
+
+
+state 42
+	litList:  Literal.    (55)
+
+	.  reduce 55 (src line 265)
+
+
+state 43
+	structMembers:  structMembers.structMember 
+	decl:  STRUCT symbolDeclName byteOrder CURLY_OPEN structMembers.CURLY_CLOSE 
+
+	BRACKET_OPEN  shift 47
+	CURLY_CLOSE  shift 67
+	BITMASK  shift 46
+	MARSHAL  shift 49
+	UNMARSHAL  shift 50
+	Ident  shift 45
+	.  error
+
+	marshalOrUnmarshal  goto 48
+	structMember  goto 66
+
+state 44
+	structMembers:  structMember.    (35)
+
+	.  reduce 35 (src line 207)
+
+
+state 45
+	structMember:  Ident.COLON typeRef 
+	structMember:  Ident.COLON typeRef EQUAL Literal 
+	structMember:  Ident.COLON Literal QUESTION typeRef 
+
+	COLON  shift 68
+	.  error
+
+
+state 46
+	structMember:  BITMASK.CURLY_OPEN bitmaskMembers CURLY_CLOSE 
+
+	CURLY_OPEN  shift 69
+	.  error
+
+
+state 47
+	structMember:  BRACKET_OPEN.Literal BRACKET_CLOSE 
+
+	Literal  shift 70
+	.  error
+
+
+state 48
+	structMember:  marshalOrUnmarshal.PAREN_OPEN Ident COLON Literal PAREN_CLOSE 
+	structMember:  marshalOrUnmarshal.Literal 
+
+	PAREN_OPEN  shift 71
+	Literal  shift 72
+	.  error
+
+
+state 49
+	marshalOrUnmarshal:  MARSHAL.    (26)
+
+	.  reduce 26 (src line 181)
+
+
+state 50
+	marshalOrUnmarshal:  UNMARSHAL.    (27)
+
+	.  reduce 27 (src line 183)
+
+
+state 51
+	symbolDeclName:  Ident PAREN_OPEN paramArgs PAREN_CLOSE.    (54)
+
+	.  reduce 54 (src line 262)
+
+
+state 52
+	paramExpr:  paramExpr COMMA.Ident 
+
+	Ident  shift 73
+	.  error
+
+
+state 53
+	enumMembers:  enumMembers.enumMember 
+	decl:  ENUM symbolDeclName typeName CURLY_OPEN enumMembers.CURLY_CLOSE 
+
+	CURLY_CLOSE  shift 75
+	Ident  shift 55
+	.  error
+
+	enumMember  goto 74
+
+state 54
+	enumMembers:  enumMember.    (47)
+
+	.  reduce 47 (src line 247)
+
+
+state 55
+	enumMember:  Ident.EQUAL Literal 
+
+	EQUAL  shift 76
+	.  error
+
+
+state 56
+	typeName:  Ident PAREN_OPEN args.PAREN_CLOSE 
+
+	PAREN_CLOSE  shift 77
+	.  error
+
+
+state 57
+	argsExpr:  argsExpr.COMMA expr 
+	args:  argsExpr.    (10)
+
+	COMMA  shift 78
+	.  reduce 10 (src line 134)
+
+
+state 58
+	argsExpr:  expr.    (7)
+
+	.  reduce 7 (src line 128)
+
+
+state 59
+	expr:  Ident.    (5)
+
+	.  reduce 5 (src line 124)
+
+
+state 60
+	expr:  Literal.    (6)
+
+	.  reduce 6 (src line 126)
+
+
+state 61
+	typeSize:  BRACKET_OPEN typeName BRACKET_CLOSE.    (11)
+
+	.  reduce 11 (src line 136)
+
+
+state 62
+	typeSize:  BRACKET_OPEN Literal BRACKET_CLOSE.    (12)
+
+	.  reduce 12 (src line 140)
+
+
+state 63
+	typeSize:  BRACKET_OPEN STAR BRACKET_CLOSE.    (13)
+
+	.  reduce 13 (src line 143)
+
+
+state 64
+	litList:  litList COMMA.Literal 
+
+	Literal  shift 79
+	.  error
+
+
+state 65
+	externDeclName:  Ident PAREN_OPEN litList PAREN_CLOSE.    (58)
+
+	.  reduce 58 (src line 275)
+
+
+state 66
+	structMembers:  structMembers structMember.    (36)
+
+	.  reduce 36 (src line 211)
+
+
+state 67
+	decl:  STRUCT symbolDeclName byteOrder CURLY_OPEN structMembers CURLY_CLOSE.    (59)
+
+	.  reduce 59 (src line 278)
+
+
+state 68
+	structMember:  Ident COLON.typeRef 
+	structMember:  Ident COLON.typeRef EQUAL Literal 
+	structMember:  Ident COLON.Literal QUESTION typeRef 
+
+	BRACKET_OPEN  shift 24
+	CURLY_OPEN  shift 83
+	Literal  shift 81
+	Ident  shift 23
+	.  error
+
+	typeSize  goto 22
+	typeName  goto 82
+	typeRef  goto 80
+
+state 69
+	structMember:  BITMASK CURLY_OPEN.bitmaskMembers CURLY_CLOSE 
+
+	COLON  shift 87
+	Ident  shift 86
+	.  error
+
+	bitmaskMember  goto 85
+	bitmaskMembers  goto 84
+
+state 70
+	structMember:  BRACKET_OPEN Literal.BRACKET_CLOSE 
+
+	BRACKET_CLOSE  shift 88
+	.  error
+
+
+state 71
+	structMember:  marshalOrUnmarshal PAREN_OPEN.Ident COLON Literal PAREN_CLOSE 
+
+	Ident  shift 89
+	.  error
+
+
+state 72
+	structMember:  marshalOrUnmarshal Literal.    (34)
+
+	.  reduce 34 (src line 204)
+
+
+state 73
+	paramExpr:  paramExpr COMMA Ident.    (50)
+
+	.  reduce 50 (src line 253)
+
+
+state 74
+	enumMembers:  enumMembers enumMember.    (48)
+
+	.  reduce 48 (src line 249)
+
+
+state 75
+	decl:  ENUM symbolDeclName typeName CURLY_OPEN enumMembers CURLY_CLOSE.    (60)
+
+	.  reduce 60 (src line 282)
+
+
+state 76
+	enumMember:  Ident EQUAL.Literal 
+
+	Literal  shift 90
+	.  error
+
+
+state 77
+	typeName:  Ident PAREN_OPEN args PAREN_CLOSE.    (17)
+
+	.  reduce 17 (src line 150)
+
+
+state 78
+	argsExpr:  argsExpr COMMA.expr 
+
+	Literal  shift 60
+	Ident  shift 59
+	.  error
+
+	expr  goto 91
+
+state 79
+	litList:  litList COMMA Literal.    (56)
+
+	.  reduce 56 (src line 269)
+
+
+state 80
+	structMember:  Ident COLON typeRef.    (28)
+	structMember:  Ident COLON typeRef.EQUAL Literal 
+
+	EQUAL  shift 92
+	.  reduce 28 (src line 185)
+
+
+state 81
+	structMember:  Ident COLON Literal.QUESTION typeRef 
+
+	QUESTION  shift 93
+	.  error
+
+
+state 82
+	typeRef:  typeName.    (18)
+	typeRef:  typeName.ARROW CURLY_OPEN matchType CURLY_CLOSE 
+	typeRef:  typeName.ARROW Ident PAREN_OPEN args PAREN_CLOSE 
+
+	ARROW  shift 94
+	.  reduce 18 (src line 153)
+
+
+state 83
+	typeRef:  CURLY_OPEN.matchType CURLY_CLOSE 
+
+	BRACKET_OPEN  shift 24
+	CURLY_OPEN  shift 83
+	Literal  shift 97
+	Ident  shift 23
+	.  error
+
+	typeSize  goto 22
+	typeName  goto 82
+	typeRef  goto 98
+	typeCase  goto 96
+	matchType  goto 95
+
+state 84
+	structMember:  BITMASK CURLY_OPEN bitmaskMembers.CURLY_CLOSE 
+	bitmaskMembers:  bitmaskMembers.bitmaskMember 
+
+	CURLY_CLOSE  shift 99
+	COLON  shift 87
+	Ident  shift 86
+	.  error
+
+	bitmaskMember  goto 100
+
+state 85
+	bitmaskMembers:  bitmaskMember.    (44)
+
+	.  reduce 44 (src line 240)
+
+
+state 86
+	bitmaskMember:  Ident.COLON Literal 
+	bitmaskMember:  Ident.COLON Literal ARROW typeName 
+	bitmaskMember:  Ident.COLON Literal EQUAL Literal 
+	bitmaskMember:  Ident.COLON Literal ARROW typeName EQUAL Literal 
+
+	COLON  shift 101
+	.  error
+
+
+state 87
+	bitmaskMember:  COLON.Literal 
+
+	Literal  shift 102
+	.  error
+
+
+state 88
+	structMember:  BRACKET_OPEN Literal BRACKET_CLOSE.    (32)
+
+	.  reduce 32 (src line 198)
+
+
+state 89
+	structMember:  marshalOrUnmarshal PAREN_OPEN Ident.COLON Literal PAREN_CLOSE 
+
+	COLON  shift 103
+	.  error
+
+
+state 90
+	enumMember:  Ident EQUAL Literal.    (46)
+
+	.  reduce 46 (src line 244)
+
+
+state 91
+	argsExpr:  argsExpr COMMA expr.    (8)
+
+	.  reduce 8 (src line 130)
+
+
+state 92
+	structMember:  Ident COLON typeRef EQUAL.Literal 
+
+	Literal  shift 104
+	.  error
+
+
+state 93
+	structMember:  Ident COLON Literal QUESTION.typeRef 
+
+	BRACKET_OPEN  shift 24
+	CURLY_OPEN  shift 83
+	Ident  shift 23
+	.  error
+
+	typeSize  goto 22
+	typeName  goto 82
+	typeRef  goto 105
+
+state 94
+	typeRef:  typeName ARROW.CURLY_OPEN matchType CURLY_CLOSE 
+	typeRef:  typeName ARROW.Ident PAREN_OPEN args PAREN_CLOSE 
+
+	CURLY_OPEN  shift 106
+	Ident  shift 107
+	.  error
+
+
+state 95
+	typeRef:  CURLY_OPEN matchType.CURLY_CLOSE 
+	matchType:  matchType.typeCase 
+
+	BRACKET_OPEN  shift 24
+	CURLY_OPEN  shift 83
+	CURLY_CLOSE  shift 108
+	Literal  shift 97
+	Ident  shift 23
+	.  error
+
+	typeSize  goto 22
+	typeName  goto 82
+	typeRef  goto 98
+	typeCase  goto 109
+
+state 96
+	matchType:  typeCase.    (24)
+
+	.  reduce 24 (src line 174)
+
+
+state 97
+	typeCase:  Literal.COLON typeRef 
+
+	COLON  shift 110
+	.  error
+
+
+state 98
+	typeCase:  typeRef.    (23)
+
+	.  reduce 23 (src line 171)
+
+
+state 99
+	structMember:  BITMASK CURLY_OPEN bitmaskMembers CURLY_CLOSE.    (31)
+
+	.  reduce 31 (src line 195)
+
+
+state 100
+	bitmaskMembers:  bitmaskMembers bitmaskMember.    (45)
+
+	.  reduce 45 (src line 242)
+
+
+state 101
+	bitmaskMember:  Ident COLON.Literal 
+	bitmaskMember:  Ident COLON.Literal ARROW typeName 
+	bitmaskMember:  Ident COLON.Literal EQUAL Literal 
+	bitmaskMember:  Ident COLON.Literal ARROW typeName EQUAL Literal 
+
+	Literal  shift 111
+	.  error
+
+
+state 102
+	bitmaskMember:  COLON Literal.    (43)
+
+	.  reduce 43 (src line 237)
+
+
+state 103
+	structMember:  marshalOrUnmarshal PAREN_OPEN Ident COLON.Literal PAREN_CLOSE 
+
+	Literal  shift 112
+	.  error
+
+
+state 104
+	structMember:  Ident COLON typeRef EQUAL Literal.    (29)
+
+	.  reduce 29 (src line 189)
+
+
+state 105
+	structMember:  Ident COLON Literal QUESTION typeRef.    (30)
+
+	.  reduce 30 (src line 192)
+
+
+state 106
+	typeRef:  typeName ARROW CURLY_OPEN.matchType CURLY_CLOSE 
+
+	BRACKET_OPEN  shift 24
+	CURLY_OPEN  shift 83
+	Literal  shift 97
+	Ident  shift 23
+	.  error
+
+	typeSize  goto 22
+	typeName  goto 82
+	typeRef  goto 98
+	typeCase  goto 96
+	matchType  goto 113
+
+state 107
+	typeRef:  typeName ARROW Ident.PAREN_OPEN args PAREN_CLOSE 
+
+	PAREN_OPEN  shift 114
+	.  error
+
+
+state 108
+	typeRef:  CURLY_OPEN matchType CURLY_CLOSE.    (19)
+
+	.  reduce 19 (src line 157)
+
+
+state 109
+	matchType:  matchType typeCase.    (25)
+
+	.  reduce 25 (src line 178)
+
+
+state 110
+	typeCase:  Literal COLON.typeRef 
+
+	BRACKET_OPEN  shift 24
+	CURLY_OPEN  shift 83
+	Ident  shift 23
+	.  error
+
+	typeSize  goto 22
+	typeName  goto 82
+	typeRef  goto 115
+
+state 111
+	bitmaskMember:  Ident COLON Literal.    (39)
+	bitmaskMember:  Ident COLON Literal.ARROW typeName 
+	bitmaskMember:  Ident COLON Literal.EQUAL Literal 
+	bitmaskMember:  Ident COLON Literal.ARROW typeName EQUAL Literal 
+
+	EQUAL  shift 117
+	ARROW  shift 116
+	.  reduce 39 (src line 218)
+
+
+state 112
+	structMember:  marshalOrUnmarshal PAREN_OPEN Ident COLON Literal.PAREN_CLOSE 
+
+	PAREN_CLOSE  shift 118
+	.  error
+
+
+state 113
+	typeRef:  typeName ARROW CURLY_OPEN matchType.CURLY_CLOSE 
+	matchType:  matchType.typeCase 
+
+	BRACKET_OPEN  shift 24
+	CURLY_OPEN  shift 83
+	CURLY_CLOSE  shift 119
+	Literal  shift 97
+	Ident  shift 23
+	.  error
+
+	typeSize  goto 22
+	typeName  goto 82
+	typeRef  goto 98
+	typeCase  goto 109
+
+state 114
+	typeRef:  typeName ARROW Ident PAREN_OPEN.args PAREN_CLOSE 
+	args: .    (9)
+
+	Literal  shift 60
+	Ident  shift 59
+	.  reduce 9 (src line 132)
+
+	expr  goto 58
+	args  goto 120
+	argsExpr  goto 57
+
+state 115
+	typeCase:  Literal COLON typeRef.    (22)
+
+	.  reduce 22 (src line 166)
+
+
+state 116
+	bitmaskMember:  Ident COLON Literal ARROW.typeName 
+	bitmaskMember:  Ident COLON Literal ARROW.typeName EQUAL Literal 
+
+	BRACKET_OPEN  shift 24
+	Ident  shift 23
+	.  error
+
+	typeSize  goto 22
+	typeName  goto 121
+
+state 117
+	bitmaskMember:  Ident COLON Literal EQUAL.Literal 
+
+	Literal  shift 122
+	.  error
+
+
+state 118
+	structMember:  marshalOrUnmarshal PAREN_OPEN Ident COLON Literal PAREN_CLOSE.    (33)
+
+	.  reduce 33 (src line 201)
+
+
+state 119
+	typeRef:  typeName ARROW CURLY_OPEN matchType CURLY_CLOSE.    (20)
+
+	.  reduce 20 (src line 160)
+
+
+state 120
+	typeRef:  typeName ARROW Ident PAREN_OPEN args.PAREN_CLOSE 
+
+	PAREN_CLOSE  shift 123
+	.  error
+
+
+state 121
+	bitmaskMember:  Ident COLON Literal ARROW typeName.    (40)
+	bitmaskMember:  Ident COLON Literal ARROW typeName.EQUAL Literal 
+
+	EQUAL  shift 124
+	.  reduce 40 (src line 224)
+
+
+state 122
+	bitmaskMember:  Ident COLON Literal EQUAL Literal.    (41)
+
+	.  reduce 41 (src line 228)
+
+
+state 123
+	typeRef:  typeName ARROW Ident PAREN_OPEN args PAREN_CLOSE.    (21)
+
+	.  reduce 21 (src line 163)
+
+
+state 124
+	bitmaskMember:  Ident COLON Literal ARROW typeName EQUAL.Literal 
+
+	Literal  shift 125
+	.  error
+
+
+state 125
+	bitmaskMember:  Ident COLON Literal ARROW typeName EQUAL Literal.    (42)
+
+	.  reduce 42 (src line 231)
+
+
+32 terminals, 25 nonterminals
+64 grammar rules, 126/16000 states
+0 shift/reduce, 0 reduce/reduce conflicts reported
+74 working sets used
+memory: parser 63/240000
+19 extra closures
+133 shift entries, 1 exceptions
+43 goto entries
+24 entries saved by goto default
+Optimizer space used: output 154/240000
+154 table entries, 0 zero
+maximum spread: 32, maximum offset: 116

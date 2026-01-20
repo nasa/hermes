@@ -1,0 +1,145 @@
+{
+    "name": "hermes-fprime",
+    "publishName": "@gov.nasa.jpl.hermes/vscode-fprime",
+    "publisher": "jet-propulsion-laboratory",
+    "displayName": "Hermes FPrime",
+    "description": "Hermes FPrime C++ and Testbed Support",
+    "version": "2.8.3",
+    "keywords": [
+        "visualization",
+        "notebookRenderer"
+    ],
+    "repository": {
+        "url": "https://github.com/nasa/hermes",
+        "type": "git"
+    },
+    "isHermesPlugin": true,
+    "files": [
+        "extension.vsix"
+    ],
+    "license": "Apache-2.0",
+    "author": {
+        "name": "Andrei Tumbar",
+        "email": "andrei.tumbar@jpl.nasa.gov"
+    },
+    "engines": {
+        "vscode": "^1.76.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onStartupFinished",
+        "onFileSystem:fprimeprm",
+        "onFileSystem:fprimeschema"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "hermes.fprime.prm.open",
+                "title": "Open as FPrime Parameter Database"
+            }
+        ],
+        "configuration": [
+            {
+                "title": "Hermes - FPrime",
+                "properties": {
+                    "hermes.fprime.sequenceUplinkRoot": {
+                        "description": "Uplink directory for compiled sequence",
+                        "type": "string",
+                        "default": "/seq"
+                    },
+                    "hermes.fprime.prmDb.numDbEntries": {
+                        "description": "Maximum number of parameter entries in prmDb",
+                        "type": "number",
+                        "default": 25
+                    },
+                    "hermes.fprime.prmDb.entryDelimiter": {
+                        "description": "Byte value that should precede each parameter in file. Sanity check against file integrity.",
+                        "type": "number",
+                        "default": 165,
+                        "minimum": 0,
+                        "maximum": 255
+                    }
+                }
+            }
+        ],
+        "notebooks": [
+            {
+                "id": "fprime-notebook",
+                "type": "fprime-notebook",
+                "displayName": "FPrime Notebook",
+                "selector": [
+                    {
+                        "filenamePattern": "*.fnb"
+                    }
+                ]
+            }
+        ],
+        "grammars": [
+            {
+                "language": "fprime",
+                "scopeName": "source.fprime",
+                "path": "./syntax/fprime.tmLanguage.json"
+            }
+        ],
+        "languages": [
+            {
+                "id": "fprime",
+                "extensions": [
+                    ".fnb",
+                    ".seq"
+                ],
+                "icon": {
+                    "dark": "./icons/rocket-white.svg",
+                    "light": "./icons/rocket-black.svg"
+                },
+                "configuration": "./syntax/fprime.language.json"
+            },
+            {
+                "id": "json",
+                "extensions": [
+                    ".dat"
+                ]
+            }
+        ],
+        "menus": {
+            "notebook/cell/title": [
+                {
+                    "command": "hermes.testbed.signoff",
+                    "when": "notebookType == fprime-notebook && notebookCellType == markup && !notebookCellMarkdownEditMode",
+                    "group": "inline/cell@0"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "hermes.fprime.prm.open",
+                    "when": "resourceExtname == .dat",
+                    "group": "navigation@20"
+                }
+            ]
+        },
+        "jsonValidation": [
+            {
+                "fileMatch": "*.dat",
+                "url": "fprimeschema:///parameter-database"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn clean && yarn compile",
+        "prepublishOnly": "node ../../../prepublish.js",
+        "postpublish": "mv package.tmp.json package.json",
+        "clean": "rm -rf ./out",
+        "compile": "cd ../../../ && node build src/extensions/fprime",
+        "package": "vsce package"
+    },
+    "extensionDependencies": [
+        "jet-propulsion-laboratory.hermes"
+    ],
+    "devDependencies": {
+        "fast-xml-parser": "^4.2.7"
+    },
+    "gitHead": "28d4edeb3c753a29612706e3c9d2be717324ff24"
+}

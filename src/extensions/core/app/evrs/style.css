@@ -1,0 +1,164 @@
+body {
+    padding: 0;
+}
+
+#root {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+table {
+    border-spacing: 0px;
+    width: 100%;
+    --input-min-width: 0px;
+}
+
+tr {
+    height: 28px;
+    box-sizing: border-box;
+}
+
+td,
+th {
+    padding: 0;
+    text-align: left;
+    line-height: 28px;
+    white-space: nowrap;
+}
+
+td {
+    padding: 0 6px
+}
+
+.idx {
+    font-weight: bold;
+    text-align: center;
+}
+
+tbody>tr {
+    position: relative;
+    color: #333;
+    white-space: nowrap;
+    border: none;
+}
+
+table.hasFilter tr {
+    cursor: pointer;
+}
+
+.FATAL {
+    background: #ff5e66;
+    color: #f1f1f2;
+}
+
+.FATAL.selected {
+    background: #f7000c;
+}
+
+.FATAL:hover {
+    background: #ff2b36;
+}
+
+.FATAL.selected:hover {
+    background: #e6000c;
+}
+
+.WARNING_HI {
+    background: #FEA500;
+}
+
+.WARNING_HI.selected {
+    background: #986300;
+}
+
+.WARNING_HI:hover {
+    background: #cb8400;
+}
+
+.WARNING_HI.selected:hover {
+    background: #aa6f00;
+}
+
+.WARNING_LO {
+    background: #F0F001;
+}
+
+.WARNING_LO.selected {
+    background: #8a8a01;
+}
+
+.WARNING_LO:hover {
+    background: #bdbd01;
+}
+
+.WARNING_LO.selected:hover {
+    background: #a3a301;
+}
+
+.ACTIVITY_HI {
+    background: #666666;
+    color: #f1f1f2;
+}
+
+.ACTIVITY_HI.selected {
+    background: #333;
+}
+
+.ACTIVITY_HI:hover {
+    background: #4d4d4d;
+}
+
+.ACTIVITY_HI.selected:hover {
+    background: #3f3f3f;
+}
+
+.ACTIVITY_LO {
+    background: #D3D3D3;
+}
+
+.ACTIVITY_LO.selected {
+    background: #a0a0a0;
+}
+
+.ACTIVITY_LO:hover {
+    background: #bababa;
+}
+
+.ACTIVITY_LO.selected:hover {
+    background: #afafaf;
+}
+
+.COMMAND {
+    background: #0D00FF;
+    color: #f1f1f2;
+}
+
+.COMMAND.selected {
+    background: #080099;
+}
+
+.COMMAND:hover {
+    background: #0a00cc;
+}
+
+.COMMAND.selected:hover {
+    background: #0800a7;
+}
+
+.DIAGNOSTIC {
+    background: #90ED91;
+}
+
+.DIAGNOSTIC.selected {
+    background: #38df3a;
+}
+
+.DIAGNOSTIC:hover {
+    background: #64e666;
+}
+
+.DIAGNOSTIC.selected:hover {
+    background: #34c837;
+}

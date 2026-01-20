@@ -1,0 +1,86 @@
+syntax = "proto3";
+option go_package = "github.com/nasa/hermes/pkg/pb";
+
+import "google/protobuf/empty.proto";
+
+import "dictionary.proto";
+import "fsw.proto";
+import "profile.proto";
+import "file.proto";
+
+message Id { string id = 1; }
+
+message FswList { repeated Fsw all = 1; }
+
+message Reply { bool success = 1; }
+message SequenceReply {
+    bool success = 1;
+    int32 commandIndex = 2;
+}
+
+message StatefulProfile {
+    Profile value = 1;
+    ProfileState state = 2;
+    bool runtime_only = 3;
+}
+
+message ProfileList { map<string, StatefulProfile> all = 1; }
+message ProfileProviderList { repeated ProfileProvider all = 1; }
+
+message ProfileUpdate {
+    string id = 1;
+    string settings = 2;
+}
+
+message DictionaryList {
+    map<string, DictionaryHead> all = 1;
+}
+
+message Uplink {
+  // Uplink session id
+  // All packets that are part of a single session should be sent with
+  // the same ID. Note that multiple packets are only relevant for file uplink.
+  string id = 1;
+
+  oneof value {
+    CommandValue cmd = 2;
+    RawCommandValue parseCmd = 3;
+
+    CommandSequence seq = 4;
+    RawCommandSequence parseSeq = 5;
+
+    UplinkFileChunk file = 6;
+
+    // Cancel a previously requested uplink session
+    google.protobuf.Empty cancel = 99;
+
+    // The final packet marking the end of the uplink session
+    // Currently only relevant for file uplink
+    google.protobuf.Empty final = 100;
+  }
+}
+
+message UplinkReply {
+  string id = 1;
+  oneof status {
+    bytes reply = 2;
+    string error = 3;
+  }
+}
+
+message FswInitialPacket {
+    Fsw info = 1;
+
+    // Profile name that this FSW should be grouped with
+    string profile = 2;
+}
+
+message FswConnectionPacket {
+  oneof value {
+    // The initial message to send noting metadata about the FSW connection
+    FswInitialPacket info = 1;
+
+    // After `info` is sent, all other messages should be replies to Uplink messages
+    UplinkReply reply = 2;
+  }
+}

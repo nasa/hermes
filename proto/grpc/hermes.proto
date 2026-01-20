@@ -1,0 +1,182 @@
+syntax = "proto3";
+option go_package = "github.com/nasa/hermes/pkg/grpc";
+
+import "google/protobuf/empty.proto";
+
+import "dictionary.proto";
+import "file.proto";
+import "fsw.proto";
+import "bus.proto";
+import "profile.proto";
+import "msg.proto";
+
+service Api {
+  /**
+   * Send a command sequence to the FSW to execute.
+   * 
+   * If the FSW connection does not implement this endpoint directly,
+   * this becomes a pseudo-endpoint that will wrap the 'Command' and allow
+   * running commands in sequence. This is preferrable to successive
+   * calls to 'Command' because commands are grouped together into
+   * a single 'Trace' for easily tracking what was sent to the system.
+   *
+   * Metadata:
+   *  "id": [fsw-id]
+   * 
+   * TODO(tumbar) We will probably want to expand this to add some identifying
+   * metadata to allow linking back to the code cell in our Notebooks
+   * 
+   * Optional Metadata
+   *  Keep executing the sequence even if 
+   *  "keepGoingOnFailure": "x"
+   */
+  rpc Sequence(CommandSequence) returns (SequenceReply);
+
+  /**
+   * A wrapper endpoint around Sequence/RawCommand.
+   * This endpoint will parse a sequence and run it through Sequence.
+   */
+  rpc RawSequence(RawCommandSequence) returns (SequenceReply);
+
+  /**
+   * Send a command to the FSW. Wait for
+   * completion or otherwise, up to the
+   * plugin to decide when the promise resolves.
+   *
+   * Metadata:
+   *  "id": [fsw-id]
+   */
+  rpc Command(CommandValue) returns (Reply);
+
+  /**
+   * Send a 'raw' command to the FSW. A raw command
+   * differs from a full command in that it must be parsed
+   * by the backend. Each FSW must support converting an argument list
+   * to a command value and passing it to the "real" Command() interface.
+   * Wait for completion or otherwise, up to the
+   * plugin to decide when the promise resolves.
+   *
+   * Metadata:
+   *  "id": [fsw-id]
+   */
+  rpc RawCommand(RawCommandValue) returns (Reply);
+
+  /**
+   * Uplink a file to the FSW.
+   * 
+   * Metadata:
+   *  "id": [fsw-id]
+   */
+  rpc Uplink(stream UplinkFileChunk) returns (Reply);
+
+  // Get FSW metadata given its ID
+  rpc GetFsw(Id) returns (Fsw);
+
+  // Get all the current connected FSWs
+  rpc AllFsw(google.protobuf.Empty) returns (FswList);
+
+  // Subscribe to any changes to FSW connections state
+  rpc SubscribeFsw(google.protobuf.Empty) returns (stream FswList);
+
+  // Start a profile and return once it's connected (cancellable)
+  rpc StartProfile(Id) returns (google.protobuf.Empty);
+
+  // Stop profile given its name/id and reutrn once its stopped (cancellable)
+  rpc StopProfile(Id) returns (google.protobuf.Empty);
+
+  // Update a profile
+  rpc UpdateProfile(ProfileUpdate) returns (google.protobuf.Empty);
+
+  // Create a new profile, returns it's registered ID
+  rpc AddProfile(Profile) returns (Id);
+
+  // Delete a profile by its id
+  rpc RemoveProfile(Id) returns (google.protobuf.Empty);
+
+  // Get all the profiles
+  rpc AllProfiles(google.protobuf.Empty) returns (ProfileList);
+
+  // Get all the registered profile providers
+  rpc AllProviders(google.protobuf.Empty) returns (ProfileProviderList);
+
+  // Get notified when the set of profile providers updates
+  rpc SubscribeProviders(google.protobuf.Empty)
+      returns (stream ProfileProviderList);
+
+  // Get notified when the set of profile or their internal state updates
+  rpc SubscribeProfiles(google.protobuf.Empty) returns (stream ProfileList);
+
+  /**
+   * Get a dictionary by its ID
+   * Metadata (optional)
+   *  The dictionary "sections" to include in the reply.
+   *  This is a whitelist set of options to include. If this
+   *  list is not provided or empty, the entire dictionary will be transmitted
+   *
+   *  A "section" includes two parts [namespace].[definition-id]
+   *  - namespace: Name of the namespace to include
+   *  - section: The portion of the namespace to include, the following sections are valid
+   *    - "commands": All the command definitions in this namespace
+   *    - "events": All event definitions this namespaces
+   *    - "telemetry": All telemetry definitions this namespaces
+   *    - "parameters": All parameter definitions this namespaces
+   *    - "*": The entire namespace
+   *  Example: "sections": [".events", "ns-1.*", "ns-2.telemetry"]
+   */
+  rpc GetDictionary(Id) returns (Dictionary);
+
+  // Add a new dictionary entry
+  rpc AddDictionary(Dictionary) returns (Id);
+
+  // Remove specified dictionary
+  rpc RemoveDictionary(Id) returns (google.protobuf.Empty);
+
+  // Get all registered dictionaries as a sequential stream
+  rpc AllDictionary(google.protobuf.Empty) returns (DictionaryList);
+
+  // Subscribe to changes to the dictionary state. streams { id, type }
+  rpc SubscribeDictionary(google.protobuf.Empty) returns (stream DictionaryList);
+
+  // Subscribe to the event message bus
+  rpc SubEvent(BusFilter) returns (stream SourcedEvent);
+
+  // Subscribe to the telemetry message bus
+  rpc SubTelemetry(BusFilter) returns (stream SourcedTelemetry);
+
+  // Subscribe to the file downlink message bus
+  rpc SubFileDownlink(BusFilter) returns (stream FileDownlink);
+}
+
+// API to provide interface with an external software
+service Provider {
+  /**
+   * A long lived connection telling the host that a link is active with
+   * some external software (FSW). The server streams in uplink requests which
+   * are handled and replied to over this long lived connection.
+   * 
+   * Any downlink comming from this FSW is routed through the other client stream endpoints.
+   */
+  rpc Connection(stream FswConnectionPacket) returns (stream Uplink);
+
+  /**
+   * Initiate a file downlink session with the host.
+   * 
+   * This request is for a single file downlink session.
+   * It should start with a FileHeader and stream byte data
+   * 
+   * TODO(tumbar) Figure out a mechanism for file validation
+   */
+  rpc File(stream DownlinkFileChunk) returns (google.protobuf.Empty);
+
+  /**
+   * Stream events to the host.
+   * The client can open as many of these as needed though they should be long-lived.
+   */
+  rpc Event(stream SourcedEvent) returns (google.protobuf.Empty);
+
+  /**
+   * Stream telemetry to the host.
+   * The client can open as many of these as needed though they should be long-lived.
+   */
+  rpc Telemetry(stream SourcedTelemetry) returns (google.protobuf.Empty);
+}

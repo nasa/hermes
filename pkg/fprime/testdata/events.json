@@ -1,0 +1,101 @@
+[
+  {
+    "event": {
+      "ref": {
+        "id": 1281,
+        "name": "OpCodeDispatched",
+        "component": "cmdDisp",
+        "severity": 5,
+        "arguments": [
+          "Opcode",
+          "port"
+        ]
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 159492000
+        },
+        "sclk": 1741981711.159492
+      },
+      "message": "Opcode cmdDisp.CMD_NO_OP_STRING dispatched to port 0",
+      "args": [
+        {
+          "Value": {
+            "E": {
+              "raw": 1281,
+              "formatted": "cmdDisp.CMD_NO_OP_STRING"
+            }
+          }
+        },
+        {
+          "Value": {
+            "I": 0
+          }
+        }
+      ]
+    },
+    "source": "tcp"
+  },
+  {
+    "event": {
+      "ref": {
+        "id": 1288,
+        "name": "NoOpStringReceived",
+        "component": "cmdDisp",
+        "severity": 2,
+        "arguments": [
+          "message"
+        ]
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 159532000
+        },
+        "sclk": 1741981711.159532
+      },
+      "message": "Received a NO-OP string=asdsa",
+      "args": [
+        {
+          "Value": {
+            "S": "asdsa"
+          }
+        }
+      ]
+    },
+    "source": "tcp"
+  },
+  {
+    "event": {
+      "ref": {
+        "id": 1282,
+        "name": "OpCodeCompleted",
+        "component": "cmdDisp",
+        "severity": 5,
+        "arguments": [
+          "Opcode"
+        ]
+      },
+      "time": {
+        "unix": {
+          "seconds": 1741981711,
+          "nanos": 159544000
+        },
+        "sclk": 1741981711.159544
+      },
+      "message": "Opcode cmdDisp.CMD_NO_OP_STRING completed",
+      "args": [
+        {
+          "Value": {
+            "E": {
+              "raw": 1281,
+              "formatted": "cmdDisp.CMD_NO_OP_STRING"
+            }
+          }
+        }
+      ]
+    },
+    "source": "tcp"
+  }
+]

@@ -1,0 +1,57 @@
+{
+    "type": "object",
+    "description": "Pushes Telemetry and EVRs to InfluxDB to be viewed with Grafana",
+    "properties": {
+        "url": {
+            "type": "string",
+            "title": "URL",
+            "description": "URL to InfluxDB host (hostname:port)"
+        },
+        "defaultTags": {
+            "type": "array",
+            "title": "Default tags",
+            "description": "Adds tags to all telemetry coming through. Useful when you want to attach session information to telemetry for indexing",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "title": "Key"
+                    },
+                    "value": {
+                        "type": "string",
+                        "title": "Value"
+                    }
+                }
+            }
+        },
+        "token": {
+            "type": "string",
+            "title": "Access Token",
+            "description": "InfluxDB Access Token. You can create one from load-data -> API Tokens"
+        },
+        "orgId": {
+            "type": "string",
+            "title": "Organization Name",
+            "description": "Organization ID"
+        },
+        "bucket": {
+            "type": "string",
+            "title": "Bucket",
+            "description": "InfluxDB bucket where this session's data will be pushed to. All telemetry from all FSW sources will be pushed here during this session."
+        },
+        "ert": {
+            "type": "boolean",
+            "title": "ERT",
+            "default": true,
+            "description": "Attach Earth-Return-Time as an additional field to every point"
+        }
+    },
+    "required": [
+        "url",
+        "token",
+        "orgId",
+        "bucket",
+        "ert"
+    ]
+}

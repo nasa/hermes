@@ -1,0 +1,5 @@
+struct S_String . {
+    Dynamic: [U8]string
+    Static: [4]string
+    Fill: [*]string
+}

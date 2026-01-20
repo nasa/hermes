@@ -1,0 +1,149 @@
+syntax = "proto3";
+option go_package = "github.com/nasa/hermes/pkg/pb";
+
+import "google/protobuf/timestamp.proto";
+import "type.proto";
+import "dictionary.proto";
+import "time.proto";
+
+enum SourceContextFilter {
+  /* Only subscribe to realtime data */
+  REALTIME_ONLY = 0;
+
+  /* Only subscribe to recorded data */
+  RECORDED_ONLY = 1;
+
+  /* Subscribe to all recorded and realtime data */
+  ALL = 2;
+}
+
+message BusFilter {
+  /* (optional) filter to limit subscription streams by fsw id */
+  string source = 1;
+
+  /* (optional) Listen to a subset of ids */
+  repeated string names = 2;
+
+  /* Filter whether to get recorded vs realtime data streams */
+  SourceContextFilter context = 3;
+}
+
+enum SourceContext {
+  /*
+   * Telemetry item was emitted and downlinked in realtime
+   * rather than recorded and downlinked later
+   */
+  REALTIME = 0;
+
+  /*
+   * Telemetry item was recorded on-board and downlinked.
+   * These are generally data products.
+   */
+  RECORDED = 1;
+}
+
+/* Event telemetry */
+message Event {
+  /* Dictionary entry definition of event */
+  EventRef ref = 1;
+
+  /* Timestamp of when the event is emitted by its source (FSW or otherwise) */
+  Time time = 2;
+
+  /* final formatted EVR message */
+  string message = 3;
+
+  /* (optional) parsed arguments before message is formatted */
+  repeated Value args = 4;
+
+  /* (optional) tags to attach to the EVR for additional context */
+  map<string, Value> tags = 5;
+}
+
+/* Channelized telemetry */
+message Telemetry {
+  /* Dictionary entry definition of telemetry */
+  TelemetryRef ref = 1;
+
+  /* Timestamp of when channel is emitted by its source (FSW or otherwise) */
+  Time time = 2;
+
+  /* Packed telemetry value */
+  Value value = 3;
+
+  /* An optional set of tags to add cardinality to this telemetry */
+  map<string, string> labels = 4;
+
+  reserved 5;
+}
+
+message SourcedEvent {
+  Event event = 1;
+  string source = 2;
+  SourceContext context = 3;
+}
+
+message SourcedTelemetry {
+  Telemetry telemetry = 1;
+  string source = 2;
+  SourceContext context = 3;
+}
+
+enum FileDownlinkCompletionStatus {
+  // File downlinked successfully and validated fully
+  DOWNLINK_COMPLETED = 0;
+
+  // Something failed during downlink and a valid status was not set
+  DOWNLINK_UNKNOWN = -1;
+
+  // File partially downlinked and there are some missing chunks
+  DOWNLINK_PARTIAL = 1;
+
+  // File downlinked fully (i.e. no missing chunks) but the CRC failed
+  DOWNLINK_CRC_FAILED = 2;
+}
+
+message FileDownlinkChunk {
+  // Offset in bytes from the start of the file
+  uint64 offset = 1;
+
+  // Size in bytes of this chunk
+  uint64 size = 2;
+}
+
+message FileDownlink {
+  string uid = 1;
+
+  /* Time when downlink started (ground time) */
+  google.protobuf.Timestamp timeStart = 2;
+
+  /* Time when downlink ended */
+  google.protobuf.Timestamp timeEnd = 3;
+
+  /* Status of the file downlink */
+  FileDownlinkCompletionStatus status = 4;
+
+  /* FSW source ID */
+  string source = 5;
+
+  /* Source relative path where this was downlinked from */
+  string sourcePath = 6;
+
+  /* (optional) destination path requested during downlink */
+  string destinationPath = 7;
+
+  /* Absolute path on the host machine where the raw file is stored */
+  string filePath = 8;
+
+  /* Set of chunks that are missing if this is a partial downlink */
+  repeated FileDownlinkChunk missingChunks = 9;
+
+  /* It's possible sections of the file overlap */
+  repeated FileDownlinkChunk duplicateChunks = 10;
+
+   /* Size in bytes */
+   uint64 size = 11;
+
+   /* Additional metadata in the form tag -> json */
+   map<string, string> metadata = 12;
+}

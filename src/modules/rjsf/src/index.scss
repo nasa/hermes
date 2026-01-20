@@ -1,0 +1,289 @@
+@import '@vscode/codicons/dist/codicon.css';
+
+button.action-button {
+    align-items: center;
+    color: inherit;
+    display: flex;
+    justify-content: center;
+
+    margin: calc(var(--design-unit) * 1px) 0;
+
+    padding: 2px;
+    height: 20px;
+    width: 20px;
+    border-radius: 5px;
+
+    outline: none;
+    background: none;
+    border: none;
+}
+
+button.action-button:hover {
+    background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+.rjsf {
+    fieldset {
+        position: relative;
+        border: none;
+        min-inline-size: auto;
+        --input-min-width: 0px;
+
+        display: flex;
+        flex-direction: column;
+        gap: calc(var(--design-unit) * 2px);
+
+        padding: calc(var(--design-unit) * 1px);
+        margin-left: calc(var(--design-unit) * 1px);
+
+        border-left: solid 1px var(--badge-background);
+    }
+
+    fieldset::before,
+    fieldset::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        width: calc(var(--design-unit) * 1px);
+        height: 1px;
+        background-color: var(--badge-background);
+    }
+
+    fieldset::before {
+        top: 0;
+    }
+
+    fieldset::after {
+        bottom: 0;
+    }
+
+    fieldset#root {
+        margin-left: 0;
+        border-left: none;
+    }
+
+    fieldset#root::before,
+    fieldset#root::after {
+        content: none;
+    }
+
+    .control-label {
+        display: block;
+        margin-bottom: calc(var(--design-unit) * 1px);
+    }
+
+    .field-description {
+        color: var(--vscode-descriptionForeground);
+    }
+
+    fieldset vscode-text-field,
+    fieldset vscode-number-field,
+    fieldset vscode-text-area,
+    fieldset vscode-dropdown {
+        flex-grow: 1;
+        width: 100%;
+    }
+
+    .array-item {
+        border-left: calc(var(--border-width) * 1px) solid var(--divider-background);
+    }
+
+    vscode-data-grid-cell {
+        padding: 0 calc(var(--design-unit) * 1px);
+        border: none;
+    }
+
+    vscode-data-grid-row.sticky-header>vscode-data-grid-cell,
+    vscode-data-grid-row.header>vscode-data-grid-cell {
+        padding: calc(var(--design-unit) * 1px);
+    }
+
+    vscode-data-grid-cell:focus,
+    vscode-data-grid-cell:active {
+        background: inherit;
+        color: inherit;
+        border-color: transparent;
+        outline: inherit;
+    }
+
+    vscode-data-grid-row.sticky-header,
+    vscode-data-grid-row.header {
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    /* Disable hover changes on header in data grid */
+    vscode-data-grid-row.sticky-header:hover {
+        background: var(--background);
+    }
+
+    vscode-data-grid-row.header:hover {
+        background: transparent;
+    }
+
+    .array-data-grid-wrapper {
+        display: flex;
+        position: relative;
+        padding-left: calc(var(--design-unit) * 4px);
+    }
+
+    button.grid-row-action-button {
+        visibility: hidden;
+    }
+
+    vscode-data-grid-row:hover button.grid-row-action-button {
+        visibility: visible;
+    }
+
+    vscode-data-grid-cell.column-header>vscode-badge {
+        margin-left: calc(var(--design-unit) * 2px);
+        cursor: default;
+    }
+
+    .array-title {
+        line-height: 28px;
+    }
+
+    a {
+        color: #4183c4;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    p,
+    blockquote,
+    ul,
+    ol,
+    dl,
+    table,
+    pre {
+        margin: 0 0 0.5em 0;
+    }
+
+    ul,
+    ol {
+        padding-inline-start: calc(var(--design-unit) * 4px);
+    }
+
+    h1 {
+        border-bottom: 1px solid #ddd;
+        color: #000;
+        font-size: 2.5em;
+    }
+
+    h2 {
+        border-bottom: 1px solid #eee;
+        color: #000;
+        font-size: 2.0em;
+    }
+
+    h3 {
+        font-size: 1.5em;
+    }
+
+    h4 {
+        font-size: 1.2em;
+    }
+
+    h5 {
+        font-size: 1.0em;
+    }
+
+    h6 {
+        color: #777;
+        font-size: 1.0em;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-weight: bold;
+        line-height: 1.7;
+        margin: 1em 0 15px 0;
+    }
+
+    h1+p,
+    h2+p,
+    h3+p {
+        margin-top: 10px;
+    }
+
+    img {
+        max-width: 100%;
+    }
+
+    code,
+    pre {
+        border-radius: 3px;
+        font-family: Consolas, "Liberation Mono", Courier, monospace;
+        font-size: 12px;
+        margin: 0 2px;
+        padding: 1px 5px;
+        white-space: pre;
+    }
+
+    pre code {
+        border: none;
+        margin: 0;
+        padding: 0;
+        white-space: pre;
+    }
+
+    .tooltip {
+        transition: opacity var(--rt-transition-show-delay) 0.1s linear;
+
+        .show {
+            opacity: var(--rt-opacity);
+        }
+
+        .closing {
+            opacity: 0;
+        }
+
+        position: absolute;
+
+        padding: calc(var(--design-unit) * 0.5px) calc(var(--design-unit) * 2px);
+
+        background: var(--vscode-editorHoverWidget-background);
+        border: 1px solid var(--vscode-editorHoverWidget-border);
+        color: var(--vscode-editorHoverWidget-foreground);
+
+        line-height: 19px;
+        max-width: 700px;
+        border-radius: 3px;
+
+        .react-tooltip-arrow {
+            position: absolute;
+            z-index: 30;
+            background: var(--vscode-editorHoverWidget-background);
+
+            border-right: 1px solid var(--vscode-editorHoverWidget-border);
+            border-bottom: 1px solid var(--vscode-editorHoverWidget-border);
+
+            width: 5px;
+            height: 5px;
+        }
+    }
+
+    .react-tooltip__place-top>.react-tooltip-arrow {
+        transform: rotate(45deg);
+    }
+
+    .react-tooltip__place-right>.react-tooltip-arrow {
+        transform: rotate(135deg);
+    }
+
+    .react-tooltip__place-bottom>.react-tooltip-arrow {
+        transform: rotate(225deg);
+    }
+
+    .react-tooltip__place-left>.react-tooltip-arrow {
+        transform: rotate(315deg);
+    }
+}

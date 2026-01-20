@@ -1,0 +1,16 @@
+struct S_Primitive * {
+	F1: U8
+	F2: I8
+	F3: U16
+	F4: I16
+	F5: U32
+	F6: I32
+	F7: U64
+	F8: I64
+	F9: F32
+	F10: F64
+
+	# Private fields
+	f11: U8
+	F12: [`f11`]byte
+}

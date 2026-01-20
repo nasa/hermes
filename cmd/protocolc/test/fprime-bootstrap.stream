@@ -1,0 +1,12 @@
+type PacketDescriptorType = U32
+type OpcodeType = U32
+type ChanIdType = U32
+type EventIdType = U32
+type PrmIdType = U32
+type TlmPacketizeIdType = U16
+type BuffSizeType = U16
+type EnumStoreType = I32
+type TimeBaseStoreType = U16
+type TimeContextStoreType = U8
+
+type Time = TimeWithBaseAndContext

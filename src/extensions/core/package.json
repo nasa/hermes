@@ -1,0 +1,381 @@
+{
+    "name": "hermes",
+    "publishName": "@gov.nasa.jpl.hermes/vscode-core",
+    "displayName": "Hermes",
+    "description": "Robot Sequencing and Visualization Program (Lite) in VSCode",
+    "version": "2.8.3",
+    "icon": "icons/rover-color-512.png",
+    "files": [
+        "extension.vsix",
+        "icons/rover-color-512.png"
+    ],
+    "repository": {
+        "url": "https://github.com/nasa/hermes.git",
+        "type": "git"
+    },
+    "license": "SEE LICENSE IN LICENSE",
+    "author": {
+        "name": "Andrei Tumbar",
+        "email": "andrei.tumbar@jpl.nasa.gov"
+    },
+    "publisher": "jet-propulsion-laboratory",
+    "engines": {
+        "vscode": "^1.76.0"
+    },
+    "categories": [
+        "Visualization"
+    ],
+    "keywords": [
+        "hermes",
+        "robot",
+        "visualization",
+        "fprime",
+        "flight-software"
+    ],
+    "activationEvents": [
+        "onFileSystem:hermes",
+        "onStartupFinished"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "customEditors": [
+            {
+                "viewType": "hermes.evr",
+                "displayName": "Hermes Event Records",
+                "selector": [
+                    {
+                        "filenamePattern": "evrs.json"
+                    },
+                    {
+                        "filenamePattern": "*.evrs.json"
+                    }
+                ]
+            }
+        ],
+        "commands": [
+            {
+                "command": "hermes.connections.refresh",
+                "title": "Refresh Connection Profiles",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "hermes.config.sync",
+                "title": "Sync VSCode settings with host",
+                "icon": "$(cloud-upload)"
+            },
+            {
+                "command": "hermes.config.lock",
+                "title": "Lock configuration",
+                "icon": "$(lock)"
+            },
+            {
+                "command": "hermes.config.unlock",
+                "title": "Unlock configuration",
+                "icon": "$(unlock)"
+            },
+            {
+                "command": "hermes.testbed.signoff",
+                "title": "Operator Signoff",
+                "icon": "$(check-all)"
+            },
+            {
+                "command": "hermes.connections.array.removeItem",
+                "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasRemove",
+                "title": "Delete"
+            },
+            {
+                "command": "hermes.connections.array.copyItem",
+                "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasCopy",
+                "title": "Duplicate"
+            },
+            {
+                "command": "hermes.connections.array.moveUp",
+                "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasMoveUp",
+                "title": "Move up"
+            },
+            {
+                "command": "hermes.connections.array.moveDown",
+                "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasMoveDown",
+                "title": "Move down"
+            }
+        ],
+        "viewsContainers": {
+            "panel": [
+                {
+                    "id": "hermes-evrPanel",
+                    "title": "Hermes",
+                    "icon": "$(list-unordered)"
+                }
+            ],
+            "activitybar": [
+                {
+                    "id": "hermes",
+                    "title": "Hermes",
+                    "icon": "./icons/rover-color-512.png"
+                }
+            ]
+        },
+        "views": {
+            "hermes-evrPanel": [
+                {
+                    "type": "webview",
+                    "id": "hermes.evrPanel",
+                    "name": "EVR Panel",
+                    "icon": "$(list-unordered)"
+                }
+            ],
+            "hermes": [
+                {
+                    "type": "webview",
+                    "id": "hermes.connections",
+                    "name": "Connections",
+                    "icon": "./icons/rover-color-512.png"
+                }
+            ]
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "hermes.config.lock",
+                    "when": "view == hermes.connections && !hermes.config.isLocked",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "hermes.config.unlock",
+                    "when": "view == hermes.connections && hermes.config.isLocked",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "hermes.config.sync",
+                    "when": "view == hermes.connections && !hermes.mode.isHost",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "hermes.connections.refresh",
+                    "when": "view == hermes.connections && hermes.mode.isHost",
+                    "group": "navigation@1"
+                }
+            ],
+            "notebook/cell/title": [
+                {
+                    "command": "hermes.testbed.signoff",
+                    "when": "notebookType == hermes.notebook && notebookCellType == markup && !notebookCellMarkdownEditMode",
+                    "group": "inline/cell@0"
+                }
+            ],
+            "webview/context": [
+                {
+                    "command": "hermes.connections.array.copyItem",
+                    "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasCopy"
+                },
+                {
+                    "command": "hermes.connections.array.moveUp",
+                    "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasMoveUp"
+                },
+                {
+                    "command": "hermes.connections.array.moveDown",
+                    "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasMoveDown"
+                },
+                {
+                    "command": "hermes.connections.array.removeItem",
+                    "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasRemove"
+                }
+            ]
+        },
+        "configuration": [
+            {
+                "title": "Host (Backend)",
+                "properties": {
+                    "hermes.host.type": {
+                        "description": "Determines which Hermes backend to use. Remote backends are used when connecting to a testbed or during operations. The external Hermes backend must be running separately to connect to. The local backend is for local development of sequences and procedures and supports loading dictionaries.",
+                        "default": "local",
+                        "type": "string",
+                        "enum": [
+                            "local",
+                            "remote"
+                        ],
+                        "enumItemLabels": [
+                            "Local",
+                            "Remote"
+                        ],
+                        "enumDescriptions": [
+                            "Local backends are just for writing sequences and procedures. You can load dictionaries and create notebooks with this backend.",
+                            "Remote backends support creating run profiles for connecting to flight-software and processing telemetry."
+                        ]
+                    },
+                    "hermes.host.url": {
+                        "description": "Host URL. Use 'https://' address to enable encryption and authentication",
+                        "default": "http://localhost:6880",
+                        "type": "string"
+                    },
+                    "hermes.host.authenticationMethod": {
+                        "markdownDescription": "Authentication method to use when connecting to the server.\n\nA non-'none' authentication method also requires an 'https' (encryption enabled) host address.",
+                        "default": "none",
+                        "type": "string",
+                        "enum": [
+                            "none",
+                            "userpass",
+                            "token"
+                        ],
+                        "enumItemLabels": [
+                            "No Authentication",
+                            "Username/Password",
+                            "Authentication Token"
+                        ],
+                        "enumDescriptions": [
+                            "Credential-less connection",
+                            "Username/Password usually connected to LDAP login",
+                            "Token based authentication. Request a token from your Hermes administrator"
+                        ]
+                    },
+                    "hermes.host.skipTLSVerify": {
+                        "description": "Skip SSL/TLS certificate validation from the server. This is useful when the client is not set up with the proper certificates to allow connecting to internal websites",
+                        "default": false,
+                        "type": "boolean"
+                    }
+                }
+            },
+            {
+                "title": "Notebook",
+                "properties": {
+                    "hermes.notebook.signoff.template": {
+                        "description": "String template used for operator signoff",
+                        "type": "string",
+                        "default": "> {date} {name}"
+                    },
+                    "hermes.notebook.signoff.datetime": {
+                        "description": "Momentjs datetime format",
+                        "type": "string",
+                        "default": "MMMM Do YYYY, h:mm:ss a"
+                    },
+                    "hermes.notebook.signoff.name": {
+                        "description": "Operator Name used for operator signoff",
+                        "type": "string",
+                        "default": "OPERATOR NAME"
+                    },
+                    "hermes.notebook.evr.timeFormat": {
+                        "description": "Time format of the EVR sclk in notebook outputs. Use raw SCLK if FSW SCLK does not correspond to seconds since Epoch",
+                        "type": "string",
+                        "default": "sclk",
+                        "enum": [
+                            "utc",
+                            "local",
+                            "sclk"
+                        ],
+                        "enumDescriptions": [
+                            "Coordinated Universal Time (Zulu time)",
+                            "Local time (offset of GMT)",
+                            "Spacecraft clock"
+                        ]
+                    },
+                    "hermes.notebook.evrDiagnostic": {
+                        "markdownDescription": "Show `DIAGNOSTIC` EVRs in testbed procedures",
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "hermes.notebook.evrCommand": {
+                        "markdownDescription": "Show `COMMAND` EVRs in testbed procedures",
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "hermes.notebook.evrActivityLow": {
+                        "markdownDescription": "Show `ACTIVITY_LO` EVRs in testbed procedures",
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "hermes.notebook.evrActivityHigh": {
+                        "markdownDescription": "Show `ACTIVITY_HI` EVRs in testbed procedures",
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "hermes.notebook.evrWarningLow": {
+                        "markdownDescription": "Show `WARNING_LO` EVRs in testbed procedures",
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "hermes.notebook.evrWarningHigh": {
+                        "markdownDescription": "Show `WARNING_HI` EVRs in testbed procedures",
+                        "type": "boolean",
+                        "default": true
+                    },
+                    "hermes.notebook.evrFatal": {
+                        "markdownDescription": "Show `FATAL` EVRs in testbed procedures",
+                        "type": "boolean",
+                        "default": true
+                    }
+                }
+            }
+        ],
+        "languages": [
+            {
+                "id": "uplink",
+                "configuration": "./syntax/uplink.language.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "uplink",
+                "scopeName": "source.uplink",
+                "path": "./syntax/uplink.tmLanguage.json"
+            }
+        ],
+        "notebooks": [
+            {
+                "id": "hermes.notebook",
+                "type": "hermes.notebook",
+                "displayName": "Hermes Notebook",
+                "selector": [
+                    {
+                        "filenamePattern": "*.hermes"
+                    },
+                    {
+                        "filenamePattern": "*.hermes.md"
+                    }
+                ]
+            }
+        ],
+        "notebookRenderer": [
+            {
+                "id": "hermes-evr-renderer",
+                "displayName": "Hermes Event Renderer",
+                "entrypoint": "./out/evr-renderer.js",
+                "mimeTypes": [
+                    "hermes.notebook/evr"
+                ],
+                "requiresMessaging": "optional"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn clean && yarn compile",
+        "prepublishOnly": "node ../../../prepublish.js",
+        "postpublish": "mv package.tmp.json package.json",
+        "clean": "rm -rf ./out",
+        "compile": "cd ../../../ && node build src/extensions/core",
+        "package": "vsce package --yarn"
+    },
+    "devDependencies": {
+        "@commander-js/extra-typings": "^13.1.0",
+        "@rjsf/core": "5.18.6",
+        "@rjsf/utils": "5.18.6",
+        "@rjsf/validator-ajv8": "5.18.6",
+        "@tanstack/react-virtual": "^3.13.12",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        "@types/vscode-notebook-renderer": "^1.72.3",
+        "@vscode-elements/react-elements": "^1.15.1",
+        "@vscode/codicons": "^0.0.33",
+        "@vscode/webview-ui-toolkit": "^1.4.0",
+        "ajv": "^8.12.0",
+        "commander": "^13.1.0",
+        "moment": "^2.29.4",
+        "path-browserify": "^1.0.1",
+        "prop-types": "^15.8.1",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "sass": "^1.53.0",
+        "util": "^0.12.4",
+        "vscode-notebook-error-overlay": "^1.0.1"
+    },
+    "gitHead": "28d4edeb3c753a29612706e3c9d2be717324ff24"
+}

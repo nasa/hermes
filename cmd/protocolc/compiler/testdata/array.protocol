@@ -1,0 +1,45 @@
+enum EA U16 {
+    E1 = 1
+    E2 = 2
+    E3 = 3
+}
+
+struct ArrayFlat * {
+    StaticPrim: [3]U32
+    StaticByte: [3]byte
+    StaticEnum: [3]EA
+    DyanmicPrim: [U16]U32
+    DynamicByte: [U16]byte
+    DynamicEnum: [U16]EA
+    n: U8 = `0`
+    ReadPrim: [`n`]U32
+    ReadByte: [`n`]byte
+    ReadEnum: [`n`]EA
+    FillPrim: [*]U32
+
+    # Technically this will always be empty but
+    # it is still valid
+    FillByte: [*]byte
+    FillEnum: [3]EA
+}
+
+struct NestedArray * {
+    StaticStruct: [3]ArrayFlat
+    StaticStatic: [3][3]U16
+    StaticDynamic: [3][U8]U16
+    StaticFill: [3][*]U16
+
+    m: U8 = `0`
+    ReadNested: [3][`m`]ArrayFlat
+    ReadInverse: [`m`][3]U16
+
+    DynamicStruct: [U8]ArrayFlat
+    DynamicStatic: [U8][3]U16
+    DyanmicDynamic: [U8][U8]U16
+    DynamicFill: [U8][*]U16
+
+    FillStruct: [*]ArrayFlat
+    FillStatic: [*][3]U16
+    FillDynamic: [*][U8]U16
+    FillFill: [*][*]U16
+}
