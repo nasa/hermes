@@ -262,7 +262,7 @@ async function main() {
 
             target.define = {
                 ...target.define,
-                RSVP_BUILD_DEBUG: `${!target.minify}`
+                HERMES_BUILD_DEBUG: `${!target.minify}`
             };
             target.outfile = path.join(basePath, target.outfile);
         }
