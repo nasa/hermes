@@ -59,9 +59,19 @@
                 "icon": "$(clear-all)"
             },
             {
-                "command": "hermes.config.unlock",
-                "title": "Unlock configuration",
-                "icon": "$(unlock)"
+                "command": "hermes.uplink.add",
+                "title": "Open File to Uplink",
+                "icon": "$(clear-all)"
+            },
+            {
+                "command": "hermes.uplink.edit",
+                "title": "Edit",
+                "icon": "$(clear-all)"
+            },
+            {
+                "command": "hermes.uplink.clear",
+                "title": "Clear Uplink Listing",
+                "icon": "$(clear-all)"
             },
             {
                 "command": "hermes.testbed.signoff",
@@ -128,7 +138,6 @@
                     "icon": "$(radio-tower)"
                 },
                 {
-                    "type": "webview",
                     "id": "hermes.downlink",
                     "name": "Downlink",
                     "icon": "$(cloud-download)"

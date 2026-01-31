@@ -21,14 +21,14 @@ import { evrMessaging } from './notebook/evrMessaging';
 import { ShellScriptLanguageProvider } from './kernels/shellscript';
 import { PythonLanguageProvider } from './kernels/python';
 import { UplinkLanguageProvider } from './kernels/uplink';
-import { DownlinkViewer } from './components/DownlinkViewer';
+import { DownlinkProvider } from './components/DownlinkViewer';
 import { UplinkViewer } from './components/UplinkViewer';
 
 export class VscodeHermes implements CoreApi {
     private subscriptions: vscode.Disposable[] = [];
     private evrPanel?: EvrPanel;
     private connectionViewer?: ConnectionViewer;
-    private downlinkViewer?: DownlinkViewer;
+    private downlinkProvider?: DownlinkProvider;
     private uplinkViewer?: UplinkViewer;
 
     private notebookLanguages: NotebookLanguageManager;
@@ -54,7 +54,7 @@ export class VscodeHermes implements CoreApi {
     async activate(): Promise<void> {
         // Viewers
         this.connectionViewer = new ConnectionViewer(this.extensionPath, this.api, this);
-        this.downlinkViewer = new DownlinkViewer(this.extensionPath, this.api);
+        this.downlinkProvider = new DownlinkProvider(this.api);
         this.uplinkViewer = new UplinkViewer(this.extensionPath, this.api);
         this.evrPanel = new EvrPanel(this.api, this.extensionPath);
 
@@ -82,7 +82,10 @@ export class VscodeHermes implements CoreApi {
 
             this.evrPanel,
             this.connectionViewer,
-            this.downlinkViewer,
+            vscode.window.registerTreeDataProvider(
+                'hermes.downlink',
+                this.downlinkProvider,
+            ),
             this.uplinkViewer,
 
             this.registerNotebookType("hermes.notebook"),
@@ -102,7 +105,7 @@ export class VscodeHermes implements CoreApi {
     refresh(): void {
         // this.evrPanel?.refresh();
         this.connectionViewer?.refresh();
-        this.downlinkViewer?.refresh();
+        this.downlinkProvider?.refresh();
         this.uplinkViewer?.refresh();
     }
 

@@ -274,7 +274,7 @@ export type Options = {
     readonly fixedWidth?: number;
 };
 
-export default function prettyBytes(number: number | bigint, options: Options) {
+export default function prettyBytes(number: number | bigint, options?: Options) {
     if (typeof number !== 'bigint' && !Number.isFinite(number)) {
         throw new TypeError(`Expected a finite number, got ${typeof number}: ${number}`);
     }
