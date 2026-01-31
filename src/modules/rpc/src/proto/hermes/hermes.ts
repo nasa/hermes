@@ -41,6 +41,9 @@ export interface ProtoGrpcType {
   FileDownlinkChunk: MessageTypeDefinition
   FileDownlinkCompletionStatus: EnumTypeDefinition
   FileHeader: MessageTypeDefinition
+  FileTransfer: MessageTypeDefinition
+  FileTransferState: MessageTypeDefinition
+  FileUplink: MessageTypeDefinition
   FloatKind: EnumTypeDefinition
   FloatType: MessageTypeDefinition
   Fsw: MessageTypeDefinition

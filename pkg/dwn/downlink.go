@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"sync"
 	"time"
@@ -159,6 +160,14 @@ func NewDownlinkSession(
 
 	uid := util.GenerateShortUID()
 
+	host.FileTransfer.AddDownlink(
+		uid,
+		source,
+		sourcePath,
+		destinationPath,
+		fileSize,
+	)
+
 	filePath := newDownlinkFilePath(
 		uid,
 		source,
@@ -223,12 +232,10 @@ func NewDownlinkSession(
 	}
 
 	// Process the fileio in another goroutine
-	out.wg.Add(1)
-	go func() {
-		defer out.wg.Done()
+	out.wg.Go(func() {
 		defer out.span.End()
 		out.eventLoop()
-	}()
+	})
 
 	return out, nil
 }
@@ -311,7 +318,7 @@ func (s *DownlinkSession) eventLoop() {
 		}
 
 		// Notify a downlink has finished
-		host.Downlink.Emit(s.msg)
+		host.FileDownlink.Emit(s.msg)
 	}()
 
 	for msg := range s.queue {
@@ -366,6 +373,7 @@ func (s *DownlinkSession) eventLoop() {
 			}
 
 			s.stagingOffset += uint64(n)
+			host.FileTransfer.DownlinkProgress(s.msg.Uid, uint64(uint64(chunkSize)))
 		}
 	}
 
@@ -588,7 +596,7 @@ func newDownlinkFilePath(
 		ext = ".dat"
 	}
 
-	return path.Join(
+	joinedPath := path.Join(
 		host.Config.DownlinkRoot,
 		fmt.Sprintf(
 			"%s-%s-%s-%s%s",
@@ -598,4 +606,12 @@ func newDownlinkFilePath(
 			uid, ext,
 		),
 	)
+
+	aPath, err := filepath.Abs(joinedPath)
+
+	if err != nil {
+		return basePath
+	}
+
+	return aPath
 }

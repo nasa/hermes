@@ -91,7 +91,7 @@ type Fsw struct {
 	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	// Profile that this connection belongs to
 	// Empty if this is not from a managed profile
-	ProfileId string `protobuf:"bytes,3,opt,name=profileId,proto3" json:"profileId,omitempty"`
+	ProfileId string `protobuf:"bytes,3,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	// Telemetry from these FSW IDs should be treated as though they
 	// also came from this FSW. Useful for when you need a custom language
 	// context that wraps multiple FSWs
@@ -173,7 +173,7 @@ type CommandOptions struct {
 	// *
 	// Don't wait for the command to reply before resolving the command promise
 	// This promise will resolve once the command is sent to the FSW.
-	NoWait        bool `protobuf:"varint,1,opt,name=noWait,proto3" json:"noWait,omitempty"`
+	NoWait        bool `protobuf:"varint,1,opt,name=no_wait,json=noWait,proto3" json:"no_wait,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -359,7 +359,7 @@ type CommandSequence struct {
 	// Cell block language to execute this command sequence with
 	// FSWs may support more than one language or controlling different behaviors
 	// of the connection or commanding the FSW directly.
-	LanguageName string `protobuf:"bytes,2,opt,name=languageName,proto3" json:"languageName,omitempty"`
+	LanguageName string `protobuf:"bytes,2,opt,name=language_name,json=languageName,proto3" json:"language_name,omitempty"`
 	// Additional metadata to attach to sequence
 	// This has flight-software specific meaning
 	Metadata      map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
@@ -424,11 +424,11 @@ type RawCommandSequence struct {
 	// Cell block language to execute this command sequence with
 	// FSWs may support more than one language or controlling different behaviors
 	// of the connection or commanding the FSW directly.
-	LanguageName string `protobuf:"bytes,2,opt,name=languageName,proto3" json:"languageName,omitempty"`
+	LanguageName string `protobuf:"bytes,2,opt,name=language_name,json=languageName,proto3" json:"language_name,omitempty"`
 	// Additional metadata to attach to sequence
 	// This has flight-software specific meaning
 	Metadata          map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	LineCommentPrefix string            `protobuf:"bytes,4,opt,name=lineCommentPrefix,proto3" json:"lineCommentPrefix,omitempty"`
+	LineCommentPrefix string            `protobuf:"bytes,4,opt,name=line_comment_prefix,json=lineCommentPrefix,proto3" json:"line_comment_prefix,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -496,15 +496,16 @@ var File_fsw_proto protoreflect.FileDescriptor
 const file_fsw_proto_rawDesc = "" +
 	"\n" +
 	"\tfsw.proto\x1a\n" +
-	"type.proto\x1a\x10dictionary.proto\"\xa3\x01\n" +
+	"type.proto\x1a\x10dictionary.proto\"\xa4\x01\n" +
 	"\x03Fsw\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04type\x18\x02 \x01(\tR\x04type\x12\x1c\n" +
-	"\tprofileId\x18\x03 \x01(\tR\tprofileId\x12\x1a\n" +
+	"\x04type\x18\x02 \x01(\tR\x04type\x12\x1d\n" +
+	"\n" +
+	"profile_id\x18\x03 \x01(\tR\tprofileId\x12\x1a\n" +
 	"\bforwards\x18\x04 \x03(\tR\bforwards\x122\n" +
-	"\fcapabilities\x18\a \x03(\x0e2\x0e.FswCapabilityR\fcapabilitiesJ\x04\b\x05\x10\x06J\x04\b\x06\x10\a\"(\n" +
-	"\x0eCommandOptions\x12\x16\n" +
-	"\x06noWait\x18\x01 \x01(\bR\x06noWait\"\xea\x01\n" +
+	"\fcapabilities\x18\a \x03(\x0e2\x0e.FswCapabilityR\fcapabilitiesJ\x04\b\x05\x10\x06J\x04\b\x06\x10\a\")\n" +
+	"\x0eCommandOptions\x12\x17\n" +
+	"\ano_wait\x18\x01 \x01(\bR\x06noWait\"\xea\x01\n" +
 	"\fCommandValue\x12\x1d\n" +
 	"\x03def\x18\x01 \x01(\v2\v.CommandDefR\x03def\x12\x1a\n" +
 	"\x04args\x18\x02 \x03(\v2\x06.ValueR\x04args\x12)\n" +
@@ -519,19 +520,19 @@ const file_fsw_proto_rawDesc = "" +
 	"\bmetadata\x18\x04 \x03(\v2\x1e.RawCommandValue.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xd9\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xda\x01\n" +
 	"\x0fCommandSequence\x12)\n" +
-	"\bcommands\x18\x01 \x03(\v2\r.CommandValueR\bcommands\x12\"\n" +
-	"\flanguageName\x18\x02 \x01(\tR\flanguageName\x12:\n" +
+	"\bcommands\x18\x01 \x03(\v2\r.CommandValueR\bcommands\x12#\n" +
+	"\rlanguage_name\x18\x02 \x01(\tR\flanguageName\x12:\n" +
 	"\bmetadata\x18\x03 \x03(\v2\x1e.CommandSequence.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xfe\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x81\x02\n" +
 	"\x12RawCommandSequence\x12\x1a\n" +
-	"\bsequence\x18\x01 \x01(\tR\bsequence\x12\"\n" +
-	"\flanguageName\x18\x02 \x01(\tR\flanguageName\x12=\n" +
-	"\bmetadata\x18\x03 \x03(\v2!.RawCommandSequence.MetadataEntryR\bmetadata\x12,\n" +
-	"\x11lineCommentPrefix\x18\x04 \x01(\tR\x11lineCommentPrefix\x1a;\n" +
+	"\bsequence\x18\x01 \x01(\tR\bsequence\x12#\n" +
+	"\rlanguage_name\x18\x02 \x01(\tR\flanguageName\x12=\n" +
+	"\bmetadata\x18\x03 \x03(\v2!.RawCommandSequence.MetadataEntryR\bmetadata\x12.\n" +
+	"\x13line_comment_prefix\x18\x04 \x01(\tR\x11lineCommentPrefix\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*[\n" +

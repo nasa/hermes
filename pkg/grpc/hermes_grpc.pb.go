@@ -21,31 +21,36 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Api_Sequence_FullMethodName            = "/Api/Sequence"
-	Api_RawSequence_FullMethodName         = "/Api/RawSequence"
-	Api_Command_FullMethodName             = "/Api/Command"
-	Api_RawCommand_FullMethodName          = "/Api/RawCommand"
-	Api_Uplink_FullMethodName              = "/Api/Uplink"
-	Api_GetFsw_FullMethodName              = "/Api/GetFsw"
-	Api_AllFsw_FullMethodName              = "/Api/AllFsw"
-	Api_SubscribeFsw_FullMethodName        = "/Api/SubscribeFsw"
-	Api_StartProfile_FullMethodName        = "/Api/StartProfile"
-	Api_StopProfile_FullMethodName         = "/Api/StopProfile"
-	Api_UpdateProfile_FullMethodName       = "/Api/UpdateProfile"
-	Api_AddProfile_FullMethodName          = "/Api/AddProfile"
-	Api_RemoveProfile_FullMethodName       = "/Api/RemoveProfile"
-	Api_AllProfiles_FullMethodName         = "/Api/AllProfiles"
-	Api_AllProviders_FullMethodName        = "/Api/AllProviders"
-	Api_SubscribeProviders_FullMethodName  = "/Api/SubscribeProviders"
-	Api_SubscribeProfiles_FullMethodName   = "/Api/SubscribeProfiles"
-	Api_GetDictionary_FullMethodName       = "/Api/GetDictionary"
-	Api_AddDictionary_FullMethodName       = "/Api/AddDictionary"
-	Api_RemoveDictionary_FullMethodName    = "/Api/RemoveDictionary"
-	Api_AllDictionary_FullMethodName       = "/Api/AllDictionary"
-	Api_SubscribeDictionary_FullMethodName = "/Api/SubscribeDictionary"
-	Api_SubEvent_FullMethodName            = "/Api/SubEvent"
-	Api_SubTelemetry_FullMethodName        = "/Api/SubTelemetry"
-	Api_SubFileDownlink_FullMethodName     = "/Api/SubFileDownlink"
+	Api_Sequence_FullMethodName                   = "/Api/Sequence"
+	Api_RawSequence_FullMethodName                = "/Api/RawSequence"
+	Api_Command_FullMethodName                    = "/Api/Command"
+	Api_RawCommand_FullMethodName                 = "/Api/RawCommand"
+	Api_Uplink_FullMethodName                     = "/Api/Uplink"
+	Api_GetFsw_FullMethodName                     = "/Api/GetFsw"
+	Api_AllFsw_FullMethodName                     = "/Api/AllFsw"
+	Api_SubscribeFsw_FullMethodName               = "/Api/SubscribeFsw"
+	Api_StartProfile_FullMethodName               = "/Api/StartProfile"
+	Api_StopProfile_FullMethodName                = "/Api/StopProfile"
+	Api_UpdateProfile_FullMethodName              = "/Api/UpdateProfile"
+	Api_AddProfile_FullMethodName                 = "/Api/AddProfile"
+	Api_RemoveProfile_FullMethodName              = "/Api/RemoveProfile"
+	Api_AllProfiles_FullMethodName                = "/Api/AllProfiles"
+	Api_AllProviders_FullMethodName               = "/Api/AllProviders"
+	Api_GetFileTransferState_FullMethodName       = "/Api/GetFileTransferState"
+	Api_ClearDownlinkTransferState_FullMethodName = "/Api/ClearDownlinkTransferState"
+	Api_ClearUplinkTransferState_FullMethodName   = "/Api/ClearUplinkTransferState"
+	Api_SubscribeProviders_FullMethodName         = "/Api/SubscribeProviders"
+	Api_SubscribeProfiles_FullMethodName          = "/Api/SubscribeProfiles"
+	Api_GetDictionary_FullMethodName              = "/Api/GetDictionary"
+	Api_AddDictionary_FullMethodName              = "/Api/AddDictionary"
+	Api_RemoveDictionary_FullMethodName           = "/Api/RemoveDictionary"
+	Api_AllDictionary_FullMethodName              = "/Api/AllDictionary"
+	Api_SubscribeDictionary_FullMethodName        = "/Api/SubscribeDictionary"
+	Api_SubEvent_FullMethodName                   = "/Api/SubEvent"
+	Api_SubTelemetry_FullMethodName               = "/Api/SubTelemetry"
+	Api_SubFileDownlink_FullMethodName            = "/Api/SubFileDownlink"
+	Api_SubFileUplink_FullMethodName              = "/Api/SubFileUplink"
+	Api_SubFileTransfer_FullMethodName            = "/Api/SubFileTransfer"
 )
 
 // ApiClient is the client API for Api service.
@@ -125,6 +130,12 @@ type ApiClient interface {
 	AllProfiles(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ProfileList, error)
 	// Get all the registered profile providers
 	AllProviders(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.ProfileProviderList, error)
+	// Get the current file downlink/uplink state
+	GetFileTransferState(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.FileTransferState, error)
+	// Clear the cached downlink transfer state
+	ClearDownlinkTransferState(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Clear the cached uplink transfer state
+	ClearUplinkTransferState(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Get notified when the set of profile providers updates
 	SubscribeProviders(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.ProfileProviderList], error)
 	// Get notified when the set of profile or their internal state updates
@@ -161,6 +172,10 @@ type ApiClient interface {
 	SubTelemetry(ctx context.Context, in *pb.BusFilter, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.SourcedTelemetry], error)
 	// Subscribe to the file downlink message bus
 	SubFileDownlink(ctx context.Context, in *pb.BusFilter, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.FileDownlink], error)
+	// Subscribe to the file downlink message bus
+	SubFileUplink(ctx context.Context, in *pb.BusFilter, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.FileUplink], error)
+	// Subscribe to the aggregated state of file uplink and downlink
+	SubFileTransfer(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.FileTransferState], error)
 }
 
 type apiClient struct {
@@ -333,6 +348,36 @@ func (c *apiClient) AllProviders(ctx context.Context, in *emptypb.Empty, opts ..
 	return out, nil
 }
 
+func (c *apiClient) GetFileTransferState(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*pb.FileTransferState, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(pb.FileTransferState)
+	err := c.cc.Invoke(ctx, Api_GetFileTransferState_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) ClearDownlinkTransferState(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Api_ClearDownlinkTransferState_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) ClearUplinkTransferState(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Api_ClearUplinkTransferState_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *apiClient) SubscribeProviders(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.ProfileProviderList], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Api_ServiceDesc.Streams[2], Api_SubscribeProviders_FullMethodName, cOpts...)
@@ -487,6 +532,44 @@ func (c *apiClient) SubFileDownlink(ctx context.Context, in *pb.BusFilter, opts 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Api_SubFileDownlinkClient = grpc.ServerStreamingClient[pb.FileDownlink]
 
+func (c *apiClient) SubFileUplink(ctx context.Context, in *pb.BusFilter, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.FileUplink], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Api_ServiceDesc.Streams[8], Api_SubFileUplink_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[pb.BusFilter, pb.FileUplink]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Api_SubFileUplinkClient = grpc.ServerStreamingClient[pb.FileUplink]
+
+func (c *apiClient) SubFileTransfer(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.FileTransferState], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Api_ServiceDesc.Streams[9], Api_SubFileTransfer_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[emptypb.Empty, pb.FileTransferState]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Api_SubFileTransferClient = grpc.ServerStreamingClient[pb.FileTransferState]
+
 // ApiServer is the server API for Api service.
 // All implementations must embed UnimplementedApiServer
 // for forward compatibility.
@@ -564,6 +647,12 @@ type ApiServer interface {
 	AllProfiles(context.Context, *emptypb.Empty) (*pb.ProfileList, error)
 	// Get all the registered profile providers
 	AllProviders(context.Context, *emptypb.Empty) (*pb.ProfileProviderList, error)
+	// Get the current file downlink/uplink state
+	GetFileTransferState(context.Context, *emptypb.Empty) (*pb.FileTransferState, error)
+	// Clear the cached downlink transfer state
+	ClearDownlinkTransferState(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	// Clear the cached uplink transfer state
+	ClearUplinkTransferState(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	// Get notified when the set of profile providers updates
 	SubscribeProviders(*emptypb.Empty, grpc.ServerStreamingServer[pb.ProfileProviderList]) error
 	// Get notified when the set of profile or their internal state updates
@@ -600,6 +689,10 @@ type ApiServer interface {
 	SubTelemetry(*pb.BusFilter, grpc.ServerStreamingServer[pb.SourcedTelemetry]) error
 	// Subscribe to the file downlink message bus
 	SubFileDownlink(*pb.BusFilter, grpc.ServerStreamingServer[pb.FileDownlink]) error
+	// Subscribe to the file downlink message bus
+	SubFileUplink(*pb.BusFilter, grpc.ServerStreamingServer[pb.FileUplink]) error
+	// Subscribe to the aggregated state of file uplink and downlink
+	SubFileTransfer(*emptypb.Empty, grpc.ServerStreamingServer[pb.FileTransferState]) error
 	mustEmbedUnimplementedApiServer()
 }
 
@@ -655,6 +748,15 @@ func (UnimplementedApiServer) AllProfiles(context.Context, *emptypb.Empty) (*pb.
 func (UnimplementedApiServer) AllProviders(context.Context, *emptypb.Empty) (*pb.ProfileProviderList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AllProviders not implemented")
 }
+func (UnimplementedApiServer) GetFileTransferState(context.Context, *emptypb.Empty) (*pb.FileTransferState, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFileTransferState not implemented")
+}
+func (UnimplementedApiServer) ClearDownlinkTransferState(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClearDownlinkTransferState not implemented")
+}
+func (UnimplementedApiServer) ClearUplinkTransferState(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClearUplinkTransferState not implemented")
+}
 func (UnimplementedApiServer) SubscribeProviders(*emptypb.Empty, grpc.ServerStreamingServer[pb.ProfileProviderList]) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeProviders not implemented")
 }
@@ -684,6 +786,12 @@ func (UnimplementedApiServer) SubTelemetry(*pb.BusFilter, grpc.ServerStreamingSe
 }
 func (UnimplementedApiServer) SubFileDownlink(*pb.BusFilter, grpc.ServerStreamingServer[pb.FileDownlink]) error {
 	return status.Errorf(codes.Unimplemented, "method SubFileDownlink not implemented")
+}
+func (UnimplementedApiServer) SubFileUplink(*pb.BusFilter, grpc.ServerStreamingServer[pb.FileUplink]) error {
+	return status.Errorf(codes.Unimplemented, "method SubFileUplink not implemented")
+}
+func (UnimplementedApiServer) SubFileTransfer(*emptypb.Empty, grpc.ServerStreamingServer[pb.FileTransferState]) error {
+	return status.Errorf(codes.Unimplemented, "method SubFileTransfer not implemented")
 }
 func (UnimplementedApiServer) mustEmbedUnimplementedApiServer() {}
 func (UnimplementedApiServer) testEmbeddedByValue()             {}
@@ -958,6 +1066,60 @@ func _Api_AllProviders_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Api_GetFileTransferState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).GetFileTransferState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Api_GetFileTransferState_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).GetFileTransferState(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_ClearDownlinkTransferState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).ClearDownlinkTransferState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Api_ClearDownlinkTransferState_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).ClearDownlinkTransferState(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_ClearUplinkTransferState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).ClearUplinkTransferState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Api_ClearUplinkTransferState_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).ClearUplinkTransferState(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Api_SubscribeProviders_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(emptypb.Empty)
 	if err := stream.RecvMsg(m); err != nil {
@@ -1096,6 +1258,28 @@ func _Api_SubFileDownlink_Handler(srv interface{}, stream grpc.ServerStream) err
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Api_SubFileDownlinkServer = grpc.ServerStreamingServer[pb.FileDownlink]
 
+func _Api_SubFileUplink_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(pb.BusFilter)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ApiServer).SubFileUplink(m, &grpc.GenericServerStream[pb.BusFilter, pb.FileUplink]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Api_SubFileUplinkServer = grpc.ServerStreamingServer[pb.FileUplink]
+
+func _Api_SubFileTransfer_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(emptypb.Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ApiServer).SubFileTransfer(m, &grpc.GenericServerStream[emptypb.Empty, pb.FileTransferState]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Api_SubFileTransferServer = grpc.ServerStreamingServer[pb.FileTransferState]
+
 // Api_ServiceDesc is the grpc.ServiceDesc for Api service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1156,6 +1340,18 @@ var Api_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Api_AllProviders_Handler,
 		},
 		{
+			MethodName: "GetFileTransferState",
+			Handler:    _Api_GetFileTransferState_Handler,
+		},
+		{
+			MethodName: "ClearDownlinkTransferState",
+			Handler:    _Api_ClearDownlinkTransferState_Handler,
+		},
+		{
+			MethodName: "ClearUplinkTransferState",
+			Handler:    _Api_ClearUplinkTransferState_Handler,
+		},
+		{
 			MethodName: "GetDictionary",
 			Handler:    _Api_GetDictionary_Handler,
 		},
@@ -1211,6 +1407,16 @@ var Api_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "SubFileDownlink",
 			Handler:       _Api_SubFileDownlink_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SubFileUplink",
+			Handler:       _Api_SubFileUplink_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SubFileTransfer",
+			Handler:       _Api_SubFileTransfer_Handler,
 			ServerStreams: true,
 		},
 	},

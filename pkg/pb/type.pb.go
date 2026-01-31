@@ -362,7 +362,7 @@ func (ReferenceKind) EnumDescriptor() ([]byte, []int) {
 
 type BooleanType struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	EncodeType    UIntKind               `protobuf:"varint,1,opt,name=encodeType,proto3,enum=UIntKind" json:"encodeType,omitempty"`
+	EncodeType    UIntKind               `protobuf:"varint,1,opt,name=encode_type,json=encodeType,proto3,enum=UIntKind" json:"encode_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -540,10 +540,10 @@ type StringType struct {
 	// When encoding strings, they will be prefixed by their
 	// length using this type. If the length does not fit within
 	// this type's representable size, it will throw an error.
-	LengthType UIntKind `protobuf:"varint,1,opt,name=lengthType,proto3,enum=UIntKind" json:"lengthType,omitempty"`
+	LengthType UIntKind `protobuf:"varint,1,opt,name=length_type,json=lengthType,proto3,enum=UIntKind" json:"length_type,omitempty"`
 	// *
 	// Optional check for maximum length
-	MaxLength     uint32 `protobuf:"varint,2,opt,name=maxLength,proto3" json:"maxLength,omitempty"`
+	MaxLength     uint32 `protobuf:"varint,2,opt,name=max_length,json=maxLength,proto3" json:"max_length,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -664,7 +664,7 @@ type EnumType struct {
 	//
 	// You can also override this behavior programmatically by overriding
 	// `Serializable.writeEnum`.
-	EncodeType IntKind `protobuf:"varint,2,opt,name=encodeType,proto3,enum=IntKind" json:"encodeType,omitempty"`
+	EncodeType IntKind `protobuf:"varint,2,opt,name=encode_type,json=encodeType,proto3,enum=IntKind" json:"encode_type,omitempty"`
 	// *
 	// Members of the enum and their mapping to its
 	// numeric value.
@@ -784,7 +784,7 @@ type ArrayType struct {
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// *
 	// Element type
-	ElType *Type `protobuf:"bytes,2,opt,name=elType,proto3" json:"elType,omitempty"`
+	ElType *Type `protobuf:"bytes,2,opt,name=el_type,json=elType,proto3" json:"el_type,omitempty"`
 	// *
 	// Either `number` for static array, or a 2-tuple for
 	// a range of sizes (or undefined for unbounded).
@@ -805,7 +805,7 @@ type ArrayType struct {
 	// > Ignored on statically sized arrays.
 	//
 	// Default: {@link TypeKind.u32}
-	LengthType    UIntKind `protobuf:"varint,5,opt,name=lengthType,proto3,enum=UIntKind" json:"lengthType,omitempty"`
+	LengthType    UIntKind `protobuf:"varint,5,opt,name=length_type,json=lengthType,proto3,enum=UIntKind" json:"length_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -930,7 +930,7 @@ type BytesType struct {
 	// > Ignored on statically sized arrays.
 	//
 	// Default: {@link TypeKind.u32}
-	LengthType    UIntKind `protobuf:"varint,5,opt,name=lengthType,proto3,enum=UIntKind" json:"lengthType,omitempty"`
+	LengthType    UIntKind `protobuf:"varint,5,opt,name=length_type,json=lengthType,proto3,enum=UIntKind" json:"length_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1582,7 +1582,7 @@ type BytesValue struct {
 	// Type of primitive elements
 	Kind NumberKind `protobuf:"varint,1,opt,name=kind,proto3,enum=NumberKind" json:"kind,omitempty"`
 	// Byte order, default = false
-	BigEndian bool `protobuf:"varint,2,opt,name=bigEndian,proto3" json:"bigEndian,omitempty"`
+	BigEndian bool `protobuf:"varint,2,opt,name=big_endian,json=bigEndian,proto3" json:"big_endian,omitempty"`
 	// Raw value in given byte order
 	Value         []byte `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -1900,10 +1900,9 @@ var File_type_proto protoreflect.FileDescriptor
 const file_type_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"type.proto\"8\n" +
-	"\vBooleanType\x12)\n" +
-	"\n" +
-	"encodeType\x18\x01 \x01(\x0e2\t.UIntKindR\n" +
+	"type.proto\"9\n" +
+	"\vBooleanType\x12*\n" +
+	"\vencode_type\x18\x01 \x01(\x0e2\t.UIntKindR\n" +
 	"encodeType\"K\n" +
 	"\aIntType\x12\x1c\n" +
 	"\x04kind\x18\x01 \x01(\x0e2\b.IntKindR\x04kind\x12\x10\n" +
@@ -1913,42 +1912,39 @@ const file_type_proto_rawDesc = "" +
 	"\x04kind\x18\x01 \x01(\x0e2\n" +
 	".FloatKindR\x04kind\x12\x10\n" +
 	"\x03min\x18\x02 \x01(\x01R\x03min\x12\x10\n" +
-	"\x03max\x18\x03 \x01(\x01R\x03max\"U\n" +
+	"\x03max\x18\x03 \x01(\x01R\x03max\"W\n" +
 	"\n" +
-	"StringType\x12)\n" +
+	"StringType\x12*\n" +
+	"\vlength_type\x18\x01 \x01(\x0e2\t.UIntKindR\n" +
+	"lengthType\x12\x1d\n" +
 	"\n" +
-	"lengthType\x18\x01 \x01(\x0e2\t.UIntKindR\n" +
-	"lengthType\x12\x1c\n" +
-	"\tmaxLength\x18\x02 \x01(\rR\tmaxLength\"P\n" +
+	"max_length\x18\x02 \x01(\rR\tmaxLength\"P\n" +
 	"\bEnumItem\x12\x14\n" +
 	"\x05value\x18\x01 \x01(\x05R\x05value\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
-	"\bmetadata\x18\x03 \x01(\tR\bmetadata\"i\n" +
+	"\bmetadata\x18\x03 \x01(\tR\bmetadata\"j\n" +
 	"\bEnumType\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12(\n" +
-	"\n" +
-	"encodeType\x18\x02 \x01(\x0e2\b.IntKindR\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12)\n" +
+	"\vencode_type\x18\x02 \x01(\x0e2\b.IntKindR\n" +
 	"encodeType\x12\x1f\n" +
 	"\x05items\x18\x03 \x03(\v2\t.EnumItemR\x05items\"6\n" +
 	"\x10BoundedArraySize\x12\x10\n" +
 	"\x03min\x18\x01 \x01(\rR\x03min\x12\x10\n" +
-	"\x03max\x18\x02 \x01(\rR\x03max\"\xba\x01\n" +
+	"\x03max\x18\x02 \x01(\rR\x03max\"\xbc\x01\n" +
 	"\tArrayType\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1d\n" +
-	"\x06elType\x18\x02 \x01(\v2\x05.TypeR\x06elType\x12\x18\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1e\n" +
+	"\ael_type\x18\x02 \x01(\v2\x05.TypeR\x06elType\x12\x18\n" +
 	"\x06static\x18\x03 \x01(\rH\x00R\x06static\x12-\n" +
-	"\adynamic\x18\x04 \x01(\v2\x11.BoundedArraySizeH\x00R\adynamic\x12)\n" +
-	"\n" +
-	"lengthType\x18\x05 \x01(\x0e2\t.UIntKindR\n" +
+	"\adynamic\x18\x04 \x01(\v2\x11.BoundedArraySizeH\x00R\adynamic\x12*\n" +
+	"\vlength_type\x18\x05 \x01(\x0e2\t.UIntKindR\n" +
 	"lengthTypeB\x06\n" +
-	"\x04size\"\xbc\x01\n" +
+	"\x04size\"\xbd\x01\n" +
 	"\tBytesType\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1f\n" +
 	"\x04kind\x18\x02 \x01(\x0e2\v.NumberKindR\x04kind\x12\x18\n" +
 	"\x06static\x18\x03 \x01(\rH\x00R\x06static\x12-\n" +
-	"\adynamic\x18\x04 \x01(\v2\x11.BoundedArraySizeH\x00R\adynamic\x12)\n" +
-	"\n" +
-	"lengthType\x18\x05 \x01(\x0e2\t.UIntKindR\n" +
+	"\adynamic\x18\x04 \x01(\v2\x11.BoundedArraySizeH\x00R\adynamic\x12*\n" +
+	"\vlength_type\x18\x05 \x01(\x0e2\t.UIntKindR\n" +
 	"lengthTypeB\x06\n" +
 	"\x04size\"p\n" +
 	"\x05Field\x12\x12\n" +
@@ -1990,11 +1986,12 @@ const file_type_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\v2\x06.ValueR\x05value:\x028\x01\"*\n" +
 	"\n" +
 	"ArrayValue\x12\x1c\n" +
-	"\x05value\x18\x01 \x03(\v2\x06.ValueR\x05value\"a\n" +
+	"\x05value\x18\x01 \x03(\v2\x06.ValueR\x05value\"b\n" +
 	"\n" +
 	"BytesValue\x12\x1f\n" +
-	"\x04kind\x18\x01 \x01(\x0e2\v.NumberKindR\x04kind\x12\x1c\n" +
-	"\tbigEndian\x18\x02 \x01(\bR\tbigEndian\x12\x14\n" +
+	"\x04kind\x18\x01 \x01(\x0e2\v.NumberKindR\x04kind\x12\x1d\n" +
+	"\n" +
+	"big_endian\x18\x02 \x01(\bR\tbigEndian\x12\x14\n" +
 	"\x05value\x18\x03 \x01(\fR\x05value\";\n" +
 	"\tEnumValue\x12\x10\n" +
 	"\x03raw\x18\x01 \x01(\x03R\x03raw\x12\x1c\n" +
@@ -2106,18 +2103,18 @@ var file_type_proto_goTypes = []any{
 	nil,                      // 25: ObjectValue.OEntry
 }
 var file_type_proto_depIdxs = []int32{
-	2,  // 0: BooleanType.encodeType:type_name -> UIntKind
+	2,  // 0: BooleanType.encode_type:type_name -> UIntKind
 	0,  // 1: IntType.kind:type_name -> IntKind
 	4,  // 2: FloatType.kind:type_name -> FloatKind
-	2,  // 3: StringType.lengthType:type_name -> UIntKind
-	0,  // 4: EnumType.encodeType:type_name -> IntKind
+	2,  // 3: StringType.length_type:type_name -> UIntKind
+	0,  // 4: EnumType.encode_type:type_name -> IntKind
 	10, // 5: EnumType.items:type_name -> EnumItem
-	19, // 6: ArrayType.elType:type_name -> Type
+	19, // 6: ArrayType.el_type:type_name -> Type
 	12, // 7: ArrayType.dynamic:type_name -> BoundedArraySize
-	2,  // 8: ArrayType.lengthType:type_name -> UIntKind
+	2,  // 8: ArrayType.length_type:type_name -> UIntKind
 	1,  // 9: BytesType.kind:type_name -> NumberKind
 	12, // 10: BytesType.dynamic:type_name -> BoundedArraySize
-	2,  // 11: BytesType.lengthType:type_name -> UIntKind
+	2,  // 11: BytesType.length_type:type_name -> UIntKind
 	19, // 12: Field.type:type_name -> Type
 	24, // 13: Field.value:type_name -> Value
 	15, // 14: ObjectType.fields:type_name -> Field

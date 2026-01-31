@@ -157,7 +157,7 @@ func (x *Reply) GetSuccess() bool {
 type SequenceReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	CommandIndex  int32                  `protobuf:"varint,2,opt,name=commandIndex,proto3" json:"commandIndex,omitempty"`
+	CommandIndex  int32                  `protobuf:"varint,2,opt,name=command_index,json=commandIndex,proto3" json:"command_index,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -586,7 +586,7 @@ type Uplink_Cmd struct {
 }
 
 type Uplink_ParseCmd struct {
-	ParseCmd *RawCommandValue `protobuf:"bytes,3,opt,name=parseCmd,proto3,oneof"`
+	ParseCmd *RawCommandValue `protobuf:"bytes,3,opt,name=parse_cmd,json=parseCmd,proto3,oneof"`
 }
 
 type Uplink_Seq struct {
@@ -594,7 +594,7 @@ type Uplink_Seq struct {
 }
 
 type Uplink_ParseSeq struct {
-	ParseSeq *RawCommandSequence `protobuf:"bytes,5,opt,name=parseSeq,proto3,oneof"`
+	ParseSeq *RawCommandSequence `protobuf:"bytes,5,opt,name=parse_seq,json=parseSeq,proto3,oneof"`
 }
 
 type Uplink_File struct {
@@ -864,10 +864,10 @@ const file_msg_proto_rawDesc = "" +
 	"\aFswList\x12\x16\n" +
 	"\x03all\x18\x01 \x03(\v2\x04.FswR\x03all\"!\n" +
 	"\x05Reply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"M\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"N\n" +
 	"\rSequenceReply\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\"\n" +
-	"\fcommandIndex\x18\x02 \x01(\x05R\fcommandIndex\"y\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
+	"\rcommand_index\x18\x02 \x01(\x05R\fcommandIndex\"y\n" +
 	"\x0fStatefulProfile\x12\x1e\n" +
 	"\x05value\x18\x01 \x01(\v2\b.ProfileR\x05value\x12#\n" +
 	"\x05state\x18\x02 \x01(\x0e2\r.ProfileStateR\x05state\x12!\n" +
@@ -886,13 +886,13 @@ const file_msg_proto_rawDesc = "" +
 	"\x03all\x18\x01 \x03(\v2\x18.DictionaryList.AllEntryR\x03all\x1aG\n" +
 	"\bAllEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12%\n" +
-	"\x05value\x18\x02 \x01(\v2\x0f.DictionaryHeadR\x05value:\x028\x01\"\xd7\x02\n" +
+	"\x05value\x18\x02 \x01(\v2\x0f.DictionaryHeadR\x05value:\x028\x01\"\xd9\x02\n" +
 	"\x06Uplink\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
-	"\x03cmd\x18\x02 \x01(\v2\r.CommandValueH\x00R\x03cmd\x12.\n" +
-	"\bparseCmd\x18\x03 \x01(\v2\x10.RawCommandValueH\x00R\bparseCmd\x12$\n" +
-	"\x03seq\x18\x04 \x01(\v2\x10.CommandSequenceH\x00R\x03seq\x121\n" +
-	"\bparseSeq\x18\x05 \x01(\v2\x13.RawCommandSequenceH\x00R\bparseSeq\x12&\n" +
+	"\x03cmd\x18\x02 \x01(\v2\r.CommandValueH\x00R\x03cmd\x12/\n" +
+	"\tparse_cmd\x18\x03 \x01(\v2\x10.RawCommandValueH\x00R\bparseCmd\x12$\n" +
+	"\x03seq\x18\x04 \x01(\v2\x10.CommandSequenceH\x00R\x03seq\x122\n" +
+	"\tparse_seq\x18\x05 \x01(\v2\x13.RawCommandSequenceH\x00R\bparseSeq\x12&\n" +
 	"\x04file\x18\x06 \x01(\v2\x10.UplinkFileChunkH\x00R\x04file\x120\n" +
 	"\x06cancel\x18c \x01(\v2\x16.google.protobuf.EmptyH\x00R\x06cancel\x12.\n" +
 	"\x05final\x18d \x01(\v2\x16.google.protobuf.EmptyH\x00R\x05finalB\a\n" +
@@ -959,9 +959,9 @@ var file_msg_proto_depIdxs = []int32{
 	18, // 4: ProfileProviderList.all:type_name -> ProfileProvider
 	14, // 5: DictionaryList.all:type_name -> DictionaryList.AllEntry
 	19, // 6: Uplink.cmd:type_name -> CommandValue
-	20, // 7: Uplink.parseCmd:type_name -> RawCommandValue
+	20, // 7: Uplink.parse_cmd:type_name -> RawCommandValue
 	21, // 8: Uplink.seq:type_name -> CommandSequence
-	22, // 9: Uplink.parseSeq:type_name -> RawCommandSequence
+	22, // 9: Uplink.parse_seq:type_name -> RawCommandSequence
 	23, // 10: Uplink.file:type_name -> UplinkFileChunk
 	24, // 11: Uplink.cancel:type_name -> google.protobuf.Empty
 	24, // 12: Uplink.final:type_name -> google.protobuf.Empty

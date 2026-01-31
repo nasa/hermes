@@ -54,22 +54,22 @@ class CommandDef(_message.Message):
     def __init__(self, opcode: _Optional[int] = ..., mnemonic: _Optional[str] = ..., component: _Optional[str] = ..., arguments: _Optional[_Iterable[_Union[_type_pb2.Field, _Mapping]]] = ..., metadata: _Optional[str] = ...) -> None: ...
 
 class EventDef(_message.Message):
-    __slots__ = ("id", "component", "name", "severity", "formatString", "arguments", "metadata")
+    __slots__ = ("id", "component", "name", "severity", "format_string", "arguments", "metadata")
     ID_FIELD_NUMBER: _ClassVar[int]
     COMPONENT_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     SEVERITY_FIELD_NUMBER: _ClassVar[int]
-    FORMATSTRING_FIELD_NUMBER: _ClassVar[int]
+    FORMAT_STRING_FIELD_NUMBER: _ClassVar[int]
     ARGUMENTS_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     id: int
     component: str
     name: str
     severity: EvrSeverity
-    formatString: str
+    format_string: str
     arguments: _containers.RepeatedCompositeFieldContainer[_type_pb2.Field]
     metadata: str
-    def __init__(self, id: _Optional[int] = ..., component: _Optional[str] = ..., name: _Optional[str] = ..., severity: _Optional[_Union[EvrSeverity, str]] = ..., formatString: _Optional[str] = ..., arguments: _Optional[_Iterable[_Union[_type_pb2.Field, _Mapping]]] = ..., metadata: _Optional[str] = ...) -> None: ...
+    def __init__(self, id: _Optional[int] = ..., component: _Optional[str] = ..., name: _Optional[str] = ..., severity: _Optional[_Union[EvrSeverity, str]] = ..., format_string: _Optional[str] = ..., arguments: _Optional[_Iterable[_Union[_type_pb2.Field, _Mapping]]] = ..., metadata: _Optional[str] = ...) -> None: ...
 
 class EventRef(_message.Message):
     __slots__ = ("id", "name", "component", "severity", "arguments", "dictionary")

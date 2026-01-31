@@ -13,7 +13,7 @@ import "msg.proto";
 service Api {
   /**
    * Send a command sequence to the FSW to execute.
-   * 
+   *
    * If the FSW connection does not implement this endpoint directly,
    * this becomes a pseudo-endpoint that will wrap the 'Command' and allow
    * running commands in sequence. This is preferrable to successive
@@ -22,12 +22,12 @@ service Api {
    *
    * Metadata:
    *  "id": [fsw-id]
-   * 
+   *
    * TODO(tumbar) We will probably want to expand this to add some identifying
    * metadata to allow linking back to the code cell in our Notebooks
-   * 
+   *
    * Optional Metadata
-   *  Keep executing the sequence even if 
+   *  Keep executing the sequence even if
    *  "keepGoingOnFailure": "x"
    */
   rpc Sequence(CommandSequence) returns (SequenceReply);
@@ -63,7 +63,7 @@ service Api {
 
   /**
    * Uplink a file to the FSW.
-   * 
+   *
    * Metadata:
    *  "id": [fsw-id]
    */
@@ -99,9 +99,18 @@ service Api {
   // Get all the registered profile providers
   rpc AllProviders(google.protobuf.Empty) returns (ProfileProviderList);
 
+  // Get the current file downlink/uplink state
+  rpc GetFileTransferState(google.protobuf.Empty) returns (FileTransferState);
+
+  // Clear the cached downlink transfer state
+  rpc ClearDownlinkTransferState(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  // Clear the cached uplink transfer state
+  rpc ClearUplinkTransferState(google.protobuf.Empty) returns (google.protobuf.Empty);
+
   // Get notified when the set of profile providers updates
   rpc SubscribeProviders(google.protobuf.Empty)
-      returns (stream ProfileProviderList);
+  returns (stream ProfileProviderList);
 
   // Get notified when the set of profile or their internal state updates
   rpc SubscribeProfiles(google.protobuf.Empty) returns (stream ProfileList);
@@ -145,6 +154,12 @@ service Api {
 
   // Subscribe to the file downlink message bus
   rpc SubFileDownlink(BusFilter) returns (stream FileDownlink);
+
+  // Subscribe to the file downlink message bus
+  rpc SubFileUplink(BusFilter) returns (stream FileUplink);
+
+  // Subscribe to the aggregated state of file uplink and downlink
+  rpc SubFileTransfer(google.protobuf.Empty) returns (stream FileTransferState);
 }
 
 // API to provide interface with an external software
@@ -153,17 +168,17 @@ service Provider {
    * A long lived connection telling the host that a link is active with
    * some external software (FSW). The server streams in uplink requests which
    * are handled and replied to over this long lived connection.
-   * 
+   *
    * Any downlink comming from this FSW is routed through the other client stream endpoints.
    */
   rpc Connection(stream FswConnectionPacket) returns (stream Uplink);
 
   /**
    * Initiate a file downlink session with the host.
-   * 
+   *
    * This request is for a single file downlink session.
    * It should start with a FileHeader and stream byte data
-   * 
+   *
    * TODO(tumbar) Figure out a mechanism for file validation
    */
   rpc File(stream DownlinkFileChunk) returns (google.protobuf.Empty);

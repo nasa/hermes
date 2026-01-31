@@ -212,20 +212,20 @@ class Client:
                 return b"true"
             else:
                 return b"false"
-        elif msg.HasField("parseCmd"):
-            p = await self._run_request(msg.id, connection.parse_command(msg.parseCmd))
+        elif msg.HasField("parse_cmd"):
+            p = await self._run_request(msg.id, connection.parse_command(msg.parse_cmd))
             return p.SerializeToString()
         elif msg.HasField("seq"):
             reply = await self._run_request(msg.id, connection.sequence(msg.seq))
             replyMsg = (
                 SequenceReply(success=True)
                 if reply is None
-                else SequenceReply(success=False, commandIndex=reply)
+                else SequenceReply(success=False, command_index=reply)
             )
 
             return replyMsg.SerializeToString()
-        elif msg.HasField("parseSeq"):
-            p = await self._run_request(msg.id, connection.parse_sequence(msg.parseSeq))
+        elif msg.HasField("parse_seq"):
+            p = await self._run_request(msg.id, connection.parse_sequence(msg.parse_seq))
             return p.SerializeToString()
         elif msg.HasField("file"):
             if msg.file.HasField("header"):

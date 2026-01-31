@@ -22,13 +22,13 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
-from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 import type_pb2 as type__pb2
+from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 import dictionary_pb2 as dictionary__pb2
 import time_pb2 as time__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tbus.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\ntype.proto\x1a\x10\x64ictionary.proto\x1a\ntime.proto\"Q\n\tBusFilter\x12\x0e\n\x06source\x18\x01 \x01(\t\x12\r\n\x05names\x18\x02 \x03(\t\x12%\n\x07\x63ontext\x18\x03 \x01(\x0e\x32\x14.SourceContextFilter\"\xb0\x01\n\x05\x45vent\x12\x16\n\x03ref\x18\x01 \x01(\x0b\x32\t.EventRef\x12\x13\n\x04time\x18\x02 \x01(\x0b\x32\x05.Time\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x14\n\x04\x61rgs\x18\x04 \x03(\x0b\x32\x06.Value\x12\x1e\n\x04tags\x18\x05 \x03(\x0b\x32\x10.Event.TagsEntry\x1a\x33\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x15\n\x05value\x18\x02 \x01(\x0b\x32\x06.Value:\x02\x38\x01\"\xb0\x01\n\tTelemetry\x12\x1a\n\x03ref\x18\x01 \x01(\x0b\x32\r.TelemetryRef\x12\x13\n\x04time\x18\x02 \x01(\x0b\x32\x05.Time\x12\x15\n\x05value\x18\x03 \x01(\x0b\x32\x06.Value\x12&\n\x06labels\x18\x04 \x03(\x0b\x32\x16.Telemetry.LabelsEntry\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01J\x04\x08\x05\x10\x06\"V\n\x0cSourcedEvent\x12\x15\n\x05\x65vent\x18\x01 \x01(\x0b\x32\x06.Event\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x1f\n\x07\x63ontext\x18\x03 \x01(\x0e\x32\x0e.SourceContext\"b\n\x10SourcedTelemetry\x12\x1d\n\ttelemetry\x18\x01 \x01(\x0b\x32\n.Telemetry\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x1f\n\x07\x63ontext\x18\x03 \x01(\x0e\x32\x0e.SourceContext\"1\n\x11\x46ileDownlinkChunk\x12\x0e\n\x06offset\x18\x01 \x01(\x04\x12\x0c\n\x04size\x18\x02 \x01(\x04\"\xbb\x03\n\x0c\x46ileDownlink\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12-\n\ttimeStart\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12+\n\x07timeEnd\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12-\n\x06status\x18\x04 \x01(\x0e\x32\x1d.FileDownlinkCompletionStatus\x12\x0e\n\x06source\x18\x05 \x01(\t\x12\x12\n\nsourcePath\x18\x06 \x01(\t\x12\x17\n\x0f\x64\x65stinationPath\x18\x07 \x01(\t\x12\x10\n\x08\x66ilePath\x18\x08 \x01(\t\x12)\n\rmissingChunks\x18\t \x03(\x0b\x32\x12.FileDownlinkChunk\x12+\n\x0f\x64uplicateChunks\x18\n \x03(\x0b\x32\x12.FileDownlinkChunk\x12\x0c\n\x04size\x18\x0b \x01(\x04\x12-\n\x08metadata\x18\x0c \x03(\x0b\x32\x1b.FileDownlink.MetadataEntry\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01*D\n\x13SourceContextFilter\x12\x11\n\rREALTIME_ONLY\x10\x00\x12\x11\n\rRECORDED_ONLY\x10\x01\x12\x07\n\x03\x41LL\x10\x02*+\n\rSourceContext\x12\x0c\n\x08REALTIME\x10\x00\x12\x0c\n\x08RECORDED\x10\x01*\x84\x01\n\x1c\x46ileDownlinkCompletionStatus\x12\x16\n\x12\x44OWNLINK_COMPLETED\x10\x00\x12\x1d\n\x10\x44OWNLINK_UNKNOWN\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x14\n\x10\x44OWNLINK_PARTIAL\x10\x01\x12\x17\n\x13\x44OWNLINK_CRC_FAILED\x10\x02\x42\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tbus.proto\x1a\ntype.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x10\x64ictionary.proto\x1a\ntime.proto\"Q\n\tBusFilter\x12\x0e\n\x06source\x18\x01 \x01(\t\x12\r\n\x05names\x18\x02 \x03(\t\x12%\n\x07\x63ontext\x18\x03 \x01(\x0e\x32\x14.SourceContextFilter\"\xb0\x01\n\x05\x45vent\x12\x16\n\x03ref\x18\x01 \x01(\x0b\x32\t.EventRef\x12\x13\n\x04time\x18\x02 \x01(\x0b\x32\x05.Time\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x14\n\x04\x61rgs\x18\x04 \x03(\x0b\x32\x06.Value\x12\x1e\n\x04tags\x18\x05 \x03(\x0b\x32\x10.Event.TagsEntry\x1a\x33\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x15\n\x05value\x18\x02 \x01(\x0b\x32\x06.Value:\x02\x38\x01\"\xb0\x01\n\tTelemetry\x12\x1a\n\x03ref\x18\x01 \x01(\x0b\x32\r.TelemetryRef\x12\x13\n\x04time\x18\x02 \x01(\x0b\x32\x05.Time\x12\x15\n\x05value\x18\x03 \x01(\x0b\x32\x06.Value\x12&\n\x06labels\x18\x04 \x03(\x0b\x32\x16.Telemetry.LabelsEntry\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01J\x04\x08\x05\x10\x06\"V\n\x0cSourcedEvent\x12\x15\n\x05\x65vent\x18\x01 \x01(\x0b\x32\x06.Event\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x1f\n\x07\x63ontext\x18\x03 \x01(\x0e\x32\x0e.SourceContext\"b\n\x10SourcedTelemetry\x12\x1d\n\ttelemetry\x18\x01 \x01(\x0b\x32\n.Telemetry\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x1f\n\x07\x63ontext\x18\x03 \x01(\x0e\x32\x0e.SourceContext\"1\n\x11\x46ileDownlinkChunk\x12\x0e\n\x06offset\x18\x01 \x01(\x04\x12\x0c\n\x04size\x18\x02 \x01(\x04\"\xc2\x03\n\x0c\x46ileDownlink\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12.\n\ntime_start\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x08time_end\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12-\n\x06status\x18\x04 \x01(\x0e\x32\x1d.FileDownlinkCompletionStatus\x12\x0e\n\x06source\x18\x05 \x01(\t\x12\x13\n\x0bsource_path\x18\x06 \x01(\t\x12\x18\n\x10\x64\x65stination_path\x18\x07 \x01(\t\x12\x11\n\tfile_path\x18\x08 \x01(\t\x12*\n\x0emissing_chunks\x18\t \x03(\x0b\x32\x12.FileDownlinkChunk\x12,\n\x10\x64uplicate_chunks\x18\n \x03(\x0b\x32\x12.FileDownlinkChunk\x12\x0c\n\x04size\x18\x0b \x01(\x04\x12-\n\x08metadata\x18\x0c \x03(\x0b\x32\x1b.FileDownlink.MetadataEntry\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xb1\x02\n\nFileUplink\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12.\n\ntime_start\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x08time_end\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0e\n\x06\x66sw_id\x18\x05 \x01(\t\x12\x13\n\x0bsource_path\x18\x06 \x01(\t\x12\x18\n\x10\x64\x65stination_path\x18\x07 \x01(\t\x12\r\n\x05\x65rror\x18\x08 \x01(\t\x12\x0c\n\x04size\x18\t \x01(\x04\x12+\n\x08metadata\x18\n \x03(\x0b\x32\x19.FileUplink.MetadataEntry\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"u\n\x0c\x46ileTransfer\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x0e\n\x06\x66sw_id\x18\x02 \x01(\t\x12\x13\n\x0bsource_path\x18\x03 \x01(\t\x12\x13\n\x0btarget_path\x18\x04 \x01(\t\x12\x0c\n\x04size\x18\x05 \x01(\x04\x12\x10\n\x08progress\x18\x06 \x01(\x04\"\xbd\x01\n\x11\x46ileTransferState\x12)\n\x12\x64ownlink_completed\x18\x01 \x03(\x0b\x32\r.FileDownlink\x12%\n\x10uplink_completed\x18\x02 \x03(\x0b\x32\x0b.FileUplink\x12+\n\x14\x64ownlink_in_progress\x18\x03 \x03(\x0b\x32\r.FileTransfer\x12)\n\x12uplink_in_progress\x18\x04 \x03(\x0b\x32\r.FileTransfer*D\n\x13SourceContextFilter\x12\x11\n\rREALTIME_ONLY\x10\x00\x12\x11\n\rRECORDED_ONLY\x10\x01\x12\x07\n\x03\x41LL\x10\x02*+\n\rSourceContext\x12\x0c\n\x08REALTIME\x10\x00\x12\x0c\n\x08RECORDED\x10\x01*\x84\x01\n\x1c\x46ileDownlinkCompletionStatus\x12\x16\n\x12\x44OWNLINK_COMPLETED\x10\x00\x12\x1d\n\x10\x44OWNLINK_UNKNOWN\x10\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01\x12\x14\n\x10\x44OWNLINK_PARTIAL\x10\x01\x12\x17\n\x13\x44OWNLINK_CRC_FAILED\x10\x02\x42\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -42,12 +42,14 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_TELEMETRY_LABELSENTRY']._serialized_options = b'8\001'
   _globals['_FILEDOWNLINK_METADATAENTRY']._loaded_options = None
   _globals['_FILEDOWNLINK_METADATAENTRY']._serialized_options = b'8\001'
-  _globals['_SOURCECONTEXTFILTER']._serialized_start=1214
-  _globals['_SOURCECONTEXTFILTER']._serialized_end=1282
-  _globals['_SOURCECONTEXT']._serialized_start=1284
-  _globals['_SOURCECONTEXT']._serialized_end=1327
-  _globals['_FILEDOWNLINKCOMPLETIONSTATUS']._serialized_start=1330
-  _globals['_FILEDOWNLINKCOMPLETIONSTATUS']._serialized_end=1462
+  _globals['_FILEUPLINK_METADATAENTRY']._loaded_options = None
+  _globals['_FILEUPLINK_METADATAENTRY']._serialized_options = b'8\001'
+  _globals['_SOURCECONTEXTFILTER']._serialized_start=1840
+  _globals['_SOURCECONTEXTFILTER']._serialized_end=1908
+  _globals['_SOURCECONTEXT']._serialized_start=1910
+  _globals['_SOURCECONTEXT']._serialized_end=1953
+  _globals['_FILEDOWNLINKCOMPLETIONSTATUS']._serialized_start=1956
+  _globals['_FILEDOWNLINKCOMPLETIONSTATUS']._serialized_end=2088
   _globals['_BUSFILTER']._serialized_start=88
   _globals['_BUSFILTER']._serialized_end=169
   _globals['_EVENT']._serialized_start=172
@@ -65,7 +67,15 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_FILEDOWNLINKCHUNK']._serialized_start=717
   _globals['_FILEDOWNLINKCHUNK']._serialized_end=766
   _globals['_FILEDOWNLINK']._serialized_start=769
-  _globals['_FILEDOWNLINK']._serialized_end=1212
-  _globals['_FILEDOWNLINK_METADATAENTRY']._serialized_start=1165
-  _globals['_FILEDOWNLINK_METADATAENTRY']._serialized_end=1212
+  _globals['_FILEDOWNLINK']._serialized_end=1219
+  _globals['_FILEDOWNLINK_METADATAENTRY']._serialized_start=1172
+  _globals['_FILEDOWNLINK_METADATAENTRY']._serialized_end=1219
+  _globals['_FILEUPLINK']._serialized_start=1222
+  _globals['_FILEUPLINK']._serialized_end=1527
+  _globals['_FILEUPLINK_METADATAENTRY']._serialized_start=1172
+  _globals['_FILEUPLINK_METADATAENTRY']._serialized_end=1219
+  _globals['_FILETRANSFER']._serialized_start=1529
+  _globals['_FILETRANSFER']._serialized_end=1646
+  _globals['_FILETRANSFERSTATE']._serialized_start=1649
+  _globals['_FILETRANSFERSTATE']._serialized_end=1838
 # @@protoc_insertion_point(module_scope)

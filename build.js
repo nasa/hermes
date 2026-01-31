@@ -222,6 +222,12 @@ const builds = {
             entryPoints: ['app/connections/index.tsx']
         },
 
+        'files': {
+            ...browserOptions(),
+            outfile: 'out/files.js',
+            entryPoints: ['app/files/index.tsx']
+        },
+
         'evr-renderer': {
             ...browserOptions(), plugins: [
                 style(),

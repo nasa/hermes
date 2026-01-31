@@ -21,11 +21,15 @@ import { evrMessaging } from './notebook/evrMessaging';
 import { ShellScriptLanguageProvider } from './kernels/shellscript';
 import { PythonLanguageProvider } from './kernels/python';
 import { UplinkLanguageProvider } from './kernels/uplink';
+import { DownlinkViewer } from './components/DownlinkViewer';
+import { UplinkViewer } from './components/UplinkViewer';
 
 export class VscodeHermes implements CoreApi {
     private subscriptions: vscode.Disposable[] = [];
     private evrPanel?: EvrPanel;
     private connectionViewer?: ConnectionViewer;
+    private downlinkViewer?: DownlinkViewer;
+    private uplinkViewer?: UplinkViewer;
 
     private notebookLanguages: NotebookLanguageManager;
     private dictionaryStatus: Map<string, DictionaryLanguageItem>;
@@ -50,12 +54,20 @@ export class VscodeHermes implements CoreApi {
     async activate(): Promise<void> {
         // Viewers
         this.connectionViewer = new ConnectionViewer(this.extensionPath, this.api, this);
+        this.downlinkViewer = new DownlinkViewer(this.extensionPath, this.api);
+        this.uplinkViewer = new UplinkViewer(this.extensionPath, this.api);
         this.evrPanel = new EvrPanel(this.api, this.extensionPath);
 
         this.subscriptions.push(
             this.registerShellscriptBinPath(path.join(this.extensionPath, 'out', 'bin')),
 
             vscode.commands.registerCommand('hermes.applyWorkspaceEdit', vscode.workspace.applyEdit),
+            vscode.commands.registerCommand('hermes.downlink.clear', () => {
+                this.api.clearDownlinkTransferState();
+            }),
+            vscode.commands.registerCommand('hermes.uplink.clear', () => {
+                this.api.clearUplinkTransferState();
+            }),
 
             // Hermes Notebook support
             ...NotebookController.registerCommands(),
@@ -70,6 +82,8 @@ export class VscodeHermes implements CoreApi {
 
             this.evrPanel,
             this.connectionViewer,
+            this.downlinkViewer,
+            this.uplinkViewer,
 
             this.registerNotebookType("hermes.notebook"),
             this.registerNotebookType("jupyter-notebook"),
@@ -88,6 +102,8 @@ export class VscodeHermes implements CoreApi {
     refresh(): void {
         // this.evrPanel?.refresh();
         this.connectionViewer?.refresh();
+        this.downlinkViewer?.refresh();
+        this.uplinkViewer?.refresh();
     }
 
     registerDictionaryProvider(

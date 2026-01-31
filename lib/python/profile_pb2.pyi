@@ -17,14 +17,14 @@ PROFILE_ACTIVE: ProfileState
 PROFILE_DISCONNECT: ProfileState
 
 class ProfileProvider(_message.Message):
-    __slots__ = ("name", "schema", "uiSchema")
+    __slots__ = ("name", "schema", "ui_schema")
     NAME_FIELD_NUMBER: _ClassVar[int]
     SCHEMA_FIELD_NUMBER: _ClassVar[int]
-    UISCHEMA_FIELD_NUMBER: _ClassVar[int]
+    UI_SCHEMA_FIELD_NUMBER: _ClassVar[int]
     name: str
     schema: str
-    uiSchema: str
-    def __init__(self, name: _Optional[str] = ..., schema: _Optional[str] = ..., uiSchema: _Optional[str] = ...) -> None: ...
+    ui_schema: str
+    def __init__(self, name: _Optional[str] = ..., schema: _Optional[str] = ..., ui_schema: _Optional[str] = ...) -> None: ...
 
 class Profile(_message.Message):
     __slots__ = ("name", "provider", "settings")

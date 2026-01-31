@@ -8,7 +8,7 @@ message ProfileProvider {
   string schema = 2;
 
   /* (optional) React JSON Schema Form UI Schema */
-  string uiSchema = 3;
+  string ui_schema = 3;
 }
 
 message Profile {

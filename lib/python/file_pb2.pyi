@@ -7,7 +7,7 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class FileHeader(_message.Message):
-    __slots__ = ("sourcePath", "destinationPath", "size", "metadata")
+    __slots__ = ("source_path", "destination_path", "size", "metadata")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -15,15 +15,15 @@ class FileHeader(_message.Message):
         key: str
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
-    SOURCEPATH_FIELD_NUMBER: _ClassVar[int]
-    DESTINATIONPATH_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_PATH_FIELD_NUMBER: _ClassVar[int]
+    DESTINATION_PATH_FIELD_NUMBER: _ClassVar[int]
     SIZE_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
-    sourcePath: str
-    destinationPath: str
+    source_path: str
+    destination_path: str
     size: int
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, sourcePath: _Optional[str] = ..., destinationPath: _Optional[str] = ..., size: _Optional[int] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    def __init__(self, source_path: _Optional[str] = ..., destination_path: _Optional[str] = ..., size: _Optional[int] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class UplinkFileChunk(_message.Message):
     __slots__ = ("header", "data")

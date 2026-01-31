@@ -71,8 +71,8 @@ export async function activate(context: vscode.ExtensionContext) {
     const nbLanguage = new FprimeNotebookLanguageProvider(hermesVSCode.api, ext);
 
     context.subscriptions.push(
-        hermesVSCode.registerDictionaryProvider("FPrime (XML)", new FprimeXmlDictionaryProvider()),
-        hermesVSCode.registerDictionaryProvider("FPrime (JSON)", new FprimeJsonDictionaryProvider()),
+        hermesVSCode.registerDictionaryProvider("F Prime (JSON, >4.0)", new FprimeJsonDictionaryProvider()),
+        hermesVSCode.registerDictionaryProvider("F Prime (XML, <4.0)", new FprimeXmlDictionaryProvider()),
         hermesVSCode.registerLanguageDictionaryItem(dictionaryItem),
         hermesVSCode.registerNotebookLanguageProvider("fprime", nbLanguage),
 

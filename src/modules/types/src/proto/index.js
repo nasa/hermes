@@ -2436,6 +2436,1158 @@ $root.FileDownlink = (function() {
     return FileDownlink;
 })();
 
+$root.FileUplink = (function() {
+
+    /**
+     * Properties of a FileUplink.
+     * @exports IFileUplink
+     * @interface IFileUplink
+     * @property {string|null} [uid] FileUplink uid
+     * @property {google.protobuf.ITimestamp|null} [timeStart] FileUplink timeStart
+     * @property {google.protobuf.ITimestamp|null} [timeEnd] FileUplink timeEnd
+     * @property {string|null} [fswId] FileUplink fswId
+     * @property {string|null} [sourcePath] FileUplink sourcePath
+     * @property {string|null} [destinationPath] FileUplink destinationPath
+     * @property {string|null} [error] FileUplink error
+     * @property {number|Long|null} [size] FileUplink size
+     * @property {Object.<string,string>|null} [metadata] FileUplink metadata
+     */
+
+    /**
+     * Constructs a new FileUplink.
+     * @exports FileUplink
+     * @classdesc Represents a FileUplink.
+     * @implements IFileUplink
+     * @constructor
+     * @param {IFileUplink=} [properties] Properties to set
+     */
+    function FileUplink(properties) {
+        this.metadata = {};
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * FileUplink uid.
+     * @member {string} uid
+     * @memberof FileUplink
+     * @instance
+     */
+    FileUplink.prototype.uid = "";
+
+    /**
+     * FileUplink timeStart.
+     * @member {google.protobuf.ITimestamp|null|undefined} timeStart
+     * @memberof FileUplink
+     * @instance
+     */
+    FileUplink.prototype.timeStart = null;
+
+    /**
+     * FileUplink timeEnd.
+     * @member {google.protobuf.ITimestamp|null|undefined} timeEnd
+     * @memberof FileUplink
+     * @instance
+     */
+    FileUplink.prototype.timeEnd = null;
+
+    /**
+     * FileUplink fswId.
+     * @member {string} fswId
+     * @memberof FileUplink
+     * @instance
+     */
+    FileUplink.prototype.fswId = "";
+
+    /**
+     * FileUplink sourcePath.
+     * @member {string} sourcePath
+     * @memberof FileUplink
+     * @instance
+     */
+    FileUplink.prototype.sourcePath = "";
+
+    /**
+     * FileUplink destinationPath.
+     * @member {string} destinationPath
+     * @memberof FileUplink
+     * @instance
+     */
+    FileUplink.prototype.destinationPath = "";
+
+    /**
+     * FileUplink error.
+     * @member {string} error
+     * @memberof FileUplink
+     * @instance
+     */
+    FileUplink.prototype.error = "";
+
+    /**
+     * FileUplink size.
+     * @member {number|Long} size
+     * @memberof FileUplink
+     * @instance
+     */
+    FileUplink.prototype.size = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+    /**
+     * FileUplink metadata.
+     * @member {Object.<string,string>} metadata
+     * @memberof FileUplink
+     * @instance
+     */
+    FileUplink.prototype.metadata = $util.emptyObject;
+
+    /**
+     * Creates a new FileUplink instance using the specified properties.
+     * @function create
+     * @memberof FileUplink
+     * @static
+     * @param {IFileUplink=} [properties] Properties to set
+     * @returns {FileUplink} FileUplink instance
+     */
+    FileUplink.create = function create(properties) {
+        return new FileUplink(properties);
+    };
+
+    /**
+     * Encodes the specified FileUplink message. Does not implicitly {@link FileUplink.verify|verify} messages.
+     * @function encode
+     * @memberof FileUplink
+     * @static
+     * @param {IFileUplink} message FileUplink message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    FileUplink.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.uid != null && Object.hasOwnProperty.call(message, "uid"))
+            writer.uint32(/* id 1, wireType 2 =*/10).string(message.uid);
+        if (message.timeStart != null && Object.hasOwnProperty.call(message, "timeStart"))
+            $root.google.protobuf.Timestamp.encode(message.timeStart, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        if (message.timeEnd != null && Object.hasOwnProperty.call(message, "timeEnd"))
+            $root.google.protobuf.Timestamp.encode(message.timeEnd, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+        if (message.fswId != null && Object.hasOwnProperty.call(message, "fswId"))
+            writer.uint32(/* id 5, wireType 2 =*/42).string(message.fswId);
+        if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
+            writer.uint32(/* id 6, wireType 2 =*/50).string(message.sourcePath);
+        if (message.destinationPath != null && Object.hasOwnProperty.call(message, "destinationPath"))
+            writer.uint32(/* id 7, wireType 2 =*/58).string(message.destinationPath);
+        if (message.error != null && Object.hasOwnProperty.call(message, "error"))
+            writer.uint32(/* id 8, wireType 2 =*/66).string(message.error);
+        if (message.size != null && Object.hasOwnProperty.call(message, "size"))
+            writer.uint32(/* id 9, wireType 0 =*/72).uint64(message.size);
+        if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+            for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
+                writer.uint32(/* id 10, wireType 2 =*/82).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.metadata[keys[i]]).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified FileUplink message, length delimited. Does not implicitly {@link FileUplink.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof FileUplink
+     * @static
+     * @param {IFileUplink} message FileUplink message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    FileUplink.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a FileUplink message from the specified reader or buffer.
+     * @function decode
+     * @memberof FileUplink
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {FileUplink} FileUplink
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    FileUplink.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.FileUplink(), key, value;
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.uid = reader.string();
+                    break;
+                }
+            case 2: {
+                    message.timeStart = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                    break;
+                }
+            case 3: {
+                    message.timeEnd = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                    break;
+                }
+            case 5: {
+                    message.fswId = reader.string();
+                    break;
+                }
+            case 6: {
+                    message.sourcePath = reader.string();
+                    break;
+                }
+            case 7: {
+                    message.destinationPath = reader.string();
+                    break;
+                }
+            case 8: {
+                    message.error = reader.string();
+                    break;
+                }
+            case 9: {
+                    message.size = reader.uint64();
+                    break;
+                }
+            case 10: {
+                    if (message.metadata === $util.emptyObject)
+                        message.metadata = {};
+                    var end2 = reader.uint32() + reader.pos;
+                    key = "";
+                    value = "";
+                    while (reader.pos < end2) {
+                        var tag2 = reader.uint32();
+                        switch (tag2 >>> 3) {
+                        case 1:
+                            key = reader.string();
+                            break;
+                        case 2:
+                            value = reader.string();
+                            break;
+                        default:
+                            reader.skipType(tag2 & 7);
+                            break;
+                        }
+                    }
+                    message.metadata[key] = value;
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a FileUplink message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof FileUplink
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {FileUplink} FileUplink
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    FileUplink.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a FileUplink message.
+     * @function verify
+     * @memberof FileUplink
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    FileUplink.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.uid != null && message.hasOwnProperty("uid"))
+            if (!$util.isString(message.uid))
+                return "uid: string expected";
+        if (message.timeStart != null && message.hasOwnProperty("timeStart")) {
+            var error = $root.google.protobuf.Timestamp.verify(message.timeStart);
+            if (error)
+                return "timeStart." + error;
+        }
+        if (message.timeEnd != null && message.hasOwnProperty("timeEnd")) {
+            var error = $root.google.protobuf.Timestamp.verify(message.timeEnd);
+            if (error)
+                return "timeEnd." + error;
+        }
+        if (message.fswId != null && message.hasOwnProperty("fswId"))
+            if (!$util.isString(message.fswId))
+                return "fswId: string expected";
+        if (message.sourcePath != null && message.hasOwnProperty("sourcePath"))
+            if (!$util.isString(message.sourcePath))
+                return "sourcePath: string expected";
+        if (message.destinationPath != null && message.hasOwnProperty("destinationPath"))
+            if (!$util.isString(message.destinationPath))
+                return "destinationPath: string expected";
+        if (message.error != null && message.hasOwnProperty("error"))
+            if (!$util.isString(message.error))
+                return "error: string expected";
+        if (message.size != null && message.hasOwnProperty("size"))
+            if (!$util.isInteger(message.size) && !(message.size && $util.isInteger(message.size.low) && $util.isInteger(message.size.high)))
+                return "size: integer|Long expected";
+        if (message.metadata != null && message.hasOwnProperty("metadata")) {
+            if (!$util.isObject(message.metadata))
+                return "metadata: object expected";
+            var key = Object.keys(message.metadata);
+            for (var i = 0; i < key.length; ++i)
+                if (!$util.isString(message.metadata[key[i]]))
+                    return "metadata: string{k:string} expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a FileUplink message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof FileUplink
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {FileUplink} FileUplink
+     */
+    FileUplink.fromObject = function fromObject(object) {
+        if (object instanceof $root.FileUplink)
+            return object;
+        var message = new $root.FileUplink();
+        if (object.uid != null)
+            message.uid = String(object.uid);
+        if (object.timeStart != null) {
+            if (typeof object.timeStart !== "object")
+                throw TypeError(".FileUplink.timeStart: object expected");
+            message.timeStart = $root.google.protobuf.Timestamp.fromObject(object.timeStart);
+        }
+        if (object.timeEnd != null) {
+            if (typeof object.timeEnd !== "object")
+                throw TypeError(".FileUplink.timeEnd: object expected");
+            message.timeEnd = $root.google.protobuf.Timestamp.fromObject(object.timeEnd);
+        }
+        if (object.fswId != null)
+            message.fswId = String(object.fswId);
+        if (object.sourcePath != null)
+            message.sourcePath = String(object.sourcePath);
+        if (object.destinationPath != null)
+            message.destinationPath = String(object.destinationPath);
+        if (object.error != null)
+            message.error = String(object.error);
+        if (object.size != null)
+            if ($util.Long)
+                (message.size = $util.Long.fromValue(object.size)).unsigned = true;
+            else if (typeof object.size === "string")
+                message.size = parseInt(object.size, 10);
+            else if (typeof object.size === "number")
+                message.size = object.size;
+            else if (typeof object.size === "object")
+                message.size = new $util.LongBits(object.size.low >>> 0, object.size.high >>> 0).toNumber(true);
+        if (object.metadata) {
+            if (typeof object.metadata !== "object")
+                throw TypeError(".FileUplink.metadata: object expected");
+            message.metadata = {};
+            for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i)
+                message.metadata[keys[i]] = String(object.metadata[keys[i]]);
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a FileUplink message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof FileUplink
+     * @static
+     * @param {FileUplink} message FileUplink
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    FileUplink.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.objects || options.defaults)
+            object.metadata = {};
+        if (options.defaults) {
+            object.uid = "";
+            object.timeStart = null;
+            object.timeEnd = null;
+            object.fswId = "";
+            object.sourcePath = "";
+            object.destinationPath = "";
+            object.error = "";
+            if ($util.Long) {
+                var long = new $util.Long(0, 0, true);
+                object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+            } else
+                object.size = options.longs === String ? "0" : 0;
+        }
+        if (message.uid != null && message.hasOwnProperty("uid"))
+            object.uid = message.uid;
+        if (message.timeStart != null && message.hasOwnProperty("timeStart"))
+            object.timeStart = $root.google.protobuf.Timestamp.toObject(message.timeStart, options);
+        if (message.timeEnd != null && message.hasOwnProperty("timeEnd"))
+            object.timeEnd = $root.google.protobuf.Timestamp.toObject(message.timeEnd, options);
+        if (message.fswId != null && message.hasOwnProperty("fswId"))
+            object.fswId = message.fswId;
+        if (message.sourcePath != null && message.hasOwnProperty("sourcePath"))
+            object.sourcePath = message.sourcePath;
+        if (message.destinationPath != null && message.hasOwnProperty("destinationPath"))
+            object.destinationPath = message.destinationPath;
+        if (message.error != null && message.hasOwnProperty("error"))
+            object.error = message.error;
+        if (message.size != null && message.hasOwnProperty("size"))
+            if (typeof message.size === "number")
+                object.size = options.longs === String ? String(message.size) : message.size;
+            else
+                object.size = options.longs === String ? $util.Long.prototype.toString.call(message.size) : options.longs === Number ? new $util.LongBits(message.size.low >>> 0, message.size.high >>> 0).toNumber(true) : message.size;
+        var keys2;
+        if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
+            object.metadata = {};
+            for (var j = 0; j < keys2.length; ++j)
+                object.metadata[keys2[j]] = message.metadata[keys2[j]];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this FileUplink to JSON.
+     * @function toJSON
+     * @memberof FileUplink
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    FileUplink.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for FileUplink
+     * @function getTypeUrl
+     * @memberof FileUplink
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    FileUplink.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/FileUplink";
+    };
+
+    return FileUplink;
+})();
+
+$root.FileTransfer = (function() {
+
+    /**
+     * Properties of a FileTransfer.
+     * @exports IFileTransfer
+     * @interface IFileTransfer
+     * @property {string|null} [uid] FileTransfer uid
+     * @property {string|null} [fswId] FileTransfer fswId
+     * @property {string|null} [sourcePath] FileTransfer sourcePath
+     * @property {string|null} [targetPath] FileTransfer targetPath
+     * @property {number|Long|null} [size] FileTransfer size
+     * @property {number|Long|null} [progress] FileTransfer progress
+     */
+
+    /**
+     * Constructs a new FileTransfer.
+     * @exports FileTransfer
+     * @classdesc Represents a FileTransfer.
+     * @implements IFileTransfer
+     * @constructor
+     * @param {IFileTransfer=} [properties] Properties to set
+     */
+    function FileTransfer(properties) {
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * FileTransfer uid.
+     * @member {string} uid
+     * @memberof FileTransfer
+     * @instance
+     */
+    FileTransfer.prototype.uid = "";
+
+    /**
+     * FileTransfer fswId.
+     * @member {string} fswId
+     * @memberof FileTransfer
+     * @instance
+     */
+    FileTransfer.prototype.fswId = "";
+
+    /**
+     * FileTransfer sourcePath.
+     * @member {string} sourcePath
+     * @memberof FileTransfer
+     * @instance
+     */
+    FileTransfer.prototype.sourcePath = "";
+
+    /**
+     * FileTransfer targetPath.
+     * @member {string} targetPath
+     * @memberof FileTransfer
+     * @instance
+     */
+    FileTransfer.prototype.targetPath = "";
+
+    /**
+     * FileTransfer size.
+     * @member {number|Long} size
+     * @memberof FileTransfer
+     * @instance
+     */
+    FileTransfer.prototype.size = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+    /**
+     * FileTransfer progress.
+     * @member {number|Long} progress
+     * @memberof FileTransfer
+     * @instance
+     */
+    FileTransfer.prototype.progress = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+    /**
+     * Creates a new FileTransfer instance using the specified properties.
+     * @function create
+     * @memberof FileTransfer
+     * @static
+     * @param {IFileTransfer=} [properties] Properties to set
+     * @returns {FileTransfer} FileTransfer instance
+     */
+    FileTransfer.create = function create(properties) {
+        return new FileTransfer(properties);
+    };
+
+    /**
+     * Encodes the specified FileTransfer message. Does not implicitly {@link FileTransfer.verify|verify} messages.
+     * @function encode
+     * @memberof FileTransfer
+     * @static
+     * @param {IFileTransfer} message FileTransfer message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    FileTransfer.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.uid != null && Object.hasOwnProperty.call(message, "uid"))
+            writer.uint32(/* id 1, wireType 2 =*/10).string(message.uid);
+        if (message.fswId != null && Object.hasOwnProperty.call(message, "fswId"))
+            writer.uint32(/* id 2, wireType 2 =*/18).string(message.fswId);
+        if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
+            writer.uint32(/* id 3, wireType 2 =*/26).string(message.sourcePath);
+        if (message.targetPath != null && Object.hasOwnProperty.call(message, "targetPath"))
+            writer.uint32(/* id 4, wireType 2 =*/34).string(message.targetPath);
+        if (message.size != null && Object.hasOwnProperty.call(message, "size"))
+            writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.size);
+        if (message.progress != null && Object.hasOwnProperty.call(message, "progress"))
+            writer.uint32(/* id 6, wireType 0 =*/48).uint64(message.progress);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified FileTransfer message, length delimited. Does not implicitly {@link FileTransfer.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof FileTransfer
+     * @static
+     * @param {IFileTransfer} message FileTransfer message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    FileTransfer.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a FileTransfer message from the specified reader or buffer.
+     * @function decode
+     * @memberof FileTransfer
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {FileTransfer} FileTransfer
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    FileTransfer.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.FileTransfer();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.uid = reader.string();
+                    break;
+                }
+            case 2: {
+                    message.fswId = reader.string();
+                    break;
+                }
+            case 3: {
+                    message.sourcePath = reader.string();
+                    break;
+                }
+            case 4: {
+                    message.targetPath = reader.string();
+                    break;
+                }
+            case 5: {
+                    message.size = reader.uint64();
+                    break;
+                }
+            case 6: {
+                    message.progress = reader.uint64();
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a FileTransfer message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof FileTransfer
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {FileTransfer} FileTransfer
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    FileTransfer.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a FileTransfer message.
+     * @function verify
+     * @memberof FileTransfer
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    FileTransfer.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.uid != null && message.hasOwnProperty("uid"))
+            if (!$util.isString(message.uid))
+                return "uid: string expected";
+        if (message.fswId != null && message.hasOwnProperty("fswId"))
+            if (!$util.isString(message.fswId))
+                return "fswId: string expected";
+        if (message.sourcePath != null && message.hasOwnProperty("sourcePath"))
+            if (!$util.isString(message.sourcePath))
+                return "sourcePath: string expected";
+        if (message.targetPath != null && message.hasOwnProperty("targetPath"))
+            if (!$util.isString(message.targetPath))
+                return "targetPath: string expected";
+        if (message.size != null && message.hasOwnProperty("size"))
+            if (!$util.isInteger(message.size) && !(message.size && $util.isInteger(message.size.low) && $util.isInteger(message.size.high)))
+                return "size: integer|Long expected";
+        if (message.progress != null && message.hasOwnProperty("progress"))
+            if (!$util.isInteger(message.progress) && !(message.progress && $util.isInteger(message.progress.low) && $util.isInteger(message.progress.high)))
+                return "progress: integer|Long expected";
+        return null;
+    };
+
+    /**
+     * Creates a FileTransfer message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof FileTransfer
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {FileTransfer} FileTransfer
+     */
+    FileTransfer.fromObject = function fromObject(object) {
+        if (object instanceof $root.FileTransfer)
+            return object;
+        var message = new $root.FileTransfer();
+        if (object.uid != null)
+            message.uid = String(object.uid);
+        if (object.fswId != null)
+            message.fswId = String(object.fswId);
+        if (object.sourcePath != null)
+            message.sourcePath = String(object.sourcePath);
+        if (object.targetPath != null)
+            message.targetPath = String(object.targetPath);
+        if (object.size != null)
+            if ($util.Long)
+                (message.size = $util.Long.fromValue(object.size)).unsigned = true;
+            else if (typeof object.size === "string")
+                message.size = parseInt(object.size, 10);
+            else if (typeof object.size === "number")
+                message.size = object.size;
+            else if (typeof object.size === "object")
+                message.size = new $util.LongBits(object.size.low >>> 0, object.size.high >>> 0).toNumber(true);
+        if (object.progress != null)
+            if ($util.Long)
+                (message.progress = $util.Long.fromValue(object.progress)).unsigned = true;
+            else if (typeof object.progress === "string")
+                message.progress = parseInt(object.progress, 10);
+            else if (typeof object.progress === "number")
+                message.progress = object.progress;
+            else if (typeof object.progress === "object")
+                message.progress = new $util.LongBits(object.progress.low >>> 0, object.progress.high >>> 0).toNumber(true);
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a FileTransfer message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof FileTransfer
+     * @static
+     * @param {FileTransfer} message FileTransfer
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    FileTransfer.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.defaults) {
+            object.uid = "";
+            object.fswId = "";
+            object.sourcePath = "";
+            object.targetPath = "";
+            if ($util.Long) {
+                var long = new $util.Long(0, 0, true);
+                object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+            } else
+                object.size = options.longs === String ? "0" : 0;
+            if ($util.Long) {
+                var long = new $util.Long(0, 0, true);
+                object.progress = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+            } else
+                object.progress = options.longs === String ? "0" : 0;
+        }
+        if (message.uid != null && message.hasOwnProperty("uid"))
+            object.uid = message.uid;
+        if (message.fswId != null && message.hasOwnProperty("fswId"))
+            object.fswId = message.fswId;
+        if (message.sourcePath != null && message.hasOwnProperty("sourcePath"))
+            object.sourcePath = message.sourcePath;
+        if (message.targetPath != null && message.hasOwnProperty("targetPath"))
+            object.targetPath = message.targetPath;
+        if (message.size != null && message.hasOwnProperty("size"))
+            if (typeof message.size === "number")
+                object.size = options.longs === String ? String(message.size) : message.size;
+            else
+                object.size = options.longs === String ? $util.Long.prototype.toString.call(message.size) : options.longs === Number ? new $util.LongBits(message.size.low >>> 0, message.size.high >>> 0).toNumber(true) : message.size;
+        if (message.progress != null && message.hasOwnProperty("progress"))
+            if (typeof message.progress === "number")
+                object.progress = options.longs === String ? String(message.progress) : message.progress;
+            else
+                object.progress = options.longs === String ? $util.Long.prototype.toString.call(message.progress) : options.longs === Number ? new $util.LongBits(message.progress.low >>> 0, message.progress.high >>> 0).toNumber(true) : message.progress;
+        return object;
+    };
+
+    /**
+     * Converts this FileTransfer to JSON.
+     * @function toJSON
+     * @memberof FileTransfer
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    FileTransfer.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for FileTransfer
+     * @function getTypeUrl
+     * @memberof FileTransfer
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    FileTransfer.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/FileTransfer";
+    };
+
+    return FileTransfer;
+})();
+
+$root.FileTransferState = (function() {
+
+    /**
+     * Properties of a FileTransferState.
+     * @exports IFileTransferState
+     * @interface IFileTransferState
+     * @property {Array.<IFileDownlink>|null} [downlinkCompleted] FileTransferState downlinkCompleted
+     * @property {Array.<IFileUplink>|null} [uplinkCompleted] FileTransferState uplinkCompleted
+     * @property {Array.<IFileTransfer>|null} [downlinkInProgress] FileTransferState downlinkInProgress
+     * @property {Array.<IFileTransfer>|null} [uplinkInProgress] FileTransferState uplinkInProgress
+     */
+
+    /**
+     * Constructs a new FileTransferState.
+     * @exports FileTransferState
+     * @classdesc Represents a FileTransferState.
+     * @implements IFileTransferState
+     * @constructor
+     * @param {IFileTransferState=} [properties] Properties to set
+     */
+    function FileTransferState(properties) {
+        this.downlinkCompleted = [];
+        this.uplinkCompleted = [];
+        this.downlinkInProgress = [];
+        this.uplinkInProgress = [];
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * FileTransferState downlinkCompleted.
+     * @member {Array.<IFileDownlink>} downlinkCompleted
+     * @memberof FileTransferState
+     * @instance
+     */
+    FileTransferState.prototype.downlinkCompleted = $util.emptyArray;
+
+    /**
+     * FileTransferState uplinkCompleted.
+     * @member {Array.<IFileUplink>} uplinkCompleted
+     * @memberof FileTransferState
+     * @instance
+     */
+    FileTransferState.prototype.uplinkCompleted = $util.emptyArray;
+
+    /**
+     * FileTransferState downlinkInProgress.
+     * @member {Array.<IFileTransfer>} downlinkInProgress
+     * @memberof FileTransferState
+     * @instance
+     */
+    FileTransferState.prototype.downlinkInProgress = $util.emptyArray;
+
+    /**
+     * FileTransferState uplinkInProgress.
+     * @member {Array.<IFileTransfer>} uplinkInProgress
+     * @memberof FileTransferState
+     * @instance
+     */
+    FileTransferState.prototype.uplinkInProgress = $util.emptyArray;
+
+    /**
+     * Creates a new FileTransferState instance using the specified properties.
+     * @function create
+     * @memberof FileTransferState
+     * @static
+     * @param {IFileTransferState=} [properties] Properties to set
+     * @returns {FileTransferState} FileTransferState instance
+     */
+    FileTransferState.create = function create(properties) {
+        return new FileTransferState(properties);
+    };
+
+    /**
+     * Encodes the specified FileTransferState message. Does not implicitly {@link FileTransferState.verify|verify} messages.
+     * @function encode
+     * @memberof FileTransferState
+     * @static
+     * @param {IFileTransferState} message FileTransferState message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    FileTransferState.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.downlinkCompleted != null && message.downlinkCompleted.length)
+            for (var i = 0; i < message.downlinkCompleted.length; ++i)
+                $root.FileDownlink.encode(message.downlinkCompleted[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        if (message.uplinkCompleted != null && message.uplinkCompleted.length)
+            for (var i = 0; i < message.uplinkCompleted.length; ++i)
+                $root.FileUplink.encode(message.uplinkCompleted[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        if (message.downlinkInProgress != null && message.downlinkInProgress.length)
+            for (var i = 0; i < message.downlinkInProgress.length; ++i)
+                $root.FileTransfer.encode(message.downlinkInProgress[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+        if (message.uplinkInProgress != null && message.uplinkInProgress.length)
+            for (var i = 0; i < message.uplinkInProgress.length; ++i)
+                $root.FileTransfer.encode(message.uplinkInProgress[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified FileTransferState message, length delimited. Does not implicitly {@link FileTransferState.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof FileTransferState
+     * @static
+     * @param {IFileTransferState} message FileTransferState message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    FileTransferState.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a FileTransferState message from the specified reader or buffer.
+     * @function decode
+     * @memberof FileTransferState
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {FileTransferState} FileTransferState
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    FileTransferState.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.FileTransferState();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.downlinkCompleted && message.downlinkCompleted.length))
+                        message.downlinkCompleted = [];
+                    message.downlinkCompleted.push($root.FileDownlink.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 2: {
+                    if (!(message.uplinkCompleted && message.uplinkCompleted.length))
+                        message.uplinkCompleted = [];
+                    message.uplinkCompleted.push($root.FileUplink.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 3: {
+                    if (!(message.downlinkInProgress && message.downlinkInProgress.length))
+                        message.downlinkInProgress = [];
+                    message.downlinkInProgress.push($root.FileTransfer.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 4: {
+                    if (!(message.uplinkInProgress && message.uplinkInProgress.length))
+                        message.uplinkInProgress = [];
+                    message.uplinkInProgress.push($root.FileTransfer.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a FileTransferState message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof FileTransferState
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {FileTransferState} FileTransferState
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    FileTransferState.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a FileTransferState message.
+     * @function verify
+     * @memberof FileTransferState
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    FileTransferState.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.downlinkCompleted != null && message.hasOwnProperty("downlinkCompleted")) {
+            if (!Array.isArray(message.downlinkCompleted))
+                return "downlinkCompleted: array expected";
+            for (var i = 0; i < message.downlinkCompleted.length; ++i) {
+                var error = $root.FileDownlink.verify(message.downlinkCompleted[i]);
+                if (error)
+                    return "downlinkCompleted." + error;
+            }
+        }
+        if (message.uplinkCompleted != null && message.hasOwnProperty("uplinkCompleted")) {
+            if (!Array.isArray(message.uplinkCompleted))
+                return "uplinkCompleted: array expected";
+            for (var i = 0; i < message.uplinkCompleted.length; ++i) {
+                var error = $root.FileUplink.verify(message.uplinkCompleted[i]);
+                if (error)
+                    return "uplinkCompleted." + error;
+            }
+        }
+        if (message.downlinkInProgress != null && message.hasOwnProperty("downlinkInProgress")) {
+            if (!Array.isArray(message.downlinkInProgress))
+                return "downlinkInProgress: array expected";
+            for (var i = 0; i < message.downlinkInProgress.length; ++i) {
+                var error = $root.FileTransfer.verify(message.downlinkInProgress[i]);
+                if (error)
+                    return "downlinkInProgress." + error;
+            }
+        }
+        if (message.uplinkInProgress != null && message.hasOwnProperty("uplinkInProgress")) {
+            if (!Array.isArray(message.uplinkInProgress))
+                return "uplinkInProgress: array expected";
+            for (var i = 0; i < message.uplinkInProgress.length; ++i) {
+                var error = $root.FileTransfer.verify(message.uplinkInProgress[i]);
+                if (error)
+                    return "uplinkInProgress." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a FileTransferState message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof FileTransferState
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {FileTransferState} FileTransferState
+     */
+    FileTransferState.fromObject = function fromObject(object) {
+        if (object instanceof $root.FileTransferState)
+            return object;
+        var message = new $root.FileTransferState();
+        if (object.downlinkCompleted) {
+            if (!Array.isArray(object.downlinkCompleted))
+                throw TypeError(".FileTransferState.downlinkCompleted: array expected");
+            message.downlinkCompleted = [];
+            for (var i = 0; i < object.downlinkCompleted.length; ++i) {
+                if (typeof object.downlinkCompleted[i] !== "object")
+                    throw TypeError(".FileTransferState.downlinkCompleted: object expected");
+                message.downlinkCompleted[i] = $root.FileDownlink.fromObject(object.downlinkCompleted[i]);
+            }
+        }
+        if (object.uplinkCompleted) {
+            if (!Array.isArray(object.uplinkCompleted))
+                throw TypeError(".FileTransferState.uplinkCompleted: array expected");
+            message.uplinkCompleted = [];
+            for (var i = 0; i < object.uplinkCompleted.length; ++i) {
+                if (typeof object.uplinkCompleted[i] !== "object")
+                    throw TypeError(".FileTransferState.uplinkCompleted: object expected");
+                message.uplinkCompleted[i] = $root.FileUplink.fromObject(object.uplinkCompleted[i]);
+            }
+        }
+        if (object.downlinkInProgress) {
+            if (!Array.isArray(object.downlinkInProgress))
+                throw TypeError(".FileTransferState.downlinkInProgress: array expected");
+            message.downlinkInProgress = [];
+            for (var i = 0; i < object.downlinkInProgress.length; ++i) {
+                if (typeof object.downlinkInProgress[i] !== "object")
+                    throw TypeError(".FileTransferState.downlinkInProgress: object expected");
+                message.downlinkInProgress[i] = $root.FileTransfer.fromObject(object.downlinkInProgress[i]);
+            }
+        }
+        if (object.uplinkInProgress) {
+            if (!Array.isArray(object.uplinkInProgress))
+                throw TypeError(".FileTransferState.uplinkInProgress: array expected");
+            message.uplinkInProgress = [];
+            for (var i = 0; i < object.uplinkInProgress.length; ++i) {
+                if (typeof object.uplinkInProgress[i] !== "object")
+                    throw TypeError(".FileTransferState.uplinkInProgress: object expected");
+                message.uplinkInProgress[i] = $root.FileTransfer.fromObject(object.uplinkInProgress[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a FileTransferState message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof FileTransferState
+     * @static
+     * @param {FileTransferState} message FileTransferState
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    FileTransferState.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.arrays || options.defaults) {
+            object.downlinkCompleted = [];
+            object.uplinkCompleted = [];
+            object.downlinkInProgress = [];
+            object.uplinkInProgress = [];
+        }
+        if (message.downlinkCompleted && message.downlinkCompleted.length) {
+            object.downlinkCompleted = [];
+            for (var j = 0; j < message.downlinkCompleted.length; ++j)
+                object.downlinkCompleted[j] = $root.FileDownlink.toObject(message.downlinkCompleted[j], options);
+        }
+        if (message.uplinkCompleted && message.uplinkCompleted.length) {
+            object.uplinkCompleted = [];
+            for (var j = 0; j < message.uplinkCompleted.length; ++j)
+                object.uplinkCompleted[j] = $root.FileUplink.toObject(message.uplinkCompleted[j], options);
+        }
+        if (message.downlinkInProgress && message.downlinkInProgress.length) {
+            object.downlinkInProgress = [];
+            for (var j = 0; j < message.downlinkInProgress.length; ++j)
+                object.downlinkInProgress[j] = $root.FileTransfer.toObject(message.downlinkInProgress[j], options);
+        }
+        if (message.uplinkInProgress && message.uplinkInProgress.length) {
+            object.uplinkInProgress = [];
+            for (var j = 0; j < message.uplinkInProgress.length; ++j)
+                object.uplinkInProgress[j] = $root.FileTransfer.toObject(message.uplinkInProgress[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this FileTransferState to JSON.
+     * @function toJSON
+     * @memberof FileTransferState
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    FileTransferState.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for FileTransferState
+     * @function getTypeUrl
+     * @memberof FileTransferState
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    FileTransferState.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/FileTransferState";
+    };
+
+    return FileTransferState;
+})();
+
 /**
  * IntKind enum.
  * @name IntKind

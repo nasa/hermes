@@ -198,9 +198,7 @@ func main() {
 	hermesGrpc.RegisterProviderServer(srv, rpc.NewProviderServer())
 
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		<-ctx.Done()
 		logger.Info("stopping gRPC server")
 		srv.Stop()
@@ -209,7 +207,7 @@ func main() {
 		host.Profiles.Stop(util.SigTermIntContext())
 
 		storage.Finish()
-	}()
+	})
 
 	servActive := make(chan struct{})
 	go func() {

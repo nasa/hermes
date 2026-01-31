@@ -255,9 +255,4 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
             throw Error("Workspace is not open");
         }
     }
-
-    dispose() {
-        this.subscriptions.map(v => v.dispose());
-        this.subscriptions = [];
-    }
 }

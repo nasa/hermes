@@ -3,10 +3,10 @@ option go_package = "github.com/nasa/hermes/pkg/pb";
 
 message FileHeader {
   // Source path of file (usually trancated for uplink bandwidth reasons)
-  string sourcePath = 1;
+  string source_path = 1;
 
   // Destination to tell FSW to write file to
-  string destinationPath = 2;
+  string destination_path = 2;
 
   // File total size
   uint64 size = 3;

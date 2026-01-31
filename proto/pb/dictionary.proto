@@ -48,13 +48,13 @@ message CommandDef {
 }
 
 enum EvrSeverity {
-  EVR_DIAGNOSTIC = 0;
-  EVR_ACTIVITY_LOW = 1;
+  EVR_DIAGNOSTIC    = 0;
+  EVR_ACTIVITY_LOW  = 1;
   EVR_ACTIVITY_HIGH = 2;
-  EVR_WARNING_LOW = 3;
-  EVR_WARNING_HIGH = 4;
-  EVR_COMMAND = 5;
-  EVR_FATAL = 6;
+  EVR_WARNING_LOW   = 3;
+  EVR_WARNING_HIGH  = 4;
+  EVR_COMMAND       = 5;
+  EVR_FATAL         = 6;
 }
 
 message EventDef {
@@ -79,9 +79,9 @@ message EventDef {
   EvrSeverity severity = 4;
 
   /**
-     * printf format string that will be formatted via sprintf
-     */
-  string formatString = 5;
+   * printf format string that will be formatted via sprintf
+   */
+  string format_string = 5;
 
   /**
    * Arguments used inside the format string
@@ -92,10 +92,10 @@ message EventDef {
 }
 
 message EventRef {
-  int32 id = 1;
-  string name = 2;
-  string component = 3;
-  EvrSeverity severity = 4;
+  int32           id        = 1;
+  string          name      = 2;
+  string          component = 3;
+  EvrSeverity     severity  = 4;
   repeated string arguments = 5;
 
   // (optional) dictionary ID this comes from
@@ -130,8 +130,8 @@ message TelemetryDef {
 
 // Lightweight reference for passing dictionary items through message busses
 message TelemetryRef {
-  int32 id = 1;
-  string name = 2;
+  int32  id        = 1;
+  string name      = 2;
   string component = 3;
 
   // (optional) dictionary ID this comes from
@@ -162,9 +162,9 @@ message DictionaryHead {
 message DictionaryNamespace {
   // Map keys have per-dictionary/mission meaning
   // All items will be constructor into a DualKeyMap with id+key
-  map<string, CommandDef> commands = 1;
-  map<string, EventDef> events = 2;
-  map<string, TelemetryDef> telemetry = 3;
+  map<string, CommandDef>   commands   = 1;
+  map<string, EventDef>     events     = 2;
+  map<string, TelemetryDef> telemetry  = 3;
   map<string, ParameterDef> parameters = 4;
 
   // Types that are externally referenced
@@ -173,7 +173,7 @@ message DictionaryNamespace {
 }
 
 message Dictionary {
-  DictionaryHead head = 1;
-  map<string, DictionaryNamespace> content = 2;
-  map<string, string> metadata = 3;
+  DictionaryHead                   head     = 1;
+  map<string, DictionaryNamespace> content  = 2;
+  map<string, string>              metadata = 3;
 }

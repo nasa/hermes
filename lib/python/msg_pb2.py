@@ -29,7 +29,7 @@ import profile_pb2 as profile__pb2
 import file_pb2 as file__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tmsg.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x10\x64ictionary.proto\x1a\tfsw.proto\x1a\rprofile.proto\x1a\nfile.proto\"\x10\n\x02Id\x12\n\n\x02id\x18\x01 \x01(\t\"\x1c\n\x07\x46swList\x12\x11\n\x03\x61ll\x18\x01 \x03(\x0b\x32\x04.Fsw\"\x18\n\x05Reply\x12\x0f\n\x07success\x18\x01 \x01(\x08\"6\n\rSequenceReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x14\n\x0c\x63ommandIndex\x18\x02 \x01(\x05\"^\n\x0fStatefulProfile\x12\x17\n\x05value\x18\x01 \x01(\x0b\x32\x08.Profile\x12\x1c\n\x05state\x18\x02 \x01(\x0e\x32\r.ProfileState\x12\x14\n\x0cruntime_only\x18\x03 \x01(\x08\"o\n\x0bProfileList\x12\"\n\x03\x61ll\x18\x01 \x03(\x0b\x32\x15.ProfileList.AllEntry\x1a<\n\x08\x41llEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\x05value\x18\x02 \x01(\x0b\x32\x10.StatefulProfile:\x02\x38\x01\"4\n\x13ProfileProviderList\x12\x1d\n\x03\x61ll\x18\x01 \x03(\x0b\x32\x10.ProfileProvider\"-\n\rProfileUpdate\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08settings\x18\x02 \x01(\t\"t\n\x0e\x44ictionaryList\x12%\n\x03\x61ll\x18\x01 \x03(\x0b\x32\x18.DictionaryList.AllEntry\x1a;\n\x08\x41llEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DictionaryHead:\x02\x38\x01\"\xa0\x02\n\x06Uplink\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1c\n\x03\x63md\x18\x02 \x01(\x0b\x32\r.CommandValueH\x00\x12$\n\x08parseCmd\x18\x03 \x01(\x0b\x32\x10.RawCommandValueH\x00\x12\x1f\n\x03seq\x18\x04 \x01(\x0b\x32\x10.CommandSequenceH\x00\x12\'\n\x08parseSeq\x18\x05 \x01(\x0b\x32\x13.RawCommandSequenceH\x00\x12 \n\x04\x66ile\x18\x06 \x01(\x0b\x32\x10.UplinkFileChunkH\x00\x12(\n\x06\x63\x61ncel\x18\x63 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x00\x12\'\n\x05\x66inal\x18\x64 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x00\x42\x07\n\x05value\"E\n\x0bUplinkReply\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x05reply\x18\x02 \x01(\x0cH\x00\x12\x0f\n\x05\x65rror\x18\x03 \x01(\tH\x00\x42\x08\n\x06status\"7\n\x10\x46swInitialPacket\x12\x12\n\x04info\x18\x01 \x01(\x0b\x32\x04.Fsw\x12\x0f\n\x07profile\x18\x02 \x01(\t\"`\n\x13\x46swConnectionPacket\x12!\n\x04info\x18\x01 \x01(\x0b\x32\x11.FswInitialPacketH\x00\x12\x1d\n\x05reply\x18\x02 \x01(\x0b\x32\x0c.UplinkReplyH\x00\x42\x07\n\x05valueB\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tmsg.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x10\x64ictionary.proto\x1a\tfsw.proto\x1a\rprofile.proto\x1a\nfile.proto\"\x10\n\x02Id\x12\n\n\x02id\x18\x01 \x01(\t\"\x1c\n\x07\x46swList\x12\x11\n\x03\x61ll\x18\x01 \x03(\x0b\x32\x04.Fsw\"\x18\n\x05Reply\x12\x0f\n\x07success\x18\x01 \x01(\x08\"7\n\rSequenceReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x15\n\rcommand_index\x18\x02 \x01(\x05\"^\n\x0fStatefulProfile\x12\x17\n\x05value\x18\x01 \x01(\x0b\x32\x08.Profile\x12\x1c\n\x05state\x18\x02 \x01(\x0e\x32\r.ProfileState\x12\x14\n\x0cruntime_only\x18\x03 \x01(\x08\"o\n\x0bProfileList\x12\"\n\x03\x61ll\x18\x01 \x03(\x0b\x32\x15.ProfileList.AllEntry\x1a<\n\x08\x41llEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\x05value\x18\x02 \x01(\x0b\x32\x10.StatefulProfile:\x02\x38\x01\"4\n\x13ProfileProviderList\x12\x1d\n\x03\x61ll\x18\x01 \x03(\x0b\x32\x10.ProfileProvider\"-\n\rProfileUpdate\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08settings\x18\x02 \x01(\t\"t\n\x0e\x44ictionaryList\x12%\n\x03\x61ll\x18\x01 \x03(\x0b\x32\x18.DictionaryList.AllEntry\x1a;\n\x08\x41llEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1e\n\x05value\x18\x02 \x01(\x0b\x32\x0f.DictionaryHead:\x02\x38\x01\"\xa2\x02\n\x06Uplink\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1c\n\x03\x63md\x18\x02 \x01(\x0b\x32\r.CommandValueH\x00\x12%\n\tparse_cmd\x18\x03 \x01(\x0b\x32\x10.RawCommandValueH\x00\x12\x1f\n\x03seq\x18\x04 \x01(\x0b\x32\x10.CommandSequenceH\x00\x12(\n\tparse_seq\x18\x05 \x01(\x0b\x32\x13.RawCommandSequenceH\x00\x12 \n\x04\x66ile\x18\x06 \x01(\x0b\x32\x10.UplinkFileChunkH\x00\x12(\n\x06\x63\x61ncel\x18\x63 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x00\x12\'\n\x05\x66inal\x18\x64 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x00\x42\x07\n\x05value\"E\n\x0bUplinkReply\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x05reply\x18\x02 \x01(\x0cH\x00\x12\x0f\n\x05\x65rror\x18\x03 \x01(\tH\x00\x42\x08\n\x06status\"7\n\x10\x46swInitialPacket\x12\x12\n\x04info\x18\x01 \x01(\x0b\x32\x04.Fsw\x12\x0f\n\x07profile\x18\x02 \x01(\t\"`\n\x13\x46swConnectionPacket\x12!\n\x04info\x18\x01 \x01(\x0b\x32\x11.FswInitialPacketH\x00\x12\x1d\n\x05reply\x18\x02 \x01(\x0b\x32\x0c.UplinkReplyH\x00\x42\x07\n\x05valueB\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -48,27 +48,27 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_REPLY']._serialized_start=146
   _globals['_REPLY']._serialized_end=170
   _globals['_SEQUENCEREPLY']._serialized_start=172
-  _globals['_SEQUENCEREPLY']._serialized_end=226
-  _globals['_STATEFULPROFILE']._serialized_start=228
-  _globals['_STATEFULPROFILE']._serialized_end=322
-  _globals['_PROFILELIST']._serialized_start=324
-  _globals['_PROFILELIST']._serialized_end=435
-  _globals['_PROFILELIST_ALLENTRY']._serialized_start=375
-  _globals['_PROFILELIST_ALLENTRY']._serialized_end=435
-  _globals['_PROFILEPROVIDERLIST']._serialized_start=437
-  _globals['_PROFILEPROVIDERLIST']._serialized_end=489
-  _globals['_PROFILEUPDATE']._serialized_start=491
-  _globals['_PROFILEUPDATE']._serialized_end=536
-  _globals['_DICTIONARYLIST']._serialized_start=538
-  _globals['_DICTIONARYLIST']._serialized_end=654
-  _globals['_DICTIONARYLIST_ALLENTRY']._serialized_start=595
-  _globals['_DICTIONARYLIST_ALLENTRY']._serialized_end=654
-  _globals['_UPLINK']._serialized_start=657
-  _globals['_UPLINK']._serialized_end=945
-  _globals['_UPLINKREPLY']._serialized_start=947
-  _globals['_UPLINKREPLY']._serialized_end=1016
-  _globals['_FSWINITIALPACKET']._serialized_start=1018
-  _globals['_FSWINITIALPACKET']._serialized_end=1073
-  _globals['_FSWCONNECTIONPACKET']._serialized_start=1075
-  _globals['_FSWCONNECTIONPACKET']._serialized_end=1171
+  _globals['_SEQUENCEREPLY']._serialized_end=227
+  _globals['_STATEFULPROFILE']._serialized_start=229
+  _globals['_STATEFULPROFILE']._serialized_end=323
+  _globals['_PROFILELIST']._serialized_start=325
+  _globals['_PROFILELIST']._serialized_end=436
+  _globals['_PROFILELIST_ALLENTRY']._serialized_start=376
+  _globals['_PROFILELIST_ALLENTRY']._serialized_end=436
+  _globals['_PROFILEPROVIDERLIST']._serialized_start=438
+  _globals['_PROFILEPROVIDERLIST']._serialized_end=490
+  _globals['_PROFILEUPDATE']._serialized_start=492
+  _globals['_PROFILEUPDATE']._serialized_end=537
+  _globals['_DICTIONARYLIST']._serialized_start=539
+  _globals['_DICTIONARYLIST']._serialized_end=655
+  _globals['_DICTIONARYLIST_ALLENTRY']._serialized_start=596
+  _globals['_DICTIONARYLIST_ALLENTRY']._serialized_end=655
+  _globals['_UPLINK']._serialized_start=658
+  _globals['_UPLINK']._serialized_end=948
+  _globals['_UPLINKREPLY']._serialized_start=950
+  _globals['_UPLINKREPLY']._serialized_end=1019
+  _globals['_FSWINITIALPACKET']._serialized_start=1021
+  _globals['_FSWINITIALPACKET']._serialized_end=1076
+  _globals['_FSWCONNECTIONPACKET']._serialized_start=1078
+  _globals['_FSWCONNECTIONPACKET']._serialized_end=1174
 # @@protoc_insertion_point(module_scope)
