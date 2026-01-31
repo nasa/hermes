@@ -25,7 +25,7 @@ class DownlinkFileTransferEntry implements TreeEntry {
 
         item.iconPath = new vscode.ThemeIcon("cloud-download", new vscode.ThemeColor("testing.iconQueued"));
         item.description = `${progressBytes} / ${totalBytes} (${percentage}%)`;
-        item.contextValue = "downlinkInProgress";
+        item.contextValue = "hermes.downlinkInProgress";
 
         return item;
     }
@@ -57,6 +57,7 @@ interface FileMetadataOptions extends vscode.TreeItem { }
 
 class FileMetadata implements TreeEntry {
     children?: TreeEntry[];
+    uri?: vscode.Uri;
 
     constructor(
         readonly parent: TreeEntry,
@@ -64,6 +65,7 @@ class FileMetadata implements TreeEntry {
         readonly description: string,
         readonly options?: FileMetadataOptions,
     ) {
+        this.uri = options?.resourceUri;
     }
 
     child(
@@ -150,35 +152,21 @@ function timestampToDate(value?: Proto.google.protobuf.ITimestamp | null): Date 
 }
 
 class DownlinkFileEntry implements TreeEntry {
-    constructor(readonly data: Proto.IFileDownlink) { }
+    uri: vscode.Uri;
+
+    constructor(readonly data: Proto.IFileDownlink) {
+        this.uri = vscode.Uri.file(this.data.filePath ?? "");
+    }
 
     getTreeItem(): vscode.TreeItem {
         const item = new vscode.TreeItem(this.data.sourcePath ?? this.data.destinationPath ?? "[unknown]");
-
-        const uri = vscode.Uri.file(this.data.filePath ?? "");
-        item.resourceUri = uri;
-        // if (!vscode.workspace.getWorkspaceFolder(uri)) {
-        //     // This uri is not in the workspace
-        //     // Show it in finder
-        //     item.command = {
-        //         title: "Reveal in Finder",
-        //         command: "revealFileInOS",
-        //         arguments: [uri],
-        //     };
-        // } else {
-        //     item.command = {
-        //         title: "Reveal in Explorer",
-        //         command: "revealFileInExplorer",
-        //         arguments: [uri],
-        //     };
-        // }
-
+        item.resourceUri = this.uri;
         const size = (this.data.size as number) ?? 0;
         const totalBytes = prettyBytes(size);
 
         item.iconPath = downlinkFileStatusIcon(this.data.status);
         item.description = totalBytes;
-        item.contextValue = "downlinkComplete";
+        item.contextValue = "hermes.downlink.file";
         item.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
 
         return item;
@@ -188,14 +176,22 @@ class DownlinkFileEntry implements TreeEntry {
         const size = prettyBytes(this.data.size as number ?? 0);
 
         return [
+            new FileMetadata(
+                this,
+                "File Path",
+                this.data.filePath ?? "",
+                {
+                    contextValue: "hermes.downlink.file",
+                    iconPath: vscode.ThemeIcon.File,
+                    resourceUri: this.uri,
+                }
+            ),
             new FileMetadata(this, "Source FSW", this.data.source ?? ""),
             new FileMetadata(this, "Status", downlinkFileStatusText(this.data.status ?? undefined)),
             new FileMetadata(this, "Source Path", this.data.sourcePath ?? ""),
             new FileMetadata(this, "Destination Path", this.data.destinationPath ?? ""),
-            new FileMetadata(this, "File Path", this.data.filePath ?? ""),
             new FileMetadata(this, "Downlink Start", timestampToDate(this.data.timeStart).toTimeString()),
             new FileMetadata(this, "Downlink Finish", timestampToDate(this.data.timeEnd).toTimeString()),
-            new FileMetadata(this, "File Path", this.data.filePath ?? ""),
             new FileMetadata(this, "Size", size),
             ((this.data.missingChunks ?? []).reduce((md, chunk) => {
                 const offset = Convert.toNumber(chunk.offset);

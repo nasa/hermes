@@ -68,6 +68,16 @@ export class VscodeHermes implements CoreApi {
             vscode.commands.registerCommand('hermes.uplink.clear', () => {
                 this.api.clearUplinkTransferState();
             }),
+            vscode.commands.registerCommand('hermes.downlink.open', (item) => {
+                const uri = item.uri as vscode.Uri;
+                if (!vscode.workspace.getWorkspaceFolder(uri)) {
+                    // This uri is not in the workspace
+                    // Show it in finder
+                    vscode.commands.executeCommand("revealFileInOS", uri);
+                } else {
+                    vscode.commands.executeCommand("revealFileInExplorer", uri);
+                }
+            }),
 
             // Hermes Notebook support
             ...NotebookController.registerCommands(),

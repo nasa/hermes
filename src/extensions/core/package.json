@@ -59,6 +59,11 @@
                 "icon": "$(clear-all)"
             },
             {
+                "command": "hermes.downlink.open",
+                "title": "Open File",
+                "icon": "$(go-to-file)"
+            },
+            {
                 "command": "hermes.uplink.add",
                 "title": "Open File to Uplink",
                 "icon": "$(clear-all)"
@@ -175,6 +180,13 @@
                 {
                     "command": "hermes.connections.array.removeItem",
                     "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasRemove"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "hermes.downlink.open",
+                    "when": "view == hermes.downlink && viewItem == hermes.downlink.file",
+                    "group": "inline"
                 }
             ]
         },
