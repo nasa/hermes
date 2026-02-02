@@ -3,12 +3,8 @@ import * as vscode from 'vscode';
 import { Api } from '@gov.nasa.jpl.hermes/api';
 import { Convert, Proto } from '@gov.nasa.jpl.hermes/types';
 import prettyBytes from './prettyBytes';
+import { GeneralEntry, TreeEntry } from './TreeEntry';
 
-interface TreeEntry {
-    getTreeItem(): vscode.TreeItem;
-    getChildren(): vscode.ProviderResult<TreeEntry[]>;
-    getParent(): vscode.ProviderResult<TreeEntry>;
-}
 
 class DownlinkFileTransferEntry implements TreeEntry {
     constructor(readonly data: Proto.IFileTransfer) { }
@@ -50,79 +46,6 @@ function downlinkFileStatusText(value?: Proto.FileDownlinkCompletionStatus): str
             return "Complete (Partial)";
         case Proto.FileDownlinkCompletionStatus.DOWNLINK_CRC_FAILED:
             return "Integrity Check Failed";
-    }
-}
-
-interface FileMetadataOptions extends vscode.TreeItem { }
-
-class FileMetadata implements TreeEntry {
-    children?: TreeEntry[];
-    uri?: vscode.Uri;
-
-    constructor(
-        readonly parent: TreeEntry,
-        readonly label: string,
-        readonly description: string,
-        readonly options?: FileMetadataOptions,
-    ) {
-        this.uri = options?.resourceUri;
-    }
-
-    child(
-        label: string,
-        description: string,
-        options?: FileMetadataOptions,
-    ): this {
-        if (!this.children) {
-            this.children = [];
-        }
-
-        this.children.push(new FileMetadata(this, label, description, options));
-        return this;
-    }
-
-    getTreeItem(): vscode.TreeItem {
-        const item = new vscode.TreeItem(this.label);
-        item.description = this.description;
-        if (this.options?.tooltip) {
-            item.tooltip = this.options.tooltip;
-        } else {
-            item.tooltip = this.description;
-        }
-
-        if (this.options?.iconPath !== undefined) {
-            item.iconPath = this.options.iconPath;
-        }
-
-        if (this.options?.resourceUri !== undefined) {
-            item.resourceUri = this.options.resourceUri;
-        }
-
-        if (this.options?.command !== undefined) {
-            item.command = this.options.command;
-        }
-
-        if (this.options?.resourceUri !== undefined) {
-            item.resourceUri = this.options.resourceUri;
-        }
-
-        if (this.options?.contextValue !== undefined) {
-            item.contextValue = this.options.contextValue;
-        }
-
-        if (this.children) {
-            item.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-        }
-
-        return item;
-    }
-
-    getChildren(): vscode.ProviderResult<TreeEntry[]> {
-        return this.children;
-    }
-
-    getParent(): vscode.ProviderResult<TreeEntry> {
-        return this.parent;
     }
 }
 
@@ -174,9 +97,13 @@ class DownlinkFileEntry implements TreeEntry {
 
     getChildren(): vscode.ProviderResult<TreeEntry[]> {
         const size = prettyBytes(this.data.size as number ?? 0);
+        const startDate = timestampToDate(this.data.timeStart);
+        const endDate = timestampToDate(this.data.timeEnd);
+        const elapsedMs = endDate.getTime() - startDate.getTime();
+        const elapsedS = (elapsedMs / 1e3).toFixed(0);
 
         return [
-            new FileMetadata(
+            new GeneralEntry(
                 this,
                 "File Path",
                 this.data.filePath ?? "",
@@ -186,20 +113,21 @@ class DownlinkFileEntry implements TreeEntry {
                     resourceUri: this.uri,
                 }
             ),
-            new FileMetadata(this, "Source FSW", this.data.source ?? ""),
-            new FileMetadata(this, "Status", downlinkFileStatusText(this.data.status ?? undefined)),
-            new FileMetadata(this, "Source Path", this.data.sourcePath ?? ""),
-            new FileMetadata(this, "Destination Path", this.data.destinationPath ?? ""),
-            new FileMetadata(this, "Downlink Start", timestampToDate(this.data.timeStart).toTimeString()),
-            new FileMetadata(this, "Downlink Finish", timestampToDate(this.data.timeEnd).toTimeString()),
-            new FileMetadata(this, "Size", size),
+            new GeneralEntry(this, "Source FSW", this.data.source ?? ""),
+            new GeneralEntry(this, "Status", downlinkFileStatusText(this.data.status ?? undefined)),
+            new GeneralEntry(this, "Source Path", this.data.sourcePath ?? ""),
+            new GeneralEntry(this, "Destination Path", this.data.destinationPath ?? ""),
+            new GeneralEntry(this, "Downlink Start", startDate.toLocaleTimeString(), { tooltip: startDate.toString() }),
+            new GeneralEntry(this, "Downlink Finish", endDate.toLocaleTimeString(), { tooltip: endDate.toString() }),
+            new GeneralEntry(this, "Duration", `${elapsedS} seconds`, { tooltip: `${elapsedMs} ms` }),
+            new GeneralEntry(this, "Size", size, { tooltip: `${this.data.size} bytes` }),
             ((this.data.missingChunks ?? []).reduce((md, chunk) => {
                 const offset = Convert.toNumber(chunk.offset);
                 const size = Convert.toNumber(chunk.size);
                 const sizeFormat = prettyBytes(size);
 
                 return md.child(`${offset}:${offset + size}`, sizeFormat);
-            }, new FileMetadata(
+            }, new GeneralEntry(
                 this,
                 "Missing Chunks",
                 (this.data.missingChunks?.length ?? 0).toString(),
@@ -210,7 +138,7 @@ class DownlinkFileEntry implements TreeEntry {
                 const sizeFormat = prettyBytes(size);
 
                 return md.child(`${offset}:${offset + size}`, sizeFormat);
-            }, new FileMetadata(
+            }, new GeneralEntry(
                 this,
                 "Duplicate Chunks",
                 (this.data.duplicateChunks?.length ?? 0).toString(),
@@ -238,7 +166,24 @@ export class DownlinkProvider implements vscode.TreeDataProvider<TreeEntry>, vsc
         this.complete = [];
 
         this.subscriptions = [
-            this.api.onFileTransfer(this.update.bind(this))
+            this.api.onFileTransfer(this.update.bind(this)),
+            vscode.window.registerTreeDataProvider(
+                'hermes.downlink',
+                this,
+            ),
+            vscode.commands.registerCommand('hermes.downlink.clear', () => {
+                this.api.clearDownlinkTransferState();
+            }),
+            vscode.commands.registerCommand('hermes.downlink.open', (item) => {
+                const uri = item.uri as vscode.Uri;
+                if (!vscode.workspace.getWorkspaceFolder(uri)) {
+                    // This uri is not in the workspace
+                    // Show it in finder
+                    vscode.commands.executeCommand("revealFileInOS", uri);
+                } else {
+                    vscode.commands.executeCommand("revealFileInExplorer", uri);
+                }
+            }),
         ];
     }
 

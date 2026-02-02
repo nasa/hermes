@@ -14529,6 +14529,7 @@ $root.DownlinkFileChunk = (function() {
  * @property {number} SEQUENCE=2 SEQUENCE value
  * @property {number} PARSE_SEQUENCE=3 PARSE_SEQUENCE value
  * @property {number} FILE=4 FILE value
+ * @property {number} REQUEST=5 REQUEST value
  */
 $root.FswCapability = (function() {
     var valuesById = {}, values = Object.create(valuesById);
@@ -14537,6 +14538,7 @@ $root.FswCapability = (function() {
     values[valuesById[2] = "SEQUENCE"] = 2;
     values[valuesById[3] = "PARSE_SEQUENCE"] = 3;
     values[valuesById[4] = "FILE"] = 4;
+    values[valuesById[5] = "REQUEST"] = 5;
     return values;
 })();
 
@@ -14775,6 +14777,7 @@ $root.Fsw = (function() {
                 case 2:
                 case 3:
                 case 4:
+                case 5:
                     break;
                 }
         }
@@ -14836,6 +14839,10 @@ $root.Fsw = (function() {
                 case "FILE":
                 case 4:
                     message.capabilities[i] = 4;
+                    break;
+                case "REQUEST":
+                case 5:
+                    message.capabilities[i] = 5;
                     break;
                 }
         }
@@ -16365,6 +16372,455 @@ $root.RawCommandSequence = (function() {
     };
 
     return RawCommandSequence;
+})();
+
+$root.RequestValue = (function() {
+
+    /**
+     * Properties of a RequestValue.
+     * @exports IRequestValue
+     * @interface IRequestValue
+     * @property {string|null} [kind] RequestValue kind
+     * @property {Uint8Array|null} [data] RequestValue data
+     */
+
+    /**
+     * Constructs a new RequestValue.
+     * @exports RequestValue
+     * @classdesc FSW Requests are non-dictionary defined items. These are connection
+     * specific commands meant to be exposed by custom UI in the frontend.
+     * @implements IRequestValue
+     * @constructor
+     * @param {IRequestValue=} [properties] Properties to set
+     */
+    function RequestValue(properties) {
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * RequestValue kind.
+     * @member {string} kind
+     * @memberof RequestValue
+     * @instance
+     */
+    RequestValue.prototype.kind = "";
+
+    /**
+     * RequestValue data.
+     * @member {Uint8Array} data
+     * @memberof RequestValue
+     * @instance
+     */
+    RequestValue.prototype.data = $util.newBuffer([]);
+
+    /**
+     * Creates a new RequestValue instance using the specified properties.
+     * @function create
+     * @memberof RequestValue
+     * @static
+     * @param {IRequestValue=} [properties] Properties to set
+     * @returns {RequestValue} RequestValue instance
+     */
+    RequestValue.create = function create(properties) {
+        return new RequestValue(properties);
+    };
+
+    /**
+     * Encodes the specified RequestValue message. Does not implicitly {@link RequestValue.verify|verify} messages.
+     * @function encode
+     * @memberof RequestValue
+     * @static
+     * @param {IRequestValue} message RequestValue message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    RequestValue.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
+            writer.uint32(/* id 1, wireType 2 =*/10).string(message.kind);
+        if (message.data != null && Object.hasOwnProperty.call(message, "data"))
+            writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.data);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified RequestValue message, length delimited. Does not implicitly {@link RequestValue.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof RequestValue
+     * @static
+     * @param {IRequestValue} message RequestValue message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    RequestValue.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a RequestValue message from the specified reader or buffer.
+     * @function decode
+     * @memberof RequestValue
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {RequestValue} RequestValue
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    RequestValue.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.RequestValue();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.kind = reader.string();
+                    break;
+                }
+            case 2: {
+                    message.data = reader.bytes();
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a RequestValue message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof RequestValue
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {RequestValue} RequestValue
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    RequestValue.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a RequestValue message.
+     * @function verify
+     * @memberof RequestValue
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    RequestValue.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.kind != null && message.hasOwnProperty("kind"))
+            if (!$util.isString(message.kind))
+                return "kind: string expected";
+        if (message.data != null && message.hasOwnProperty("data"))
+            if (!(message.data && typeof message.data.length === "number" || $util.isString(message.data)))
+                return "data: buffer expected";
+        return null;
+    };
+
+    /**
+     * Creates a RequestValue message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof RequestValue
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {RequestValue} RequestValue
+     */
+    RequestValue.fromObject = function fromObject(object) {
+        if (object instanceof $root.RequestValue)
+            return object;
+        var message = new $root.RequestValue();
+        if (object.kind != null)
+            message.kind = String(object.kind);
+        if (object.data != null)
+            if (typeof object.data === "string")
+                $util.base64.decode(object.data, message.data = $util.newBuffer($util.base64.length(object.data)), 0);
+            else if (object.data.length >= 0)
+                message.data = object.data;
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a RequestValue message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof RequestValue
+     * @static
+     * @param {RequestValue} message RequestValue
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    RequestValue.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.defaults) {
+            object.kind = "";
+            if (options.bytes === String)
+                object.data = "";
+            else {
+                object.data = [];
+                if (options.bytes !== Array)
+                    object.data = $util.newBuffer(object.data);
+            }
+        }
+        if (message.kind != null && message.hasOwnProperty("kind"))
+            object.kind = message.kind;
+        if (message.data != null && message.hasOwnProperty("data"))
+            object.data = options.bytes === String ? $util.base64.encode(message.data, 0, message.data.length) : options.bytes === Array ? Array.prototype.slice.call(message.data) : message.data;
+        return object;
+    };
+
+    /**
+     * Converts this RequestValue to JSON.
+     * @function toJSON
+     * @memberof RequestValue
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    RequestValue.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for RequestValue
+     * @function getTypeUrl
+     * @memberof RequestValue
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    RequestValue.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/RequestValue";
+    };
+
+    return RequestValue;
+})();
+
+$root.RequestReply = (function() {
+
+    /**
+     * Properties of a RequestReply.
+     * @exports IRequestReply
+     * @interface IRequestReply
+     * @property {Uint8Array|null} [data] RequestReply data
+     */
+
+    /**
+     * Constructs a new RequestReply.
+     * @exports RequestReply
+     * @classdesc Represents a RequestReply.
+     * @implements IRequestReply
+     * @constructor
+     * @param {IRequestReply=} [properties] Properties to set
+     */
+    function RequestReply(properties) {
+        if (properties)
+            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * RequestReply data.
+     * @member {Uint8Array} data
+     * @memberof RequestReply
+     * @instance
+     */
+    RequestReply.prototype.data = $util.newBuffer([]);
+
+    /**
+     * Creates a new RequestReply instance using the specified properties.
+     * @function create
+     * @memberof RequestReply
+     * @static
+     * @param {IRequestReply=} [properties] Properties to set
+     * @returns {RequestReply} RequestReply instance
+     */
+    RequestReply.create = function create(properties) {
+        return new RequestReply(properties);
+    };
+
+    /**
+     * Encodes the specified RequestReply message. Does not implicitly {@link RequestReply.verify|verify} messages.
+     * @function encode
+     * @memberof RequestReply
+     * @static
+     * @param {IRequestReply} message RequestReply message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    RequestReply.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.data != null && Object.hasOwnProperty.call(message, "data"))
+            writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.data);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified RequestReply message, length delimited. Does not implicitly {@link RequestReply.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof RequestReply
+     * @static
+     * @param {IRequestReply} message RequestReply message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    RequestReply.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a RequestReply message from the specified reader or buffer.
+     * @function decode
+     * @memberof RequestReply
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {RequestReply} RequestReply
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    RequestReply.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.RequestReply();
+        while (reader.pos < end) {
+            var tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.data = reader.bytes();
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a RequestReply message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof RequestReply
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {RequestReply} RequestReply
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    RequestReply.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a RequestReply message.
+     * @function verify
+     * @memberof RequestReply
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    RequestReply.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.data != null && message.hasOwnProperty("data"))
+            if (!(message.data && typeof message.data.length === "number" || $util.isString(message.data)))
+                return "data: buffer expected";
+        return null;
+    };
+
+    /**
+     * Creates a RequestReply message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof RequestReply
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {RequestReply} RequestReply
+     */
+    RequestReply.fromObject = function fromObject(object) {
+        if (object instanceof $root.RequestReply)
+            return object;
+        var message = new $root.RequestReply();
+        if (object.data != null)
+            if (typeof object.data === "string")
+                $util.base64.decode(object.data, message.data = $util.newBuffer($util.base64.length(object.data)), 0);
+            else if (object.data.length >= 0)
+                message.data = object.data;
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a RequestReply message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof RequestReply
+     * @static
+     * @param {RequestReply} message RequestReply
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    RequestReply.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        var object = {};
+        if (options.defaults)
+            if (options.bytes === String)
+                object.data = "";
+            else {
+                object.data = [];
+                if (options.bytes !== Array)
+                    object.data = $util.newBuffer(object.data);
+            }
+        if (message.data != null && message.hasOwnProperty("data"))
+            object.data = options.bytes === String ? $util.base64.encode(message.data, 0, message.data.length) : options.bytes === Array ? Array.prototype.slice.call(message.data) : message.data;
+        return object;
+    };
+
+    /**
+     * Converts this RequestReply to JSON.
+     * @function toJSON
+     * @memberof RequestReply
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    RequestReply.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for RequestReply
+     * @function getTypeUrl
+     * @memberof RequestReply
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    RequestReply.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/RequestReply";
+    };
+
+    return RequestReply;
 })();
 
 $root.Id = (function() {
@@ -18461,6 +18917,7 @@ $root.Uplink = (function() {
      * @property {ICommandSequence|null} [seq] Uplink seq
      * @property {IRawCommandSequence|null} [parseSeq] Uplink parseSeq
      * @property {IUplinkFileChunk|null} [file] Uplink file
+     * @property {IRequestValue|null} [request] Uplink request
      * @property {google.protobuf.IEmpty|null} [cancel] Uplink cancel
      * @property {google.protobuf.IEmpty|null} [final] Uplink final
      */
@@ -18529,6 +18986,14 @@ $root.Uplink = (function() {
     Uplink.prototype.file = null;
 
     /**
+     * Uplink request.
+     * @member {IRequestValue|null|undefined} request
+     * @memberof Uplink
+     * @instance
+     */
+    Uplink.prototype.request = null;
+
+    /**
      * Uplink cancel.
      * @member {google.protobuf.IEmpty|null|undefined} cancel
      * @memberof Uplink
@@ -18549,12 +19014,12 @@ $root.Uplink = (function() {
 
     /**
      * Uplink value.
-     * @member {"cmd"|"parseCmd"|"seq"|"parseSeq"|"file"|"cancel"|"final"|undefined} value
+     * @member {"cmd"|"parseCmd"|"seq"|"parseSeq"|"file"|"request"|"cancel"|"final"|undefined} value
      * @memberof Uplink
      * @instance
      */
     Object.defineProperty(Uplink.prototype, "value", {
-        get: $util.oneOfGetter($oneOfFields = ["cmd", "parseCmd", "seq", "parseSeq", "file", "cancel", "final"]),
+        get: $util.oneOfGetter($oneOfFields = ["cmd", "parseCmd", "seq", "parseSeq", "file", "request", "cancel", "final"]),
         set: $util.oneOfSetter($oneOfFields)
     });
 
@@ -18594,6 +19059,8 @@ $root.Uplink = (function() {
             $root.RawCommandSequence.encode(message.parseSeq, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
         if (message.file != null && Object.hasOwnProperty.call(message, "file"))
             $root.UplinkFileChunk.encode(message.file, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+        if (message.request != null && Object.hasOwnProperty.call(message, "request"))
+            $root.RequestValue.encode(message.request, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
         if (message.cancel != null && Object.hasOwnProperty.call(message, "cancel"))
             $root.google.protobuf.Empty.encode(message.cancel, writer.uint32(/* id 99, wireType 2 =*/794).fork()).ldelim();
         if (message.final != null && Object.hasOwnProperty.call(message, "final"))
@@ -18654,6 +19121,10 @@ $root.Uplink = (function() {
                 }
             case 6: {
                     message.file = $root.UplinkFileChunk.decode(reader, reader.uint32());
+                    break;
+                }
+            case 7: {
+                    message.request = $root.RequestValue.decode(reader, reader.uint32());
                     break;
                 }
             case 99: {
@@ -18751,6 +19222,16 @@ $root.Uplink = (function() {
                     return "file." + error;
             }
         }
+        if (message.request != null && message.hasOwnProperty("request")) {
+            if (properties.value === 1)
+                return "value: multiple values";
+            properties.value = 1;
+            {
+                var error = $root.RequestValue.verify(message.request);
+                if (error)
+                    return "request." + error;
+            }
+        }
         if (message.cancel != null && message.hasOwnProperty("cancel")) {
             if (properties.value === 1)
                 return "value: multiple values";
@@ -18813,6 +19294,11 @@ $root.Uplink = (function() {
                 throw TypeError(".Uplink.file: object expected");
             message.file = $root.UplinkFileChunk.fromObject(object.file);
         }
+        if (object.request != null) {
+            if (typeof object.request !== "object")
+                throw TypeError(".Uplink.request: object expected");
+            message.request = $root.RequestValue.fromObject(object.request);
+        }
         if (object.cancel != null) {
             if (typeof object.cancel !== "object")
                 throw TypeError(".Uplink.cancel: object expected");
@@ -18867,6 +19353,11 @@ $root.Uplink = (function() {
             object.file = $root.UplinkFileChunk.toObject(message.file, options);
             if (options.oneofs)
                 object.value = "file";
+        }
+        if (message.request != null && message.hasOwnProperty("request")) {
+            object.request = $root.RequestValue.toObject(message.request, options);
+            if (options.oneofs)
+                object.value = "request";
         }
         if (message.cancel != null && message.hasOwnProperty("cancel")) {
             object.cancel = $root.google.protobuf.Empty.toObject(message.cancel, options);

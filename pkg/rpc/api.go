@@ -355,6 +355,83 @@ func (r *apiServer) RawCommand(ctx context.Context, cmd *pb.RawCommandValue) (*p
 	return r.Command(ctx, parsedCmd)
 }
 
+// Request implements grpc.ApiServer.
+func (r *apiServer) Request(ctx context.Context, request *pb.RequestValue) (*pb.RequestReply, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("no metadata included in ground command call")
+	}
+
+	fswIds := md.Get("id")
+	if len(fswIds) != 1 {
+		return nil, fmt.Errorf("expected FSW id in metadata key 'id'")
+	}
+
+	fswId := fswIds[0]
+
+	fswR := host.Profiles.GetConnection(fswId)
+	if fswR == nil {
+		return nil, fmt.Errorf("FSW with id '%s' not found", fswId)
+	}
+
+	fsw, ok := fswR.(host.RequestFsw)
+	if !ok || !fsw.Info().HasCapability(pb.FswCapability_REQUEST) {
+		return nil, fmt.Errorf("FSW with ID '%s' does not support requests", fswId)
+	}
+
+	spanCtx, span := otel.Tracer("request").Start(
+		ctx,
+		request.GetKind(),
+		trace.WithAttributes(
+			attribute.String("fsw", fsw.Info().Id),
+		),
+	)
+
+	defer span.End()
+
+	spanLogger := r.logger.WithContext(spanCtx)
+
+	spanLogger.Info(
+		"request",
+		"fsw", fsw.Info().Id,
+		"kind", request.GetKind(),
+	)
+
+	reply, err := fsw.Request(spanCtx, request.GetKind(), request.GetData())
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			spanLogger.Warn(
+				"request cancelled",
+				"fsw", fsw.Info().Id,
+				"kind", request.GetKind(),
+			)
+
+			span.SetStatus(otelCodes.Error, "cancelled")
+		} else {
+			spanLogger.Error(
+				"request error",
+				"fsw", fsw.Info().Id,
+				"kind", request.GetKind(),
+				"err", err,
+			)
+
+			span.SetStatus(otelCodes.Error, err.Error())
+		}
+
+		return nil, err
+	}
+
+	span.SetStatus(otelCodes.Ok, "success")
+
+	spanLogger.Info(
+		"request completed",
+		"fsw", fsw.Info().Id,
+		"kind", request.GetKind(),
+	)
+
+	return &pb.RequestReply{Data: reply}, nil
+}
+
 type fileChunkReader struct {
 	uid       string
 	lastChunk int

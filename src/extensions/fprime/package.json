@@ -39,6 +39,11 @@
             {
                 "command": "hermes.fprime.prm.open",
                 "title": "Open as FPrime Parameter Database"
+            },
+            {
+                "command": "hermes.fprime.uplink.file.cancel",
+                "title": "Send File Cancel Packet",
+                "icon": "$(close)"
             }
         ],
         "configuration": [
@@ -105,6 +110,13 @@
             }
         ],
         "menus": {
+            "view/title": [
+                {
+                    "command": "hermes.fprime.uplink.file.cancel",
+                    "when": "view == hermes.uplink",
+                    "group": "navigation@3"
+                }
+            ],
             "notebook/cell/title": [
                 {
                     "command": "hermes.testbed.signoff",

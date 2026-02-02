@@ -21,6 +21,8 @@ import type { ProfileUpdate as _ProfileUpdate, ProfileUpdate__Output as _Profile
 import type { RawCommandSequence as _RawCommandSequence, RawCommandSequence__Output as _RawCommandSequence__Output } from './RawCommandSequence';
 import type { RawCommandValue as _RawCommandValue, RawCommandValue__Output as _RawCommandValue__Output } from './RawCommandValue';
 import type { Reply as _Reply, Reply__Output as _Reply__Output } from './Reply';
+import type { RequestReply as _RequestReply, RequestReply__Output as _RequestReply__Output } from './RequestReply';
+import type { RequestValue as _RequestValue, RequestValue__Output as _RequestValue__Output } from './RequestValue';
 import type { SequenceReply as _SequenceReply, SequenceReply__Output as _SequenceReply__Output } from './SequenceReply';
 import type { SourcedEvent as _SourcedEvent, SourcedEvent__Output as _SourcedEvent__Output } from './SourcedEvent';
 import type { SourcedTelemetry as _SourcedTelemetry, SourcedTelemetry__Output as _SourcedTelemetry__Output } from './SourcedTelemetry';
@@ -171,6 +173,15 @@ export interface ApiClient extends grpc.Client {
   removeProfile(argument: _Id, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   removeProfile(argument: _Id, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   
+  Request(argument: _RequestValue, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  Request(argument: _RequestValue, metadata: grpc.Metadata, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  Request(argument: _RequestValue, options: grpc.CallOptions, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  Request(argument: _RequestValue, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  request(argument: _RequestValue, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  request(argument: _RequestValue, metadata: grpc.Metadata, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  request(argument: _RequestValue, options: grpc.CallOptions, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  request(argument: _RequestValue, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  
   Sequence(argument: _CommandSequence, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_SequenceReply__Output>): grpc.ClientUnaryCall;
   Sequence(argument: _CommandSequence, metadata: grpc.Metadata, callback: grpc.requestCallback<_SequenceReply__Output>): grpc.ClientUnaryCall;
   Sequence(argument: _CommandSequence, options: grpc.CallOptions, callback: grpc.requestCallback<_SequenceReply__Output>): grpc.ClientUnaryCall;
@@ -296,6 +307,8 @@ export interface ApiHandlers extends grpc.UntypedServiceImplementation {
   
   RemoveProfile: grpc.handleUnaryCall<_Id__Output, _google_protobuf_Empty>;
   
+  Request: grpc.handleUnaryCall<_RequestValue__Output, _RequestReply>;
+  
   Sequence: grpc.handleUnaryCall<_CommandSequence__Output, _SequenceReply>;
   
   StartProfile: grpc.handleUnaryCall<_Id__Output, _google_protobuf_Empty>;
@@ -343,6 +356,7 @@ export interface ApiDefinition extends grpc.ServiceDefinition {
   RawSequence: MethodDefinition<_RawCommandSequence, _SequenceReply, _RawCommandSequence__Output, _SequenceReply__Output>
   RemoveDictionary: MethodDefinition<_Id, _google_protobuf_Empty, _Id__Output, _google_protobuf_Empty__Output>
   RemoveProfile: MethodDefinition<_Id, _google_protobuf_Empty, _Id__Output, _google_protobuf_Empty__Output>
+  Request: MethodDefinition<_RequestValue, _RequestReply, _RequestValue__Output, _RequestReply__Output>
   Sequence: MethodDefinition<_CommandSequence, _SequenceReply, _CommandSequence__Output, _SequenceReply__Output>
   StartProfile: MethodDefinition<_Id, _google_protobuf_Empty, _Id__Output, _google_protobuf_Empty__Output>
   StopProfile: MethodDefinition<_Id, _google_protobuf_Empty, _Id__Output, _google_protobuf_Empty__Output>

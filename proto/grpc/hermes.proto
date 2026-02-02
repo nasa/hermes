@@ -49,6 +49,18 @@ service Api {
   rpc Command(CommandValue) returns (Reply);
 
   /**
+   * Send a custom request to the FSW. Requests
+   * are not defined in the dictionary. The request
+   * payload data is defined by an agreement between
+   * the frontend request initiator and the connection
+   * implementation.
+   *
+   * Metadata:
+   *  "id": [fsw-id]
+   */
+  rpc Request(RequestValue) returns (RequestReply);
+
+  /**
    * Send a 'raw' command to the FSW. A raw command
    * differs from a full command in that it must be parsed
    * by the backend. Each FSW must support converting an argument list

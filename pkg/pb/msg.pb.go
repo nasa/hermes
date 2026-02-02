@@ -463,6 +463,7 @@ type Uplink struct {
 	//	*Uplink_Seq
 	//	*Uplink_ParseSeq
 	//	*Uplink_File
+	//	*Uplink_Request
 	//	*Uplink_Cancel
 	//	*Uplink_Final
 	Value         isUplink_Value `protobuf_oneof:"value"`
@@ -559,6 +560,15 @@ func (x *Uplink) GetFile() *UplinkFileChunk {
 	return nil
 }
 
+func (x *Uplink) GetRequest() *RequestValue {
+	if x != nil {
+		if x, ok := x.Value.(*Uplink_Request); ok {
+			return x.Request
+		}
+	}
+	return nil
+}
+
 func (x *Uplink) GetCancel() *emptypb.Empty {
 	if x != nil {
 		if x, ok := x.Value.(*Uplink_Cancel); ok {
@@ -601,6 +611,10 @@ type Uplink_File struct {
 	File *UplinkFileChunk `protobuf:"bytes,6,opt,name=file,proto3,oneof"`
 }
 
+type Uplink_Request struct {
+	Request *RequestValue `protobuf:"bytes,7,opt,name=request,proto3,oneof"`
+}
+
 type Uplink_Cancel struct {
 	// Cancel a previously requested uplink session
 	Cancel *emptypb.Empty `protobuf:"bytes,99,opt,name=cancel,proto3,oneof"`
@@ -621,6 +635,8 @@ func (*Uplink_Seq) isUplink_Value() {}
 func (*Uplink_ParseSeq) isUplink_Value() {}
 
 func (*Uplink_File) isUplink_Value() {}
+
+func (*Uplink_Request) isUplink_Value() {}
 
 func (*Uplink_Cancel) isUplink_Value() {}
 
@@ -886,14 +902,15 @@ const file_msg_proto_rawDesc = "" +
 	"\x03all\x18\x01 \x03(\v2\x18.DictionaryList.AllEntryR\x03all\x1aG\n" +
 	"\bAllEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12%\n" +
-	"\x05value\x18\x02 \x01(\v2\x0f.DictionaryHeadR\x05value:\x028\x01\"\xd9\x02\n" +
+	"\x05value\x18\x02 \x01(\v2\x0f.DictionaryHeadR\x05value:\x028\x01\"\x84\x03\n" +
 	"\x06Uplink\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\x03cmd\x18\x02 \x01(\v2\r.CommandValueH\x00R\x03cmd\x12/\n" +
 	"\tparse_cmd\x18\x03 \x01(\v2\x10.RawCommandValueH\x00R\bparseCmd\x12$\n" +
 	"\x03seq\x18\x04 \x01(\v2\x10.CommandSequenceH\x00R\x03seq\x122\n" +
 	"\tparse_seq\x18\x05 \x01(\v2\x13.RawCommandSequenceH\x00R\bparseSeq\x12&\n" +
-	"\x04file\x18\x06 \x01(\v2\x10.UplinkFileChunkH\x00R\x04file\x120\n" +
+	"\x04file\x18\x06 \x01(\v2\x10.UplinkFileChunkH\x00R\x04file\x12)\n" +
+	"\arequest\x18\a \x01(\v2\r.RequestValueH\x00R\arequest\x120\n" +
 	"\x06cancel\x18c \x01(\v2\x16.google.protobuf.EmptyH\x00R\x06cancel\x12.\n" +
 	"\x05final\x18d \x01(\v2\x16.google.protobuf.EmptyH\x00R\x05finalB\a\n" +
 	"\x05value\"W\n" +
@@ -948,8 +965,9 @@ var file_msg_proto_goTypes = []any{
 	(*CommandSequence)(nil),     // 21: CommandSequence
 	(*RawCommandSequence)(nil),  // 22: RawCommandSequence
 	(*UplinkFileChunk)(nil),     // 23: UplinkFileChunk
-	(*emptypb.Empty)(nil),       // 24: google.protobuf.Empty
-	(*DictionaryHead)(nil),      // 25: DictionaryHead
+	(*RequestValue)(nil),        // 24: RequestValue
+	(*emptypb.Empty)(nil),       // 25: google.protobuf.Empty
+	(*DictionaryHead)(nil),      // 26: DictionaryHead
 }
 var file_msg_proto_depIdxs = []int32{
 	15, // 0: FswList.all:type_name -> Fsw
@@ -963,18 +981,19 @@ var file_msg_proto_depIdxs = []int32{
 	21, // 8: Uplink.seq:type_name -> CommandSequence
 	22, // 9: Uplink.parse_seq:type_name -> RawCommandSequence
 	23, // 10: Uplink.file:type_name -> UplinkFileChunk
-	24, // 11: Uplink.cancel:type_name -> google.protobuf.Empty
-	24, // 12: Uplink.final:type_name -> google.protobuf.Empty
-	15, // 13: FswInitialPacket.info:type_name -> Fsw
-	11, // 14: FswConnectionPacket.info:type_name -> FswInitialPacket
-	10, // 15: FswConnectionPacket.reply:type_name -> UplinkReply
-	4,  // 16: ProfileList.AllEntry.value:type_name -> StatefulProfile
-	25, // 17: DictionaryList.AllEntry.value:type_name -> DictionaryHead
-	18, // [18:18] is the sub-list for method output_type
-	18, // [18:18] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	24, // 11: Uplink.request:type_name -> RequestValue
+	25, // 12: Uplink.cancel:type_name -> google.protobuf.Empty
+	25, // 13: Uplink.final:type_name -> google.protobuf.Empty
+	15, // 14: FswInitialPacket.info:type_name -> Fsw
+	11, // 15: FswConnectionPacket.info:type_name -> FswInitialPacket
+	10, // 16: FswConnectionPacket.reply:type_name -> UplinkReply
+	4,  // 17: ProfileList.AllEntry.value:type_name -> StatefulProfile
+	26, // 18: DictionaryList.AllEntry.value:type_name -> DictionaryHead
+	19, // [19:19] is the sub-list for method output_type
+	19, // [19:19] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_msg_proto_init() }
@@ -992,6 +1011,7 @@ func file_msg_proto_init() {
 		(*Uplink_Seq)(nil),
 		(*Uplink_ParseSeq)(nil),
 		(*Uplink_File)(nil),
+		(*Uplink_Request)(nil),
 		(*Uplink_Cancel)(nil),
 		(*Uplink_Final)(nil),
 	}

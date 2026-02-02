@@ -88,13 +88,14 @@ class DictionaryList(_message.Message):
     def __init__(self, all: _Optional[_Mapping[str, _dictionary_pb2.DictionaryHead]] = ...) -> None: ...
 
 class Uplink(_message.Message):
-    __slots__ = ("id", "cmd", "parse_cmd", "seq", "parse_seq", "file", "cancel", "final")
+    __slots__ = ("id", "cmd", "parse_cmd", "seq", "parse_seq", "file", "request", "cancel", "final")
     ID_FIELD_NUMBER: _ClassVar[int]
     CMD_FIELD_NUMBER: _ClassVar[int]
     PARSE_CMD_FIELD_NUMBER: _ClassVar[int]
     SEQ_FIELD_NUMBER: _ClassVar[int]
     PARSE_SEQ_FIELD_NUMBER: _ClassVar[int]
     FILE_FIELD_NUMBER: _ClassVar[int]
+    REQUEST_FIELD_NUMBER: _ClassVar[int]
     CANCEL_FIELD_NUMBER: _ClassVar[int]
     FINAL_FIELD_NUMBER: _ClassVar[int]
     id: str
@@ -103,9 +104,10 @@ class Uplink(_message.Message):
     seq: _fsw_pb2.CommandSequence
     parse_seq: _fsw_pb2.RawCommandSequence
     file: _file_pb2.UplinkFileChunk
+    request: _fsw_pb2.RequestValue
     cancel: _empty_pb2.Empty
     final: _empty_pb2.Empty
-    def __init__(self, id: _Optional[str] = ..., cmd: _Optional[_Union[_fsw_pb2.CommandValue, _Mapping]] = ..., parse_cmd: _Optional[_Union[_fsw_pb2.RawCommandValue, _Mapping]] = ..., seq: _Optional[_Union[_fsw_pb2.CommandSequence, _Mapping]] = ..., parse_seq: _Optional[_Union[_fsw_pb2.RawCommandSequence, _Mapping]] = ..., file: _Optional[_Union[_file_pb2.UplinkFileChunk, _Mapping]] = ..., cancel: _Optional[_Union[_empty_pb2.Empty, _Mapping]] = ..., final: _Optional[_Union[_empty_pb2.Empty, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., cmd: _Optional[_Union[_fsw_pb2.CommandValue, _Mapping]] = ..., parse_cmd: _Optional[_Union[_fsw_pb2.RawCommandValue, _Mapping]] = ..., seq: _Optional[_Union[_fsw_pb2.CommandSequence, _Mapping]] = ..., parse_seq: _Optional[_Union[_fsw_pb2.RawCommandSequence, _Mapping]] = ..., file: _Optional[_Union[_file_pb2.UplinkFileChunk, _Mapping]] = ..., request: _Optional[_Union[_fsw_pb2.RequestValue, _Mapping]] = ..., cancel: _Optional[_Union[_empty_pb2.Empty, _Mapping]] = ..., final: _Optional[_Union[_empty_pb2.Empty, _Mapping]] = ...) -> None: ...
 
 class UplinkReply(_message.Message):
     __slots__ = ("id", "reply", "error")

@@ -76,6 +76,39 @@ export async function activate(context: vscode.ExtensionContext) {
         hermesVSCode.registerLanguageDictionaryItem(dictionaryItem),
         hermesVSCode.registerNotebookLanguageProvider("fprime", nbLanguage),
 
+        vscode.commands.registerCommand(
+            "hermes.fprime.uplink.file.cancel",
+            async () => {
+                // Look up all the 'fprime' FSWs connected
+                const allFprime = (await hermesVSCode.api.allFsw()).filter((f) => f.type === "fprime" && f.request);
+                if (allFprime.length > 1) {
+                    // More than one connections made, show a prompt to see which one to send to
+                    vscode.window.showQuickPick(allFprime.map(f => f.id))
+                        .then(async (fswId) => {
+                            if (fswId) {
+                                const fsw = allFprime.find(f => f.id === fswId)!;
+                                hermesVSCode.log.info(`Transmitting FILE_CANCEL packet to ${fsw.id}`);
+                                try {
+                                    await fsw.request!("cancel");
+                                } catch (err) {
+                                    vscode.window.showErrorMessage(`Failed to send FILE_CANCEL packet: ${err}`);
+                                }
+                            }
+                        });
+                } else if (allFprime.length === 1) {
+                    const fsw = allFprime[0];
+                    hermesVSCode.log.info(`Transmitting FILE_CANCEL packet to ${fsw.id}`);
+                    try {
+                        await fsw.request!("cancel");
+                    } catch (err) {
+                        vscode.window.showErrorMessage(`Failed to send FILE_CANCEL packet: ${err}`);
+                    }
+                } else {
+                    vscode.window.showErrorMessage("No F Prime FSW connection to send FILE_CANCEL packet to");
+                }
+            }
+        ),
+
         // Parameter Database
         // vscode.workspace.registerFileSystemProvider("fprimeprm", new ParamDbFsSerializer(dict)),
         // vscode.workspace.registerTextDocumentContentProvider("fprimeschema", new FPrimeParameterJsonSchemaProvider(dict)),

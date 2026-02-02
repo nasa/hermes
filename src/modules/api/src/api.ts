@@ -99,6 +99,19 @@ export interface Fsw {
         progress: vscode.Progress<number>,
         token?: vscode.CancellationToken
     ): Promise<void>;
+
+    /**
+     * Send a generic request to this connection. The kind/data/reply
+     * are defined by the connection implementation.
+     * @param kind Request type
+     * @param data Request payload
+     * @param token cancellation token
+     */
+    request?(
+        kind: string,
+        data?: Buffer | Uint8Array | string,
+        token?: vscode.CancellationToken
+    ): Promise<Buffer>;
 }
 
 export interface Api extends vscode.Disposable {

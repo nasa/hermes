@@ -55,6 +55,11 @@ class ApiStub(object):
                 request_serializer=fsw__pb2.CommandValue.SerializeToString,
                 response_deserializer=msg__pb2.Reply.FromString,
                 _registered_method=True)
+        self.Request = channel.unary_unary(
+                '/Api/Request',
+                request_serializer=fsw__pb2.RequestValue.SerializeToString,
+                response_deserializer=fsw__pb2.RequestReply.FromString,
+                _registered_method=True)
         self.RawCommand = channel.unary_unary(
                 '/Api/RawCommand',
                 request_serializer=fsw__pb2.RawCommandValue.SerializeToString,
@@ -233,6 +238,21 @@ class ApiServicer(object):
         Send a command to the FSW. Wait for
         completion or otherwise, up to the
         plugin to decide when the promise resolves.
+
+        Metadata:
+        "id": [fsw-id]
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Request(self, request, context):
+        """*
+        Send a custom request to the FSW. Requests
+        are not defined in the dictionary. The request
+        payload data is defined by an agreement between
+        the frontend request initiator and the connection
+        implementation.
 
         Metadata:
         "id": [fsw-id]
@@ -476,6 +496,11 @@ def add_ApiServicer_to_server(servicer, server):
                     request_deserializer=fsw__pb2.CommandValue.FromString,
                     response_serializer=msg__pb2.Reply.SerializeToString,
             ),
+            'Request': grpc.unary_unary_rpc_method_handler(
+                    servicer.Request,
+                    request_deserializer=fsw__pb2.RequestValue.FromString,
+                    response_serializer=fsw__pb2.RequestReply.SerializeToString,
+            ),
             'RawCommand': grpc.unary_unary_rpc_method_handler(
                     servicer.RawCommand,
                     request_deserializer=fsw__pb2.RawCommandValue.FromString,
@@ -693,6 +718,33 @@ class Api(object):
             '/Api/Command',
             fsw__pb2.CommandValue.SerializeToString,
             msg__pb2.Reply.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Request(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Api/Request',
+            fsw__pb2.RequestValue.SerializeToString,
+            fsw__pb2.RequestReply.FromString,
             options,
             channel_credentials,
             insecure,

@@ -70,6 +70,8 @@ export interface ProtoGrpcType {
   ReferenceKind: EnumTypeDefinition
   ReferenceType: MessageTypeDefinition
   Reply: MessageTypeDefinition
+  RequestReply: MessageTypeDefinition
+  RequestValue: MessageTypeDefinition
   SIntKind: EnumTypeDefinition
   SequenceReply: MessageTypeDefinition
   SourceContext: EnumTypeDefinition

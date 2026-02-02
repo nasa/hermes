@@ -172,6 +172,10 @@ func (sp *statefulProfile[T]) Connections() []*pb.Fsw {
 			if _, isUpl := fsw.(UplinkFsw); isUpl {
 				capabilities = append(capabilities, pb.FswCapability_FILE)
 			}
+
+			if _, isGndCmd := fsw.(RequestFsw); isGndCmd {
+				capabilities = append(capabilities, pb.FswCapability_REQUEST)
+			}
 		}
 
 		out = append(out, &pb.Fsw{

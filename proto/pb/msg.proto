@@ -51,6 +51,8 @@ message Uplink {
 
     UplinkFileChunk file = 6;
 
+    RequestValue request = 7;
+
     // Cancel a previously requested uplink session
     google.protobuf.Empty cancel = 99;
 

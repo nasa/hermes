@@ -24,6 +24,7 @@ const (
 	Api_Sequence_FullMethodName                   = "/Api/Sequence"
 	Api_RawSequence_FullMethodName                = "/Api/RawSequence"
 	Api_Command_FullMethodName                    = "/Api/Command"
+	Api_Request_FullMethodName                    = "/Api/Request"
 	Api_RawCommand_FullMethodName                 = "/Api/RawCommand"
 	Api_Uplink_FullMethodName                     = "/Api/Uplink"
 	Api_GetFsw_FullMethodName                     = "/Api/GetFsw"
@@ -91,6 +92,17 @@ type ApiClient interface {
 	//
 	//	"id": [fsw-id]
 	Command(ctx context.Context, in *pb.CommandValue, opts ...grpc.CallOption) (*pb.Reply, error)
+	// *
+	// Send a custom request to the FSW. Requests
+	// are not defined in the dictionary. The request
+	// payload data is defined by an agreement between
+	// the frontend request initiator and the connection
+	// implementation.
+	//
+	// Metadata:
+	//
+	//	"id": [fsw-id]
+	Request(ctx context.Context, in *pb.RequestValue, opts ...grpc.CallOption) (*pb.RequestReply, error)
 	// *
 	// Send a 'raw' command to the FSW. A raw command
 	// differs from a full command in that it must be parsed
@@ -210,6 +222,16 @@ func (c *apiClient) Command(ctx context.Context, in *pb.CommandValue, opts ...gr
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(pb.Reply)
 	err := c.cc.Invoke(ctx, Api_Command_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) Request(ctx context.Context, in *pb.RequestValue, opts ...grpc.CallOption) (*pb.RequestReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(pb.RequestReply)
+	err := c.cc.Invoke(ctx, Api_Request_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -609,6 +631,17 @@ type ApiServer interface {
 	//	"id": [fsw-id]
 	Command(context.Context, *pb.CommandValue) (*pb.Reply, error)
 	// *
+	// Send a custom request to the FSW. Requests
+	// are not defined in the dictionary. The request
+	// payload data is defined by an agreement between
+	// the frontend request initiator and the connection
+	// implementation.
+	//
+	// Metadata:
+	//
+	//	"id": [fsw-id]
+	Request(context.Context, *pb.RequestValue) (*pb.RequestReply, error)
+	// *
 	// Send a 'raw' command to the FSW. A raw command
 	// differs from a full command in that it must be parsed
 	// by the backend. Each FSW must support converting an argument list
@@ -711,6 +744,9 @@ func (UnimplementedApiServer) RawSequence(context.Context, *pb.RawCommandSequenc
 }
 func (UnimplementedApiServer) Command(context.Context, *pb.CommandValue) (*pb.Reply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Command not implemented")
+}
+func (UnimplementedApiServer) Request(context.Context, *pb.RequestValue) (*pb.RequestReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Request not implemented")
 }
 func (UnimplementedApiServer) RawCommand(context.Context, *pb.RawCommandValue) (*pb.Reply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RawCommand not implemented")
@@ -864,6 +900,24 @@ func _Api_Command_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ApiServer).Command(ctx, req.(*pb.CommandValue))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_Request_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(pb.RequestValue)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).Request(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Api_Request_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).Request(ctx, req.(*pb.RequestValue))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1298,6 +1352,10 @@ var Api_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Command",
 			Handler:    _Api_Command_Handler,
+		},
+		{
+			MethodName: "Request",
+			Handler:    _Api_Request_Handler,
 		},
 		{
 			MethodName: "RawCommand",

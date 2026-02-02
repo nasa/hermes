@@ -66,12 +66,32 @@
             {
                 "command": "hermes.uplink.add",
                 "title": "Open File to Uplink",
-                "icon": "$(clear-all)"
+                "icon": "$(plus)"
             },
             {
-                "command": "hermes.uplink.edit",
+                "command": "hermes.uplink.start",
+                "title": "Uplink File",
+                "icon": "$(radio-tower)"
+            },
+            {
+                "command": "hermes.uplink.targetEdit",
                 "title": "Edit",
-                "icon": "$(clear-all)"
+                "icon": "$(edit)"
+            },
+            {
+                "command": "hermes.uplink.destinationEdit",
+                "title": "Edit",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "hermes.uplink.delete",
+                "title": "Delete",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "hermes.uplink.cancel",
+                "title": "Cancel File Uplink",
+                "icon": "$(debug-stop)"
             },
             {
                 "command": "hermes.uplink.clear",
@@ -137,7 +157,6 @@
                     "icon": "./icons/rover-color-512.png"
                 },
                 {
-                    "type": "webview",
                     "id": "hermes.uplink",
                     "name": "Uplink",
                     "icon": "$(radio-tower)"
@@ -155,6 +174,16 @@
                     "command": "hermes.downlink.clear",
                     "when": "view == hermes.downlink",
                     "group": "navigation@1"
+                },
+                {
+                    "command": "hermes.uplink.clear",
+                    "when": "view == hermes.uplink",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "hermes.uplink.add",
+                    "when": "view == hermes.uplink",
+                    "group": "navigation@2"
                 }
             ],
             "notebook/cell/title": [
@@ -186,6 +215,31 @@
                 {
                     "command": "hermes.downlink.open",
                     "when": "view == hermes.downlink && viewItem == hermes.downlink.file",
+                    "group": "inline"
+                },
+                {
+                    "command": "hermes.uplink.targetEdit",
+                    "when": "view == hermes.uplink && viewItem == hermes.uplink.target",
+                    "group": "inline"
+                },
+                {
+                    "command": "hermes.uplink.destinationEdit",
+                    "when": "view == hermes.uplink && viewItem == hermes.uplink.destination",
+                    "group": "inline"
+                },
+                {
+                    "command": "hermes.uplink.cancel",
+                    "when": "view == hermes.uplink && viewItem == hermes.uplink.active",
+                    "group": "inline"
+                },
+                {
+                    "command": "hermes.uplink.start",
+                    "when": "view == hermes.uplink && viewItem == hermes.uplink.pending",
+                    "group": "inline"
+                },
+                {
+                    "command": "hermes.uplink.delete",
+                    "when": "view == hermes.uplink && viewItem == hermes.uplink.pending",
                     "group": "inline"
                 }
             ]

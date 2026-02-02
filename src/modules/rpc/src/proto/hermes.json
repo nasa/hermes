@@ -18,6 +18,10 @@
           "requestType": "CommandValue",
           "responseType": "Reply"
         },
+        "Request": {
+          "requestType": "RequestValue",
+          "responseType": "RequestReply"
+        },
         "RawCommand": {
           "requestType": "RawCommandValue",
           "responseType": "Reply"
@@ -948,7 +952,8 @@
         "PARSE_COMMAND": 1,
         "SEQUENCE": 2,
         "PARSE_SEQUENCE": 3,
-        "FILE": 4
+        "FILE": 4,
+        "REQUEST": 5
       }
     },
     "Fsw": {
@@ -1070,6 +1075,26 @@
         "lineCommentPrefix": {
           "type": "string",
           "id": 4
+        }
+      }
+    },
+    "RequestValue": {
+      "fields": {
+        "kind": {
+          "type": "string",
+          "id": 1
+        },
+        "data": {
+          "type": "bytes",
+          "id": 2
+        }
+      }
+    },
+    "RequestReply": {
+      "fields": {
+        "data": {
+          "type": "bytes",
+          "id": 1
         }
       }
     },
@@ -1532,6 +1557,7 @@
             "seq",
             "parseSeq",
             "file",
+            "request",
             "cancel",
             "final"
           ]
@@ -1561,6 +1587,10 @@
         "file": {
           "type": "UplinkFileChunk",
           "id": 6
+        },
+        "request": {
+          "type": "RequestValue",
+          "id": 7
         },
         "cancel": {
           "type": "google.protobuf.Empty",

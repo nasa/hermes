@@ -20,6 +20,9 @@ enum FswCapability {
 
   // Connection supports file uplink to an on-board filesystem.
   FILE = 4;
+
+  // Connection supports 'requests' which provide a generic catch-all of misc functionality
+  REQUEST = 5;
 }
 
 message Fsw {
@@ -109,4 +112,20 @@ message RawCommandSequence {
   map<string, string> metadata = 3;
 
   string line_comment_prefix = 4;
+}
+
+/**
+ * FSW Requests are non-dictionary defined items. These are connection
+ * specific commands meant to be exposed by custom UI in the frontend.
+ */
+message RequestValue {
+  /* Request type identfier */
+  string kind = 1;
+
+  /* Misc request data (JSON recommended) */
+  bytes data = 2;
+}
+
+message RequestReply {
+  bytes data = 1;
 }

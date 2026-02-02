@@ -22,14 +22,14 @@ import { ShellScriptLanguageProvider } from './kernels/shellscript';
 import { PythonLanguageProvider } from './kernels/python';
 import { UplinkLanguageProvider } from './kernels/uplink';
 import { DownlinkProvider } from './components/DownlinkViewer';
-import { UplinkViewer } from './components/UplinkViewer';
+import { UplinkProvider } from './components/UplinkViewer';
 
 export class VscodeHermes implements CoreApi {
     private subscriptions: vscode.Disposable[] = [];
     private evrPanel?: EvrPanel;
     private connectionViewer?: ConnectionViewer;
     private downlinkProvider?: DownlinkProvider;
-    private uplinkViewer?: UplinkViewer;
+    private uplinkProvider?: UplinkProvider;
 
     private notebookLanguages: NotebookLanguageManager;
     private dictionaryStatus: Map<string, DictionaryLanguageItem>;
@@ -55,29 +55,13 @@ export class VscodeHermes implements CoreApi {
         // Viewers
         this.connectionViewer = new ConnectionViewer(this.extensionPath, this.api, this);
         this.downlinkProvider = new DownlinkProvider(this.api);
-        this.uplinkViewer = new UplinkViewer(this.extensionPath, this.api);
+        this.uplinkProvider = new UplinkProvider(this.api);
         this.evrPanel = new EvrPanel(this.api, this.extensionPath);
 
         this.subscriptions.push(
             this.registerShellscriptBinPath(path.join(this.extensionPath, 'out', 'bin')),
 
             vscode.commands.registerCommand('hermes.applyWorkspaceEdit', vscode.workspace.applyEdit),
-            vscode.commands.registerCommand('hermes.downlink.clear', () => {
-                this.api.clearDownlinkTransferState();
-            }),
-            vscode.commands.registerCommand('hermes.uplink.clear', () => {
-                this.api.clearUplinkTransferState();
-            }),
-            vscode.commands.registerCommand('hermes.downlink.open', (item) => {
-                const uri = item.uri as vscode.Uri;
-                if (!vscode.workspace.getWorkspaceFolder(uri)) {
-                    // This uri is not in the workspace
-                    // Show it in finder
-                    vscode.commands.executeCommand("revealFileInOS", uri);
-                } else {
-                    vscode.commands.executeCommand("revealFileInExplorer", uri);
-                }
-            }),
 
             // Hermes Notebook support
             ...NotebookController.registerCommands(),
@@ -92,11 +76,6 @@ export class VscodeHermes implements CoreApi {
 
             this.evrPanel,
             this.connectionViewer,
-            vscode.window.registerTreeDataProvider(
-                'hermes.downlink',
-                this.downlinkProvider,
-            ),
-            this.uplinkViewer,
 
             this.registerNotebookType("hermes.notebook"),
             this.registerNotebookType("jupyter-notebook"),
@@ -116,7 +95,7 @@ export class VscodeHermes implements CoreApi {
         // this.evrPanel?.refresh();
         this.connectionViewer?.refresh();
         this.downlinkProvider?.refresh();
-        this.uplinkViewer?.refresh();
+        this.uplinkProvider?.refresh();
     }
 
     registerDictionaryProvider(
