@@ -1,0 +1,65 @@
+services:
+  fprime-cp-dictionary:
+    image: ${FPRIME_IMAGE:-ghcr.io/nasa/hermes/fprime-ref:nightly}
+    volumes:
+      - ./data:/data
+    entrypoint: ["cp", "/workspace/Linux/Ref/dict/RefTopologyDictionary.json", "/data/RefTopologyDictionary.json"]
+
+  hermes-convert-dictionary:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      fprime-cp-dictionary:
+        condition: service_completed_successfully
+    entrypoint: ["sh", "-c", "node /app/fprime-json-dictionary /app/data/RefTopologyDictionary.json > /app/data/fprime.dictionary.pb"]
+
+  hermes-backend:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    depends_on:
+      hermes-convert-dictionary:
+        condition: service_completed_successfully
+    ports:
+      - "50051:50051"
+    environment:
+      - LOG_LEVEL=debug
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    networks:
+      - hermes-test-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "echo"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # Optional: Add dependencies if needed (e.g., database)
+  # influxdb:
+  #   image: influxdb:latest
+  #   ports:
+  #     - "8086:8086"
+  #   networks:
+  #     - hermes-test-network
+
+  # F Prime reference deployment
+  fprime-ref:
+    # Use prebuilt nightly image in CI, or override for local development
+    image: ${FPRIME_IMAGE:-ghcr.io/nasa/hermes/fprime-ref:nightly}
+    environment:
+      - GROUND_PORT=50050
+      - GROUND_ADDRESS=hermes-backend
+    networks:
+      - hermes-test-network
+    depends_on:
+      hermes-backend:
+        condition: service_started
+
+networks:
+  hermes-test-network:
+    driver: bridge
