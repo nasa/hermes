@@ -1,0 +1,11 @@
+# Test artifacts
+*.test
+*.out
+coverage.out
+coverage.html
+
+# Test data
+/data/*
+!/data/.gitkeep
+/config/*
+!/config/.gitkeep
