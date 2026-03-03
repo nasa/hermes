@@ -1,7 +1,7 @@
 import datetime
 
-from google.protobuf import timestamp_pb2 as _timestamp_pb2
 import type_pb2 as _type_pb2
+from google.protobuf import timestamp_pb2 as _timestamp_pb2
 import dictionary_pb2 as _dictionary_pb2
 import time_pb2 as _time_pb2
 from google.protobuf.internal import containers as _containers
@@ -119,7 +119,7 @@ class FileDownlinkChunk(_message.Message):
     def __init__(self, offset: _Optional[int] = ..., size: _Optional[int] = ...) -> None: ...
 
 class FileDownlink(_message.Message):
-    __slots__ = ("uid", "timeStart", "timeEnd", "status", "source", "sourcePath", "destinationPath", "filePath", "missingChunks", "duplicateChunks", "size", "metadata")
+    __slots__ = ("uid", "time_start", "time_end", "status", "source", "source_path", "destination_path", "file_path", "missing_chunks", "duplicate_chunks", "size", "metadata")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -128,27 +128,84 @@ class FileDownlink(_message.Message):
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     UID_FIELD_NUMBER: _ClassVar[int]
-    TIMESTART_FIELD_NUMBER: _ClassVar[int]
-    TIMEEND_FIELD_NUMBER: _ClassVar[int]
+    TIME_START_FIELD_NUMBER: _ClassVar[int]
+    TIME_END_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
     SOURCE_FIELD_NUMBER: _ClassVar[int]
-    SOURCEPATH_FIELD_NUMBER: _ClassVar[int]
-    DESTINATIONPATH_FIELD_NUMBER: _ClassVar[int]
-    FILEPATH_FIELD_NUMBER: _ClassVar[int]
-    MISSINGCHUNKS_FIELD_NUMBER: _ClassVar[int]
-    DUPLICATECHUNKS_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_PATH_FIELD_NUMBER: _ClassVar[int]
+    DESTINATION_PATH_FIELD_NUMBER: _ClassVar[int]
+    FILE_PATH_FIELD_NUMBER: _ClassVar[int]
+    MISSING_CHUNKS_FIELD_NUMBER: _ClassVar[int]
+    DUPLICATE_CHUNKS_FIELD_NUMBER: _ClassVar[int]
     SIZE_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     uid: str
-    timeStart: _timestamp_pb2.Timestamp
-    timeEnd: _timestamp_pb2.Timestamp
+    time_start: _timestamp_pb2.Timestamp
+    time_end: _timestamp_pb2.Timestamp
     status: FileDownlinkCompletionStatus
     source: str
-    sourcePath: str
-    destinationPath: str
-    filePath: str
-    missingChunks: _containers.RepeatedCompositeFieldContainer[FileDownlinkChunk]
-    duplicateChunks: _containers.RepeatedCompositeFieldContainer[FileDownlinkChunk]
+    source_path: str
+    destination_path: str
+    file_path: str
+    missing_chunks: _containers.RepeatedCompositeFieldContainer[FileDownlinkChunk]
+    duplicate_chunks: _containers.RepeatedCompositeFieldContainer[FileDownlinkChunk]
     size: int
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, uid: _Optional[str] = ..., timeStart: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., timeEnd: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., status: _Optional[_Union[FileDownlinkCompletionStatus, str]] = ..., source: _Optional[str] = ..., sourcePath: _Optional[str] = ..., destinationPath: _Optional[str] = ..., filePath: _Optional[str] = ..., missingChunks: _Optional[_Iterable[_Union[FileDownlinkChunk, _Mapping]]] = ..., duplicateChunks: _Optional[_Iterable[_Union[FileDownlinkChunk, _Mapping]]] = ..., size: _Optional[int] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    def __init__(self, uid: _Optional[str] = ..., time_start: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., time_end: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., status: _Optional[_Union[FileDownlinkCompletionStatus, str]] = ..., source: _Optional[str] = ..., source_path: _Optional[str] = ..., destination_path: _Optional[str] = ..., file_path: _Optional[str] = ..., missing_chunks: _Optional[_Iterable[_Union[FileDownlinkChunk, _Mapping]]] = ..., duplicate_chunks: _Optional[_Iterable[_Union[FileDownlinkChunk, _Mapping]]] = ..., size: _Optional[int] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+
+class FileUplink(_message.Message):
+    __slots__ = ("uid", "time_start", "time_end", "fsw_id", "source_path", "destination_path", "error", "size", "metadata")
+    class MetadataEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    UID_FIELD_NUMBER: _ClassVar[int]
+    TIME_START_FIELD_NUMBER: _ClassVar[int]
+    TIME_END_FIELD_NUMBER: _ClassVar[int]
+    FSW_ID_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_PATH_FIELD_NUMBER: _ClassVar[int]
+    DESTINATION_PATH_FIELD_NUMBER: _ClassVar[int]
+    ERROR_FIELD_NUMBER: _ClassVar[int]
+    SIZE_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    uid: str
+    time_start: _timestamp_pb2.Timestamp
+    time_end: _timestamp_pb2.Timestamp
+    fsw_id: str
+    source_path: str
+    destination_path: str
+    error: str
+    size: int
+    metadata: _containers.ScalarMap[str, str]
+    def __init__(self, uid: _Optional[str] = ..., time_start: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., time_end: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., fsw_id: _Optional[str] = ..., source_path: _Optional[str] = ..., destination_path: _Optional[str] = ..., error: _Optional[str] = ..., size: _Optional[int] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+
+class FileTransfer(_message.Message):
+    __slots__ = ("uid", "fsw_id", "source_path", "target_path", "size", "progress")
+    UID_FIELD_NUMBER: _ClassVar[int]
+    FSW_ID_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_PATH_FIELD_NUMBER: _ClassVar[int]
+    TARGET_PATH_FIELD_NUMBER: _ClassVar[int]
+    SIZE_FIELD_NUMBER: _ClassVar[int]
+    PROGRESS_FIELD_NUMBER: _ClassVar[int]
+    uid: str
+    fsw_id: str
+    source_path: str
+    target_path: str
+    size: int
+    progress: int
+    def __init__(self, uid: _Optional[str] = ..., fsw_id: _Optional[str] = ..., source_path: _Optional[str] = ..., target_path: _Optional[str] = ..., size: _Optional[int] = ..., progress: _Optional[int] = ...) -> None: ...
+
+class FileTransferState(_message.Message):
+    __slots__ = ("downlink_completed", "uplink_completed", "downlink_in_progress", "uplink_in_progress")
+    DOWNLINK_COMPLETED_FIELD_NUMBER: _ClassVar[int]
+    UPLINK_COMPLETED_FIELD_NUMBER: _ClassVar[int]
+    DOWNLINK_IN_PROGRESS_FIELD_NUMBER: _ClassVar[int]
+    UPLINK_IN_PROGRESS_FIELD_NUMBER: _ClassVar[int]
+    downlink_completed: _containers.RepeatedCompositeFieldContainer[FileDownlink]
+    uplink_completed: _containers.RepeatedCompositeFieldContainer[FileUplink]
+    downlink_in_progress: _containers.RepeatedCompositeFieldContainer[FileTransfer]
+    uplink_in_progress: _containers.RepeatedCompositeFieldContainer[FileTransfer]
+    def __init__(self, downlink_completed: _Optional[_Iterable[_Union[FileDownlink, _Mapping]]] = ..., uplink_completed: _Optional[_Iterable[_Union[FileUplink, _Mapping]]] = ..., downlink_in_progress: _Optional[_Iterable[_Union[FileTransfer, _Mapping]]] = ..., uplink_in_progress: _Optional[_Iterable[_Union[FileTransfer, _Mapping]]] = ...) -> None: ...

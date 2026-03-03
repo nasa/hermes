@@ -27,11 +27,12 @@ var File_hermes_proto protoreflect.FileDescriptor
 const file_hermes_proto_rawDesc = "" +
 	"\n" +
 	"\fhermes.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x10dictionary.proto\x1a\n" +
-	"file.proto\x1a\tfsw.proto\x1a\tbus.proto\x1a\rprofile.proto\x1a\tmsg.proto2\x9c\t\n" +
+	"file.proto\x1a\tfsw.proto\x1a\tbus.proto\x1a\rprofile.proto\x1a\tmsg.proto2\x90\f\n" +
 	"\x03Api\x12,\n" +
 	"\bSequence\x12\x10.CommandSequence\x1a\x0e.SequenceReply\x122\n" +
 	"\vRawSequence\x12\x13.RawCommandSequence\x1a\x0e.SequenceReply\x12 \n" +
-	"\aCommand\x12\r.CommandValue\x1a\x06.Reply\x12&\n" +
+	"\aCommand\x12\r.CommandValue\x1a\x06.Reply\x12'\n" +
+	"\aRequest\x12\r.RequestValue\x1a\r.RequestReply\x12&\n" +
 	"\n" +
 	"RawCommand\x12\x10.RawCommandValue\x1a\x06.Reply\x12$\n" +
 	"\x06Uplink\x12\x10.UplinkFileChunk\x1a\x06.Reply(\x01\x12\x13\n" +
@@ -45,7 +46,10 @@ const file_hermes_proto_rawDesc = "" +
 	"AddProfile\x12\b.Profile\x1a\x03.Id\x12,\n" +
 	"\rRemoveProfile\x12\x03.Id\x1a\x16.google.protobuf.Empty\x123\n" +
 	"\vAllProfiles\x12\x16.google.protobuf.Empty\x1a\f.ProfileList\x12<\n" +
-	"\fAllProviders\x12\x16.google.protobuf.Empty\x1a\x14.ProfileProviderList\x12D\n" +
+	"\fAllProviders\x12\x16.google.protobuf.Empty\x1a\x14.ProfileProviderList\x12B\n" +
+	"\x14GetFileTransferState\x12\x16.google.protobuf.Empty\x1a\x12.FileTransferState\x12L\n" +
+	"\x1aClearDownlinkTransferState\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12J\n" +
+	"\x18ClearUplinkTransferState\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12D\n" +
 	"\x12SubscribeProviders\x12\x16.google.protobuf.Empty\x1a\x14.ProfileProviderList0\x01\x12;\n" +
 	"\x11SubscribeProfiles\x12\x16.google.protobuf.Empty\x1a\f.ProfileList0\x01\x12!\n" +
 	"\rGetDictionary\x12\x03.Id\x1a\v.Dictionary\x12!\n" +
@@ -58,7 +62,10 @@ const file_hermes_proto_rawDesc = "" +
 	"\fSubTelemetry\x12\n" +
 	".BusFilter\x1a\x11.SourcedTelemetry0\x01\x12.\n" +
 	"\x0fSubFileDownlink\x12\n" +
-	".BusFilter\x1a\r.FileDownlink0\x012\xdd\x01\n" +
+	".BusFilter\x1a\r.FileDownlink0\x01\x12*\n" +
+	"\rSubFileUplink\x12\n" +
+	".BusFilter\x1a\v.FileUplink0\x01\x12?\n" +
+	"\x0fSubFileTransfer\x12\x16.google.protobuf.Empty\x1a\x12.FileTransferState0\x012\xdd\x01\n" +
 	"\bProvider\x12/\n" +
 	"\n" +
 	"Connection\x12\x14.FswConnectionPacket\x1a\a.Uplink(\x010\x01\x124\n" +
@@ -70,89 +77,105 @@ var file_hermes_proto_goTypes = []any{
 	(*pb.CommandSequence)(nil),     // 0: CommandSequence
 	(*pb.RawCommandSequence)(nil),  // 1: RawCommandSequence
 	(*pb.CommandValue)(nil),        // 2: CommandValue
-	(*pb.RawCommandValue)(nil),     // 3: RawCommandValue
-	(*pb.UplinkFileChunk)(nil),     // 4: UplinkFileChunk
-	(*pb.Id)(nil),                  // 5: Id
-	(*emptypb.Empty)(nil),          // 6: google.protobuf.Empty
-	(*pb.ProfileUpdate)(nil),       // 7: ProfileUpdate
-	(*pb.Profile)(nil),             // 8: Profile
-	(*pb.Dictionary)(nil),          // 9: Dictionary
-	(*pb.BusFilter)(nil),           // 10: BusFilter
-	(*pb.FswConnectionPacket)(nil), // 11: FswConnectionPacket
-	(*pb.DownlinkFileChunk)(nil),   // 12: DownlinkFileChunk
-	(*pb.SourcedEvent)(nil),        // 13: SourcedEvent
-	(*pb.SourcedTelemetry)(nil),    // 14: SourcedTelemetry
-	(*pb.SequenceReply)(nil),       // 15: SequenceReply
-	(*pb.Reply)(nil),               // 16: Reply
-	(*pb.Fsw)(nil),                 // 17: Fsw
-	(*pb.FswList)(nil),             // 18: FswList
-	(*pb.ProfileList)(nil),         // 19: ProfileList
-	(*pb.ProfileProviderList)(nil), // 20: ProfileProviderList
-	(*pb.DictionaryList)(nil),      // 21: DictionaryList
-	(*pb.FileDownlink)(nil),        // 22: FileDownlink
-	(*pb.Uplink)(nil),              // 23: Uplink
+	(*pb.RequestValue)(nil),        // 3: RequestValue
+	(*pb.RawCommandValue)(nil),     // 4: RawCommandValue
+	(*pb.UplinkFileChunk)(nil),     // 5: UplinkFileChunk
+	(*pb.Id)(nil),                  // 6: Id
+	(*emptypb.Empty)(nil),          // 7: google.protobuf.Empty
+	(*pb.ProfileUpdate)(nil),       // 8: ProfileUpdate
+	(*pb.Profile)(nil),             // 9: Profile
+	(*pb.Dictionary)(nil),          // 10: Dictionary
+	(*pb.BusFilter)(nil),           // 11: BusFilter
+	(*pb.FswConnectionPacket)(nil), // 12: FswConnectionPacket
+	(*pb.DownlinkFileChunk)(nil),   // 13: DownlinkFileChunk
+	(*pb.SourcedEvent)(nil),        // 14: SourcedEvent
+	(*pb.SourcedTelemetry)(nil),    // 15: SourcedTelemetry
+	(*pb.SequenceReply)(nil),       // 16: SequenceReply
+	(*pb.Reply)(nil),               // 17: Reply
+	(*pb.RequestReply)(nil),        // 18: RequestReply
+	(*pb.Fsw)(nil),                 // 19: Fsw
+	(*pb.FswList)(nil),             // 20: FswList
+	(*pb.ProfileList)(nil),         // 21: ProfileList
+	(*pb.ProfileProviderList)(nil), // 22: ProfileProviderList
+	(*pb.FileTransferState)(nil),   // 23: FileTransferState
+	(*pb.DictionaryList)(nil),      // 24: DictionaryList
+	(*pb.FileDownlink)(nil),        // 25: FileDownlink
+	(*pb.FileUplink)(nil),          // 26: FileUplink
+	(*pb.Uplink)(nil),              // 27: Uplink
 }
 var file_hermes_proto_depIdxs = []int32{
 	0,  // 0: Api.Sequence:input_type -> CommandSequence
 	1,  // 1: Api.RawSequence:input_type -> RawCommandSequence
 	2,  // 2: Api.Command:input_type -> CommandValue
-	3,  // 3: Api.RawCommand:input_type -> RawCommandValue
-	4,  // 4: Api.Uplink:input_type -> UplinkFileChunk
-	5,  // 5: Api.GetFsw:input_type -> Id
-	6,  // 6: Api.AllFsw:input_type -> google.protobuf.Empty
-	6,  // 7: Api.SubscribeFsw:input_type -> google.protobuf.Empty
-	5,  // 8: Api.StartProfile:input_type -> Id
-	5,  // 9: Api.StopProfile:input_type -> Id
-	7,  // 10: Api.UpdateProfile:input_type -> ProfileUpdate
-	8,  // 11: Api.AddProfile:input_type -> Profile
-	5,  // 12: Api.RemoveProfile:input_type -> Id
-	6,  // 13: Api.AllProfiles:input_type -> google.protobuf.Empty
-	6,  // 14: Api.AllProviders:input_type -> google.protobuf.Empty
-	6,  // 15: Api.SubscribeProviders:input_type -> google.protobuf.Empty
-	6,  // 16: Api.SubscribeProfiles:input_type -> google.protobuf.Empty
-	5,  // 17: Api.GetDictionary:input_type -> Id
-	9,  // 18: Api.AddDictionary:input_type -> Dictionary
-	5,  // 19: Api.RemoveDictionary:input_type -> Id
-	6,  // 20: Api.AllDictionary:input_type -> google.protobuf.Empty
-	6,  // 21: Api.SubscribeDictionary:input_type -> google.protobuf.Empty
-	10, // 22: Api.SubEvent:input_type -> BusFilter
-	10, // 23: Api.SubTelemetry:input_type -> BusFilter
-	10, // 24: Api.SubFileDownlink:input_type -> BusFilter
-	11, // 25: Provider.Connection:input_type -> FswConnectionPacket
-	12, // 26: Provider.File:input_type -> DownlinkFileChunk
-	13, // 27: Provider.Event:input_type -> SourcedEvent
-	14, // 28: Provider.Telemetry:input_type -> SourcedTelemetry
-	15, // 29: Api.Sequence:output_type -> SequenceReply
-	15, // 30: Api.RawSequence:output_type -> SequenceReply
-	16, // 31: Api.Command:output_type -> Reply
-	16, // 32: Api.RawCommand:output_type -> Reply
-	16, // 33: Api.Uplink:output_type -> Reply
-	17, // 34: Api.GetFsw:output_type -> Fsw
-	18, // 35: Api.AllFsw:output_type -> FswList
-	18, // 36: Api.SubscribeFsw:output_type -> FswList
-	6,  // 37: Api.StartProfile:output_type -> google.protobuf.Empty
-	6,  // 38: Api.StopProfile:output_type -> google.protobuf.Empty
-	6,  // 39: Api.UpdateProfile:output_type -> google.protobuf.Empty
-	5,  // 40: Api.AddProfile:output_type -> Id
-	6,  // 41: Api.RemoveProfile:output_type -> google.protobuf.Empty
-	19, // 42: Api.AllProfiles:output_type -> ProfileList
-	20, // 43: Api.AllProviders:output_type -> ProfileProviderList
-	20, // 44: Api.SubscribeProviders:output_type -> ProfileProviderList
-	19, // 45: Api.SubscribeProfiles:output_type -> ProfileList
-	9,  // 46: Api.GetDictionary:output_type -> Dictionary
-	5,  // 47: Api.AddDictionary:output_type -> Id
-	6,  // 48: Api.RemoveDictionary:output_type -> google.protobuf.Empty
-	21, // 49: Api.AllDictionary:output_type -> DictionaryList
-	21, // 50: Api.SubscribeDictionary:output_type -> DictionaryList
-	13, // 51: Api.SubEvent:output_type -> SourcedEvent
-	14, // 52: Api.SubTelemetry:output_type -> SourcedTelemetry
-	22, // 53: Api.SubFileDownlink:output_type -> FileDownlink
-	23, // 54: Provider.Connection:output_type -> Uplink
-	6,  // 55: Provider.File:output_type -> google.protobuf.Empty
-	6,  // 56: Provider.Event:output_type -> google.protobuf.Empty
-	6,  // 57: Provider.Telemetry:output_type -> google.protobuf.Empty
-	29, // [29:58] is the sub-list for method output_type
-	0,  // [0:29] is the sub-list for method input_type
+	3,  // 3: Api.Request:input_type -> RequestValue
+	4,  // 4: Api.RawCommand:input_type -> RawCommandValue
+	5,  // 5: Api.Uplink:input_type -> UplinkFileChunk
+	6,  // 6: Api.GetFsw:input_type -> Id
+	7,  // 7: Api.AllFsw:input_type -> google.protobuf.Empty
+	7,  // 8: Api.SubscribeFsw:input_type -> google.protobuf.Empty
+	6,  // 9: Api.StartProfile:input_type -> Id
+	6,  // 10: Api.StopProfile:input_type -> Id
+	8,  // 11: Api.UpdateProfile:input_type -> ProfileUpdate
+	9,  // 12: Api.AddProfile:input_type -> Profile
+	6,  // 13: Api.RemoveProfile:input_type -> Id
+	7,  // 14: Api.AllProfiles:input_type -> google.protobuf.Empty
+	7,  // 15: Api.AllProviders:input_type -> google.protobuf.Empty
+	7,  // 16: Api.GetFileTransferState:input_type -> google.protobuf.Empty
+	7,  // 17: Api.ClearDownlinkTransferState:input_type -> google.protobuf.Empty
+	7,  // 18: Api.ClearUplinkTransferState:input_type -> google.protobuf.Empty
+	7,  // 19: Api.SubscribeProviders:input_type -> google.protobuf.Empty
+	7,  // 20: Api.SubscribeProfiles:input_type -> google.protobuf.Empty
+	6,  // 21: Api.GetDictionary:input_type -> Id
+	10, // 22: Api.AddDictionary:input_type -> Dictionary
+	6,  // 23: Api.RemoveDictionary:input_type -> Id
+	7,  // 24: Api.AllDictionary:input_type -> google.protobuf.Empty
+	7,  // 25: Api.SubscribeDictionary:input_type -> google.protobuf.Empty
+	11, // 26: Api.SubEvent:input_type -> BusFilter
+	11, // 27: Api.SubTelemetry:input_type -> BusFilter
+	11, // 28: Api.SubFileDownlink:input_type -> BusFilter
+	11, // 29: Api.SubFileUplink:input_type -> BusFilter
+	7,  // 30: Api.SubFileTransfer:input_type -> google.protobuf.Empty
+	12, // 31: Provider.Connection:input_type -> FswConnectionPacket
+	13, // 32: Provider.File:input_type -> DownlinkFileChunk
+	14, // 33: Provider.Event:input_type -> SourcedEvent
+	15, // 34: Provider.Telemetry:input_type -> SourcedTelemetry
+	16, // 35: Api.Sequence:output_type -> SequenceReply
+	16, // 36: Api.RawSequence:output_type -> SequenceReply
+	17, // 37: Api.Command:output_type -> Reply
+	18, // 38: Api.Request:output_type -> RequestReply
+	17, // 39: Api.RawCommand:output_type -> Reply
+	17, // 40: Api.Uplink:output_type -> Reply
+	19, // 41: Api.GetFsw:output_type -> Fsw
+	20, // 42: Api.AllFsw:output_type -> FswList
+	20, // 43: Api.SubscribeFsw:output_type -> FswList
+	7,  // 44: Api.StartProfile:output_type -> google.protobuf.Empty
+	7,  // 45: Api.StopProfile:output_type -> google.protobuf.Empty
+	7,  // 46: Api.UpdateProfile:output_type -> google.protobuf.Empty
+	6,  // 47: Api.AddProfile:output_type -> Id
+	7,  // 48: Api.RemoveProfile:output_type -> google.protobuf.Empty
+	21, // 49: Api.AllProfiles:output_type -> ProfileList
+	22, // 50: Api.AllProviders:output_type -> ProfileProviderList
+	23, // 51: Api.GetFileTransferState:output_type -> FileTransferState
+	7,  // 52: Api.ClearDownlinkTransferState:output_type -> google.protobuf.Empty
+	7,  // 53: Api.ClearUplinkTransferState:output_type -> google.protobuf.Empty
+	22, // 54: Api.SubscribeProviders:output_type -> ProfileProviderList
+	21, // 55: Api.SubscribeProfiles:output_type -> ProfileList
+	10, // 56: Api.GetDictionary:output_type -> Dictionary
+	6,  // 57: Api.AddDictionary:output_type -> Id
+	7,  // 58: Api.RemoveDictionary:output_type -> google.protobuf.Empty
+	24, // 59: Api.AllDictionary:output_type -> DictionaryList
+	24, // 60: Api.SubscribeDictionary:output_type -> DictionaryList
+	14, // 61: Api.SubEvent:output_type -> SourcedEvent
+	15, // 62: Api.SubTelemetry:output_type -> SourcedTelemetry
+	25, // 63: Api.SubFileDownlink:output_type -> FileDownlink
+	26, // 64: Api.SubFileUplink:output_type -> FileUplink
+	23, // 65: Api.SubFileTransfer:output_type -> FileTransferState
+	27, // 66: Provider.Connection:output_type -> Uplink
+	7,  // 67: Provider.File:output_type -> google.protobuf.Empty
+	7,  // 68: Provider.Event:output_type -> google.protobuf.Empty
+	7,  // 69: Provider.Telemetry:output_type -> google.protobuf.Empty
+	35, // [35:70] is the sub-list for method output_type
+	0,  // [0:35] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name

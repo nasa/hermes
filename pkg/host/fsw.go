@@ -97,6 +97,17 @@ type CmdFsw interface {
 	Command(ctx context.Context, cmd *pb.CommandValue) (bool, error)
 }
 
+// A FSW connection that supports generic requests
+type RequestFsw interface {
+	Fsw
+
+	// Send a request to the FSW. Requests
+	// are not defined in the dictionary. Requests here
+	// are defined by an agreement between the frontend
+	// implementation and the backend implementation.
+	Request(ctx context.Context, kind string, data []byte) ([]byte, error)
+}
+
 // A FSW connection that supports uplinking/dispatching a sequence of commands.
 type SeqFsw interface {
 	Fsw

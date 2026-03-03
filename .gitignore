@@ -51,6 +51,7 @@ out/
 # Temporary files
 tmp/
 work/
+docs/site/
 
 # Sqlite database files
 *.db

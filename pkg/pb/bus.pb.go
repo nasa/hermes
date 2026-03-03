@@ -576,23 +576,23 @@ type FileDownlink struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Uid   string                 `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`
 	// Time when downlink started (ground time)
-	TimeStart *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timeStart,proto3" json:"timeStart,omitempty"`
+	TimeStart *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=time_start,json=timeStart,proto3" json:"time_start,omitempty"`
 	// Time when downlink ended
-	TimeEnd *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=timeEnd,proto3" json:"timeEnd,omitempty"`
+	TimeEnd *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=time_end,json=timeEnd,proto3" json:"time_end,omitempty"`
 	// Status of the file downlink
 	Status FileDownlinkCompletionStatus `protobuf:"varint,4,opt,name=status,proto3,enum=FileDownlinkCompletionStatus" json:"status,omitempty"`
 	// FSW source ID
 	Source string `protobuf:"bytes,5,opt,name=source,proto3" json:"source,omitempty"`
 	// Source relative path where this was downlinked from
-	SourcePath string `protobuf:"bytes,6,opt,name=sourcePath,proto3" json:"sourcePath,omitempty"`
+	SourcePath string `protobuf:"bytes,6,opt,name=source_path,json=sourcePath,proto3" json:"source_path,omitempty"`
 	// (optional) destination path requested during downlink
-	DestinationPath string `protobuf:"bytes,7,opt,name=destinationPath,proto3" json:"destinationPath,omitempty"`
+	DestinationPath string `protobuf:"bytes,7,opt,name=destination_path,json=destinationPath,proto3" json:"destination_path,omitempty"`
 	// Absolute path on the host machine where the raw file is stored
-	FilePath string `protobuf:"bytes,8,opt,name=filePath,proto3" json:"filePath,omitempty"`
+	FilePath string `protobuf:"bytes,8,opt,name=file_path,json=filePath,proto3" json:"file_path,omitempty"`
 	// Set of chunks that are missing if this is a partial downlink
-	MissingChunks []*FileDownlinkChunk `protobuf:"bytes,9,rep,name=missingChunks,proto3" json:"missingChunks,omitempty"`
+	MissingChunks []*FileDownlinkChunk `protobuf:"bytes,9,rep,name=missing_chunks,json=missingChunks,proto3" json:"missing_chunks,omitempty"`
 	// It's possible sections of the file overlap
-	DuplicateChunks []*FileDownlinkChunk `protobuf:"bytes,10,rep,name=duplicateChunks,proto3" json:"duplicateChunks,omitempty"`
+	DuplicateChunks []*FileDownlinkChunk `protobuf:"bytes,10,rep,name=duplicate_chunks,json=duplicateChunks,proto3" json:"duplicate_chunks,omitempty"`
 	// Size in bytes
 	Size uint64 `protobuf:"varint,11,opt,name=size,proto3" json:"size,omitempty"`
 	// Additional metadata in the form tag -> json
@@ -715,12 +715,290 @@ func (x *FileDownlink) GetMetadata() map[string]string {
 	return nil
 }
 
+type FileUplink struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Uid   string                 `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	// Time when uplink started (ground time)
+	TimeStart *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=time_start,json=timeStart,proto3" json:"time_start,omitempty"`
+	// Time when uplink ended
+	TimeEnd *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=time_end,json=timeEnd,proto3" json:"time_end,omitempty"`
+	// FSW target ID
+	FswId string `protobuf:"bytes,5,opt,name=fsw_id,json=fswId,proto3" json:"fsw_id,omitempty"`
+	// Path to the file being uplinked from the ground
+	SourcePath string `protobuf:"bytes,6,opt,name=source_path,json=sourcePath,proto3" json:"source_path,omitempty"`
+	// Destination path to uplink file to on the on-board filesystem
+	DestinationPath string `protobuf:"bytes,7,opt,name=destination_path,json=destinationPath,proto3" json:"destination_path,omitempty"`
+	// If this is non-empty, includes the error message during uplink
+	Error string `protobuf:"bytes,8,opt,name=error,proto3" json:"error,omitempty"`
+	// Size in bytes
+	Size uint64 `protobuf:"varint,9,opt,name=size,proto3" json:"size,omitempty"`
+	// Additional metadata in the form tag -> json
+	Metadata      map[string]string `protobuf:"bytes,10,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FileUplink) Reset() {
+	*x = FileUplink{}
+	mi := &file_bus_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FileUplink) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileUplink) ProtoMessage() {}
+
+func (x *FileUplink) ProtoReflect() protoreflect.Message {
+	mi := &file_bus_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileUplink.ProtoReflect.Descriptor instead.
+func (*FileUplink) Descriptor() ([]byte, []int) {
+	return file_bus_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *FileUplink) GetUid() string {
+	if x != nil {
+		return x.Uid
+	}
+	return ""
+}
+
+func (x *FileUplink) GetTimeStart() *timestamppb.Timestamp {
+	if x != nil {
+		return x.TimeStart
+	}
+	return nil
+}
+
+func (x *FileUplink) GetTimeEnd() *timestamppb.Timestamp {
+	if x != nil {
+		return x.TimeEnd
+	}
+	return nil
+}
+
+func (x *FileUplink) GetFswId() string {
+	if x != nil {
+		return x.FswId
+	}
+	return ""
+}
+
+func (x *FileUplink) GetSourcePath() string {
+	if x != nil {
+		return x.SourcePath
+	}
+	return ""
+}
+
+func (x *FileUplink) GetDestinationPath() string {
+	if x != nil {
+		return x.DestinationPath
+	}
+	return ""
+}
+
+func (x *FileUplink) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+func (x *FileUplink) GetSize() uint64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *FileUplink) GetMetadata() map[string]string {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+type FileTransfer struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Id of the downlink or uplink
+	Uid string `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	// FSW source/target ID
+	FswId string `protobuf:"bytes,2,opt,name=fsw_id,json=fswId,proto3" json:"fsw_id,omitempty"`
+	// Source relative path where this was downlinked/uplinked from
+	SourcePath string `protobuf:"bytes,3,opt,name=source_path,json=sourcePath,proto3" json:"source_path,omitempty"`
+	// Target absolute path where this was downlinked/uplinked to
+	TargetPath string `protobuf:"bytes,4,opt,name=target_path,json=targetPath,proto3" json:"target_path,omitempty"`
+	// Size in bytes
+	Size uint64 `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`
+	// Transfer progress in bytes. Should be less than 'size'
+	Progress      uint64 `protobuf:"varint,6,opt,name=progress,proto3" json:"progress,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FileTransfer) Reset() {
+	*x = FileTransfer{}
+	mi := &file_bus_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FileTransfer) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileTransfer) ProtoMessage() {}
+
+func (x *FileTransfer) ProtoReflect() protoreflect.Message {
+	mi := &file_bus_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileTransfer.ProtoReflect.Descriptor instead.
+func (*FileTransfer) Descriptor() ([]byte, []int) {
+	return file_bus_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *FileTransfer) GetUid() string {
+	if x != nil {
+		return x.Uid
+	}
+	return ""
+}
+
+func (x *FileTransfer) GetFswId() string {
+	if x != nil {
+		return x.FswId
+	}
+	return ""
+}
+
+func (x *FileTransfer) GetSourcePath() string {
+	if x != nil {
+		return x.SourcePath
+	}
+	return ""
+}
+
+func (x *FileTransfer) GetTargetPath() string {
+	if x != nil {
+		return x.TargetPath
+	}
+	return ""
+}
+
+func (x *FileTransfer) GetSize() uint64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *FileTransfer) GetProgress() uint64 {
+	if x != nil {
+		return x.Progress
+	}
+	return 0
+}
+
+type FileTransferState struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// List of completed file downlinks with downlink metadata
+	DownlinkCompleted []*FileDownlink `protobuf:"bytes,1,rep,name=downlink_completed,json=downlinkCompleted,proto3" json:"downlink_completed,omitempty"`
+	// List of completed file uplinks
+	UplinkCompleted []*FileUplink `protobuf:"bytes,2,rep,name=uplink_completed,json=uplinkCompleted,proto3" json:"uplink_completed,omitempty"`
+	// Mid-transfer file downlinks
+	DownlinkInProgress []*FileTransfer `protobuf:"bytes,3,rep,name=downlink_in_progress,json=downlinkInProgress,proto3" json:"downlink_in_progress,omitempty"`
+	// Mid-transfer file uplinks
+	UplinkInProgress []*FileTransfer `protobuf:"bytes,4,rep,name=uplink_in_progress,json=uplinkInProgress,proto3" json:"uplink_in_progress,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *FileTransferState) Reset() {
+	*x = FileTransferState{}
+	mi := &file_bus_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FileTransferState) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileTransferState) ProtoMessage() {}
+
+func (x *FileTransferState) ProtoReflect() protoreflect.Message {
+	mi := &file_bus_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileTransferState.ProtoReflect.Descriptor instead.
+func (*FileTransferState) Descriptor() ([]byte, []int) {
+	return file_bus_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *FileTransferState) GetDownlinkCompleted() []*FileDownlink {
+	if x != nil {
+		return x.DownlinkCompleted
+	}
+	return nil
+}
+
+func (x *FileTransferState) GetUplinkCompleted() []*FileUplink {
+	if x != nil {
+		return x.UplinkCompleted
+	}
+	return nil
+}
+
+func (x *FileTransferState) GetDownlinkInProgress() []*FileTransfer {
+	if x != nil {
+		return x.DownlinkInProgress
+	}
+	return nil
+}
+
+func (x *FileTransferState) GetUplinkInProgress() []*FileTransfer {
+	if x != nil {
+		return x.UplinkInProgress
+	}
+	return nil
+}
+
 var File_bus_proto protoreflect.FileDescriptor
 
 const file_bus_proto_rawDesc = "" +
 	"\n" +
-	"\tbus.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\n" +
-	"type.proto\x1a\x10dictionary.proto\x1a\n" +
+	"\tbus.proto\x1a\n" +
+	"type.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x10dictionary.proto\x1a\n" +
 	"time.proto\"i\n" +
 	"\tBusFilter\x12\x16\n" +
 	"\x06source\x18\x01 \x01(\tR\x06source\x12\x14\n" +
@@ -754,26 +1032,57 @@ const file_bus_proto_rawDesc = "" +
 	"\acontext\x18\x03 \x01(\x0e2\x0e.SourceContextR\acontext\"?\n" +
 	"\x11FileDownlinkChunk\x12\x16\n" +
 	"\x06offset\x18\x01 \x01(\x04R\x06offset\x12\x12\n" +
-	"\x04size\x18\x02 \x01(\x04R\x04size\"\xc7\x04\n" +
+	"\x04size\x18\x02 \x01(\x04R\x04size\"\xce\x04\n" +
 	"\fFileDownlink\x12\x10\n" +
-	"\x03uid\x18\x01 \x01(\tR\x03uid\x128\n" +
-	"\ttimeStart\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\ttimeStart\x124\n" +
-	"\atimeEnd\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\atimeEnd\x125\n" +
-	"\x06status\x18\x04 \x01(\x0e2\x1d.FileDownlinkCompletionStatusR\x06status\x12\x16\n" +
-	"\x06source\x18\x05 \x01(\tR\x06source\x12\x1e\n" +
+	"\x03uid\x18\x01 \x01(\tR\x03uid\x129\n" +
 	"\n" +
-	"sourcePath\x18\x06 \x01(\tR\n" +
-	"sourcePath\x12(\n" +
-	"\x0fdestinationPath\x18\a \x01(\tR\x0fdestinationPath\x12\x1a\n" +
-	"\bfilePath\x18\b \x01(\tR\bfilePath\x128\n" +
-	"\rmissingChunks\x18\t \x03(\v2\x12.FileDownlinkChunkR\rmissingChunks\x12<\n" +
-	"\x0fduplicateChunks\x18\n" +
+	"time_start\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\ttimeStart\x125\n" +
+	"\btime_end\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\atimeEnd\x125\n" +
+	"\x06status\x18\x04 \x01(\x0e2\x1d.FileDownlinkCompletionStatusR\x06status\x12\x16\n" +
+	"\x06source\x18\x05 \x01(\tR\x06source\x12\x1f\n" +
+	"\vsource_path\x18\x06 \x01(\tR\n" +
+	"sourcePath\x12)\n" +
+	"\x10destination_path\x18\a \x01(\tR\x0fdestinationPath\x12\x1b\n" +
+	"\tfile_path\x18\b \x01(\tR\bfilePath\x129\n" +
+	"\x0emissing_chunks\x18\t \x03(\v2\x12.FileDownlinkChunkR\rmissingChunks\x12=\n" +
+	"\x10duplicate_chunks\x18\n" +
 	" \x03(\v2\x12.FileDownlinkChunkR\x0fduplicateChunks\x12\x12\n" +
 	"\x04size\x18\v \x01(\x04R\x04size\x127\n" +
 	"\bmetadata\x18\f \x03(\v2\x1b.FileDownlink.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*D\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x91\x03\n" +
+	"\n" +
+	"FileUplink\x12\x10\n" +
+	"\x03uid\x18\x01 \x01(\tR\x03uid\x129\n" +
+	"\n" +
+	"time_start\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\ttimeStart\x125\n" +
+	"\btime_end\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\atimeEnd\x12\x15\n" +
+	"\x06fsw_id\x18\x05 \x01(\tR\x05fswId\x12\x1f\n" +
+	"\vsource_path\x18\x06 \x01(\tR\n" +
+	"sourcePath\x12)\n" +
+	"\x10destination_path\x18\a \x01(\tR\x0fdestinationPath\x12\x14\n" +
+	"\x05error\x18\b \x01(\tR\x05error\x12\x12\n" +
+	"\x04size\x18\t \x01(\x04R\x04size\x125\n" +
+	"\bmetadata\x18\n" +
+	" \x03(\v2\x19.FileUplink.MetadataEntryR\bmetadata\x1a;\n" +
+	"\rMetadataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xa9\x01\n" +
+	"\fFileTransfer\x12\x10\n" +
+	"\x03uid\x18\x01 \x01(\tR\x03uid\x12\x15\n" +
+	"\x06fsw_id\x18\x02 \x01(\tR\x05fswId\x12\x1f\n" +
+	"\vsource_path\x18\x03 \x01(\tR\n" +
+	"sourcePath\x12\x1f\n" +
+	"\vtarget_path\x18\x04 \x01(\tR\n" +
+	"targetPath\x12\x12\n" +
+	"\x04size\x18\x05 \x01(\x04R\x04size\x12\x1a\n" +
+	"\bprogress\x18\x06 \x01(\x04R\bprogress\"\x87\x02\n" +
+	"\x11FileTransferState\x12<\n" +
+	"\x12downlink_completed\x18\x01 \x03(\v2\r.FileDownlinkR\x11downlinkCompleted\x126\n" +
+	"\x10uplink_completed\x18\x02 \x03(\v2\v.FileUplinkR\x0fuplinkCompleted\x12?\n" +
+	"\x14downlink_in_progress\x18\x03 \x03(\v2\r.FileTransferR\x12downlinkInProgress\x12;\n" +
+	"\x12uplink_in_progress\x18\x04 \x03(\v2\r.FileTransferR\x10uplinkInProgress*D\n" +
 	"\x13SourceContextFilter\x12\x11\n" +
 	"\rREALTIME_ONLY\x10\x00\x12\x11\n" +
 	"\rRECORDED_ONLY\x10\x01\x12\a\n" +
@@ -800,7 +1109,7 @@ func file_bus_proto_rawDescGZIP() []byte {
 }
 
 var file_bus_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_bus_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_bus_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_bus_proto_goTypes = []any{
 	(SourceContextFilter)(0),          // 0: SourceContextFilter
 	(SourceContext)(0),                // 1: SourceContext
@@ -812,41 +1121,52 @@ var file_bus_proto_goTypes = []any{
 	(*SourcedTelemetry)(nil),          // 7: SourcedTelemetry
 	(*FileDownlinkChunk)(nil),         // 8: FileDownlinkChunk
 	(*FileDownlink)(nil),              // 9: FileDownlink
-	nil,                               // 10: Event.TagsEntry
-	nil,                               // 11: Telemetry.LabelsEntry
-	nil,                               // 12: FileDownlink.MetadataEntry
-	(*EventRef)(nil),                  // 13: EventRef
-	(*Time)(nil),                      // 14: Time
-	(*Value)(nil),                     // 15: Value
-	(*TelemetryRef)(nil),              // 16: TelemetryRef
-	(*timestamppb.Timestamp)(nil),     // 17: google.protobuf.Timestamp
+	(*FileUplink)(nil),                // 10: FileUplink
+	(*FileTransfer)(nil),              // 11: FileTransfer
+	(*FileTransferState)(nil),         // 12: FileTransferState
+	nil,                               // 13: Event.TagsEntry
+	nil,                               // 14: Telemetry.LabelsEntry
+	nil,                               // 15: FileDownlink.MetadataEntry
+	nil,                               // 16: FileUplink.MetadataEntry
+	(*EventRef)(nil),                  // 17: EventRef
+	(*Time)(nil),                      // 18: Time
+	(*Value)(nil),                     // 19: Value
+	(*TelemetryRef)(nil),              // 20: TelemetryRef
+	(*timestamppb.Timestamp)(nil),     // 21: google.protobuf.Timestamp
 }
 var file_bus_proto_depIdxs = []int32{
 	0,  // 0: BusFilter.context:type_name -> SourceContextFilter
-	13, // 1: Event.ref:type_name -> EventRef
-	14, // 2: Event.time:type_name -> Time
-	15, // 3: Event.args:type_name -> Value
-	10, // 4: Event.tags:type_name -> Event.TagsEntry
-	16, // 5: Telemetry.ref:type_name -> TelemetryRef
-	14, // 6: Telemetry.time:type_name -> Time
-	15, // 7: Telemetry.value:type_name -> Value
-	11, // 8: Telemetry.labels:type_name -> Telemetry.LabelsEntry
+	17, // 1: Event.ref:type_name -> EventRef
+	18, // 2: Event.time:type_name -> Time
+	19, // 3: Event.args:type_name -> Value
+	13, // 4: Event.tags:type_name -> Event.TagsEntry
+	20, // 5: Telemetry.ref:type_name -> TelemetryRef
+	18, // 6: Telemetry.time:type_name -> Time
+	19, // 7: Telemetry.value:type_name -> Value
+	14, // 8: Telemetry.labels:type_name -> Telemetry.LabelsEntry
 	4,  // 9: SourcedEvent.event:type_name -> Event
 	1,  // 10: SourcedEvent.context:type_name -> SourceContext
 	5,  // 11: SourcedTelemetry.telemetry:type_name -> Telemetry
 	1,  // 12: SourcedTelemetry.context:type_name -> SourceContext
-	17, // 13: FileDownlink.timeStart:type_name -> google.protobuf.Timestamp
-	17, // 14: FileDownlink.timeEnd:type_name -> google.protobuf.Timestamp
+	21, // 13: FileDownlink.time_start:type_name -> google.protobuf.Timestamp
+	21, // 14: FileDownlink.time_end:type_name -> google.protobuf.Timestamp
 	2,  // 15: FileDownlink.status:type_name -> FileDownlinkCompletionStatus
-	8,  // 16: FileDownlink.missingChunks:type_name -> FileDownlinkChunk
-	8,  // 17: FileDownlink.duplicateChunks:type_name -> FileDownlinkChunk
-	12, // 18: FileDownlink.metadata:type_name -> FileDownlink.MetadataEntry
-	15, // 19: Event.TagsEntry.value:type_name -> Value
-	20, // [20:20] is the sub-list for method output_type
-	20, // [20:20] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	8,  // 16: FileDownlink.missing_chunks:type_name -> FileDownlinkChunk
+	8,  // 17: FileDownlink.duplicate_chunks:type_name -> FileDownlinkChunk
+	15, // 18: FileDownlink.metadata:type_name -> FileDownlink.MetadataEntry
+	21, // 19: FileUplink.time_start:type_name -> google.protobuf.Timestamp
+	21, // 20: FileUplink.time_end:type_name -> google.protobuf.Timestamp
+	16, // 21: FileUplink.metadata:type_name -> FileUplink.MetadataEntry
+	9,  // 22: FileTransferState.downlink_completed:type_name -> FileDownlink
+	10, // 23: FileTransferState.uplink_completed:type_name -> FileUplink
+	11, // 24: FileTransferState.downlink_in_progress:type_name -> FileTransfer
+	11, // 25: FileTransferState.uplink_in_progress:type_name -> FileTransfer
+	19, // 26: Event.TagsEntry.value:type_name -> Value
+	27, // [27:27] is the sub-list for method output_type
+	27, // [27:27] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_bus_proto_init() }
@@ -863,7 +1183,7 @@ func file_bus_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_bus_proto_rawDesc), len(file_bus_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   10,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

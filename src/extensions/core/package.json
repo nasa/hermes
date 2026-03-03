@@ -54,24 +54,49 @@
         ],
         "commands": [
             {
-                "command": "hermes.connections.refresh",
-                "title": "Refresh Connection Profiles",
-                "icon": "$(refresh)"
+                "command": "hermes.downlink.clear",
+                "title": "Clear Downlink Listing",
+                "icon": "$(clear-all)"
             },
             {
-                "command": "hermes.config.sync",
-                "title": "Sync VSCode settings with host",
-                "icon": "$(cloud-upload)"
+                "command": "hermes.downlink.open",
+                "title": "Open File",
+                "icon": "$(go-to-file)"
             },
             {
-                "command": "hermes.config.lock",
-                "title": "Lock configuration",
-                "icon": "$(lock)"
+                "command": "hermes.uplink.add",
+                "title": "Open File to Uplink",
+                "icon": "$(plus)"
             },
             {
-                "command": "hermes.config.unlock",
-                "title": "Unlock configuration",
-                "icon": "$(unlock)"
+                "command": "hermes.uplink.start",
+                "title": "Uplink File",
+                "icon": "$(radio-tower)"
+            },
+            {
+                "command": "hermes.uplink.targetEdit",
+                "title": "Edit",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "hermes.uplink.destinationEdit",
+                "title": "Edit",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "hermes.uplink.delete",
+                "title": "Delete",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "hermes.uplink.cancel",
+                "title": "Cancel File Uplink",
+                "icon": "$(debug-stop)"
+            },
+            {
+                "command": "hermes.uplink.clear",
+                "title": "Clear Uplink Listing",
+                "icon": "$(clear-all)"
             },
             {
                 "command": "hermes.testbed.signoff",
@@ -130,30 +155,35 @@
                     "id": "hermes.connections",
                     "name": "Connections",
                     "icon": "./icons/rover-color-512.png"
+                },
+                {
+                    "id": "hermes.uplink",
+                    "name": "Uplink",
+                    "icon": "$(radio-tower)"
+                },
+                {
+                    "id": "hermes.downlink",
+                    "name": "Downlink",
+                    "icon": "$(cloud-download)"
                 }
             ]
         },
         "menus": {
             "view/title": [
                 {
-                    "command": "hermes.config.lock",
-                    "when": "view == hermes.connections && !hermes.config.isLocked",
-                    "group": "navigation@2"
-                },
-                {
-                    "command": "hermes.config.unlock",
-                    "when": "view == hermes.connections && hermes.config.isLocked",
-                    "group": "navigation@2"
-                },
-                {
-                    "command": "hermes.config.sync",
-                    "when": "view == hermes.connections && !hermes.mode.isHost",
+                    "command": "hermes.downlink.clear",
+                    "when": "view == hermes.downlink",
                     "group": "navigation@1"
                 },
                 {
-                    "command": "hermes.connections.refresh",
-                    "when": "view == hermes.connections && hermes.mode.isHost",
+                    "command": "hermes.uplink.clear",
+                    "when": "view == hermes.uplink",
                     "group": "navigation@1"
+                },
+                {
+                    "command": "hermes.uplink.add",
+                    "when": "view == hermes.uplink",
+                    "group": "navigation@2"
                 }
             ],
             "notebook/cell/title": [
@@ -179,6 +209,38 @@
                 {
                     "command": "hermes.connections.array.removeItem",
                     "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasRemove"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "hermes.downlink.open",
+                    "when": "view == hermes.downlink && viewItem == hermes.downlink.file",
+                    "group": "inline"
+                },
+                {
+                    "command": "hermes.uplink.targetEdit",
+                    "when": "view == hermes.uplink && viewItem == hermes.uplink.target",
+                    "group": "inline"
+                },
+                {
+                    "command": "hermes.uplink.destinationEdit",
+                    "when": "view == hermes.uplink && viewItem == hermes.uplink.destination",
+                    "group": "inline"
+                },
+                {
+                    "command": "hermes.uplink.cancel",
+                    "when": "view == hermes.uplink && viewItem == hermes.uplink.active",
+                    "group": "inline"
+                },
+                {
+                    "command": "hermes.uplink.start",
+                    "when": "view == hermes.uplink && viewItem == hermes.uplink.pending",
+                    "group": "inline"
+                },
+                {
+                    "command": "hermes.uplink.delete",
+                    "when": "view == hermes.uplink && viewItem == hermes.uplink.pending",
+                    "group": "inline"
                 }
             ]
         },
@@ -363,8 +425,8 @@
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
         "@types/vscode-notebook-renderer": "^1.72.3",
-        "@vscode-elements/react-elements": "^1.15.1",
-        "@vscode/codicons": "^0.0.33",
+        "@vscode-elements/react-elements": "^2.4.0",
+        "@vscode/codicons": "^0.0.44",
         "@vscode/webview-ui-toolkit": "^1.4.0",
         "ajv": "^8.12.0",
         "commander": "^13.1.0",

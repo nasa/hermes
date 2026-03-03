@@ -79,7 +79,7 @@ type ProfileProvider struct {
 	// JSON schema describing the parameters to be passed to the profile
 	Schema string `protobuf:"bytes,2,opt,name=schema,proto3" json:"schema,omitempty"`
 	// (optional) React JSON Schema Form UI Schema
-	UiSchema      string `protobuf:"bytes,3,opt,name=uiSchema,proto3" json:"uiSchema,omitempty"`
+	UiSchema      string `protobuf:"bytes,3,opt,name=ui_schema,json=uiSchema,proto3" json:"ui_schema,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -202,11 +202,11 @@ var File_profile_proto protoreflect.FileDescriptor
 
 const file_profile_proto_rawDesc = "" +
 	"\n" +
-	"\rprofile.proto\"Y\n" +
+	"\rprofile.proto\"Z\n" +
 	"\x0fProfileProvider\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
-	"\x06schema\x18\x02 \x01(\tR\x06schema\x12\x1a\n" +
-	"\buiSchema\x18\x03 \x01(\tR\buiSchema\"U\n" +
+	"\x06schema\x18\x02 \x01(\tR\x06schema\x12\x1b\n" +
+	"\tui_schema\x18\x03 \x01(\tR\buiSchema\"U\n" +
 	"\aProfile\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
 	"\bprovider\x18\x02 \x01(\tR\bprovider\x12\x1a\n" +

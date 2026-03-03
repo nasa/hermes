@@ -9,20 +9,20 @@ framework built around a variety of mature open-source software.
 
 > [!IMPORTANT]  
 > Hermes is currently undergoing migration from our internal deployment
-> to public Github. Documentation is in the
+> to public Github. Documentation is in the works.
 
 ## Hermes Capabilities
 
 - Command completion, validation, & dispatch inside a [Visual Studio Code](https://code.visualstudio.com/) interface.
 - Telemetry database interaction with a variety of [databases](#databases).
 - An extensible and pluggable telemetry processing framework for interacting with flight software downlink
-- Out of the box support for (F Prime)[https://github.com/nasa/fprime]
-- Integration with (Grafana)[https://grafana.com]
+- Out of the box support for [F Prime](https://github.com/nasa/fprime)
+- Integration with [Grafana](https://grafana.com)
 
 ## Databases
 
 - InfluxDB (v2): Native support inside a [builtin profile]()
-- TimescaleDB: Support through (Telegraf)[https://github.com/influxdata/telegraf]
+- TimescaleDB: Support through [Telegraf](https://github.com/influxdata/telegraf)
 - OpenTelemetry Compatible Databases:
   - Mimir/Prometheus -- Numeric telemetry
   - Loki -- Logging/events

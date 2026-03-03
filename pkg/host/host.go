@@ -17,4 +17,10 @@ var Event = NewBus[*pb.SourcedEvent]("EventBus")
 var Telemetry = NewBus[*pb.SourcedTelemetry]("TelemetryBus")
 
 // File downlink message bus
-var Downlink = NewBus[*pb.FileDownlink]("DownlinkBus")
+var FileDownlink = NewBus[*pb.FileDownlink]("FileDownlinkBus")
+
+// File downlink message bus
+var FileUplink = NewBus[*pb.FileUplink]("FileUplinkBus")
+
+// File uplink/downlink state message bus
+var FileTransfer = NewFileTransferBus()

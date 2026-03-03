@@ -10,11 +10,11 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/nasa/hermes/pkg/dwn"
 	"github.com/nasa/hermes/pkg/host"
 	"github.com/nasa/hermes/pkg/log"
 	"github.com/nasa/hermes/pkg/pb"
+	"github.com/stretchr/testify/assert"
 )
 
 func AssertFileContents(t *testing.T, path string, expectedContents []byte) {

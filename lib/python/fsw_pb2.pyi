@@ -16,31 +16,33 @@ class FswCapability(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     SEQUENCE: _ClassVar[FswCapability]
     PARSE_SEQUENCE: _ClassVar[FswCapability]
     FILE: _ClassVar[FswCapability]
+    REQUEST: _ClassVar[FswCapability]
 COMMAND: FswCapability
 PARSE_COMMAND: FswCapability
 SEQUENCE: FswCapability
 PARSE_SEQUENCE: FswCapability
 FILE: FswCapability
+REQUEST: FswCapability
 
 class Fsw(_message.Message):
-    __slots__ = ("id", "type", "profileId", "forwards", "capabilities")
+    __slots__ = ("id", "type", "profile_id", "forwards", "capabilities")
     ID_FIELD_NUMBER: _ClassVar[int]
     TYPE_FIELD_NUMBER: _ClassVar[int]
-    PROFILEID_FIELD_NUMBER: _ClassVar[int]
+    PROFILE_ID_FIELD_NUMBER: _ClassVar[int]
     FORWARDS_FIELD_NUMBER: _ClassVar[int]
     CAPABILITIES_FIELD_NUMBER: _ClassVar[int]
     id: str
     type: str
-    profileId: str
+    profile_id: str
     forwards: _containers.RepeatedScalarFieldContainer[str]
     capabilities: _containers.RepeatedScalarFieldContainer[FswCapability]
-    def __init__(self, id: _Optional[str] = ..., type: _Optional[str] = ..., profileId: _Optional[str] = ..., forwards: _Optional[_Iterable[str]] = ..., capabilities: _Optional[_Iterable[_Union[FswCapability, str]]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., type: _Optional[str] = ..., profile_id: _Optional[str] = ..., forwards: _Optional[_Iterable[str]] = ..., capabilities: _Optional[_Iterable[_Union[FswCapability, str]]] = ...) -> None: ...
 
 class CommandOptions(_message.Message):
-    __slots__ = ("noWait",)
-    NOWAIT_FIELD_NUMBER: _ClassVar[int]
-    noWait: bool
-    def __init__(self, noWait: bool = ...) -> None: ...
+    __slots__ = ("no_wait",)
+    NO_WAIT_FIELD_NUMBER: _ClassVar[int]
+    no_wait: bool
+    def __init__(self, no_wait: bool = ...) -> None: ...
 
 class CommandValue(_message.Message):
     __slots__ = ("args", "options", "metadata")
@@ -78,7 +80,7 @@ class RawCommandValue(_message.Message):
     def __init__(self, command: _Optional[str] = ..., options: _Optional[_Union[CommandOptions, _Mapping]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class CommandSequence(_message.Message):
-    __slots__ = ("commands", "languageName", "metadata")
+    __slots__ = ("commands", "language_name", "metadata")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -87,15 +89,15 @@ class CommandSequence(_message.Message):
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     COMMANDS_FIELD_NUMBER: _ClassVar[int]
-    LANGUAGENAME_FIELD_NUMBER: _ClassVar[int]
+    LANGUAGE_NAME_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     commands: _containers.RepeatedCompositeFieldContainer[CommandValue]
-    languageName: str
+    language_name: str
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, commands: _Optional[_Iterable[_Union[CommandValue, _Mapping]]] = ..., languageName: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    def __init__(self, commands: _Optional[_Iterable[_Union[CommandValue, _Mapping]]] = ..., language_name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class RawCommandSequence(_message.Message):
-    __slots__ = ("sequence", "languageName", "metadata", "lineCommentPrefix")
+    __slots__ = ("sequence", "language_name", "metadata", "line_comment_prefix")
     class MetadataEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -104,11 +106,25 @@ class RawCommandSequence(_message.Message):
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     SEQUENCE_FIELD_NUMBER: _ClassVar[int]
-    LANGUAGENAME_FIELD_NUMBER: _ClassVar[int]
+    LANGUAGE_NAME_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
-    LINECOMMENTPREFIX_FIELD_NUMBER: _ClassVar[int]
+    LINE_COMMENT_PREFIX_FIELD_NUMBER: _ClassVar[int]
     sequence: str
-    languageName: str
+    language_name: str
     metadata: _containers.ScalarMap[str, str]
-    lineCommentPrefix: str
-    def __init__(self, sequence: _Optional[str] = ..., languageName: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., lineCommentPrefix: _Optional[str] = ...) -> None: ...
+    line_comment_prefix: str
+    def __init__(self, sequence: _Optional[str] = ..., language_name: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ..., line_comment_prefix: _Optional[str] = ...) -> None: ...
+
+class RequestValue(_message.Message):
+    __slots__ = ("kind", "data")
+    KIND_FIELD_NUMBER: _ClassVar[int]
+    DATA_FIELD_NUMBER: _ClassVar[int]
+    kind: str
+    data: bytes
+    def __init__(self, kind: _Optional[str] = ..., data: _Optional[bytes] = ...) -> None: ...
+
+class RequestReply(_message.Message):
+    __slots__ = ("data",)
+    DATA_FIELD_NUMBER: _ClassVar[int]
+    data: bytes
+    def __init__(self, data: _Optional[bytes] = ...) -> None: ...

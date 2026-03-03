@@ -53,7 +53,7 @@ enum ReferenceKind {
 }
 
 message BooleanType {
-  UIntKind encodeType = 1;
+  UIntKind encode_type = 1;
 }
 
 message IntType {
@@ -92,12 +92,12 @@ message StringType {
    * length using this type. If the length does not fit within
    * this type's representable size, it will throw an error.
    */
-  UIntKind lengthType = 1;
+  UIntKind length_type = 1;
 
   /**
    * Optional check for maximum length
    */
-  uint32 maxLength = 2;
+  uint32 max_length = 2;
 }
 
 message EnumItem {
@@ -120,7 +120,7 @@ message EnumType {
    * You can also override this behavior programmatically by overriding
    * `Serializable.writeEnum`.
    */
-  IntKind encodeType = 2;
+  IntKind encode_type = 2;
 
   /**
    * Members of the enum and their mapping to its
@@ -144,7 +144,7 @@ message ArrayType {
   /**
    * Element type
    */
-  Type elType = 2;
+  Type el_type = 2;
 
   /**
    * Either `number` for static array, or a 2-tuple for
@@ -167,7 +167,7 @@ message ArrayType {
    *
    * Default: {@link TypeKind.u32}
    */
-  UIntKind lengthType = 5;
+  UIntKind length_type = 5;
 }
 
 /**
@@ -202,7 +202,7 @@ message BytesType {
    *
    * Default: {@link TypeKind.u32}
    */
-  UIntKind lengthType = 5;
+  UIntKind length_type = 5;
 }
 
 message Field {
@@ -271,7 +271,7 @@ message BytesValue {
   NumberKind kind = 1;
 
   // Byte order, default = false
-  bool bigEndian = 2;
+  bool big_endian = 2;
 
   // Raw value in given byte order
   bytes value = 3;
