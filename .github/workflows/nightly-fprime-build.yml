@@ -28,7 +28,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker/fprime.dockerfile
+          file: docker/Dockerfile.fprime
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/fprime-ref:nightly
