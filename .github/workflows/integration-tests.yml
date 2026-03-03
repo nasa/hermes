@@ -10,4 +10,12 @@ jobs:
     uses: ./.github/workflows/integration-test-template.yml
     with:
       fprime-tag: nightly
+  v4_1_1:
+    uses: ./.github/workflows/integration-test-template.yml
+    with:
+      fprime-tag: v4.1.1
+  v4_0_0:
+    uses: ./.github/workflows/integration-test-template.yml
+    with:
+      fprime-tag: v4.0.0
 
