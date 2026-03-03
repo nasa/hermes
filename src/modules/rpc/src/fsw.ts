@@ -63,6 +63,10 @@ export class RpcFsw implements Hermes.Fsw {
         if (!proto?.capabilities?.includes(Proto.FswCapability.FILE)) {
             this.uplink = undefined;
         }
+
+        if (!proto?.capabilities?.includes(Proto.FswCapability.REQUEST)) {
+            this.request = undefined;
+        }
     }
 
     async sequence?(
@@ -108,6 +112,33 @@ export class RpcFsw implements Hermes.Fsw {
                     reject(err);
                 } else {
                     resolve(reply?.success ?? false);
+                }
+            });
+
+            disp = token?.onCancellationRequested(() => {
+                call.cancel();
+            });
+        });
+    }
+
+    request?(
+        kind: string,
+        data?: Buffer | Uint8Array | string,
+        token?: vscode.CancellationToken,
+    ): Promise<Buffer> {
+        return new Promise((resolve, reject) => {
+            let disp: vscode.Disposable | undefined = undefined;
+
+            const call = this.client.Request({
+                kind,
+                data
+            }, this.metadata, {}, (err, reply) => {
+                disp?.dispose();
+
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(reply?.data ?? Buffer.alloc(0));
                 }
             });
 

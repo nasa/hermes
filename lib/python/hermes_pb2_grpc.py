@@ -55,6 +55,11 @@ class ApiStub(object):
                 request_serializer=fsw__pb2.CommandValue.SerializeToString,
                 response_deserializer=msg__pb2.Reply.FromString,
                 _registered_method=True)
+        self.Request = channel.unary_unary(
+                '/Api/Request',
+                request_serializer=fsw__pb2.RequestValue.SerializeToString,
+                response_deserializer=fsw__pb2.RequestReply.FromString,
+                _registered_method=True)
         self.RawCommand = channel.unary_unary(
                 '/Api/RawCommand',
                 request_serializer=fsw__pb2.RawCommandValue.SerializeToString,
@@ -115,6 +120,21 @@ class ApiStub(object):
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
                 response_deserializer=msg__pb2.ProfileProviderList.FromString,
                 _registered_method=True)
+        self.GetFileTransferState = channel.unary_unary(
+                '/Api/GetFileTransferState',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=bus__pb2.FileTransferState.FromString,
+                _registered_method=True)
+        self.ClearDownlinkTransferState = channel.unary_unary(
+                '/Api/ClearDownlinkTransferState',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.ClearUplinkTransferState = channel.unary_unary(
+                '/Api/ClearUplinkTransferState',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
         self.SubscribeProviders = channel.unary_stream(
                 '/Api/SubscribeProviders',
                 request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
@@ -165,6 +185,16 @@ class ApiStub(object):
                 request_serializer=bus__pb2.BusFilter.SerializeToString,
                 response_deserializer=bus__pb2.FileDownlink.FromString,
                 _registered_method=True)
+        self.SubFileUplink = channel.unary_stream(
+                '/Api/SubFileUplink',
+                request_serializer=bus__pb2.BusFilter.SerializeToString,
+                response_deserializer=bus__pb2.FileUplink.FromString,
+                _registered_method=True)
+        self.SubFileTransfer = channel.unary_stream(
+                '/Api/SubFileTransfer',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=bus__pb2.FileTransferState.FromString,
+                _registered_method=True)
 
 
 class ApiServicer(object):
@@ -187,7 +217,7 @@ class ApiServicer(object):
         metadata to allow linking back to the code cell in our Notebooks
 
         Optional Metadata
-        Keep executing the sequence even if 
+        Keep executing the sequence even if
         "keepGoingOnFailure": "x"
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -208,6 +238,21 @@ class ApiServicer(object):
         Send a command to the FSW. Wait for
         completion or otherwise, up to the
         plugin to decide when the promise resolves.
+
+        Metadata:
+        "id": [fsw-id]
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Request(self, request, context):
+        """*
+        Send a custom request to the FSW. Requests
+        are not defined in the dictionary. The request
+        payload data is defined by an agreement between
+        the frontend request initiator and the connection
+        implementation.
 
         Metadata:
         "id": [fsw-id]
@@ -313,6 +358,27 @@ class ApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetFileTransferState(self, request, context):
+        """Get the current file downlink/uplink state
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ClearDownlinkTransferState(self, request, context):
+        """Clear the cached downlink transfer state
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ClearUplinkTransferState(self, request, context):
+        """Clear the cached uplink transfer state
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def SubscribeProviders(self, request, context):
         """Get notified when the set of profile providers updates
         """
@@ -398,6 +464,20 @@ class ApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SubFileUplink(self, request, context):
+        """Subscribe to the file downlink message bus
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SubFileTransfer(self, request, context):
+        """Subscribe to the aggregated state of file uplink and downlink
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ApiServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -415,6 +495,11 @@ def add_ApiServicer_to_server(servicer, server):
                     servicer.Command,
                     request_deserializer=fsw__pb2.CommandValue.FromString,
                     response_serializer=msg__pb2.Reply.SerializeToString,
+            ),
+            'Request': grpc.unary_unary_rpc_method_handler(
+                    servicer.Request,
+                    request_deserializer=fsw__pb2.RequestValue.FromString,
+                    response_serializer=fsw__pb2.RequestReply.SerializeToString,
             ),
             'RawCommand': grpc.unary_unary_rpc_method_handler(
                     servicer.RawCommand,
@@ -476,6 +561,21 @@ def add_ApiServicer_to_server(servicer, server):
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                     response_serializer=msg__pb2.ProfileProviderList.SerializeToString,
             ),
+            'GetFileTransferState': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetFileTransferState,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=bus__pb2.FileTransferState.SerializeToString,
+            ),
+            'ClearDownlinkTransferState': grpc.unary_unary_rpc_method_handler(
+                    servicer.ClearDownlinkTransferState,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'ClearUplinkTransferState': grpc.unary_unary_rpc_method_handler(
+                    servicer.ClearUplinkTransferState,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
             'SubscribeProviders': grpc.unary_stream_rpc_method_handler(
                     servicer.SubscribeProviders,
                     request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
@@ -525,6 +625,16 @@ def add_ApiServicer_to_server(servicer, server):
                     servicer.SubFileDownlink,
                     request_deserializer=bus__pb2.BusFilter.FromString,
                     response_serializer=bus__pb2.FileDownlink.SerializeToString,
+            ),
+            'SubFileUplink': grpc.unary_stream_rpc_method_handler(
+                    servicer.SubFileUplink,
+                    request_deserializer=bus__pb2.BusFilter.FromString,
+                    response_serializer=bus__pb2.FileUplink.SerializeToString,
+            ),
+            'SubFileTransfer': grpc.unary_stream_rpc_method_handler(
+                    servicer.SubFileTransfer,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=bus__pb2.FileTransferState.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -608,6 +718,33 @@ class Api(object):
             '/Api/Command',
             fsw__pb2.CommandValue.SerializeToString,
             msg__pb2.Reply.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Request(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Api/Request',
+            fsw__pb2.RequestValue.SerializeToString,
+            fsw__pb2.RequestReply.FromString,
             options,
             channel_credentials,
             insecure,
@@ -943,6 +1080,87 @@ class Api(object):
             _registered_method=True)
 
     @staticmethod
+    def GetFileTransferState(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Api/GetFileTransferState',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            bus__pb2.FileTransferState.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ClearDownlinkTransferState(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Api/ClearDownlinkTransferState',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ClearUplinkTransferState(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Api/ClearUplinkTransferState',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
     def SubscribeProviders(request,
             target,
             options=(),
@@ -1202,6 +1420,60 @@ class Api(object):
             '/Api/SubFileDownlink',
             bus__pb2.BusFilter.SerializeToString,
             bus__pb2.FileDownlink.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SubFileUplink(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/Api/SubFileUplink',
+            bus__pb2.BusFilter.SerializeToString,
+            bus__pb2.FileUplink.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SubFileTransfer(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/Api/SubFileTransfer',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            bus__pb2.FileTransferState.FromString,
             options,
             channel_credentials,
             insecure,

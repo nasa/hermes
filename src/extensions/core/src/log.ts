@@ -4,6 +4,7 @@ import { MESSAGE } from 'triple-beam';
 
 interface VSCTransportOptions extends Transport.TransportStreamOptions {
     name: string;
+    json: boolean;
     window: {
         createOutputChannel(name: string, languageId?: string): vscode.OutputChannel;
     }
@@ -20,14 +21,16 @@ export class VSCTransport extends Transport implements vscode.Disposable {
         this.outputChannel.clear();
     }
 
-    log(info: any, callback: () => void) {
+    log(info: any, callback?: () => void) {
         setImmediate(() => this.emit('logged', info));
         if (this.format) {
             info = this.format.transform(info);
         }
 
-        this.outputChannel.appendLine(info[MESSAGE]);
-        callback();
+        this.outputChannel.appendLine(`${info[MESSAGE]}`);
+        if (callback) {
+            callback();
+        }
     }
 
     dispose() {

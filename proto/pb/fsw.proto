@@ -20,6 +20,9 @@ enum FswCapability {
 
   // Connection supports file uplink to an on-board filesystem.
   FILE = 4;
+
+  // Connection supports 'requests' which provide a generic catch-all of misc functionality
+  REQUEST = 5;
 }
 
 message Fsw {
@@ -32,7 +35,7 @@ message Fsw {
 
   // Profile that this connection belongs to
   // Empty if this is not from a managed profile
-  string profileId = 3;
+  string profile_id = 3;
 
   // Telemetry from these FSW IDs should be treated as though they
   // also came from this FSW. Useful for when you need a custom language
@@ -51,7 +54,7 @@ message CommandOptions {
    * Don't wait for the command to reply before resolving the command promise
    * This promise will resolve once the command is sent to the FSW.
    */
-  bool noWait = 1;
+  bool no_wait = 1;
 }
 
 message CommandValue {
@@ -89,7 +92,7 @@ message CommandSequence {
   // Cell block language to execute this command sequence with
   // FSWs may support more than one language or controlling different behaviors
   // of the connection or commanding the FSW directly.
-  string languageName = 2;
+  string language_name = 2;
 
   // Additional metadata to attach to sequence
   // This has flight-software specific meaning
@@ -102,11 +105,27 @@ message RawCommandSequence {
   // Cell block language to execute this command sequence with
   // FSWs may support more than one language or controlling different behaviors
   // of the connection or commanding the FSW directly.
-  string languageName = 2;
+  string language_name = 2;
 
   // Additional metadata to attach to sequence
   // This has flight-software specific meaning
   map<string, string> metadata = 3;
 
-  string lineCommentPrefix = 4;
+  string line_comment_prefix = 4;
+}
+
+/**
+ * FSW Requests are non-dictionary defined items. These are connection
+ * specific commands meant to be exposed by custom UI in the frontend.
+ */
+message RequestValue {
+  /* Request type identfier */
+  string kind = 1;
+
+  /* Misc request data (JSON recommended) */
+  bytes data = 2;
+}
+
+message RequestReply {
+  bytes data = 1;
 }

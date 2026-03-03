@@ -46,6 +46,7 @@ var (
 	_ host.CmdFsw       = (*Fsw)(nil)
 	_ host.CmdFswParser = (*Fsw)(nil)
 	_ host.UplinkFsw    = (*Fsw)(nil)
+	_ host.RequestFsw   = (*Fsw)(nil)
 )
 
 type Fsw struct {
@@ -328,4 +329,24 @@ func (f *Fsw) Uplink(
 // Subtle: this method shadows the method (BasicCommandParser).ParseCommand of Fsw.BasicCommandParser.
 func (f *Fsw) ParseCommand(_ context.Context, cmd *pb.RawCommandValue) (*pb.CommandValue, error) {
 	return f.BasicCommandParser.ParseCommand(f.dictionary, cmd)
+}
+
+// Request implements host.RequestFsw.
+func (f *Fsw) Request(ctx context.Context, kind string, data []byte) ([]byte, error) {
+	switch kind {
+	case "cancel":
+		// Transmit a cancel packet
+		err := f.uplink(
+			ctx,
+			(&FileCancelPacket{}).AsFilePacket(0).AsPacket(),
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return []byte{}, nil
+	default:
+		return nil, fmt.Errorf("unsupported request type '%s'", kind)
+	}
 }

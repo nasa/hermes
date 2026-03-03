@@ -9,6 +9,8 @@ import type { Dictionary as _Dictionary, Dictionary__Output as _Dictionary__Outp
 import type { DictionaryList as _DictionaryList, DictionaryList__Output as _DictionaryList__Output } from './DictionaryList';
 import type { Empty as _google_protobuf_Empty, Empty__Output as _google_protobuf_Empty__Output } from './google/protobuf/Empty';
 import type { FileDownlink as _FileDownlink, FileDownlink__Output as _FileDownlink__Output } from './FileDownlink';
+import type { FileTransferState as _FileTransferState, FileTransferState__Output as _FileTransferState__Output } from './FileTransferState';
+import type { FileUplink as _FileUplink, FileUplink__Output as _FileUplink__Output } from './FileUplink';
 import type { Fsw as _Fsw, Fsw__Output as _Fsw__Output } from './Fsw';
 import type { FswList as _FswList, FswList__Output as _FswList__Output } from './FswList';
 import type { Id as _Id, Id__Output as _Id__Output } from './Id';
@@ -19,6 +21,8 @@ import type { ProfileUpdate as _ProfileUpdate, ProfileUpdate__Output as _Profile
 import type { RawCommandSequence as _RawCommandSequence, RawCommandSequence__Output as _RawCommandSequence__Output } from './RawCommandSequence';
 import type { RawCommandValue as _RawCommandValue, RawCommandValue__Output as _RawCommandValue__Output } from './RawCommandValue';
 import type { Reply as _Reply, Reply__Output as _Reply__Output } from './Reply';
+import type { RequestReply as _RequestReply, RequestReply__Output as _RequestReply__Output } from './RequestReply';
+import type { RequestValue as _RequestValue, RequestValue__Output as _RequestValue__Output } from './RequestValue';
 import type { SequenceReply as _SequenceReply, SequenceReply__Output as _SequenceReply__Output } from './SequenceReply';
 import type { SourcedEvent as _SourcedEvent, SourcedEvent__Output as _SourcedEvent__Output } from './SourcedEvent';
 import type { SourcedTelemetry as _SourcedTelemetry, SourcedTelemetry__Output as _SourcedTelemetry__Output } from './SourcedTelemetry';
@@ -79,6 +83,24 @@ export interface ApiClient extends grpc.Client {
   allProviders(argument: _google_protobuf_Empty, options: grpc.CallOptions, callback: grpc.requestCallback<_ProfileProviderList__Output>): grpc.ClientUnaryCall;
   allProviders(argument: _google_protobuf_Empty, callback: grpc.requestCallback<_ProfileProviderList__Output>): grpc.ClientUnaryCall;
   
+  ClearDownlinkTransferState(argument: _google_protobuf_Empty, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  ClearDownlinkTransferState(argument: _google_protobuf_Empty, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  ClearDownlinkTransferState(argument: _google_protobuf_Empty, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  ClearDownlinkTransferState(argument: _google_protobuf_Empty, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  clearDownlinkTransferState(argument: _google_protobuf_Empty, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  clearDownlinkTransferState(argument: _google_protobuf_Empty, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  clearDownlinkTransferState(argument: _google_protobuf_Empty, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  clearDownlinkTransferState(argument: _google_protobuf_Empty, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  
+  ClearUplinkTransferState(argument: _google_protobuf_Empty, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  ClearUplinkTransferState(argument: _google_protobuf_Empty, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  ClearUplinkTransferState(argument: _google_protobuf_Empty, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  ClearUplinkTransferState(argument: _google_protobuf_Empty, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  clearUplinkTransferState(argument: _google_protobuf_Empty, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  clearUplinkTransferState(argument: _google_protobuf_Empty, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  clearUplinkTransferState(argument: _google_protobuf_Empty, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  clearUplinkTransferState(argument: _google_protobuf_Empty, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  
   Command(argument: _CommandValue, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_Reply__Output>): grpc.ClientUnaryCall;
   Command(argument: _CommandValue, metadata: grpc.Metadata, callback: grpc.requestCallback<_Reply__Output>): grpc.ClientUnaryCall;
   Command(argument: _CommandValue, options: grpc.CallOptions, callback: grpc.requestCallback<_Reply__Output>): grpc.ClientUnaryCall;
@@ -96,6 +118,15 @@ export interface ApiClient extends grpc.Client {
   getDictionary(argument: _Id, metadata: grpc.Metadata, callback: grpc.requestCallback<_Dictionary__Output>): grpc.ClientUnaryCall;
   getDictionary(argument: _Id, options: grpc.CallOptions, callback: grpc.requestCallback<_Dictionary__Output>): grpc.ClientUnaryCall;
   getDictionary(argument: _Id, callback: grpc.requestCallback<_Dictionary__Output>): grpc.ClientUnaryCall;
+  
+  GetFileTransferState(argument: _google_protobuf_Empty, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_FileTransferState__Output>): grpc.ClientUnaryCall;
+  GetFileTransferState(argument: _google_protobuf_Empty, metadata: grpc.Metadata, callback: grpc.requestCallback<_FileTransferState__Output>): grpc.ClientUnaryCall;
+  GetFileTransferState(argument: _google_protobuf_Empty, options: grpc.CallOptions, callback: grpc.requestCallback<_FileTransferState__Output>): grpc.ClientUnaryCall;
+  GetFileTransferState(argument: _google_protobuf_Empty, callback: grpc.requestCallback<_FileTransferState__Output>): grpc.ClientUnaryCall;
+  getFileTransferState(argument: _google_protobuf_Empty, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_FileTransferState__Output>): grpc.ClientUnaryCall;
+  getFileTransferState(argument: _google_protobuf_Empty, metadata: grpc.Metadata, callback: grpc.requestCallback<_FileTransferState__Output>): grpc.ClientUnaryCall;
+  getFileTransferState(argument: _google_protobuf_Empty, options: grpc.CallOptions, callback: grpc.requestCallback<_FileTransferState__Output>): grpc.ClientUnaryCall;
+  getFileTransferState(argument: _google_protobuf_Empty, callback: grpc.requestCallback<_FileTransferState__Output>): grpc.ClientUnaryCall;
   
   GetFsw(argument: _Id, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_Fsw__Output>): grpc.ClientUnaryCall;
   GetFsw(argument: _Id, metadata: grpc.Metadata, callback: grpc.requestCallback<_Fsw__Output>): grpc.ClientUnaryCall;
@@ -142,6 +173,15 @@ export interface ApiClient extends grpc.Client {
   removeProfile(argument: _Id, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   removeProfile(argument: _Id, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   
+  Request(argument: _RequestValue, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  Request(argument: _RequestValue, metadata: grpc.Metadata, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  Request(argument: _RequestValue, options: grpc.CallOptions, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  Request(argument: _RequestValue, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  request(argument: _RequestValue, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  request(argument: _RequestValue, metadata: grpc.Metadata, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  request(argument: _RequestValue, options: grpc.CallOptions, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  request(argument: _RequestValue, callback: grpc.requestCallback<_RequestReply__Output>): grpc.ClientUnaryCall;
+  
   Sequence(argument: _CommandSequence, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_SequenceReply__Output>): grpc.ClientUnaryCall;
   Sequence(argument: _CommandSequence, metadata: grpc.Metadata, callback: grpc.requestCallback<_SequenceReply__Output>): grpc.ClientUnaryCall;
   Sequence(argument: _CommandSequence, options: grpc.CallOptions, callback: grpc.requestCallback<_SequenceReply__Output>): grpc.ClientUnaryCall;
@@ -178,6 +218,16 @@ export interface ApiClient extends grpc.Client {
   SubFileDownlink(argument: _BusFilter, options?: grpc.CallOptions): grpc.ClientReadableStream<_FileDownlink__Output>;
   subFileDownlink(argument: _BusFilter, metadata: grpc.Metadata, options?: grpc.CallOptions): grpc.ClientReadableStream<_FileDownlink__Output>;
   subFileDownlink(argument: _BusFilter, options?: grpc.CallOptions): grpc.ClientReadableStream<_FileDownlink__Output>;
+  
+  SubFileTransfer(argument: _google_protobuf_Empty, metadata: grpc.Metadata, options?: grpc.CallOptions): grpc.ClientReadableStream<_FileTransferState__Output>;
+  SubFileTransfer(argument: _google_protobuf_Empty, options?: grpc.CallOptions): grpc.ClientReadableStream<_FileTransferState__Output>;
+  subFileTransfer(argument: _google_protobuf_Empty, metadata: grpc.Metadata, options?: grpc.CallOptions): grpc.ClientReadableStream<_FileTransferState__Output>;
+  subFileTransfer(argument: _google_protobuf_Empty, options?: grpc.CallOptions): grpc.ClientReadableStream<_FileTransferState__Output>;
+  
+  SubFileUplink(argument: _BusFilter, metadata: grpc.Metadata, options?: grpc.CallOptions): grpc.ClientReadableStream<_FileUplink__Output>;
+  SubFileUplink(argument: _BusFilter, options?: grpc.CallOptions): grpc.ClientReadableStream<_FileUplink__Output>;
+  subFileUplink(argument: _BusFilter, metadata: grpc.Metadata, options?: grpc.CallOptions): grpc.ClientReadableStream<_FileUplink__Output>;
+  subFileUplink(argument: _BusFilter, options?: grpc.CallOptions): grpc.ClientReadableStream<_FileUplink__Output>;
   
   SubTelemetry(argument: _BusFilter, metadata: grpc.Metadata, options?: grpc.CallOptions): grpc.ClientReadableStream<_SourcedTelemetry__Output>;
   SubTelemetry(argument: _BusFilter, options?: grpc.CallOptions): grpc.ClientReadableStream<_SourcedTelemetry__Output>;
@@ -237,9 +287,15 @@ export interface ApiHandlers extends grpc.UntypedServiceImplementation {
   
   AllProviders: grpc.handleUnaryCall<_google_protobuf_Empty__Output, _ProfileProviderList>;
   
+  ClearDownlinkTransferState: grpc.handleUnaryCall<_google_protobuf_Empty__Output, _google_protobuf_Empty>;
+  
+  ClearUplinkTransferState: grpc.handleUnaryCall<_google_protobuf_Empty__Output, _google_protobuf_Empty>;
+  
   Command: grpc.handleUnaryCall<_CommandValue__Output, _Reply>;
   
   GetDictionary: grpc.handleUnaryCall<_Id__Output, _Dictionary>;
+  
+  GetFileTransferState: grpc.handleUnaryCall<_google_protobuf_Empty__Output, _FileTransferState>;
   
   GetFsw: grpc.handleUnaryCall<_Id__Output, _Fsw>;
   
@@ -251,6 +307,8 @@ export interface ApiHandlers extends grpc.UntypedServiceImplementation {
   
   RemoveProfile: grpc.handleUnaryCall<_Id__Output, _google_protobuf_Empty>;
   
+  Request: grpc.handleUnaryCall<_RequestValue__Output, _RequestReply>;
+  
   Sequence: grpc.handleUnaryCall<_CommandSequence__Output, _SequenceReply>;
   
   StartProfile: grpc.handleUnaryCall<_Id__Output, _google_protobuf_Empty>;
@@ -260,6 +318,10 @@ export interface ApiHandlers extends grpc.UntypedServiceImplementation {
   SubEvent: grpc.handleServerStreamingCall<_BusFilter__Output, _SourcedEvent>;
   
   SubFileDownlink: grpc.handleServerStreamingCall<_BusFilter__Output, _FileDownlink>;
+  
+  SubFileTransfer: grpc.handleServerStreamingCall<_google_protobuf_Empty__Output, _FileTransferState>;
+  
+  SubFileUplink: grpc.handleServerStreamingCall<_BusFilter__Output, _FileUplink>;
   
   SubTelemetry: grpc.handleServerStreamingCall<_BusFilter__Output, _SourcedTelemetry>;
   
@@ -284,18 +346,24 @@ export interface ApiDefinition extends grpc.ServiceDefinition {
   AllFsw: MethodDefinition<_google_protobuf_Empty, _FswList, _google_protobuf_Empty__Output, _FswList__Output>
   AllProfiles: MethodDefinition<_google_protobuf_Empty, _ProfileList, _google_protobuf_Empty__Output, _ProfileList__Output>
   AllProviders: MethodDefinition<_google_protobuf_Empty, _ProfileProviderList, _google_protobuf_Empty__Output, _ProfileProviderList__Output>
+  ClearDownlinkTransferState: MethodDefinition<_google_protobuf_Empty, _google_protobuf_Empty, _google_protobuf_Empty__Output, _google_protobuf_Empty__Output>
+  ClearUplinkTransferState: MethodDefinition<_google_protobuf_Empty, _google_protobuf_Empty, _google_protobuf_Empty__Output, _google_protobuf_Empty__Output>
   Command: MethodDefinition<_CommandValue, _Reply, _CommandValue__Output, _Reply__Output>
   GetDictionary: MethodDefinition<_Id, _Dictionary, _Id__Output, _Dictionary__Output>
+  GetFileTransferState: MethodDefinition<_google_protobuf_Empty, _FileTransferState, _google_protobuf_Empty__Output, _FileTransferState__Output>
   GetFsw: MethodDefinition<_Id, _Fsw, _Id__Output, _Fsw__Output>
   RawCommand: MethodDefinition<_RawCommandValue, _Reply, _RawCommandValue__Output, _Reply__Output>
   RawSequence: MethodDefinition<_RawCommandSequence, _SequenceReply, _RawCommandSequence__Output, _SequenceReply__Output>
   RemoveDictionary: MethodDefinition<_Id, _google_protobuf_Empty, _Id__Output, _google_protobuf_Empty__Output>
   RemoveProfile: MethodDefinition<_Id, _google_protobuf_Empty, _Id__Output, _google_protobuf_Empty__Output>
+  Request: MethodDefinition<_RequestValue, _RequestReply, _RequestValue__Output, _RequestReply__Output>
   Sequence: MethodDefinition<_CommandSequence, _SequenceReply, _CommandSequence__Output, _SequenceReply__Output>
   StartProfile: MethodDefinition<_Id, _google_protobuf_Empty, _Id__Output, _google_protobuf_Empty__Output>
   StopProfile: MethodDefinition<_Id, _google_protobuf_Empty, _Id__Output, _google_protobuf_Empty__Output>
   SubEvent: MethodDefinition<_BusFilter, _SourcedEvent, _BusFilter__Output, _SourcedEvent__Output>
   SubFileDownlink: MethodDefinition<_BusFilter, _FileDownlink, _BusFilter__Output, _FileDownlink__Output>
+  SubFileTransfer: MethodDefinition<_google_protobuf_Empty, _FileTransferState, _google_protobuf_Empty__Output, _FileTransferState__Output>
+  SubFileUplink: MethodDefinition<_BusFilter, _FileUplink, _BusFilter__Output, _FileUplink__Output>
   SubTelemetry: MethodDefinition<_BusFilter, _SourcedTelemetry, _BusFilter__Output, _SourcedTelemetry__Output>
   SubscribeDictionary: MethodDefinition<_google_protobuf_Empty, _DictionaryList, _google_protobuf_Empty__Output, _DictionaryList__Output>
   SubscribeFsw: MethodDefinition<_google_protobuf_Empty, _FswList, _google_protobuf_Empty__Output, _FswList__Output>

@@ -18,6 +18,10 @@
           "requestType": "CommandValue",
           "responseType": "Reply"
         },
+        "Request": {
+          "requestType": "RequestValue",
+          "responseType": "RequestReply"
+        },
         "RawCommand": {
           "requestType": "RawCommandValue",
           "responseType": "Reply"
@@ -68,6 +72,18 @@
           "requestType": "google.protobuf.Empty",
           "responseType": "ProfileProviderList"
         },
+        "GetFileTransferState": {
+          "requestType": "google.protobuf.Empty",
+          "responseType": "FileTransferState"
+        },
+        "ClearDownlinkTransferState": {
+          "requestType": "google.protobuf.Empty",
+          "responseType": "google.protobuf.Empty"
+        },
+        "ClearUplinkTransferState": {
+          "requestType": "google.protobuf.Empty",
+          "responseType": "google.protobuf.Empty"
+        },
         "SubscribeProviders": {
           "requestType": "google.protobuf.Empty",
           "responseType": "ProfileProviderList",
@@ -112,6 +128,16 @@
         "SubFileDownlink": {
           "requestType": "BusFilter",
           "responseType": "FileDownlink",
+          "responseStream": true
+        },
+        "SubFileUplink": {
+          "requestType": "BusFilter",
+          "responseType": "FileUplink",
+          "responseStream": true
+        },
+        "SubFileTransfer": {
+          "requestType": "google.protobuf.Empty",
+          "responseType": "FileTransferState",
           "responseStream": true
         }
       }
@@ -926,7 +952,8 @@
         "PARSE_COMMAND": 1,
         "SEQUENCE": 2,
         "PARSE_SEQUENCE": 3,
-        "FILE": 4
+        "FILE": 4,
+        "REQUEST": 5
       }
     },
     "Fsw": {
@@ -1048,6 +1075,26 @@
         "lineCommentPrefix": {
           "type": "string",
           "id": 4
+        }
+      }
+    },
+    "RequestValue": {
+      "fields": {
+        "kind": {
+          "type": "string",
+          "id": 1
+        },
+        "data": {
+          "type": "bytes",
+          "id": 2
+        }
+      }
+    },
+    "RequestReply": {
+      "fields": {
+        "data": {
+          "type": "bytes",
+          "id": 1
         }
       }
     },
@@ -1241,6 +1288,99 @@
         }
       }
     },
+    "FileUplink": {
+      "fields": {
+        "uid": {
+          "type": "string",
+          "id": 1
+        },
+        "timeStart": {
+          "type": "google.protobuf.Timestamp",
+          "id": 2
+        },
+        "timeEnd": {
+          "type": "google.protobuf.Timestamp",
+          "id": 3
+        },
+        "fswId": {
+          "type": "string",
+          "id": 5
+        },
+        "sourcePath": {
+          "type": "string",
+          "id": 6
+        },
+        "destinationPath": {
+          "type": "string",
+          "id": 7
+        },
+        "error": {
+          "type": "string",
+          "id": 8
+        },
+        "size": {
+          "type": "uint64",
+          "id": 9
+        },
+        "metadata": {
+          "keyType": "string",
+          "type": "string",
+          "id": 10
+        }
+      }
+    },
+    "FileTransfer": {
+      "fields": {
+        "uid": {
+          "type": "string",
+          "id": 1
+        },
+        "fswId": {
+          "type": "string",
+          "id": 2
+        },
+        "sourcePath": {
+          "type": "string",
+          "id": 3
+        },
+        "targetPath": {
+          "type": "string",
+          "id": 4
+        },
+        "size": {
+          "type": "uint64",
+          "id": 5
+        },
+        "progress": {
+          "type": "uint64",
+          "id": 6
+        }
+      }
+    },
+    "FileTransferState": {
+      "fields": {
+        "downlinkCompleted": {
+          "rule": "repeated",
+          "type": "FileDownlink",
+          "id": 1
+        },
+        "uplinkCompleted": {
+          "rule": "repeated",
+          "type": "FileUplink",
+          "id": 2
+        },
+        "downlinkInProgress": {
+          "rule": "repeated",
+          "type": "FileTransfer",
+          "id": 3
+        },
+        "uplinkInProgress": {
+          "rule": "repeated",
+          "type": "FileTransfer",
+          "id": 4
+        }
+      }
+    },
     "google": {
       "nested": {
         "protobuf": {
@@ -1417,6 +1557,7 @@
             "seq",
             "parseSeq",
             "file",
+            "request",
             "cancel",
             "final"
           ]
@@ -1446,6 +1587,10 @@
         "file": {
           "type": "UplinkFileChunk",
           "id": 6
+        },
+        "request": {
+          "type": "RequestValue",
+          "id": 7
         },
         "cancel": {
           "type": "google.protobuf.Empty",

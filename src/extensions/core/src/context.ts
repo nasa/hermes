@@ -21,11 +21,15 @@ import { evrMessaging } from './notebook/evrMessaging';
 import { ShellScriptLanguageProvider } from './kernels/shellscript';
 import { PythonLanguageProvider } from './kernels/python';
 import { UplinkLanguageProvider } from './kernels/uplink';
+import { DownlinkProvider } from './components/DownlinkViewer';
+import { UplinkProvider } from './components/UplinkViewer';
 
 export class VscodeHermes implements CoreApi {
     private subscriptions: vscode.Disposable[] = [];
     private evrPanel?: EvrPanel;
     private connectionViewer?: ConnectionViewer;
+    private downlinkProvider?: DownlinkProvider;
+    private uplinkProvider?: UplinkProvider;
 
     private notebookLanguages: NotebookLanguageManager;
     private dictionaryStatus: Map<string, DictionaryLanguageItem>;
@@ -50,6 +54,8 @@ export class VscodeHermes implements CoreApi {
     async activate(): Promise<void> {
         // Viewers
         this.connectionViewer = new ConnectionViewer(this.extensionPath, this.api, this);
+        this.downlinkProvider = new DownlinkProvider(this.api);
+        this.uplinkProvider = new UplinkProvider(this.api);
         this.evrPanel = new EvrPanel(this.api, this.extensionPath);
 
         this.subscriptions.push(
@@ -88,6 +94,8 @@ export class VscodeHermes implements CoreApi {
     refresh(): void {
         // this.evrPanel?.refresh();
         this.connectionViewer?.refresh();
+        this.downlinkProvider?.refresh();
+        this.uplinkProvider?.refresh();
     }
 
     registerDictionaryProvider(

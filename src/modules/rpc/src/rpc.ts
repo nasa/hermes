@@ -89,6 +89,8 @@ export class Client implements Hermes.Api {
     onEvent: vscode.Event<Sourced<Event>>;
     onTelemetry: vscode.Event<Sourced<Telemetry>>;
     onDownlink: vscode.Event<Proto.IFileDownlink>;
+    onUplink: vscode.Event<Proto.IFileUplink>;
+    onFileTransfer: vscode.Event<Proto.IFileTransferState>;
 
     constructor(
         log: Hermes.Log,
@@ -192,11 +194,89 @@ export class Client implements Hermes.Api {
         );
 
         this.onDownlink = downlinkListener.event;
+
+        const uplinkListener = new RpcSubscription(
+            "Uplink",
+            log,
+            () => this.client.SubFileUplink({}),
+            (data) => data
+        );
+
+        this.onUplink = uplinkListener.event;
+
+        const fileTransferListener = new RpcSubscription(
+            "FileTransfer",
+            log,
+            () => this.client.SubFileTransfer({}),
+            (data) => Convert.fileTransferState(data)
+        );
+
+        this.onFileTransfer = fileTransferListener.event;
+    }
+
+    getFileTransferState(token?: vscode.CancellationToken): Promise<Proto.IFileTransferState> {
+        return new Promise((resolve, reject) => {
+            let disp: vscode.Disposable | undefined = undefined;
+
+            const call = this.client.GetFileTransferState({}, (err, response) => {
+                disp?.dispose();
+
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(Convert.fileTransferState(response));
+                }
+            });
+
+            disp = token?.onCancellationRequested(() => {
+                call.cancel();
+            });
+        });
+    }
+
+    clearDownlinkTransferState(token?: vscode.CancellationToken): Promise<void> {
+        return new Promise((resolve, reject) => {
+            let disp: vscode.Disposable | undefined = undefined;
+
+            const call = this.client.ClearDownlinkTransferState({}, (err) => {
+                disp?.dispose();
+
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+
+            disp = token?.onCancellationRequested(() => {
+                call.cancel();
+            });
+        });
+    }
+
+    clearUplinkTransferState(token?: vscode.CancellationToken): Promise<void> {
+        return new Promise((resolve, reject) => {
+            let disp: vscode.Disposable | undefined = undefined;
+
+            const call = this.client.ClearUplinkTransferState({}, (err) => {
+                disp?.dispose();
+
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+
+            disp = token?.onCancellationRequested(() => {
+                call.cancel();
+            });
+        });
     }
 
     getFsw(id: string, token?: vscode.CancellationToken): Promise<Hermes.Fsw> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const call = this.client.GetFsw({ id }, (err, value) => {
                 disp?.dispose();
@@ -208,7 +288,7 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });

@@ -26,17 +26,14 @@
         ],
         "smartStep": false
     },
-    "protoc": {
-        "options": [
-            "-I ./proto"
-        ]
-    },
     "gopls": {
         "ui.navigation.importShortcut": "Definition",
     },
     "go.testTimeout": "10s",
-    "protobuf.includes": [
-        "${workspaceDir}/proto/pb/",
-        "${workspaceDir}/proto/grpc/"
+    "protobuf.completion.includeGoogleTypes": false,
+    "protobuf.protoc.options": [
+        "--proto_path=${workspaceFolder}/proto/pb",
+        "-I=${workspaceFolder}/proto/pb",
+        "-I=${workspaceFolder}/proto/grpc",
     ]
 }

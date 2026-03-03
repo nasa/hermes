@@ -266,7 +266,7 @@ type EventDef struct {
 	Severity EvrSeverity `protobuf:"varint,4,opt,name=severity,proto3,enum=EvrSeverity" json:"severity,omitempty"`
 	// *
 	// printf format string that will be formatted via sprintf
-	FormatString string `protobuf:"bytes,5,opt,name=formatString,proto3" json:"formatString,omitempty"`
+	FormatString string `protobuf:"bytes,5,opt,name=format_string,json=formatString,proto3" json:"format_string,omitempty"`
 	// *
 	// Arguments used inside the format string
 	Arguments     []*Field `protobuf:"bytes,6,rep,name=arguments,proto3" json:"arguments,omitempty"`
@@ -821,13 +821,13 @@ const file_dictionary_proto_rawDesc = "" +
 	"\bmnemonic\x18\x02 \x01(\tR\bmnemonic\x12\x1c\n" +
 	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12$\n" +
 	"\targuments\x18\x04 \x03(\v2\x06.FieldR\targuments\x12\x1a\n" +
-	"\bmetadata\x18\x05 \x01(\tR\bmetadata\"\xdc\x01\n" +
+	"\bmetadata\x18\x05 \x01(\tR\bmetadata\"\xdd\x01\n" +
 	"\bEventDef\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1c\n" +
 	"\tcomponent\x18\x02 \x01(\tR\tcomponent\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12(\n" +
-	"\bseverity\x18\x04 \x01(\x0e2\f.EvrSeverityR\bseverity\x12\"\n" +
-	"\fformatString\x18\x05 \x01(\tR\fformatString\x12$\n" +
+	"\bseverity\x18\x04 \x01(\x0e2\f.EvrSeverityR\bseverity\x12#\n" +
+	"\rformat_string\x18\x05 \x01(\tR\fformatString\x12$\n" +
 	"\targuments\x18\x06 \x03(\v2\x06.FieldR\targuments\x12\x1a\n" +
 	"\bmetadata\x18\a \x01(\tR\bmetadata\"\xb4\x01\n" +
 	"\bEventRef\x12\x0e\n" +

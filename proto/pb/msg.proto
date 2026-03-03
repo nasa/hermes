@@ -15,7 +15,7 @@ message FswList { repeated Fsw all = 1; }
 message Reply { bool success = 1; }
 message SequenceReply {
     bool success = 1;
-    int32 commandIndex = 2;
+    int32 command_index = 2;
 }
 
 message StatefulProfile {
@@ -44,12 +44,14 @@ message Uplink {
 
   oneof value {
     CommandValue cmd = 2;
-    RawCommandValue parseCmd = 3;
+    RawCommandValue parse_cmd = 3;
 
     CommandSequence seq = 4;
-    RawCommandSequence parseSeq = 5;
+    RawCommandSequence parse_seq = 5;
 
     UplinkFileChunk file = 6;
+
+    RequestValue request = 7;
 
     // Cancel a previously requested uplink session
     google.protobuf.Empty cancel = 99;

@@ -141,6 +141,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
     const vscodeLogger = new VSCTransport({
         name: "Hermes",
         window: vscode.window,
+        json: false,
     });
 
     const log: Hermes.Log = winston.createLogger({
@@ -155,8 +156,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
             winston.format(info => ({ ...info, level: info.level.toUpperCase() }))(),
             winston.format.align(),
             winston.format.errors({ stack: true }),
-            winston.format.prettyPrint(),
             winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+            winston.format.printf(({ level, message, timestamp }) => {
+                return `${timestamp} ${level}: ${message}`;
+            }),
         )
     });
 

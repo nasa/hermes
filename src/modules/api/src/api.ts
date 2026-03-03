@@ -99,6 +99,19 @@ export interface Fsw {
         progress: vscode.Progress<number>,
         token?: vscode.CancellationToken
     ): Promise<void>;
+
+    /**
+     * Send a generic request to this connection. The kind/data/reply
+     * are defined by the connection implementation.
+     * @param kind Request type
+     * @param data Request payload
+     * @param token cancellation token
+     */
+    request?(
+        kind: string,
+        data?: Buffer | Uint8Array | string,
+        token?: vscode.CancellationToken
+    ): Promise<Buffer>;
 }
 
 export interface Api extends vscode.Disposable {
@@ -193,6 +206,21 @@ export interface Api extends vscode.Disposable {
     allDictionaries(token?: vscode.CancellationToken): Promise<Record<string, Proto.IDictionaryHead>>;
 
     /**
+     * Get the current file uplink/downlink state
+     */
+    getFileTransferState(token?: vscode.CancellationToken): Promise<Proto.IFileTransferState>;
+
+    /**
+     * Clear the cached downlink file state
+     */
+    clearDownlinkTransferState(token?: vscode.CancellationToken): Promise<void>;
+
+    /**
+     * Clear the cached uplink file state
+     */
+    clearUplinkTransferState(token?: vscode.CancellationToken): Promise<void>;
+
+    /**
      * Remove specified dictionary
      * @param id dictionary id
      */
@@ -239,7 +267,17 @@ export interface Api extends vscode.Disposable {
     ): vscode.Disposable;
 
     /**
-     * Subscribe to downlink updates
+     * Subscribe to file downlink updates
      */
     onDownlink: vscode.Event<Proto.IFileDownlink>;
+
+    /**
+     * Subscribe to file uplink updates
+     */
+    onUplink: vscode.Event<Proto.IFileUplink>;
+
+    /**
+     * Subscribe to file uplink and downlink progress
+     */
+    onFileTransfer: vscode.Event<Proto.IFileTransferState>;
 }

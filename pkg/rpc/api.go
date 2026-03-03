@@ -5,14 +5,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
+	"time"
 
 	grpcpb "github.com/nasa/hermes/pkg/grpc"
 	"github.com/nasa/hermes/pkg/host"
 	"github.com/nasa/hermes/pkg/infra"
 	"github.com/nasa/hermes/pkg/log"
 	"github.com/nasa/hermes/pkg/pb"
+	"github.com/nasa/hermes/pkg/util"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	otelCodes "go.opentelemetry.io/otel/codes"
@@ -25,6 +28,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -351,9 +355,88 @@ func (r *apiServer) RawCommand(ctx context.Context, cmd *pb.RawCommandValue) (*p
 	return r.Command(ctx, parsedCmd)
 }
 
+// Request implements grpc.ApiServer.
+func (r *apiServer) Request(ctx context.Context, request *pb.RequestValue) (*pb.RequestReply, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("no metadata included in ground command call")
+	}
+
+	fswIds := md.Get("id")
+	if len(fswIds) != 1 {
+		return nil, fmt.Errorf("expected FSW id in metadata key 'id'")
+	}
+
+	fswId := fswIds[0]
+
+	fswR := host.Profiles.GetConnection(fswId)
+	if fswR == nil {
+		return nil, fmt.Errorf("FSW with id '%s' not found", fswId)
+	}
+
+	fsw, ok := fswR.(host.RequestFsw)
+	if !ok || !fsw.Info().HasCapability(pb.FswCapability_REQUEST) {
+		return nil, fmt.Errorf("FSW with ID '%s' does not support requests", fswId)
+	}
+
+	spanCtx, span := otel.Tracer("request").Start(
+		ctx,
+		request.GetKind(),
+		trace.WithAttributes(
+			attribute.String("fsw", fsw.Info().Id),
+		),
+	)
+
+	defer span.End()
+
+	spanLogger := r.logger.WithContext(spanCtx)
+
+	spanLogger.Info(
+		"request",
+		"fsw", fsw.Info().Id,
+		"kind", request.GetKind(),
+	)
+
+	reply, err := fsw.Request(spanCtx, request.GetKind(), request.GetData())
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			spanLogger.Warn(
+				"request cancelled",
+				"fsw", fsw.Info().Id,
+				"kind", request.GetKind(),
+			)
+
+			span.SetStatus(otelCodes.Error, "cancelled")
+		} else {
+			spanLogger.Error(
+				"request error",
+				"fsw", fsw.Info().Id,
+				"kind", request.GetKind(),
+				"err", err,
+			)
+
+			span.SetStatus(otelCodes.Error, err.Error())
+		}
+
+		return nil, err
+	}
+
+	span.SetStatus(otelCodes.Ok, "success")
+
+	spanLogger.Info(
+		"request completed",
+		"fsw", fsw.Info().Id,
+		"kind", request.GetKind(),
+	)
+
+	return &pb.RequestReply{Data: reply}, nil
+}
+
 type fileChunkReader struct {
-	request grpc.ClientStreamingServer[pb.UplinkFileChunk, pb.Reply]
-	span    trace.Span
+	uid       string
+	lastChunk int
+	request   grpc.ClientStreamingServer[pb.UplinkFileChunk, pb.Reply]
+	span      trace.Span
 }
 
 // Recv implements host.UplinkSource.
@@ -371,6 +454,12 @@ func (f *fileChunkReader) Recv() ([]byte, error) {
 				attribute.Int64("size", int64(len(data))),
 			),
 		)
+
+		if f.lastChunk > 0 {
+			host.FileTransfer.UplinkProgress(f.uid, uint64(f.lastChunk))
+		}
+
+		f.lastChunk = len(data)
 		return data, nil
 	}
 
@@ -410,9 +499,20 @@ func (r *apiServer) Uplink(request grpc.ClientStreamingServer[pb.UplinkFileChunk
 		return fmt.Errorf("expected header in first file chunk")
 	}
 
+	timeStart := time.Now()
+	uid := util.GenerateShortUID()
 	destinationPath := header.GetDestinationPath()
 	sourcePath := header.GetSourcePath()
 	size := header.GetSize()
+	metadata := maps.Clone(header.GetMetadata())
+
+	host.FileTransfer.AddUplink(
+		uid,
+		fsw.Info().Id,
+		sourcePath,
+		destinationPath,
+		size,
+	)
 
 	if destinationPath == "" {
 		return fmt.Errorf("file uplink header must include destination path")
@@ -443,12 +543,32 @@ func (r *apiServer) Uplink(request grpc.ClientStreamingServer[pb.UplinkFileChunk
 		request.Context(),
 		header,
 		&fileChunkReader{
+			uid:     uid,
 			request: request,
 			span:    span,
 		},
 	)
 
+	timeEnd := time.Now()
+	errorMsg := ""
 	if err != nil {
+		errorMsg = err.Error()
+	}
+
+	host.FileUplink.Emit(&pb.FileUplink{
+		Uid:             uid,
+		TimeStart:       timestamppb.New(timeStart),
+		TimeEnd:         timestamppb.New(timeEnd),
+		FswId:           fswId[0],
+		SourcePath:      sourcePath,
+		DestinationPath: destinationPath,
+		Error:           errorMsg,
+		Size:            size,
+		Metadata:        metadata,
+	})
+
+	if err != nil {
+
 		span.SetStatus(otelCodes.Error, err.Error())
 		uplinkLogger.Error(
 			"failed to uplink file",
@@ -628,12 +748,30 @@ var metricSubResponseSize, _ = infra.Meter.Int64Gauge(
 
 // SubDownlink implements pb.ApiServer.
 func (r *apiServer) SubFileDownlink(filter *pb.BusFilter, s grpc.ServerStreamingServer[pb.FileDownlink]) error {
-	host.Downlink.On(s.Context(), func(msg *pb.FileDownlink) {
+	host.FileDownlink.On(s.Context(), func(msg *pb.FileDownlink) {
 		if filter.GetSource() == "" || filter.GetSource() == msg.GetSource() {
 			metricSubResponseSize.Record(
 				s.Context(),
 				int64(proto.Size(msg)),
 				metric.WithAttributes(attribute.String("bus", "downlink")),
+			)
+			s.Send(msg)
+		}
+	})
+
+	// This is a long running subscription until the context request cancellation
+	<-s.Context().Done()
+	return nil
+}
+
+// SubDownlink implements pb.ApiServer.
+func (r *apiServer) SubFileUplink(filter *pb.BusFilter, s grpc.ServerStreamingServer[pb.FileUplink]) error {
+	host.FileUplink.On(s.Context(), func(msg *pb.FileUplink) {
+		if filter.GetSource() == "" || filter.GetSource() == msg.GetFswId() {
+			metricSubResponseSize.Record(
+				s.Context(),
+				int64(proto.Size(msg)),
+				metric.WithAttributes(attribute.String("bus", "uplink")),
 			)
 			s.Send(msg)
 		}
@@ -744,6 +882,34 @@ func (r *apiServer) SubTelemetry(filter *pb.BusFilter, s grpc.ServerStreamingSer
 	// This is a long running subscription until the context request cancellation
 	<-s.Context().Done()
 	return nil
+}
+
+// SubFileTransfer implements grpc.ApiServer.
+func (r *apiServer) SubFileTransfer(_ *emptypb.Empty, s grpc.ServerStreamingServer[pb.FileTransferState]) error {
+	host.FileTransfer.On(s.Context(), func(msg *pb.FileTransferState) {
+		s.Send(msg)
+	})
+
+	// This is a long running subscription until the context request cancellation
+	<-s.Context().Done()
+	return nil
+}
+
+// GetFileTransferState implements grpc.ApiServer.
+func (r *apiServer) GetFileTransferState(context.Context, *emptypb.Empty) (*pb.FileTransferState, error) {
+	return host.FileTransfer.State(), nil
+}
+
+// ClearDownlinkTransferState implements grpc.ApiServer.
+func (r *apiServer) ClearDownlinkTransferState(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	host.FileTransfer.ClearDownlink()
+	return &emptypb.Empty{}, nil
+}
+
+// ClearUplinkTransferState implements grpc.ApiServer.
+func (r *apiServer) ClearUplinkTransferState(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	host.FileTransfer.ClearUplink()
+	return &emptypb.Empty{}, nil
 }
 
 // SubscribeDictionary implements pb.ApiServer.

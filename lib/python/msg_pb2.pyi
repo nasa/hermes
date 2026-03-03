@@ -30,12 +30,12 @@ class Reply(_message.Message):
     def __init__(self, success: bool = ...) -> None: ...
 
 class SequenceReply(_message.Message):
-    __slots__ = ("success", "commandIndex")
+    __slots__ = ("success", "command_index")
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
-    COMMANDINDEX_FIELD_NUMBER: _ClassVar[int]
+    COMMAND_INDEX_FIELD_NUMBER: _ClassVar[int]
     success: bool
-    commandIndex: int
-    def __init__(self, success: bool = ..., commandIndex: _Optional[int] = ...) -> None: ...
+    command_index: int
+    def __init__(self, success: bool = ..., command_index: _Optional[int] = ...) -> None: ...
 
 class StatefulProfile(_message.Message):
     __slots__ = ("value", "state", "runtime_only")
@@ -88,24 +88,26 @@ class DictionaryList(_message.Message):
     def __init__(self, all: _Optional[_Mapping[str, _dictionary_pb2.DictionaryHead]] = ...) -> None: ...
 
 class Uplink(_message.Message):
-    __slots__ = ("id", "cmd", "parseCmd", "seq", "parseSeq", "file", "cancel", "final")
+    __slots__ = ("id", "cmd", "parse_cmd", "seq", "parse_seq", "file", "request", "cancel", "final")
     ID_FIELD_NUMBER: _ClassVar[int]
     CMD_FIELD_NUMBER: _ClassVar[int]
-    PARSECMD_FIELD_NUMBER: _ClassVar[int]
+    PARSE_CMD_FIELD_NUMBER: _ClassVar[int]
     SEQ_FIELD_NUMBER: _ClassVar[int]
-    PARSESEQ_FIELD_NUMBER: _ClassVar[int]
+    PARSE_SEQ_FIELD_NUMBER: _ClassVar[int]
     FILE_FIELD_NUMBER: _ClassVar[int]
+    REQUEST_FIELD_NUMBER: _ClassVar[int]
     CANCEL_FIELD_NUMBER: _ClassVar[int]
     FINAL_FIELD_NUMBER: _ClassVar[int]
     id: str
     cmd: _fsw_pb2.CommandValue
-    parseCmd: _fsw_pb2.RawCommandValue
+    parse_cmd: _fsw_pb2.RawCommandValue
     seq: _fsw_pb2.CommandSequence
-    parseSeq: _fsw_pb2.RawCommandSequence
+    parse_seq: _fsw_pb2.RawCommandSequence
     file: _file_pb2.UplinkFileChunk
+    request: _fsw_pb2.RequestValue
     cancel: _empty_pb2.Empty
     final: _empty_pb2.Empty
-    def __init__(self, id: _Optional[str] = ..., cmd: _Optional[_Union[_fsw_pb2.CommandValue, _Mapping]] = ..., parseCmd: _Optional[_Union[_fsw_pb2.RawCommandValue, _Mapping]] = ..., seq: _Optional[_Union[_fsw_pb2.CommandSequence, _Mapping]] = ..., parseSeq: _Optional[_Union[_fsw_pb2.RawCommandSequence, _Mapping]] = ..., file: _Optional[_Union[_file_pb2.UplinkFileChunk, _Mapping]] = ..., cancel: _Optional[_Union[_empty_pb2.Empty, _Mapping]] = ..., final: _Optional[_Union[_empty_pb2.Empty, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., cmd: _Optional[_Union[_fsw_pb2.CommandValue, _Mapping]] = ..., parse_cmd: _Optional[_Union[_fsw_pb2.RawCommandValue, _Mapping]] = ..., seq: _Optional[_Union[_fsw_pb2.CommandSequence, _Mapping]] = ..., parse_seq: _Optional[_Union[_fsw_pb2.RawCommandSequence, _Mapping]] = ..., file: _Optional[_Union[_file_pb2.UplinkFileChunk, _Mapping]] = ..., request: _Optional[_Union[_fsw_pb2.RequestValue, _Mapping]] = ..., cancel: _Optional[_Union[_empty_pb2.Empty, _Mapping]] = ..., final: _Optional[_Union[_empty_pb2.Empty, _Mapping]] = ...) -> None: ...
 
 class UplinkReply(_message.Message):
     __slots__ = ("id", "reply", "error")

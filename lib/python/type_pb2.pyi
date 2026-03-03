@@ -92,10 +92,10 @@ REF_ARRAY: ReferenceKind
 REF_BYTES: ReferenceKind
 
 class BooleanType(_message.Message):
-    __slots__ = ("encodeType",)
-    ENCODETYPE_FIELD_NUMBER: _ClassVar[int]
-    encodeType: UIntKind
-    def __init__(self, encodeType: _Optional[_Union[UIntKind, str]] = ...) -> None: ...
+    __slots__ = ("encode_type",)
+    ENCODE_TYPE_FIELD_NUMBER: _ClassVar[int]
+    encode_type: UIntKind
+    def __init__(self, encode_type: _Optional[_Union[UIntKind, str]] = ...) -> None: ...
 
 class IntType(_message.Message):
     __slots__ = ("kind", "min", "max")
@@ -118,12 +118,12 @@ class FloatType(_message.Message):
     def __init__(self, kind: _Optional[_Union[FloatKind, str]] = ..., min: _Optional[float] = ..., max: _Optional[float] = ...) -> None: ...
 
 class StringType(_message.Message):
-    __slots__ = ("lengthType", "maxLength")
-    LENGTHTYPE_FIELD_NUMBER: _ClassVar[int]
-    MAXLENGTH_FIELD_NUMBER: _ClassVar[int]
-    lengthType: UIntKind
-    maxLength: int
-    def __init__(self, lengthType: _Optional[_Union[UIntKind, str]] = ..., maxLength: _Optional[int] = ...) -> None: ...
+    __slots__ = ("length_type", "max_length")
+    LENGTH_TYPE_FIELD_NUMBER: _ClassVar[int]
+    MAX_LENGTH_FIELD_NUMBER: _ClassVar[int]
+    length_type: UIntKind
+    max_length: int
+    def __init__(self, length_type: _Optional[_Union[UIntKind, str]] = ..., max_length: _Optional[int] = ...) -> None: ...
 
 class EnumItem(_message.Message):
     __slots__ = ("value", "name", "metadata")
@@ -136,14 +136,14 @@ class EnumItem(_message.Message):
     def __init__(self, value: _Optional[int] = ..., name: _Optional[str] = ..., metadata: _Optional[str] = ...) -> None: ...
 
 class EnumType(_message.Message):
-    __slots__ = ("name", "encodeType", "items")
+    __slots__ = ("name", "encode_type", "items")
     NAME_FIELD_NUMBER: _ClassVar[int]
-    ENCODETYPE_FIELD_NUMBER: _ClassVar[int]
+    ENCODE_TYPE_FIELD_NUMBER: _ClassVar[int]
     ITEMS_FIELD_NUMBER: _ClassVar[int]
     name: str
-    encodeType: IntKind
+    encode_type: IntKind
     items: _containers.RepeatedCompositeFieldContainer[EnumItem]
-    def __init__(self, name: _Optional[str] = ..., encodeType: _Optional[_Union[IntKind, str]] = ..., items: _Optional[_Iterable[_Union[EnumItem, _Mapping]]] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., encode_type: _Optional[_Union[IntKind, str]] = ..., items: _Optional[_Iterable[_Union[EnumItem, _Mapping]]] = ...) -> None: ...
 
 class BoundedArraySize(_message.Message):
     __slots__ = ("min", "max")
@@ -154,32 +154,32 @@ class BoundedArraySize(_message.Message):
     def __init__(self, min: _Optional[int] = ..., max: _Optional[int] = ...) -> None: ...
 
 class ArrayType(_message.Message):
-    __slots__ = ("name", "elType", "static", "dynamic", "lengthType")
+    __slots__ = ("name", "el_type", "static", "dynamic", "length_type")
     NAME_FIELD_NUMBER: _ClassVar[int]
-    ELTYPE_FIELD_NUMBER: _ClassVar[int]
+    EL_TYPE_FIELD_NUMBER: _ClassVar[int]
     STATIC_FIELD_NUMBER: _ClassVar[int]
     DYNAMIC_FIELD_NUMBER: _ClassVar[int]
-    LENGTHTYPE_FIELD_NUMBER: _ClassVar[int]
+    LENGTH_TYPE_FIELD_NUMBER: _ClassVar[int]
     name: str
-    elType: Type
+    el_type: Type
     static: int
     dynamic: BoundedArraySize
-    lengthType: UIntKind
-    def __init__(self, name: _Optional[str] = ..., elType: _Optional[_Union[Type, _Mapping]] = ..., static: _Optional[int] = ..., dynamic: _Optional[_Union[BoundedArraySize, _Mapping]] = ..., lengthType: _Optional[_Union[UIntKind, str]] = ...) -> None: ...
+    length_type: UIntKind
+    def __init__(self, name: _Optional[str] = ..., el_type: _Optional[_Union[Type, _Mapping]] = ..., static: _Optional[int] = ..., dynamic: _Optional[_Union[BoundedArraySize, _Mapping]] = ..., length_type: _Optional[_Union[UIntKind, str]] = ...) -> None: ...
 
 class BytesType(_message.Message):
-    __slots__ = ("name", "kind", "static", "dynamic", "lengthType")
+    __slots__ = ("name", "kind", "static", "dynamic", "length_type")
     NAME_FIELD_NUMBER: _ClassVar[int]
     KIND_FIELD_NUMBER: _ClassVar[int]
     STATIC_FIELD_NUMBER: _ClassVar[int]
     DYNAMIC_FIELD_NUMBER: _ClassVar[int]
-    LENGTHTYPE_FIELD_NUMBER: _ClassVar[int]
+    LENGTH_TYPE_FIELD_NUMBER: _ClassVar[int]
     name: str
     kind: NumberKind
     static: int
     dynamic: BoundedArraySize
-    lengthType: UIntKind
-    def __init__(self, name: _Optional[str] = ..., kind: _Optional[_Union[NumberKind, str]] = ..., static: _Optional[int] = ..., dynamic: _Optional[_Union[BoundedArraySize, _Mapping]] = ..., lengthType: _Optional[_Union[UIntKind, str]] = ...) -> None: ...
+    length_type: UIntKind
+    def __init__(self, name: _Optional[str] = ..., kind: _Optional[_Union[NumberKind, str]] = ..., static: _Optional[int] = ..., dynamic: _Optional[_Union[BoundedArraySize, _Mapping]] = ..., length_type: _Optional[_Union[UIntKind, str]] = ...) -> None: ...
 
 class Field(_message.Message):
     __slots__ = ("name", "type", "metadata", "value")
@@ -263,14 +263,14 @@ class ArrayValue(_message.Message):
     def __init__(self, value: _Optional[_Iterable[_Union[Value, _Mapping]]] = ...) -> None: ...
 
 class BytesValue(_message.Message):
-    __slots__ = ("kind", "bigEndian", "value")
+    __slots__ = ("kind", "big_endian", "value")
     KIND_FIELD_NUMBER: _ClassVar[int]
-    BIGENDIAN_FIELD_NUMBER: _ClassVar[int]
+    BIG_ENDIAN_FIELD_NUMBER: _ClassVar[int]
     VALUE_FIELD_NUMBER: _ClassVar[int]
     kind: NumberKind
-    bigEndian: bool
+    big_endian: bool
     value: bytes
-    def __init__(self, kind: _Optional[_Union[NumberKind, str]] = ..., bigEndian: bool = ..., value: _Optional[bytes] = ...) -> None: ...
+    def __init__(self, kind: _Optional[_Union[NumberKind, str]] = ..., big_endian: bool = ..., value: _Optional[bytes] = ...) -> None: ...
 
 class EnumValue(_message.Message):
     __slots__ = ("raw", "formatted")
