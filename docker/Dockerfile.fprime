@@ -1,0 +1,73 @@
+#######################
+# Docker.fprime
+# 
+# Author: Andrei Tumbar
+# Brief: Clone github.com/nasa/fprime and build Ref
+#
+#######################
+
+FROM ubuntu:22.04 AS fprime-builder
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install F Prime build dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential \
+    python3 \
+    python3-pip \
+    python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create workspace
+WORKDIR /workspace
+
+# Clone F Prime
+# For nightly builds, use the latest devel
+ARG FPRIME_VERSION=devel
+RUN git clone --depth 1 --branch ${FPRIME_VERSION} https://github.com/nasa/fprime.git
+
+# Set up Python virtual environment
+RUN python3 -m venv /opt/fprime-venv
+ENV PATH="/opt/fprime-venv/bin:$PATH"
+
+# Install F Prime Python pip dependencies
+RUN pip install --upgrade pip && \
+    pip install -r /workspace/fprime/requirements.txt
+
+# Build F Prime reference application
+WORKDIR /workspace/fprime/Ref
+RUN fprime-util generate
+RUN fprime-util build
+
+# Runtime Image
+FROM ubuntu:22.04
+
+# Remove useless apt cache
+RUN rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace
+
+# Copy virtual environment and built artifacts from builder
+COPY --from=fprime-builder /workspace/fprime/Ref/build-artifacts /workspace
+
+ENV GROUND_ADDRESS=localhost
+ENV GROUND_PORT=50050
+
+RUN cat <<EOF > /workspace/entrypoint.sh
+#!/bin/bash
+
+GROUND_ADDRESS=\${GROUND_ADDRESS:-localhost}
+GROUND_ADDRESS_ORIG="\${GROUND_ADDRESS}"
+GROUND_ADDRESS=\$(getent hosts "\${GROUND_ADDRESS}" | awk '{ print \$1 }')
+
+echo "Launching F Prime Ref deployment"
+echo "Ground Hostname: \${GROUND_ADDRESS_ORIG} (\${GROUND_ADDRESS})"
+echo "Ground Port: \${GROUND_PORT}"
+
+exec /workspace/Linux/Ref/bin/Ref -a \${GROUND_ADDRESS} -p \${GROUND_PORT}
+EOF
+
+RUN chmod +x /workspace/entrypoint.sh
+ENTRYPOINT ["/workspace/entrypoint.sh"]

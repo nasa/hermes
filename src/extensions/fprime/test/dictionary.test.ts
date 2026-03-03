@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals';
 
 import { Def } from '@gov.nasa.jpl.hermes/types';
 import { readFileSync } from 'fs';
-import { parseFprimeXmlDictionary } from '../../src/extensions/fprime/src/dictionaryXml';
+import { parseFprimeXmlDictionary } from '../src/dictionaryXml';
 
 test('Parse Dictionary', () => {
     const [dict, topology] = parseFprimeXmlDictionary(
