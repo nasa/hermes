@@ -1,6 +1,7 @@
-name: F Prime Build
+name: F Prime Build Template
 
 on:
+  workflow_dispatch:  # Allow manual trigger
   workflow_call:
     inputs:
       tag:
