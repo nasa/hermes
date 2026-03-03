@@ -50,8 +50,8 @@ build-fprime-cache:
 
 # Build and start the Docker container for testing
 test-integration-setup:
-	docker-compose -f test/docker-compose.yml build
-	docker-compose -f test/docker-compose.yml up -d
+	docker compose -f test/docker compose.yml build
+	docker compose -f test/docker compose.yml up -d
 	@echo "Waiting for services to be ready..."
 	@sleep 10
 
@@ -61,7 +61,7 @@ test-integration-run:
 
 # Stop and remove Docker containers
 test-integration-teardown:
-	docker-compose -f docker-compose.test.yml down -v
+	docker compose -f docker compose.test.yml down -v
 
 # Run full integration test suite (setup + test + teardown)
 test-integration: test-integration-setup

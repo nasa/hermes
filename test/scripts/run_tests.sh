@@ -32,7 +32,7 @@ print_warning() {
 cleanup() {
     if [ "$SKIP_CLEANUP" != "true" ]; then
         print_info "Cleaning up Docker containers..."
-        docker-compose -f "$COMPOSE_FILE" down -v
+        docker compose -f "$COMPOSE_FILE" down -v
     else
         print_warning "Skipping cleanup (SKIP_CLEANUP=true)"
     fi
@@ -47,7 +47,7 @@ wait_for_backend() {
     
     local retries=0
     while [ $retries -lt $MAX_RETRIES ]; do
-        if docker-compose -f "$COMPOSE_FILE" ps hermes-backend | grep -q "Up"; then
+        if docker compose -f "$COMPOSE_FILE" ps hermes-backend | grep -q "Up"; then
             print_info "Backend container is running"
             
             # Additional check: try to connect to the gRPC port
@@ -65,7 +65,7 @@ wait_for_backend() {
     echo ""
     print_error "Backend failed to start after $((MAX_RETRIES * RETRY_DELAY)) seconds"
     print_error "Container logs:"
-    docker-compose -f "$COMPOSE_FILE" logs hermes-backend
+    docker compose -f "$COMPOSE_FILE" logs hermes-backend
     return 1
 }
 
@@ -121,17 +121,17 @@ print_info "Backend address: $BACKEND_ADDRESS"
 # Build and start containers
 if [ "$REBUILD" = true ]; then
     print_info "Rebuilding Docker images..."
-    docker-compose -f "$COMPOSE_FILE" build --no-cache
+    docker compose -f "$COMPOSE_FILE" build --no-cache
 else
     print_info "Building Docker images..."
-    docker-compose -f "$COMPOSE_FILE" build
+    docker compose -f "$COMPOSE_FILE" build
 fi
 
 print_info "Converting dictionaries to Hermes format"
 
 
 print_info "Starting Docker containers..."
-docker-compose -f "$COMPOSE_FILE" up -d
+docker compose -f "$COMPOSE_FILE" up -d
 
 # Wait for backend to be ready
 if ! wait_for_backend; then
@@ -165,6 +165,6 @@ if eval $TEST_CMD; then
 else
     print_error "Tests failed!"
     print_error "Container logs:"
-    docker-compose -f "$COMPOSE_FILE" logs hermes-backend
+    docker compose -f "$COMPOSE_FILE" logs hermes-backend
     exit 1
 fi

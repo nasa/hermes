@@ -123,7 +123,7 @@ func TestAllDictionary(t *testing.T) {
 	require.NoError(t, err, "AllDictionary should not return an error")
 	require.NotNil(t, resp, "Response should not be nil")
 
-	// We pre-seed the docker-compose with a single dictionary from the fprime ref deployment
+	// We pre-seed the docker compose with a single dictionary from the fprime ref deployment
 	require.Len(t, resp.GetAll(), 1)
 }
 

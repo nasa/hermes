@@ -150,14 +150,14 @@ func TestMyNewFeature(t *testing.T) {
 
 Check Docker logs:
 ```bash
-docker-compose -f docker-compose.test.yml logs hermes-backend
+docker compose -f docker-compose.test.yml logs hermes-backend
 ```
 
 ### Connection timeout
 
 Ensure the backend service is running:
 ```bash
-docker-compose -f docker-compose.test.yml ps
+docker compose -f docker-compose.test.yml ps
 ```
 
 The service should be in `Up` state.
@@ -187,7 +187,7 @@ make test-integration
 # Or with explicit cleanup on failure
 make test-integration-setup
 make test-integration-run || {
-    docker-compose -f docker-compose.test.yml logs hermes-backend
+    docker compose -f docker-compose.test.yml logs hermes-backend
     make test-integration-teardown
     exit 1
 }

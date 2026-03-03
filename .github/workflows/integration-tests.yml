@@ -55,4 +55,4 @@ jobs:
       - name: Dump logs on failure
         if: failure()
         run: |
-          docker-compose -f docker-compose.test.yml logs
+          docker compose -f docker-compose.test.yml logs
