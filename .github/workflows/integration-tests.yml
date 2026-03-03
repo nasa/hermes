@@ -36,7 +36,7 @@ jobs:
       
       - name: Pull prebuilt F Prime image
         run: |
-          docker pull ${{ env.FPRIME_IMAGE }} || echo "Nightly image not available, will build locally"
+          docker pull ${{ env.FPRIME_IMAGE }}
       
       - name: Run integration tests
         run: make test-integration
