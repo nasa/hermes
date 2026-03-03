@@ -57,7 +57,7 @@ test-integration-setup:
 
 # Run integration tests
 test-integration-run:
-	go test -v ./test/integration/... -timeout 5m
+	go test -v ./test/... -timeout 5m
 
 # Stop and remove Docker containers
 test-integration-teardown:
