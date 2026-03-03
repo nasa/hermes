@@ -61,7 +61,7 @@ test-integration-run:
 
 # Stop and remove Docker containers
 test-integration-teardown:
-	docker compose -f docker compose.test.yml down -v
+	docker compose -f test/docker-compose.yml down -v
 
 # Run full integration test suite (setup + test + teardown)
 test-integration: test-integration-setup
