@@ -1,0 +1,57 @@
+name: F Prime Integration Test Template
+
+on:
+  workflow_call:
+    inputs:
+      fprime-tag:
+        required: true
+        type: string
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@v1
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.25"
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set F Prime image to use prebuilt nightly
+        run: |
+          echo "FPRIME_IMAGE=ghcr.io/${{ github.repository }}/fprime-ref:${{ inputs.fprime-tag }}" >> $GITHUB_ENV
+
+      - name: Pull prebuilt F Prime image
+        run: docker pull ${{ env.FPRIME_IMAGE }}
+
+      - name: Run integration tests
+        run: make test-integration
+        env:
+          FPRIME_IMAGE: ${{ env.FPRIME_IMAGE }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-results
+          path: |
+            coverage.out
+            test-results.json
+
+      - name: Dump logs on failure
+        if: failure()
+        run: |
+          docker compose -f test/docker-compose.yml logs
