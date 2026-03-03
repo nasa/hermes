@@ -9,7 +9,7 @@ framework built around a variety of mature open-source software.
 
 > [!IMPORTANT]  
 > Hermes is currently undergoing migration from our internal deployment
-> to public Github. Documentation is in the works.
+> to public Github. Documentation is in the
 
 ## Hermes Capabilities
 
