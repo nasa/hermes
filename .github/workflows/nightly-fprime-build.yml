@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-fprime-cache:
-    uses: .github/workflows/fprime-build-template.yml
+    uses: ./.github/workflows/fprime-build-template.yml
     with:
       tag: nightly
       fprime-branch: devel
