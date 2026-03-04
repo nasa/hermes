@@ -1,6 +1,6 @@
 <h2 align="center">Hermes, A Lightweight Telemetry and Commanding Framework</h2>
 <p align="center"><br/>
-<img width="200em" src="docs/assets/hermes-readme.svg" />
+<img width="200em" src="docs/assets/hermes.svg" />
 </p>
 
 #
