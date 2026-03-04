@@ -34,6 +34,7 @@ var (
 	_ host.SeqFsw       = (*fswClient)(nil)
 	_ host.SeqFswParser = (*fswClient)(nil)
 	_ host.UplinkFsw    = (*fswClient)(nil)
+	_ host.RequestFsw   = (*fswClient)(nil)
 )
 
 type providerServer struct {
@@ -556,6 +557,21 @@ func (f *fswClient) Command(ctx context.Context, cmd *pb.CommandValue) (bool, er
 	}
 
 	return out.Success, nil
+}
+
+// Request implements host.RequestFsw.
+func (f *fswClient) Request(ctx context.Context, kind string, data []byte) ([]byte, error) {
+	var out pb.RequestReply
+	err := f.request(ctx, &pb.Uplink{Value: &pb.Uplink_Request{Request: &pb.RequestValue{
+		Kind: kind,
+		Data: data,
+	}}}, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return out.GetData(), nil
 }
 
 // Info implements host.Fsw.

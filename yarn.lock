@@ -896,10 +896,29 @@
   resolved "https://registry.yarnpkg.com/@lit-labs/ssr-dom-shim/-/ssr-dom-shim-1.4.0.tgz#55eb80ab5ef6e188f7e541c1e2bea1ef582413b8"
   integrity sha512-ficsEARKnmmW5njugNYKipTm4SFnbik7CXtoencDZzmzo/dQ+2Q0bgkzJuoJP20Aj0F+izzJjOqsnkd6F/o1bw==
 
+"@lit-labs/ssr-dom-shim@^1.5.0":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@lit-labs/ssr-dom-shim/-/ssr-dom-shim-1.5.1.tgz#3166900c0d481f03d6d4133686e0febf760d521d"
+  integrity sha512-Aou5UdlSpr5whQe8AA/bZG0jMj96CoJIWbGfZ91qieWu5AWUMKw8VR/pAkQkJYvBNhmCcWnZlyyk5oze8JIqYA==
+
+"@lit/context@^1.1.3":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@lit/context/-/context-1.1.6.tgz#ae67126bab4cabda65374a3286e4168f07bc31e6"
+  integrity sha512-M26qDE6UkQbZA2mQ3RjJ3Gzd8TxP+/0obMgE5HfkfLhEEyYE3Bui4A5XHiGPjy0MUGAyxB3QgVuw2ciS0kHn6A==
+  dependencies:
+    "@lit/reactive-element" "^1.6.2 || ^2.1.0"
+
 "@lit/react@^1.0.7":
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/@lit/react/-/react-1.0.8.tgz#b3e229173b7b57d550909bf95d8f3da1a9510557"
   integrity sha512-p2+YcF+JE67SRX3mMlJ1TKCSTsgyOVdAwd/nxp3NuV1+Cb6MWALbN6nT7Ld4tpmYofcE5kcaSY1YBB9erY+6fw==
+
+"@lit/reactive-element@^1.6.2 || ^2.1.0":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@lit/reactive-element/-/reactive-element-2.1.2.tgz#4c6af9042603c98e61ba90b294607904d51b61cb"
+  integrity sha512-pbCDiVMnne1lYUIaYNN5wrwQXDtHaYtg7YEFPeW+hws6U47WeFvISGUWekPGKWOP1ygrs0ef0o1VJMk1exos5A==
+  dependencies:
+    "@lit-labs/ssr-dom-shim" "^1.5.0"
 
 "@lit/reactive-element@^2.1.0":
   version "2.1.1"
@@ -1825,30 +1844,31 @@
     "@typescript-eslint/types" "8.24.0"
     eslint-visitor-keys "^4.2.0"
 
-"@vscode-elements/elements@^1.15.0":
-  version "1.17.0"
-  resolved "https://registry.yarnpkg.com/@vscode-elements/elements/-/elements-1.17.0.tgz#15fb3bb3d62a61c8b505fb4cf33b23de998b5cd1"
-  integrity sha512-7kx1kqZGue3I5YcUOxy5fM/x32XSNzubStWQP5m0rG6Q5bvZVjQfmycsVjS+5PWk+a3dbFoM/XBt2ld1TjIQ/g==
+"@vscode-elements/elements@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@vscode-elements/elements/-/elements-2.4.0.tgz#d6c515b6a0d9400cc602b53f91d5f8c256d96290"
+  integrity sha512-3VzHabhhT+mdaCTQhR0uxN/BFHcy+QjRVxnqjoG/ERsRxNEYZ+BycMFwmvV1H2gZSW9GBpUS6YpmPfAIhLAmgg==
   dependencies:
+    "@lit/context" "^1.1.3"
     lit "^3.2.1"
 
-"@vscode-elements/react-elements@^1.15.1":
-  version "1.15.1"
-  resolved "https://registry.yarnpkg.com/@vscode-elements/react-elements/-/react-elements-1.15.1.tgz#eb3a8d2f7d70f421e9374791dfbb43eaac3e6a2a"
-  integrity sha512-AePFOL39rvAaeC7t1ZOVc05ixBK6F3NAaST5kgRpP0K9h+XFA2x8RBZpdvYsEtX3lu/wtW71qqdA6Z3xskuiWA==
+"@vscode-elements/react-elements@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@vscode-elements/react-elements/-/react-elements-2.4.0.tgz#7f772d8bb3c2c7f7d74a160521b9f2e830ca85ba"
+  integrity sha512-gDLHE+JE0ViYN+Bzp0obUKBA+guc8Vk0X3n1157z9J+X9GCwHo5ZNziDmiNXyd3QA4IE/kkcg5+3RsemYLlZqg==
   dependencies:
     "@lit/react" "^1.0.7"
-    "@vscode-elements/elements" "^1.15.0"
-
-"@vscode/codicons@^0.0.33":
-  version "0.0.33"
-  resolved "https://registry.yarnpkg.com/@vscode/codicons/-/codicons-0.0.33.tgz#a56243ab5492801fff04e53c0aab0d18a6521751"
-  integrity sha512-VdgpnD75swH9hpXjd34VBgQ2w2quK63WljodlUcOoJDPKiV+rPjHrcUc2sjLCNKxhl6oKqmsZgwOWcDAY2GKKQ==
+    "@vscode-elements/elements" "^2.4.0"
 
 "@vscode/codicons@^0.0.36":
   version "0.0.36"
   resolved "https://registry.yarnpkg.com/@vscode/codicons/-/codicons-0.0.36.tgz#ccdabfaef5db596b266644ab85fc25aa701058f0"
   integrity sha512-wsNOvNMMJ2BY8rC2N2MNBG7yOowV3ov8KlvUE/AiVUlHKTfWsw3OgAOQduX7h0Un6GssKD3aoTVH+TF3DSQwKQ==
+
+"@vscode/codicons@^0.0.44":
+  version "0.0.44"
+  resolved "https://registry.yarnpkg.com/@vscode/codicons/-/codicons-0.0.44.tgz#c1b6bebc5ae318314894df0e4dc154bd26946c6c"
+  integrity sha512-F7qPRumUK3EHjNdopfICLGRf3iNPoZQt+McTHAn4AlOWPB3W2kL4H0S7uqEqbyZ6rCxaeDjpAn3MCUnwTu/VJQ==
 
 "@vscode/test-electron@^2.2.0":
   version "2.4.1"

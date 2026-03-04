@@ -850,6 +850,393 @@ export class FileDownlink implements IFileDownlink {
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
+/** Properties of a FileUplink. */
+export interface IFileUplink {
+
+    /** FileUplink uid */
+    uid?: (string|null);
+
+    /** FileUplink timeStart */
+    timeStart?: (google.protobuf.ITimestamp|null);
+
+    /** FileUplink timeEnd */
+    timeEnd?: (google.protobuf.ITimestamp|null);
+
+    /** FileUplink fswId */
+    fswId?: (string|null);
+
+    /** FileUplink sourcePath */
+    sourcePath?: (string|null);
+
+    /** FileUplink destinationPath */
+    destinationPath?: (string|null);
+
+    /** FileUplink error */
+    error?: (string|null);
+
+    /** FileUplink size */
+    size?: (number|Long|null);
+
+    /** FileUplink metadata */
+    metadata?: ({ [k: string]: string }|null);
+}
+
+/** Represents a FileUplink. */
+export class FileUplink implements IFileUplink {
+
+    /**
+     * Constructs a new FileUplink.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IFileUplink);
+
+    /** FileUplink uid. */
+    public uid: string;
+
+    /** FileUplink timeStart. */
+    public timeStart?: (google.protobuf.ITimestamp|null);
+
+    /** FileUplink timeEnd. */
+    public timeEnd?: (google.protobuf.ITimestamp|null);
+
+    /** FileUplink fswId. */
+    public fswId: string;
+
+    /** FileUplink sourcePath. */
+    public sourcePath: string;
+
+    /** FileUplink destinationPath. */
+    public destinationPath: string;
+
+    /** FileUplink error. */
+    public error: string;
+
+    /** FileUplink size. */
+    public size: (number|Long);
+
+    /** FileUplink metadata. */
+    public metadata: { [k: string]: string };
+
+    /**
+     * Creates a new FileUplink instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns FileUplink instance
+     */
+    public static create(properties?: IFileUplink): FileUplink;
+
+    /**
+     * Encodes the specified FileUplink message. Does not implicitly {@link FileUplink.verify|verify} messages.
+     * @param message FileUplink message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IFileUplink, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified FileUplink message, length delimited. Does not implicitly {@link FileUplink.verify|verify} messages.
+     * @param message FileUplink message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IFileUplink, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a FileUplink message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns FileUplink
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): FileUplink;
+
+    /**
+     * Decodes a FileUplink message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns FileUplink
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): FileUplink;
+
+    /**
+     * Verifies a FileUplink message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a FileUplink message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns FileUplink
+     */
+    public static fromObject(object: { [k: string]: any }): FileUplink;
+
+    /**
+     * Creates a plain object from a FileUplink message. Also converts values to other types if specified.
+     * @param message FileUplink
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: FileUplink, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this FileUplink to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for FileUplink
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a FileTransfer. */
+export interface IFileTransfer {
+
+    /** FileTransfer uid */
+    uid?: (string|null);
+
+    /** FileTransfer fswId */
+    fswId?: (string|null);
+
+    /** FileTransfer sourcePath */
+    sourcePath?: (string|null);
+
+    /** FileTransfer targetPath */
+    targetPath?: (string|null);
+
+    /** FileTransfer size */
+    size?: (number|Long|null);
+
+    /** FileTransfer progress */
+    progress?: (number|Long|null);
+}
+
+/** Represents a FileTransfer. */
+export class FileTransfer implements IFileTransfer {
+
+    /**
+     * Constructs a new FileTransfer.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IFileTransfer);
+
+    /** FileTransfer uid. */
+    public uid: string;
+
+    /** FileTransfer fswId. */
+    public fswId: string;
+
+    /** FileTransfer sourcePath. */
+    public sourcePath: string;
+
+    /** FileTransfer targetPath. */
+    public targetPath: string;
+
+    /** FileTransfer size. */
+    public size: (number|Long);
+
+    /** FileTransfer progress. */
+    public progress: (number|Long);
+
+    /**
+     * Creates a new FileTransfer instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns FileTransfer instance
+     */
+    public static create(properties?: IFileTransfer): FileTransfer;
+
+    /**
+     * Encodes the specified FileTransfer message. Does not implicitly {@link FileTransfer.verify|verify} messages.
+     * @param message FileTransfer message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IFileTransfer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified FileTransfer message, length delimited. Does not implicitly {@link FileTransfer.verify|verify} messages.
+     * @param message FileTransfer message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IFileTransfer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a FileTransfer message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns FileTransfer
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): FileTransfer;
+
+    /**
+     * Decodes a FileTransfer message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns FileTransfer
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): FileTransfer;
+
+    /**
+     * Verifies a FileTransfer message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a FileTransfer message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns FileTransfer
+     */
+    public static fromObject(object: { [k: string]: any }): FileTransfer;
+
+    /**
+     * Creates a plain object from a FileTransfer message. Also converts values to other types if specified.
+     * @param message FileTransfer
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: FileTransfer, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this FileTransfer to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for FileTransfer
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a FileTransferState. */
+export interface IFileTransferState {
+
+    /** FileTransferState downlinkCompleted */
+    downlinkCompleted?: (IFileDownlink[]|null);
+
+    /** FileTransferState uplinkCompleted */
+    uplinkCompleted?: (IFileUplink[]|null);
+
+    /** FileTransferState downlinkInProgress */
+    downlinkInProgress?: (IFileTransfer[]|null);
+
+    /** FileTransferState uplinkInProgress */
+    uplinkInProgress?: (IFileTransfer[]|null);
+}
+
+/** Represents a FileTransferState. */
+export class FileTransferState implements IFileTransferState {
+
+    /**
+     * Constructs a new FileTransferState.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IFileTransferState);
+
+    /** FileTransferState downlinkCompleted. */
+    public downlinkCompleted: IFileDownlink[];
+
+    /** FileTransferState uplinkCompleted. */
+    public uplinkCompleted: IFileUplink[];
+
+    /** FileTransferState downlinkInProgress. */
+    public downlinkInProgress: IFileTransfer[];
+
+    /** FileTransferState uplinkInProgress. */
+    public uplinkInProgress: IFileTransfer[];
+
+    /**
+     * Creates a new FileTransferState instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns FileTransferState instance
+     */
+    public static create(properties?: IFileTransferState): FileTransferState;
+
+    /**
+     * Encodes the specified FileTransferState message. Does not implicitly {@link FileTransferState.verify|verify} messages.
+     * @param message FileTransferState message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IFileTransferState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified FileTransferState message, length delimited. Does not implicitly {@link FileTransferState.verify|verify} messages.
+     * @param message FileTransferState message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IFileTransferState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a FileTransferState message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns FileTransferState
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): FileTransferState;
+
+    /**
+     * Decodes a FileTransferState message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns FileTransferState
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): FileTransferState;
+
+    /**
+     * Verifies a FileTransferState message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a FileTransferState message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns FileTransferState
+     */
+    public static fromObject(object: { [k: string]: any }): FileTransferState;
+
+    /**
+     * Creates a plain object from a FileTransferState message. Also converts values to other types if specified.
+     * @param message FileTransferState
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: FileTransferState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this FileTransferState to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for FileTransferState
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
 /** IntKind enum. */
 export enum IntKind {
     INT_U8 = 0,
@@ -4997,7 +5384,8 @@ export enum FswCapability {
     PARSE_COMMAND = 1,
     SEQUENCE = 2,
     PARSE_SEQUENCE = 3,
-    FILE = 4
+    FILE = 4,
+    REQUEST = 5
 }
 
 /** Properties of a Fsw. */
@@ -5670,6 +6058,209 @@ export class RawCommandSequence implements IRawCommandSequence {
 
     /**
      * Gets the default type url for RawCommandSequence
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a RequestValue. */
+export interface IRequestValue {
+
+    /** RequestValue kind */
+    kind?: (string|null);
+
+    /** RequestValue data */
+    data?: (Uint8Array|null);
+}
+
+/**
+ * FSW Requests are non-dictionary defined items. These are connection
+ * specific commands meant to be exposed by custom UI in the frontend.
+ */
+export class RequestValue implements IRequestValue {
+
+    /**
+     * Constructs a new RequestValue.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IRequestValue);
+
+    /** RequestValue kind. */
+    public kind: string;
+
+    /** RequestValue data. */
+    public data: Uint8Array;
+
+    /**
+     * Creates a new RequestValue instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns RequestValue instance
+     */
+    public static create(properties?: IRequestValue): RequestValue;
+
+    /**
+     * Encodes the specified RequestValue message. Does not implicitly {@link RequestValue.verify|verify} messages.
+     * @param message RequestValue message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IRequestValue, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified RequestValue message, length delimited. Does not implicitly {@link RequestValue.verify|verify} messages.
+     * @param message RequestValue message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IRequestValue, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a RequestValue message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns RequestValue
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): RequestValue;
+
+    /**
+     * Decodes a RequestValue message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns RequestValue
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): RequestValue;
+
+    /**
+     * Verifies a RequestValue message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a RequestValue message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns RequestValue
+     */
+    public static fromObject(object: { [k: string]: any }): RequestValue;
+
+    /**
+     * Creates a plain object from a RequestValue message. Also converts values to other types if specified.
+     * @param message RequestValue
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: RequestValue, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this RequestValue to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for RequestValue
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a RequestReply. */
+export interface IRequestReply {
+
+    /** RequestReply data */
+    data?: (Uint8Array|null);
+}
+
+/** Represents a RequestReply. */
+export class RequestReply implements IRequestReply {
+
+    /**
+     * Constructs a new RequestReply.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IRequestReply);
+
+    /** RequestReply data. */
+    public data: Uint8Array;
+
+    /**
+     * Creates a new RequestReply instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns RequestReply instance
+     */
+    public static create(properties?: IRequestReply): RequestReply;
+
+    /**
+     * Encodes the specified RequestReply message. Does not implicitly {@link RequestReply.verify|verify} messages.
+     * @param message RequestReply message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IRequestReply, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified RequestReply message, length delimited. Does not implicitly {@link RequestReply.verify|verify} messages.
+     * @param message RequestReply message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IRequestReply, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a RequestReply message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns RequestReply
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): RequestReply;
+
+    /**
+     * Decodes a RequestReply message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns RequestReply
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): RequestReply;
+
+    /**
+     * Verifies a RequestReply message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a RequestReply message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns RequestReply
+     */
+    public static fromObject(object: { [k: string]: any }): RequestReply;
+
+    /**
+     * Creates a plain object from a RequestReply message. Also converts values to other types if specified.
+     * @param message RequestReply
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: RequestReply, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this RequestReply to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for RequestReply
      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
      * @returns The default type url
      */
@@ -6594,6 +7185,9 @@ export interface IUplink {
     /** Uplink file */
     file?: (IUplinkFileChunk|null);
 
+    /** Uplink request */
+    request?: (IRequestValue|null);
+
     /** Uplink cancel */
     cancel?: (google.protobuf.IEmpty|null);
 
@@ -6628,6 +7222,9 @@ export class Uplink implements IUplink {
     /** Uplink file. */
     public file?: (IUplinkFileChunk|null);
 
+    /** Uplink request. */
+    public request?: (IRequestValue|null);
+
     /** Uplink cancel. */
     public cancel?: (google.protobuf.IEmpty|null);
 
@@ -6635,7 +7232,7 @@ export class Uplink implements IUplink {
     public final?: (google.protobuf.IEmpty|null);
 
     /** Uplink value. */
-    public value?: ("cmd"|"parseCmd"|"seq"|"parseSeq"|"file"|"cancel"|"final");
+    public value?: ("cmd"|"parseCmd"|"seq"|"parseSeq"|"file"|"request"|"cancel"|"final");
 
     /**
      * Creates a new Uplink instance using the specified properties.

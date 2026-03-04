@@ -42,7 +42,7 @@ func DownlinkToLogRecord(ctx context.Context) {
 	)
 
 	// Handle events emitted on the downlink bus
-	host.Downlink.On(ctx, func(Downlink *pb.FileDownlink) {
+	host.FileDownlink.On(ctx, func(Downlink *pb.FileDownlink) {
 		handler.Handle(context.Background(), Downlink.Record())
 	})
 }

@@ -6,6 +6,7 @@ export const FswCapability = {
   SEQUENCE: 2,
   PARSE_SEQUENCE: 3,
   FILE: 4,
+  REQUEST: 5,
 } as const;
 
 export type FswCapability =
@@ -19,5 +20,7 @@ export type FswCapability =
   | 3
   | 'FILE'
   | 4
+  | 'REQUEST'
+  | 5
 
 export type FswCapability__Output = typeof FswCapability[keyof typeof FswCapability]

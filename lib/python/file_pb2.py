@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nfile.proto\"\xa5\x01\n\nFileHeader\x12\x12\n\nsourcePath\x18\x01 \x01(\t\x12\x17\n\x0f\x64\x65stinationPath\x18\x02 \x01(\t\x12\x0c\n\x04size\x18\x03 \x01(\x04\x12+\n\x08metadata\x18\x04 \x03(\x0b\x32\x19.FileHeader.MetadataEntry\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"I\n\x0fUplinkFileChunk\x12\x1d\n\x06header\x18\x01 \x01(\x0b\x32\x0b.FileHeaderH\x00\x12\x0e\n\x04\x64\x61ta\x18\x02 \x01(\x0cH\x00\x42\x07\n\x05value\"\x82\x01\n\x10\x44ownlinkFileData\x12\x0e\n\x06offset\x18\x01 \x01(\x04\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\x12%\n\x02md\x18\x03 \x03(\x0b\x32\x19.DownlinkFileData.MdEntry\x1a)\n\x07MdEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"1\n\x14\x44ownlinkFileMetadata\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\"\x18\n\x16\x44ownlinkFileValidation\"\xb8\x01\n\x11\x44ownlinkFileChunk\x12\x1d\n\x06header\x18\x01 \x01(\x0b\x32\x0b.FileHeaderH\x00\x12!\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\x11.DownlinkFileDataH\x00\x12)\n\x08metadata\x18\x03 \x01(\x0b\x32\x15.DownlinkFileMetadataH\x00\x12-\n\nvalidation\x18\x04 \x01(\x0b\x32\x17.DownlinkFileValidationH\x00\x42\x07\n\x05valueB\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nfile.proto\"\xa7\x01\n\nFileHeader\x12\x13\n\x0bsource_path\x18\x01 \x01(\t\x12\x18\n\x10\x64\x65stination_path\x18\x02 \x01(\t\x12\x0c\n\x04size\x18\x03 \x01(\x04\x12+\n\x08metadata\x18\x04 \x03(\x0b\x32\x19.FileHeader.MetadataEntry\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"I\n\x0fUplinkFileChunk\x12\x1d\n\x06header\x18\x01 \x01(\x0b\x32\x0b.FileHeaderH\x00\x12\x0e\n\x04\x64\x61ta\x18\x02 \x01(\x0cH\x00\x42\x07\n\x05value\"\x82\x01\n\x10\x44ownlinkFileData\x12\x0e\n\x06offset\x18\x01 \x01(\x04\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\x12%\n\x02md\x18\x03 \x03(\x0b\x32\x19.DownlinkFileData.MdEntry\x1a)\n\x07MdEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"1\n\x14\x44ownlinkFileMetadata\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\"\x18\n\x16\x44ownlinkFileValidation\"\xb8\x01\n\x11\x44ownlinkFileChunk\x12\x1d\n\x06header\x18\x01 \x01(\x0b\x32\x0b.FileHeaderH\x00\x12!\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\x11.DownlinkFileDataH\x00\x12)\n\x08metadata\x18\x03 \x01(\x0b\x32\x15.DownlinkFileMetadataH\x00\x12-\n\nvalidation\x18\x04 \x01(\x0b\x32\x17.DownlinkFileValidationH\x00\x42\x07\n\x05valueB\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -37,19 +37,19 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_DOWNLINKFILEDATA_MDENTRY']._loaded_options = None
   _globals['_DOWNLINKFILEDATA_MDENTRY']._serialized_options = b'8\001'
   _globals['_FILEHEADER']._serialized_start=15
-  _globals['_FILEHEADER']._serialized_end=180
-  _globals['_FILEHEADER_METADATAENTRY']._serialized_start=133
-  _globals['_FILEHEADER_METADATAENTRY']._serialized_end=180
-  _globals['_UPLINKFILECHUNK']._serialized_start=182
-  _globals['_UPLINKFILECHUNK']._serialized_end=255
-  _globals['_DOWNLINKFILEDATA']._serialized_start=258
-  _globals['_DOWNLINKFILEDATA']._serialized_end=388
-  _globals['_DOWNLINKFILEDATA_MDENTRY']._serialized_start=347
-  _globals['_DOWNLINKFILEDATA_MDENTRY']._serialized_end=388
-  _globals['_DOWNLINKFILEMETADATA']._serialized_start=390
-  _globals['_DOWNLINKFILEMETADATA']._serialized_end=439
-  _globals['_DOWNLINKFILEVALIDATION']._serialized_start=441
-  _globals['_DOWNLINKFILEVALIDATION']._serialized_end=465
-  _globals['_DOWNLINKFILECHUNK']._serialized_start=468
-  _globals['_DOWNLINKFILECHUNK']._serialized_end=652
+  _globals['_FILEHEADER']._serialized_end=182
+  _globals['_FILEHEADER_METADATAENTRY']._serialized_start=135
+  _globals['_FILEHEADER_METADATAENTRY']._serialized_end=182
+  _globals['_UPLINKFILECHUNK']._serialized_start=184
+  _globals['_UPLINKFILECHUNK']._serialized_end=257
+  _globals['_DOWNLINKFILEDATA']._serialized_start=260
+  _globals['_DOWNLINKFILEDATA']._serialized_end=390
+  _globals['_DOWNLINKFILEDATA_MDENTRY']._serialized_start=349
+  _globals['_DOWNLINKFILEDATA_MDENTRY']._serialized_end=390
+  _globals['_DOWNLINKFILEMETADATA']._serialized_start=392
+  _globals['_DOWNLINKFILEMETADATA']._serialized_end=441
+  _globals['_DOWNLINKFILEVALIDATION']._serialized_start=443
+  _globals['_DOWNLINKFILEVALIDATION']._serialized_end=467
+  _globals['_DOWNLINKFILECHUNK']._serialized_start=470
+  _globals['_DOWNLINKFILECHUNK']._serialized_end=654
 # @@protoc_insertion_point(module_scope)

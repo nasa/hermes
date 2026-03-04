@@ -35,6 +35,8 @@ const (
 	FswCapability_PARSE_SEQUENCE FswCapability = 3
 	// Connection supports file uplink to an on-board filesystem.
 	FswCapability_FILE FswCapability = 4
+	// Connection supports 'requests' which provide a generic catch-all of misc functionality
+	FswCapability_REQUEST FswCapability = 5
 )
 
 // Enum value maps for FswCapability.
@@ -45,6 +47,7 @@ var (
 		2: "SEQUENCE",
 		3: "PARSE_SEQUENCE",
 		4: "FILE",
+		5: "REQUEST",
 	}
 	FswCapability_value = map[string]int32{
 		"COMMAND":        0,
@@ -52,6 +55,7 @@ var (
 		"SEQUENCE":       2,
 		"PARSE_SEQUENCE": 3,
 		"FILE":           4,
+		"REQUEST":        5,
 	}
 )
 
@@ -91,7 +95,7 @@ type Fsw struct {
 	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
 	// Profile that this connection belongs to
 	// Empty if this is not from a managed profile
-	ProfileId string `protobuf:"bytes,3,opt,name=profileId,proto3" json:"profileId,omitempty"`
+	ProfileId string `protobuf:"bytes,3,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	// Telemetry from these FSW IDs should be treated as though they
 	// also came from this FSW. Useful for when you need a custom language
 	// context that wraps multiple FSWs
@@ -173,7 +177,7 @@ type CommandOptions struct {
 	// *
 	// Don't wait for the command to reply before resolving the command promise
 	// This promise will resolve once the command is sent to the FSW.
-	NoWait        bool `protobuf:"varint,1,opt,name=noWait,proto3" json:"noWait,omitempty"`
+	NoWait        bool `protobuf:"varint,1,opt,name=no_wait,json=noWait,proto3" json:"no_wait,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -359,7 +363,7 @@ type CommandSequence struct {
 	// Cell block language to execute this command sequence with
 	// FSWs may support more than one language or controlling different behaviors
 	// of the connection or commanding the FSW directly.
-	LanguageName string `protobuf:"bytes,2,opt,name=languageName,proto3" json:"languageName,omitempty"`
+	LanguageName string `protobuf:"bytes,2,opt,name=language_name,json=languageName,proto3" json:"language_name,omitempty"`
 	// Additional metadata to attach to sequence
 	// This has flight-software specific meaning
 	Metadata      map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
@@ -424,11 +428,11 @@ type RawCommandSequence struct {
 	// Cell block language to execute this command sequence with
 	// FSWs may support more than one language or controlling different behaviors
 	// of the connection or commanding the FSW directly.
-	LanguageName string `protobuf:"bytes,2,opt,name=languageName,proto3" json:"languageName,omitempty"`
+	LanguageName string `protobuf:"bytes,2,opt,name=language_name,json=languageName,proto3" json:"language_name,omitempty"`
 	// Additional metadata to attach to sequence
 	// This has flight-software specific meaning
 	Metadata          map[string]string `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	LineCommentPrefix string            `protobuf:"bytes,4,opt,name=lineCommentPrefix,proto3" json:"lineCommentPrefix,omitempty"`
+	LineCommentPrefix string            `protobuf:"bytes,4,opt,name=line_comment_prefix,json=lineCommentPrefix,proto3" json:"line_comment_prefix,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -491,20 +495,122 @@ func (x *RawCommandSequence) GetLineCommentPrefix() string {
 	return ""
 }
 
+// *
+// FSW Requests are non-dictionary defined items. These are connection
+// specific commands meant to be exposed by custom UI in the frontend.
+type RequestValue struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Request type identfier
+	Kind string `protobuf:"bytes,1,opt,name=kind,proto3" json:"kind,omitempty"`
+	// Misc request data (JSON recommended)
+	Data          []byte `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RequestValue) Reset() {
+	*x = RequestValue{}
+	mi := &file_fsw_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RequestValue) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequestValue) ProtoMessage() {}
+
+func (x *RequestValue) ProtoReflect() protoreflect.Message {
+	mi := &file_fsw_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequestValue.ProtoReflect.Descriptor instead.
+func (*RequestValue) Descriptor() ([]byte, []int) {
+	return file_fsw_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *RequestValue) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *RequestValue) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type RequestReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          []byte                 `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RequestReply) Reset() {
+	*x = RequestReply{}
+	mi := &file_fsw_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RequestReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequestReply) ProtoMessage() {}
+
+func (x *RequestReply) ProtoReflect() protoreflect.Message {
+	mi := &file_fsw_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequestReply.ProtoReflect.Descriptor instead.
+func (*RequestReply) Descriptor() ([]byte, []int) {
+	return file_fsw_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *RequestReply) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
 var File_fsw_proto protoreflect.FileDescriptor
 
 const file_fsw_proto_rawDesc = "" +
 	"\n" +
 	"\tfsw.proto\x1a\n" +
-	"type.proto\x1a\x10dictionary.proto\"\xa3\x01\n" +
+	"type.proto\x1a\x10dictionary.proto\"\xa4\x01\n" +
 	"\x03Fsw\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04type\x18\x02 \x01(\tR\x04type\x12\x1c\n" +
-	"\tprofileId\x18\x03 \x01(\tR\tprofileId\x12\x1a\n" +
+	"\x04type\x18\x02 \x01(\tR\x04type\x12\x1d\n" +
+	"\n" +
+	"profile_id\x18\x03 \x01(\tR\tprofileId\x12\x1a\n" +
 	"\bforwards\x18\x04 \x03(\tR\bforwards\x122\n" +
-	"\fcapabilities\x18\a \x03(\x0e2\x0e.FswCapabilityR\fcapabilitiesJ\x04\b\x05\x10\x06J\x04\b\x06\x10\a\"(\n" +
-	"\x0eCommandOptions\x12\x16\n" +
-	"\x06noWait\x18\x01 \x01(\bR\x06noWait\"\xea\x01\n" +
+	"\fcapabilities\x18\a \x03(\x0e2\x0e.FswCapabilityR\fcapabilitiesJ\x04\b\x05\x10\x06J\x04\b\x06\x10\a\")\n" +
+	"\x0eCommandOptions\x12\x17\n" +
+	"\ano_wait\x18\x01 \x01(\bR\x06noWait\"\xea\x01\n" +
 	"\fCommandValue\x12\x1d\n" +
 	"\x03def\x18\x01 \x01(\v2\v.CommandDefR\x03def\x12\x1a\n" +
 	"\x04args\x18\x02 \x03(\v2\x06.ValueR\x04args\x12)\n" +
@@ -519,28 +625,34 @@ const file_fsw_proto_rawDesc = "" +
 	"\bmetadata\x18\x04 \x03(\v2\x1e.RawCommandValue.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xd9\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xda\x01\n" +
 	"\x0fCommandSequence\x12)\n" +
-	"\bcommands\x18\x01 \x03(\v2\r.CommandValueR\bcommands\x12\"\n" +
-	"\flanguageName\x18\x02 \x01(\tR\flanguageName\x12:\n" +
+	"\bcommands\x18\x01 \x03(\v2\r.CommandValueR\bcommands\x12#\n" +
+	"\rlanguage_name\x18\x02 \x01(\tR\flanguageName\x12:\n" +
 	"\bmetadata\x18\x03 \x03(\v2\x1e.CommandSequence.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xfe\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x81\x02\n" +
 	"\x12RawCommandSequence\x12\x1a\n" +
-	"\bsequence\x18\x01 \x01(\tR\bsequence\x12\"\n" +
-	"\flanguageName\x18\x02 \x01(\tR\flanguageName\x12=\n" +
-	"\bmetadata\x18\x03 \x03(\v2!.RawCommandSequence.MetadataEntryR\bmetadata\x12,\n" +
-	"\x11lineCommentPrefix\x18\x04 \x01(\tR\x11lineCommentPrefix\x1a;\n" +
+	"\bsequence\x18\x01 \x01(\tR\bsequence\x12#\n" +
+	"\rlanguage_name\x18\x02 \x01(\tR\flanguageName\x12=\n" +
+	"\bmetadata\x18\x03 \x03(\v2!.RawCommandSequence.MetadataEntryR\bmetadata\x12.\n" +
+	"\x13line_comment_prefix\x18\x04 \x01(\tR\x11lineCommentPrefix\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*[\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"6\n" +
+	"\fRequestValue\x12\x12\n" +
+	"\x04kind\x18\x01 \x01(\tR\x04kind\x12\x12\n" +
+	"\x04data\x18\x02 \x01(\fR\x04data\"\"\n" +
+	"\fRequestReply\x12\x12\n" +
+	"\x04data\x18\x01 \x01(\fR\x04data*h\n" +
 	"\rFswCapability\x12\v\n" +
 	"\aCOMMAND\x10\x00\x12\x11\n" +
 	"\rPARSE_COMMAND\x10\x01\x12\f\n" +
 	"\bSEQUENCE\x10\x02\x12\x12\n" +
 	"\x0ePARSE_SEQUENCE\x10\x03\x12\b\n" +
-	"\x04FILE\x10\x04B\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3"
+	"\x04FILE\x10\x04\x12\v\n" +
+	"\aREQUEST\x10\x05B\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3"
 
 var (
 	file_fsw_proto_rawDescOnce sync.Once
@@ -555,7 +667,7 @@ func file_fsw_proto_rawDescGZIP() []byte {
 }
 
 var file_fsw_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_fsw_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_fsw_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_fsw_proto_goTypes = []any{
 	(FswCapability)(0),         // 0: FswCapability
 	(*Fsw)(nil),                // 1: Fsw
@@ -564,24 +676,26 @@ var file_fsw_proto_goTypes = []any{
 	(*RawCommandValue)(nil),    // 4: RawCommandValue
 	(*CommandSequence)(nil),    // 5: CommandSequence
 	(*RawCommandSequence)(nil), // 6: RawCommandSequence
-	nil,                        // 7: CommandValue.MetadataEntry
-	nil,                        // 8: RawCommandValue.MetadataEntry
-	nil,                        // 9: CommandSequence.MetadataEntry
-	nil,                        // 10: RawCommandSequence.MetadataEntry
-	(*CommandDef)(nil),         // 11: CommandDef
-	(*Value)(nil),              // 12: Value
+	(*RequestValue)(nil),       // 7: RequestValue
+	(*RequestReply)(nil),       // 8: RequestReply
+	nil,                        // 9: CommandValue.MetadataEntry
+	nil,                        // 10: RawCommandValue.MetadataEntry
+	nil,                        // 11: CommandSequence.MetadataEntry
+	nil,                        // 12: RawCommandSequence.MetadataEntry
+	(*CommandDef)(nil),         // 13: CommandDef
+	(*Value)(nil),              // 14: Value
 }
 var file_fsw_proto_depIdxs = []int32{
 	0,  // 0: Fsw.capabilities:type_name -> FswCapability
-	11, // 1: CommandValue.def:type_name -> CommandDef
-	12, // 2: CommandValue.args:type_name -> Value
+	13, // 1: CommandValue.def:type_name -> CommandDef
+	14, // 2: CommandValue.args:type_name -> Value
 	2,  // 3: CommandValue.options:type_name -> CommandOptions
-	7,  // 4: CommandValue.metadata:type_name -> CommandValue.MetadataEntry
+	9,  // 4: CommandValue.metadata:type_name -> CommandValue.MetadataEntry
 	2,  // 5: RawCommandValue.options:type_name -> CommandOptions
-	8,  // 6: RawCommandValue.metadata:type_name -> RawCommandValue.MetadataEntry
+	10, // 6: RawCommandValue.metadata:type_name -> RawCommandValue.MetadataEntry
 	3,  // 7: CommandSequence.commands:type_name -> CommandValue
-	9,  // 8: CommandSequence.metadata:type_name -> CommandSequence.MetadataEntry
-	10, // 9: RawCommandSequence.metadata:type_name -> RawCommandSequence.MetadataEntry
+	11, // 8: CommandSequence.metadata:type_name -> CommandSequence.MetadataEntry
+	12, // 9: RawCommandSequence.metadata:type_name -> RawCommandSequence.MetadataEntry
 	10, // [10:10] is the sub-list for method output_type
 	10, // [10:10] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name
@@ -602,7 +716,7 @@ func file_fsw_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fsw_proto_rawDesc), len(file_fsw_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

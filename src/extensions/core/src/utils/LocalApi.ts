@@ -94,6 +94,13 @@ export class LocalApi implements Hermes.Api {
         return [];
     }
 
+    async getFileTransferState(): Promise<Proto.IFileTransferState> {
+        return {};
+    }
+
+    async clearDownlinkTransferState(): Promise<void> { }
+    async clearUplinkTransferState(): Promise<void> { }
+
     async getDictionary(id: string): Promise<Proto.IDictionary> {
         const out = this.dictionaryCache.get(id);
         if (!out) {
@@ -169,6 +176,14 @@ export class LocalApi implements Hermes.Api {
     }
 
     onDownlink(): vscode.Disposable {
+        return nullDisposable;
+    }
+
+    onUplink(): vscode.Disposable {
+        return nullDisposable;
+    }
+
+    onFileTransfer() {
         return nullDisposable;
     }
 

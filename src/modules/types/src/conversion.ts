@@ -921,3 +921,26 @@ export function eventToDisplayEvent(evr: (Event & { source?: string }) | Display
         return evr;
     }
 }
+
+export function fileTransferState(value?: Proto.IFileTransferState) {
+    return ({
+        downlinkCompleted: value?.downlinkCompleted?.map((ft) => ({
+            ...ft,
+            size: longOrNumberToNumber(ft.size ?? 0),
+        })),
+        uplinkCompleted: value?.uplinkCompleted?.map((ft) => ({
+            ...ft,
+            size: longOrNumberToNumber(ft.size ?? 0),
+        })),
+        downlinkInProgress: value?.downlinkInProgress?.map((ft) => ({
+            ...ft,
+            progress: longOrNumberToNumber(ft.progress ?? 0),
+            size: longOrNumberToNumber(ft.size ?? 0),
+        })),
+        uplinkInProgress: value?.uplinkInProgress?.map((ft) => ({
+            ...ft,
+            progress: longOrNumberToNumber(ft.progress ?? 0),
+            size: longOrNumberToNumber(ft.size ?? 0),
+        }))
+    });
+}

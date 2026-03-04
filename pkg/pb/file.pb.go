@@ -24,9 +24,9 @@ const (
 type FileHeader struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Source path of file (usually trancated for uplink bandwidth reasons)
-	SourcePath string `protobuf:"bytes,1,opt,name=sourcePath,proto3" json:"sourcePath,omitempty"`
+	SourcePath string `protobuf:"bytes,1,opt,name=source_path,json=sourcePath,proto3" json:"source_path,omitempty"`
 	// Destination to tell FSW to write file to
-	DestinationPath string `protobuf:"bytes,2,opt,name=destinationPath,proto3" json:"destinationPath,omitempty"`
+	DestinationPath string `protobuf:"bytes,2,opt,name=destination_path,json=destinationPath,proto3" json:"destination_path,omitempty"`
 	// File total size
 	Size uint64 `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`
 	// Additional fields associated with this file uplink
@@ -455,13 +455,12 @@ var File_file_proto protoreflect.FileDescriptor
 const file_file_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"file.proto\"\xde\x01\n" +
+	"file.proto\"\xe0\x01\n" +
 	"\n" +
-	"FileHeader\x12\x1e\n" +
-	"\n" +
-	"sourcePath\x18\x01 \x01(\tR\n" +
-	"sourcePath\x12(\n" +
-	"\x0fdestinationPath\x18\x02 \x01(\tR\x0fdestinationPath\x12\x12\n" +
+	"FileHeader\x12\x1f\n" +
+	"\vsource_path\x18\x01 \x01(\tR\n" +
+	"sourcePath\x12)\n" +
+	"\x10destination_path\x18\x02 \x01(\tR\x0fdestinationPath\x12\x12\n" +
 	"\x04size\x18\x03 \x01(\x04R\x04size\x125\n" +
 	"\bmetadata\x18\x04 \x03(\v2\x19.FileHeader.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +

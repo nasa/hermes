@@ -1,0 +1,14 @@
+name: Build F Prime Nightly Cache
+
+on:
+  schedule:
+    # Run at 2 AM UTC every day
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build-fprime-cache:
+    uses: ./.github/workflows/fprime-build-template.yml
+    with:
+      tag: nightly
+      fprime-branch: devel

@@ -1,8 +1,8 @@
 syntax = "proto3";
 option go_package = "github.com/nasa/hermes/pkg/pb";
 
-import "google/protobuf/timestamp.proto";
 import "type.proto";
+import "google/protobuf/timestamp.proto";
 import "dictionary.proto";
 import "time.proto";
 
@@ -78,15 +78,15 @@ message Telemetry {
 }
 
 message SourcedEvent {
-  Event event = 1;
-  string source = 2;
+  Event         event   = 1;
+  string        source  = 2;
   SourceContext context = 3;
 }
 
 message SourcedTelemetry {
-  Telemetry telemetry = 1;
-  string source = 2;
-  SourceContext context = 3;
+  Telemetry     telemetry = 1;
+  string        source    = 2;
+  SourceContext context   = 3;
 }
 
 enum FileDownlinkCompletionStatus {
@@ -115,10 +115,10 @@ message FileDownlink {
   string uid = 1;
 
   /* Time when downlink started (ground time) */
-  google.protobuf.Timestamp timeStart = 2;
+  google.protobuf.Timestamp time_start = 2;
 
   /* Time when downlink ended */
-  google.protobuf.Timestamp timeEnd = 3;
+  google.protobuf.Timestamp time_end = 3;
 
   /* Status of the file downlink */
   FileDownlinkCompletionStatus status = 4;
@@ -127,23 +127,85 @@ message FileDownlink {
   string source = 5;
 
   /* Source relative path where this was downlinked from */
-  string sourcePath = 6;
+  string source_path = 6;
 
   /* (optional) destination path requested during downlink */
-  string destinationPath = 7;
+  string destination_path = 7;
 
   /* Absolute path on the host machine where the raw file is stored */
-  string filePath = 8;
+  string file_path = 8;
 
   /* Set of chunks that are missing if this is a partial downlink */
-  repeated FileDownlinkChunk missingChunks = 9;
+  repeated FileDownlinkChunk missing_chunks = 9;
 
   /* It's possible sections of the file overlap */
-  repeated FileDownlinkChunk duplicateChunks = 10;
+  repeated FileDownlinkChunk duplicate_chunks = 10;
 
    /* Size in bytes */
-   uint64 size = 11;
+  uint64 size = 11;
 
    /* Additional metadata in the form tag -> json */
-   map<string, string> metadata = 12;
+  map<string, string> metadata = 12;
+}
+
+message FileUplink {
+  string uid = 1;
+
+  /* Time when uplink started (ground time) */
+  google.protobuf.Timestamp time_start = 2;
+
+  /* Time when uplink ended */
+  google.protobuf.Timestamp time_end = 3;
+
+  /* FSW target ID */
+  string fsw_id = 5;
+
+  /* Path to the file being uplinked from the ground */
+  string source_path = 6;
+
+  /* Destination path to uplink file to on the on-board filesystem */
+  string destination_path = 7;
+
+  /* If this is non-empty, includes the error message during uplink */
+  string error = 8;
+
+  /* Size in bytes */
+  uint64 size = 9;
+
+  /* Additional metadata in the form tag -> json */
+  map<string, string> metadata = 10;
+}
+
+message FileTransfer {
+  /* Id of the downlink or uplink */
+  string uid = 1;
+
+  /* FSW source/target ID */
+  string fsw_id = 2;
+
+  /* Source relative path where this was downlinked/uplinked from */
+  string source_path = 3;
+
+  /* Target absolute path where this was downlinked/uplinked to */
+  string target_path = 4;
+
+  /* Size in bytes */
+  uint64 size = 5;
+
+  /* Transfer progress in bytes. Should be less than 'size' */
+  uint64 progress = 6;
+}
+
+message FileTransferState {
+  /* List of completed file downlinks with downlink metadata */
+  repeated FileDownlink downlink_completed = 1;
+
+  /* List of completed file uplinks */
+  repeated FileUplink uplink_completed = 2;
+
+  /* Mid-transfer file downlinks */
+  repeated FileTransfer downlink_in_progress = 3;
+
+  /* Mid-transfer file uplinks */
+  repeated FileTransfer uplink_in_progress = 4;
 }

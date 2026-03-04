@@ -38,6 +38,7 @@ class ConnectionBase:
             "sequence": FswCapability.SEQUENCE,
             "parse_sequence": FswCapability.PARSE_SEQUENCE,
             "file_uplink": FswCapability.FILE,
+            "request": FswCapability.REQUEST,
         }
 
         for name, capability in check.items():
@@ -132,6 +133,18 @@ class Connection(ConnectionBase):
         """
         raise NotImplementedError()
 
+    async def request(self, kind: str, data: bytes) -> Optional[bytes]:
+        """
+        Handle a custom request identified by a 'kind' string.
+        These requests exist outside of the dictionary and the format
+        must be agreed upon between the frontend and the backend (this).
+
+        :param kind: Type identifier for the request
+        :type data: Optional data along with the kind
+        :return: Request results encoded to binary data
+        """
+        raise NotImplementedError()
+
 
 T = TypeVar("T")
 
@@ -212,20 +225,27 @@ class Client:
                 return b"true"
             else:
                 return b"false"
-        elif msg.HasField("parseCmd"):
-            p = await self._run_request(msg.id, connection.parse_command(msg.parseCmd))
+        elif msg.HasField("parse_cmd"):
+            p = await self._run_request(msg.id, connection.parse_command(msg.parse_cmd))
             return p.SerializeToString()
+        elif msg.HasField("request"):
+            reply = await self._run_request(msg.id, connection.request(msg.request.kind, msg.request.data))
+            if reply is None:
+                # None semantics for `connection.request` just means no data is returned
+                # We cannot return 'None' because the request arbitar treats this as 'no need to reply'
+                return b""
+            return reply
         elif msg.HasField("seq"):
             reply = await self._run_request(msg.id, connection.sequence(msg.seq))
             replyMsg = (
                 SequenceReply(success=True)
                 if reply is None
-                else SequenceReply(success=False, commandIndex=reply)
+                else SequenceReply(success=False, command_index=reply)
             )
 
             return replyMsg.SerializeToString()
-        elif msg.HasField("parseSeq"):
-            p = await self._run_request(msg.id, connection.parse_sequence(msg.parseSeq))
+        elif msg.HasField("parse_seq"):
+            p = await self._run_request(msg.id, connection.parse_sequence(msg.parse_seq))
             return p.SerializeToString()
         elif msg.HasField("file"):
             if msg.file.HasField("header"):
