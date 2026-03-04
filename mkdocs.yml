@@ -47,24 +47,3 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Getting Started:
-    - Installation: getting-started/installation.md
-    - Quick Start: getting-started/quick-start.md
-    - Configuration: getting-started/configuration.md
-  - User Guide:
-    - UI Overview: user-guide/ui-overview.md
-    - Commanding: user-guide/commanding.md
-    - Telemetry Display: user-guide/telemetry.md
-    - File Transfers: user-guide/file-transfers.md
-  - Architecture:
-    - Overview: architecture/overview.md
-    - Frontend: architecture/frontend.md
-    - Backend: architecture/backend.md
-    - Communication: architecture/communication.md
-  - Development:
-    - Contributing: development/contributing.md
-    - Building: development/building.md
-    - Testing: development/testing.md
-  - API Reference:
-    - gRPC API: api/grpc.md
-    - Protocol Buffers: api/protobuf.md
