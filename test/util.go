@@ -41,6 +41,7 @@ func NewTestApi(t *testing.T, client hermesGrpc.ApiClient) *TestApi {
 			} else {
 				api.mux.Lock()
 				api.events = append(api.events, msg)
+				t.Logf("event [source %v] [%v] [%v] %s.%s %s", msg.Source, msg.Context, msg.Event.Ref.Severity, msg.Event.Ref.Component, msg.Event.Ref.Name, msg.Event.Message)
 				api.mux.Unlock()
 			}
 		}
