@@ -50,8 +50,3 @@ jobs:
           path: |
             coverage.out
             test-results.json
-
-      - name: Dump logs on failure
-        if: failure()
-        run: |
-          docker compose -f test/docker-compose.yml logs
