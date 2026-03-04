@@ -70,6 +70,6 @@ test-integration-teardown:
 # Run full integration test suite (setup + test + teardown)
 test-integration: test-integration-setup
 	@echo "Running integration tests..."
-	@$(MAKE) test-integration-run || (@$(MAKE) test-integration-logs && $(MAKE) test-integration-teardown && exit 1)
+	@$(MAKE) test-integration-run || ($(MAKE) test-integration-logs && $(MAKE) test-integration-teardown && exit 1)
 	@$(MAKE) test-integration-teardown
 	@echo "Integration tests completed successfully"
