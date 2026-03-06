@@ -56,3 +56,6 @@ site/
 # Sqlite database files
 *.db
 *.db-*
+
+# AI
+CLAUDE.md

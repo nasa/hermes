@@ -6,11 +6,11 @@ on:
 
 jobs:
   nightly:
-    uses: ./.github/workflows/integration-test-template.yml
+    uses: ./.github/workflows/template-test-integration.yml
     with:
       fprime-tag: nightly
   v4_1_1:
-    uses: ./.github/workflows/integration-test-template.yml
+    uses: ./.github/workflows/template-test-integration.yml
     with:
       fprime-tag: v4.1.1
   v4_0_0:
@@ -18,6 +18,6 @@ jobs:
     # v4.1+ is supported on CCSDS protocol
     # TODO(tumbar) Create a v4 build with fprime protocol
     if: false
-    uses: ./.github/workflows/integration-test-template.yml
+    uses: ./.github/workflows/template-test-integration.yml
     with:
       fprime-tag: v4.0.0
