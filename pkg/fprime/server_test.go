@@ -7,12 +7,12 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/nasa/hermes/mocks"
 	"github.com/nasa/hermes/pkg/host"
 	"github.com/nasa/hermes/pkg/log"
 	"github.com/nasa/hermes/pkg/pb"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 var testDictionary = &pb.Dictionary{
@@ -120,7 +120,8 @@ func TestServerProfile(t *testing.T) {
 		Settings: fmt.Sprintf(`{
 	"name": "test-fsw",
 	"address": "localhost:65346",
-	"dictionary": "%s"
+	"dictionary": "%s",
+	"protocol": "fprime"
 }`, dictId),
 	})
 
