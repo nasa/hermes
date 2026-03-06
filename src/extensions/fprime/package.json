@@ -4,6 +4,7 @@
     "displayName": "Hermes FPrime",
     "description": "Hermes FPrime C++ and Testbed Support",
     "version": "4.0.0",
+    "icon": "icons/hermes-fprime.png",
     "keywords": [
         "visualization",
         "notebookRenderer"
