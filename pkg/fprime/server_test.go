@@ -75,9 +75,7 @@ func TestServerConnDisc(t *testing.T) {
 
 	// Connect to the server with a client
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 
 		clientConn, err := net.Dial("tcp", "localhost:65345")
 
@@ -94,7 +92,7 @@ func TestServerConnDisc(t *testing.T) {
 
 		err = clientConn.Close()
 		assert.NoError(t, err)
-	}()
+	})
 
 	wg.Wait()
 	cancel()
@@ -138,16 +136,14 @@ func TestServerProfile(t *testing.T) {
 
 	// Connect to the server with a client
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 
 		clientConn, err := net.Dial("tcp", "localhost:65346")
 		if assert.NoError(t, err) {
 			err = clientConn.Close()
 			assert.NoError(t, err)
 		}
-	}()
+	})
 
 	wg.Wait()
 
