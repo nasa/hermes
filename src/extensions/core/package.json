@@ -4,15 +4,11 @@
     "description": "Hermes Telemetry & Command Frontend for VSCode",
     "version": "4.0.0",
     "icon": "icons/rover-color-512.png",
-    "files": [
-        "extension.vsix",
-        "icons/rover-color-512.png"
-    ],
     "repository": {
         "url": "https://github.com/nasa/hermes.git",
         "type": "git"
     },
-    "license": "SEE LICENSE IN LICENSE",
+    "license": "Apache-2.0",
     "author": {
         "name": "Andrei Tumbar",
         "email": "andrei.tumbar@jpl.nasa.gov"

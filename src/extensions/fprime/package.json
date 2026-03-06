@@ -13,9 +13,6 @@
         "type": "git"
     },
     "isHermesPlugin": true,
-    "files": [
-        "extension.vsix"
-    ],
     "license": "Apache-2.0",
     "author": {
         "name": "Andrei Tumbar",
