@@ -118,6 +118,7 @@ jobs:
             hermes-${{ steps.version.outputs.version }}.vsix
             hermes-fprime-${{ steps.version.outputs.version }}.vsix
           prerelease: ${{ steps.version.outputs.is_prerelease }}
+          # Note: generate_release_notes is handled by build-go-binaries.yml to avoid conflicts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
