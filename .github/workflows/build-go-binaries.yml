@@ -57,6 +57,12 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
       - name: Get version
         id: version
         run: |
@@ -72,6 +78,9 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
           echo "Building version: $VERSION (pre-release: $IS_PRERELEASE)"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
       - name: Build binaries
         env:
