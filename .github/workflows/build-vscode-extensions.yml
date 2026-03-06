@@ -39,9 +39,19 @@ jobs:
             VERSION="dev-$(git rev-parse --short HEAD)"
             SEMVER="0.0.0-dev.$(git rev-parse --short HEAD)"
           fi
+
+          # Detect pre-release versions (contain hyphen: -alpha, -beta, -rc, etc.)
+          if [[ "$SEMVER" == *-* ]]; then
+            IS_PRERELEASE="true"
+            echo "Detected pre-release version"
+          else
+            IS_PRERELEASE="false"
+          fi
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "semver=$SEMVER" >> $GITHUB_OUTPUT
-          echo "Building version: $VERSION (semver: $SEMVER)"
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION (semver: $SEMVER, pre-release: $IS_PRERELEASE)"
 
       - name: Update package.json versions
         run: |
@@ -107,6 +117,7 @@ jobs:
           files: |
             hermes-${{ steps.version.outputs.version }}.vsix
             hermes-fprime-${{ steps.version.outputs.version }}.vsix
+          prerelease: ${{ steps.version.outputs.is_prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -132,9 +143,22 @@ jobs:
           VERSION="${GITHUB_REF#refs/tags/}"
           # Remove 'v' prefix if present
           SEMVER="${VERSION#v}"
+
+          # Detect pre-release versions (contain hyphen: -alpha, -beta, -rc, etc.)
+          if [[ "$SEMVER" == *-* ]]; then
+            IS_PRERELEASE="true"
+            PRERELEASE_FLAG="--pre-release"
+            echo "Detected pre-release version"
+          else
+            IS_PRERELEASE="false"
+            PRERELEASE_FLAG=""
+          fi
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "semver=$SEMVER" >> $GITHUB_OUTPUT
-          echo "Publishing version: $SEMVER"
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "prerelease_flag=$PRERELEASE_FLAG" >> $GITHUB_OUTPUT
+          echo "Publishing version: $SEMVER (pre-release: $IS_PRERELEASE)"
 
       - name: Update package.json versions
         run: |
@@ -162,13 +186,13 @@ jobs:
       - name: Publish core extension to marketplace
         run: |
           cd src/extensions/core
-          vsce publish --yarn -p ${{ secrets.VSCE_PAT }}
+          vsce publish --yarn ${{ steps.version.outputs.prerelease_flag }} -p ${{ secrets.VSCE_PAT }}
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
       - name: Publish fprime extension to marketplace
         run: |
           cd src/extensions/fprime
-          vsce publish -p ${{ secrets.VSCE_PAT }}
+          vsce publish ${{ steps.version.outputs.prerelease_flag }} -p ${{ secrets.VSCE_PAT }}
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}

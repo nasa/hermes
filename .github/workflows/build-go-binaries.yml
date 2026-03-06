@@ -44,11 +44,24 @@ jobs:
         run: |
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             VERSION="${GITHUB_REF#refs/tags/}"
+            # Remove 'v' prefix for pre-release detection
+            SEMVER="${VERSION#v}"
           else
             VERSION="dev-$(git rev-parse --short HEAD)"
+            SEMVER="0.0.0-dev.$(git rev-parse --short HEAD)"
           fi
+
+          # Detect pre-release versions (contain hyphen: -alpha, -beta, -rc, etc.)
+          if [[ "$SEMVER" == *-* ]]; then
+            IS_PRERELEASE="true"
+            echo "Detected pre-release version"
+          else
+            IS_PRERELEASE="false"
+          fi
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Building version: $VERSION"
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION (pre-release: $IS_PRERELEASE)"
 
       - name: Build binaries
         env:
@@ -81,5 +94,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: hermes-${{ steps.version.outputs.version }}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+          prerelease: ${{ steps.version.outputs.is_prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
