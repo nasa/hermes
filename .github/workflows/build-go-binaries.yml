@@ -97,9 +97,10 @@ jobs:
       - name: Create archive
         run: |
           ARCHIVE_NAME="hermes-${{ steps.version.outputs.version }}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz"
-          tar -czf "$ARCHIVE_NAME" -C out backend uplink sqlrecord protocolc
+          tar -czf "$ARCHIVE_NAME" -C out *
           echo "Created archive: $ARCHIVE_NAME"
           ls -lh "$ARCHIVE_NAME"
+          tar -tvf "$ARCHIVE_NAME"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
