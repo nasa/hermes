@@ -81,7 +81,7 @@ jobs:
           GO_FLAGS: -trimpath -ldflags="-s -w"
         run: |
           echo "Building for $GOOS/$GOARCH..."
-          make go
+          make release
           echo "Build complete"
           ls -lh out/
 
