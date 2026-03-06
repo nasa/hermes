@@ -2,6 +2,15 @@ name: F Prime Integration Tests
 
 on:
   pull_request:
+    paths:
+      - 'cmd/**'
+      - 'pkg/**'
+      - 'test/**'
+      - 'docker/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'Makefile'
+      - '.github/workflows/test-integration.yml'
   workflow_dispatch:
 
 jobs:

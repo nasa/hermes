@@ -1,9 +1,8 @@
 name: Build Go Binaries
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
   workflow_dispatch:
   pull_request:
     paths:
@@ -58,29 +57,30 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
       - name: Get version
         id: version
         run: |
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            VERSION="${GITHUB_REF#refs/tags/}"
-            # Remove 'v' prefix for pre-release detection
-            SEMVER="${VERSION#v}"
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            # Use GitHub's pre-release flag
+            IS_PRERELEASE="${{ github.event.release.prerelease }}"
           else
             VERSION="dev-$(git rev-parse --short HEAD)"
-            SEMVER="0.0.0-dev.$(git rev-parse --short HEAD)"
-          fi
-
-          # Detect pre-release versions (contain hyphen: -alpha, -beta, -rc, etc.)
-          if [[ "$SEMVER" == *-* ]]; then
-            IS_PRERELEASE="true"
-            echo "Detected pre-release version"
-          else
             IS_PRERELEASE="false"
           fi
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
           echo "Building version: $VERSION (pre-release: $IS_PRERELEASE)"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
       - name: Build binaries
         env:
@@ -90,16 +90,17 @@ jobs:
           GO_FLAGS: -trimpath -ldflags="-s -w"
         run: |
           echo "Building for $GOOS/$GOARCH..."
-          make go
+          make release
           echo "Build complete"
           ls -lh out/
 
       - name: Create archive
         run: |
           ARCHIVE_NAME="hermes-${{ steps.version.outputs.version }}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz"
-          tar -czf "$ARCHIVE_NAME" -C out backend uplink sqlrecord protocolc
+          tar -czf "$ARCHIVE_NAME" -C out .
           echo "Created archive: $ARCHIVE_NAME"
           ls -lh "$ARCHIVE_NAME"
+          tar -tvf "$ARCHIVE_NAME"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -109,11 +110,9 @@ jobs:
           retention-days: 30
 
       - name: Upload to release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'release'
         uses: softprops/action-gh-release@v1
         with:
           files: hermes-${{ steps.version.outputs.version }}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
-          prerelease: ${{ steps.version.outputs.is_prerelease }}
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
