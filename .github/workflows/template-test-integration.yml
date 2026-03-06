@@ -10,6 +10,8 @@ on:
 jobs:
   integration-test:
     runs-on: ubuntu-latest
+    env:
+      FPRIME_IMAGE: ghcr.io/${{ github.repository }}/fprime-ref:${{ inputs.fprime-tag }}
 
     steps:
       - name: Set up Docker Compose
@@ -30,17 +32,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set F Prime image to use prebuilt nightly
-        run: |
-          echo "FPRIME_IMAGE=ghcr.io/${{ github.repository }}/fprime-ref:${{ inputs.fprime-tag }}" >> $GITHUB_ENV
-
       - name: Pull prebuilt F Prime image
         run: docker pull ${{ env.FPRIME_IMAGE }}
 
       - name: Run integration tests
         run: make test-integration
-        env:
-          FPRIME_IMAGE: ${{ env.FPRIME_IMAGE }}
 
       - name: Upload test results
         if: always()
