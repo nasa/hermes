@@ -5,137 +5,11 @@ import winston from 'winston';
 import * as grpc from '@grpc/grpc-js';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
-import * as Rpc from '@gov.nasa.jpl.hermes/rpc';
 import { Settings, CoreApi } from '@gov.nasa.jpl.hermes/vscode';
 
 import { VscodeHermes } from './context';
-import { BackendStatus } from './status';
+import { VscodeApi } from './api/VscodeApi';
 import { VSCTransport } from './log';
-import { LocalApi } from './utils/LocalApi';
-import { CredentialsPrompter } from './credentials';
-
-interface ErrorAction {
-    name: string;
-    action: () => void;
-}
-
-class BackendError extends Error {
-    constructor(message: string, readonly actions?: ErrorAction[]) {
-        super(message);
-    }
-}
-
-async function initializeMiddleware(
-    status: BackendStatus,
-    context: vscode.ExtensionContext,
-    log: Hermes.Log,
-): Promise<Hermes.Api> {
-    let clientOptions: Rpc.GrpcClientOptions | undefined;
-
-    grpc.setLogger({
-        error: (message?: any, ...optionalParams: any[]) => {
-            log.error(util.format('GRPC', message, ...optionalParams));
-        },
-        info: (message?: any, ...optionalParams: any[]) => {
-            log.info(util.format('GRPC', message, ...optionalParams));
-        },
-        debug: (message?: any, ...optionalParams: any[]) => {
-            log.info(util.format(message, ...optionalParams));
-        }
-    });
-
-    if (Settings.hostType() === Settings.BackendType.LOCAL) {
-        vscode.commands.executeCommand('setContext', 'hermes.mode.isHost', true);
-        status.setClient(undefined);
-        const api = new LocalApi(context, log);
-        await api.activate();
-        return api;
-    } else {
-        try {
-            vscode.commands.executeCommand('setContext', 'hermes.mode.isHost', false);
-            return await vscode.window.withProgress({
-                location: vscode.ProgressLocation.Notification,
-                title: "Connecting to remote Hermes backend",
-                cancellable: true
-            }, async (_, token) => {
-                const credPrompter = new CredentialsPrompter();
-
-                let clientTransport: Rpc.GrpcClient | undefined;
-                let client: Rpc.Client;
-
-                while (true) {
-                    clientTransport?.close();
-                    clientOptions = {
-                        hostAddress: Settings.hostUrl(),
-                        authMethod: Settings.authenticationMethod(),
-                        skipTLSVerify: Settings.skipTLSVerify(),
-                        credentials: await credPrompter.promptCredentials()
-                    };
-
-                    clientTransport = new Rpc.GrpcClient(log, clientOptions);
-
-                    await clientTransport.connect(token);
-
-                    client = new Rpc.Client(log, clientTransport);
-                    status.setClient(client);
-
-                    try {
-                        // Execute the initial request with the service to have the server discover us as a client
-                        break;
-                    } catch (e) {
-                        const se = e as grpc.ServiceError;
-                        if (se.code === grpc.status.UNAUTHENTICATED) {
-                            switch (Settings.authenticationMethod()) {
-                                case Rpc.HostAuthenticationKind.NONE:
-                                    throw new BackendError(
-                                        'No authentication provided but server has requested authentication',
-                                        [{
-                                            name: "Edit Auth Method",
-                                            action: () => {
-                                                vscode.commands.executeCommand(
-                                                    'workbench.action.openSettings',
-                                                    Settings.names.host.authenticationMethod
-                                                );
-                                            }
-                                        }]
-                                    );
-                                case Rpc.HostAuthenticationKind.USER_PASS:
-                                case Rpc.HostAuthenticationKind.TOKEN:
-                                    vscode.window.showWarningMessage('Failed to authenticate with Hermes server');
-                                    break;
-                            }
-                        }
-                    }
-                }
-
-                vscode.window.showInformationMessage("Hermes connected to server successfully");
-                return client;
-            });
-        } catch (e) {
-            const actions = e instanceof BackendError ? e.actions ?? [] : [];
-            actions.push({
-                name: "Retry",
-                action: () => vscode.commands.executeCommand('workbench.action.reloadWindow')
-            });
-
-            vscode.window.showWarningMessage(
-                `Failed to connect to remote Hermes backend: ${e}. ` +
-                "Falling back to local backend mode",
-                ...actions.map(v => v.name)
-            ).then((choice) => {
-                // Run the action if we find a match
-                actions.find(v => v.name === choice)?.action();
-            });
-
-            vscode.commands.executeCommand('setContext', 'hermes.mode.isHost', true);
-            status.setClient(undefined);
-
-            const api = new LocalApi(context, log);
-            await api.activate();
-            return api;
-        }
-    }
-}
 
 export async function activate(context: vscode.ExtensionContext): Promise<CoreApi> {
     const vscodeLogger = new VSCTransport({
@@ -163,39 +37,118 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
         )
     });
 
-    const status = new BackendStatus();
-    const api = await initializeMiddleware(status, context, log);
-    const vscodeContext = new VscodeHermes(context.extensionPath, log, api, context);
-
-    status.onClientBecomesReady(() => {
-        vscodeContext.refresh();
-    });
-
-    vscode.workspace.onDidChangeConfiguration((e) => {
-        if (e.affectsConfiguration(Settings.names.host.type) ||
-            e.affectsConfiguration(Settings.names.host.url) ||
-            e.affectsConfiguration(Settings.names.host.authenticationMethod) ||
-            e.affectsConfiguration(Settings.names.host.skipTLSVerify)
-        ) {
-            vscode.window.showInformationMessage(
-                "Hermes Backend settings changed",
-                "Restart Window"
-            ).then((v) => {
-                if (v === "Restart Window") {
-                    vscode.commands.executeCommand('workbench.action.reloadWindow');
-                }
-            });
+    grpc.setLogger({
+        error: (message?: any, ...optionalParams: any[]) => {
+            log.error(util.format('GRPC', message, ...optionalParams));
+        },
+        info: (message?: any, ...optionalParams: any[]) => {
+            log.info(util.format('GRPC', message, ...optionalParams));
+        },
+        debug: (message?: any, ...optionalParams: any[]) => {
+            log.info(util.format(message, ...optionalParams));
         }
     });
 
+    // Create reconnectable API wrapper
+    const reconnectableApi = new VscodeApi(context, log);
+
+    const vscodeContext = new VscodeHermes(context.extensionPath, log, reconnectableApi, context);
     await vscodeContext.activate();
 
     // Make sure things clean up properly when this extension shuts down
     context.subscriptions.push(
-        api,
+        reconnectableApi,
         vscodeContext,
         vscodeLogger,
+
+        vscode.workspace.onDidChangeConfiguration(async (e) => {
+            if (e.affectsConfiguration(Settings.names.host.type) ||
+                e.affectsConfiguration(Settings.names.host.url) ||
+                e.affectsConfiguration(Settings.names.host.authenticationMethod) ||
+                e.affectsConfiguration(Settings.names.host.skipTLSVerify)
+            ) {
+                vscode.commands.executeCommand("hermes.host.reconnect");
+            }
+        }),
+        vscode.commands.registerCommand('hermes.host.changeMode', async () => {
+            const currentMode = Settings.hostType();
+            const offlineCheck = currentMode === Settings.BackendType.OFFLINE ? "$(check) " : "";
+            const localCheck = currentMode === Settings.BackendType.LOCAL ? "$(check) " : "";
+            const remoteCheck = currentMode === Settings.BackendType.REMOTE ? "$(check) " : "";
+
+            vscode.window.showQuickPick<vscode.QuickPickItem & {
+                type?: Settings.BackendType;
+                reconnect?: true;
+            }>([
+                {
+                    label: offlineCheck + "$(home) Offline",
+                    description: "Use offline backend stub",
+                    detail: "Offline backends are just for writing sequences and procedures. You can load dictionaries and create notebooks with this backend.",
+                    type: Settings.BackendType.OFFLINE,
+                },
+                {
+                    label: localCheck + "$(remote) Local",
+                    description: "Use builtin local backend",
+                    detail: "Local backends will start and manage a Hermes backend and connect to it locally.",
+                    type: Settings.BackendType.LOCAL,
+                },
+                {
+                    label: remoteCheck + "$(remote) Remote",
+                    description: "Connect to an Hermes backend",
+                    detail: "Remote backends support creating run profiles for connecting to flight-software and processing telemetry.",
+                    type: Settings.BackendType.REMOTE,
+                },
+                {
+                    label: "",
+                    kind: vscode.QuickPickItemKind.Separator,
+                },
+                {
+                    label: "$(sync) Reconnect",
+                    detail: "Try to reconnect/rerun the current backend",
+                    reconnect: true,
+                }
+            ], {
+                title: 'Hermes Backend Mode',
+            }).then((value) => {
+                if (value) {
+                    if (value.reconnect) {
+                        vscode.commands.executeCommand("hermes.host.reconnect");
+                    } else {
+                        vscode.workspace.getConfiguration().update(Settings.names.host.type, value.type);
+                    }
+                }
+            });
+        }),
+        vscode.commands.registerCommand('hermes.host.changeUrl', async () => {
+            vscode.window.showInputBox({
+                title: 'Hermes Host Address',
+                value: await vscode.workspace.getConfiguration().get(Settings.names.host.url)
+            }).then((value) => {
+                if (value) {
+                    vscode.workspace.getConfiguration().update(Settings.names.host.url, value);
+                }
+            });
+        }),
+        vscode.commands.registerCommand('hermes.host.reconnect', async () => {
+            try {
+                await reconnectableApi.update();
+                vscodeContext.refresh();
+            } catch (err) {
+                vscode.window.showErrorMessage(`Failed to update Hermes host: ${err}`);
+                reconnectableApi.invalidate(`${err}`);
+                vscodeContext.refresh();
+            }
+        }),
+        vscode.commands.registerCommand('hermes.terminal.focusBackend', () => {
+            const terminal = vscode.window.terminals.find((t) => {
+                return t.creationOptions.name === "Hermes";
+            });
+
+            terminal?.show();
+        }),
+
     );
 
+    vscode.commands.executeCommand("hermes.host.reconnect");
     return vscodeContext;
 }

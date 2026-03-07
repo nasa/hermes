@@ -99,6 +99,22 @@
                 "icon": "$(check-all)"
             },
             {
+                "command": "hermes.host.changeMode",
+                "title": "Hermes: Change Backend Mode",
+                "category": "Hermes"
+            },
+            {
+                "command": "hermes.host.changeUrl",
+                "title": "Hermes: Change Backend URL",
+                "category": "Hermes"
+            },
+            {
+                "command": "hermes.host.reconnect",
+                "title": "Hermes: Reconnect to Backend",
+                "category": "Hermes",
+                "icon": "$(refresh)"
+            },
+            {
                 "command": "hermes.connections.array.removeItem",
                 "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasRemove",
                 "title": "Delete"
@@ -245,19 +261,22 @@
                 "properties": {
                     "hermes.host.type": {
                         "description": "Determines which Hermes backend to use. Remote backends are used when connecting to a testbed or during operations. The external Hermes backend must be running separately to connect to. The local backend is for local development of sequences and procedures and supports loading dictionaries.",
-                        "default": "local",
+                        "default": "offline",
                         "type": "string",
                         "enum": [
+                            "offline",
                             "local",
                             "remote"
                         ],
                         "enumItemLabels": [
                             "Local",
-                            "Remote"
+                            "Remote",
+                            "Offline"
                         ],
                         "enumDescriptions": [
-                            "Local backends are just for writing sequences and procedures. You can load dictionaries and create notebooks with this backend.",
-                            "Remote backends support creating run profiles for connecting to flight-software and processing telemetry."
+                            "Offline backends are just for writing sequences and procedures. You can load dictionaries and create notebooks with this backend.",
+                            "Local backends support creating profiles for connecting to flight-software and processing telemetry. They start up a backend within VSCode ",
+                            "Remote backends support creating profiles for connecting to flight-software and processing telemetry. They connect to an already running backend."
                         ]
                     },
                     "hermes.host.url": {
@@ -289,6 +308,10 @@
                         "description": "Skip SSL/TLS certificate validation from the server. This is useful when the client is not set up with the proper certificates to allow connecting to internal websites",
                         "default": false,
                         "type": "boolean"
+                    },
+                    "hermes.host.binary": {
+                        "description": "Path to a Hermes backend binary to run instead of the pre-installed backend",
+                        "type": "string"
                     }
                 }
             },
@@ -404,12 +427,11 @@
         ]
     },
     "scripts": {
-        "vscode:prepublish": "yarn clean && yarn compile",
-        "prepublishOnly": "node ../../../prepublish.js",
-        "postpublish": "mv package.tmp.json package.json",
+        "vscode:prepublish": "yarn clean && yarn compile && yarn backend",
         "clean": "rm -rf ./out",
         "compile": "cd ../../../ && node build src/extensions/core",
-        "package": "vsce package --yarn"
+        "package": "vsce package --yarn",
+        "backend": "cp ../../../out/backend out/backend"
     },
     "devDependencies": {
         "@commander-js/extra-typings": "^13.1.0",
@@ -419,6 +441,7 @@
         "@tanstack/react-virtual": "^3.13.12",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
+        "@types/tmp": "^0.2.6",
         "@types/vscode-notebook-renderer": "^1.72.3",
         "@vscode-elements/react-elements": "^2.4.0",
         "@vscode/codicons": "^0.0.44",

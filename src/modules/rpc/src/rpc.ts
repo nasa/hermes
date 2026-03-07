@@ -88,8 +88,8 @@ export class Client implements Hermes.Api {
 
     onEvent: vscode.Event<Sourced<Event>>;
     onTelemetry: vscode.Event<Sourced<Telemetry>>;
-    onDownlink: vscode.Event<Proto.IFileDownlink>;
-    onUplink: vscode.Event<Proto.IFileUplink>;
+    onFileDownlink: vscode.Event<Proto.IFileDownlink>;
+    onFileUplink: vscode.Event<Proto.IFileUplink>;
     onFileTransfer: vscode.Event<Proto.IFileTransferState>;
 
     constructor(
@@ -187,22 +187,22 @@ export class Client implements Hermes.Api {
         this.onTelemetry = telemetryListener.event;
 
         const downlinkListener = new RpcSubscription(
-            "Downlink",
+            "FileDownlink",
             log,
             () => this.client.SubFileDownlink({}),
             (data) => data
         );
 
-        this.onDownlink = downlinkListener.event;
+        this.onFileDownlink = downlinkListener.event;
 
         const uplinkListener = new RpcSubscription(
-            "Uplink",
+            "FileUplink",
             log,
             () => this.client.SubFileUplink({}),
             (data) => data
         );
 
-        this.onUplink = uplinkListener.event;
+        this.onFileUplink = uplinkListener.event;
 
         const fileTransferListener = new RpcSubscription(
             "FileTransfer",

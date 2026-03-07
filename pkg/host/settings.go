@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pelletier/go-toml/v2"
 	"github.com/nasa/hermes/pkg/infra"
 	"github.com/nasa/hermes/pkg/pb"
+	"github.com/pelletier/go-toml/v2"
 )
 
 var _settings = map[string]any{}
@@ -45,18 +45,20 @@ func RegisterSettings[T any](
 }
 
 var Config = struct {
-	DownlinkRoot   string `toml:"downlink-root" comment:"Path to store files downlinked from connected sources"`
-	RootPath       string `toml:"root-path" comment:"Root path to load profile configuration and dictionaries from"`
-	BindAddress    string `toml:"bind-address" comment:"Bind gRPC service to this address"`
-	StartProfiles  bool   `toml:"start-profiles" comment:"Start all profiles on backend startup"`
-	OtelExport     *bool  `toml:"otel-export" comment:"Export logs, metrics, & traces to an OpenTelemetry gRPC Collector"`
-	EventAsOtel    bool   `toml:"event-as-otel" comment:"Export flight-software emitted events as OpenTelemetry logs records"`
-	ChannelAsOtel  bool   `toml:"channel-as-otel" comment:"Export flight-software emitted channelized telemetry (numeric only) as OpenTelemetry metrics.\nNote: This logs all datapoints using wall-clock time instead of flight-software time"`
-	DownlinkAsOtel bool   `toml:"downlink-as-otel" comment:"Export file downlink events as OpenTelemetry log records"`
-	UseErt         *bool  `toml:"use-ert" comment:"Export OpenTelemetry channels and events using Earth-Return-Time instead of FSW time"`
+	DownlinkRoot   string `json:"downlinkRoot" toml:"downlink-root" comment:"Path to store files downlinked from connected sources"`
+	RootPath       string `json:"rootPath" toml:"root-path" comment:"Root path to load profile configuration and dictionaries from"`
+	BindType       string `json:"bindType" toml:"bind-type" comment:"Bind type gRPC. Options: 'tcp', 'tcp4', 'tcp6', 'unix' or 'unixpacket'"`
+	BindAddress    string `json:"bindAddress" toml:"bind-address" comment:"Bind gRPC service to this address"`
+	StartProfiles  bool   `json:"startProfiles" toml:"start-profiles" comment:"Start all profiles on backend startup"`
+	OtelExport     *bool  `json:"otelExport" toml:"otel-export" comment:"Export logs, metrics, & traces to an OpenTelemetry gRPC Collector"`
+	EventAsOtel    bool   `json:"eventAsOtel" toml:"event-as-otel" comment:"Export flight-software emitted events as OpenTelemetry logs records"`
+	ChannelAsOtel  bool   `json:"channelAsOtel" toml:"channel-as-otel" comment:"Export flight-software emitted channelized telemetry (numeric only) as OpenTelemetry metrics.\nNote: This logs all datapoints using wall-clock time instead of flight-software time"`
+	DownlinkAsOtel bool   `json:"downlinkAsOtel" toml:"downlink-as-otel" comment:"Export file downlink events as OpenTelemetry log records"`
+	UseErt         *bool  `json:"useErt" toml:"use-ert" comment:"Export OpenTelemetry channels and events using Earth-Return-Time instead of FSW time"`
 }{
 	DownlinkRoot:   ".",
 	RootPath:       ".",
+	BindType:       "tcp",
 	BindAddress:    "localhost:6880",
 	StartProfiles:  false,
 	OtelExport:     &infra.OtelExport,

@@ -10,16 +10,15 @@ function generateShortUid(): string {
     return randomBytes(4).toString('hex'); // Generate a short UID
 }
 
-export class LocalApi implements Hermes.Api {
+export class Offline implements Hermes.Api {
     private dictionaryCache = new Map<string, Proto.IDictionary>();
 
     constructor(
         readonly context: vscode.ExtensionContext,
         readonly log: Hermes.Log,
-    ) {
-    }
+    ) { }
 
-    async activate() {
+    private async _activate() {
         if (!this.context.storageUri) {
             return;
         }
@@ -55,6 +54,16 @@ export class LocalApi implements Hermes.Api {
         } catch (err) {
             this.log.warn(`failed to load workspace dictionaries: ${err}`);
         }
+    }
+
+    static async activate(
+        context: vscode.ExtensionContext,
+        log: Hermes.Log,
+        _token?: vscode.CancellationToken
+    ): Promise<Offline> {
+        const out = new Offline(context, log);
+        await out._activate();
+        return out;
     }
 
 
@@ -175,11 +184,11 @@ export class LocalApi implements Hermes.Api {
         return nullDisposable;
     }
 
-    onDownlink(): vscode.Disposable {
+    onFileDownlink(): vscode.Disposable {
         return nullDisposable;
     }
 
-    onUplink(): vscode.Disposable {
+    onFileUplink(): vscode.Disposable {
         return nullDisposable;
     }
 
