@@ -126,7 +126,7 @@ export class VscodeApi implements Hermes.Api {
             case Settings.BackendType.REMOTE:
                 this.primaryItem.text = "$(close) Hermes: Remote (exited)";
                 this.primaryItem.tooltip = "Reconnect";
-                this.secondaryItem.text = `$(extensions-remote) REMOTE ${Settings.hostUrl()}`;
+                this.secondaryItem.text = `$(extensions-remote) ${Settings.hostUrl()}`;
                 this.secondaryItem.command = "hermes.host.changeUrl";
                 this.secondaryItem.show();
                 break;
@@ -163,7 +163,7 @@ export class VscodeApi implements Hermes.Api {
             case Settings.BackendType.REMOTE:
                 this.primaryItem.text = "$(alert) Hermes: Remote";
                 this.primaryItem.tooltip = "Reconnect";
-                this.secondaryItem.text = `$(extensions-remote) REMOTE ${Settings.hostUrl()}`;
+                this.secondaryItem.text = `$(extensions-remote) ${Settings.hostUrl()}`;
                 this.secondaryItem.command = "hermes.host.changeUrl";
                 this.secondaryItem.tooltip = "Change host URL";
                 break;
@@ -196,7 +196,7 @@ export class VscodeApi implements Hermes.Api {
             case Settings.BackendType.LOCAL:
                 this.primaryItem.text = "$(sync~spin) Hermes: Starting...";
                 this.currentApi = await Local.activate(this.context, this.log, this.cancelActivate.token);
-                this.primaryItem.text = "$(extensions-remote) Hermes: Local";
+                this.primaryItem.text = "$(terminal) Hermes: Local";
 
                 this.primaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.debuggingBackground");
                 this.secondaryItem.show();
@@ -212,7 +212,7 @@ export class VscodeApi implements Hermes.Api {
                 this.primaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.debuggingBackground");
                 this.secondaryItem.show();
                 this.secondaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.debuggingBackground");
-                this.secondaryItem.text = `REMOTE ${Settings.hostUrl()}`;
+                this.secondaryItem.text = `$(extensions-remote) ${Settings.hostUrl()}`;
                 this.secondaryItem.tooltip = "Change host URL";
                 this.secondaryItem.command = "hermes.host.changeUrl";
                 break;

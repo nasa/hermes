@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { Settings } from '@gov.nasa.jpl.hermes/vscode';
 
-export function evrMessaging(): vscode.Disposable {
+export function eventMessaging(): vscode.Disposable {
     const toDispose: vscode.Disposable[] = [];
 
     const messageChannel = vscode.notebooks.createRendererMessaging('hermes-evr-renderer');

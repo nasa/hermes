@@ -36,7 +36,7 @@ var verboseTelemetry = false
 func init() {
 	flag.StringVar(&configFile, "config", configFile, "config file to load")
 	flag.StringVar(&host.Config.RootPath, "root", host.Config.RootPath, "root path to load profile configuration and dictionaries from")
-	flag.StringVar(&host.Config.BindType, "bind-type", host.Config.BindAddress, "bind gRPC service to this address")
+	flag.StringVar(&host.Config.BindType, "bind-type", host.Config.BindType, "bind gRPC service to this address")
 	flag.StringVar(&host.Config.BindAddress, "bind", host.Config.BindAddress, "bind gRPC service to this address")
 	flag.BoolVar(&infra.OtelExport, "export-telemetry", infra.OtelExport, "Export logs, metrics, & traces to an OpenTelemetry gRPC Collector")
 	flag.BoolVarP(&verbose, "verbose", "v", verbose, "print debug log levels")

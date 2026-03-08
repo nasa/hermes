@@ -87,7 +87,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
                     type: Settings.BackendType.OFFLINE,
                 },
                 {
-                    label: localCheck + "$(remote) Local",
+                    label: localCheck + "$(terminal) Local",
                     description: "Use builtin local backend",
                     detail: "Local backends will start and manage a Hermes backend and connect to it locally.",
                     type: Settings.BackendType.LOCAL,
