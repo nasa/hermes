@@ -138,8 +138,6 @@
     },
     "scripts": {
         "vscode:prepublish": "yarn clean && yarn compile",
-        "prepublishOnly": "node ../../../prepublish.js",
-        "postpublish": "mv package.tmp.json package.json",
         "clean": "rm -rf ./out",
         "compile": "cd ../../../ && node build src/extensions/fprime",
         "package": "vsce package"

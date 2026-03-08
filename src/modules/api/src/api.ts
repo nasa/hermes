@@ -269,12 +269,12 @@ export interface Api extends vscode.Disposable {
     /**
      * Subscribe to file downlink updates
      */
-    onDownlink: vscode.Event<Proto.IFileDownlink>;
+    onFileDownlink: vscode.Event<Proto.IFileDownlink>;
 
     /**
      * Subscribe to file uplink updates
      */
-    onUplink: vscode.Event<Proto.IFileUplink>;
+    onFileUplink: vscode.Event<Proto.IFileUplink>;
 
     /**
      * Subscribe to file uplink and downlink progress

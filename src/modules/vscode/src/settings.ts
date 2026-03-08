@@ -27,7 +27,8 @@ export const names = {
         type: "hermes.host.type",
         url: "hermes.host.url",
         authenticationMethod: "hermes.host.authenticationMethod",
-        skipTLSVerify: "hermes.host.skipTLSVerify"
+        skipTLSVerify: "hermes.host.skipTLSVerify",
+        binary: "hermes.host.binary",
     }
 };
 
@@ -77,13 +78,20 @@ export function signoffName(): string {
  */
 export enum BackendType {
     /**
-     * Local only allows loading dictionaries and writing notebooks/sequences
+     * Offline only allows loading dictionaries and writing notebooks/sequences
      * You cannot connect to anything and send command/receive telemetry
+     */
+    OFFLINE = 'offline',
+
+    /**
+     * Connect to a Hermes backend that is managed by this VSCode extension to allow
+     * configuring/running profiles Telemetry can be subscribed to show up in the
+     * frontend.
      */
     LOCAL = 'local',
 
     /**
-     * Connect to an Hermes backend to allow configuring/running profiles
+     * Connect to a Hermes backend to allow configuring/running profiles
      * Telemetry can be subscribed to show up in the frontend
      */
     REMOTE = 'remote',
@@ -103,4 +111,9 @@ export function authenticationMethod(): HostAuthenticationKind {
 
 export function skipTLSVerify(): boolean {
     return getSetting(names.host.skipTLSVerify, false);
+}
+
+export function hostBinary(): string | undefined {
+    const b = getSetting(names.host.binary, undefined);
+    return b === "" ? undefined : b;
 }

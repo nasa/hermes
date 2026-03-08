@@ -15,8 +15,8 @@ import {
     NotebookLanguageManager
 } from './notebook';
 import { ConnectionViewer } from './components/ConnectionViewer';
-import { EvrPanel, EvrViewer } from './components/EvrViewer';
-import { evrMessaging } from './notebook/evrMessaging';
+import { EventPanel, EventViewer } from './components/EventViewer';
+import { eventMessaging } from './notebook/evrMessaging';
 
 import { ShellScriptLanguageProvider } from './kernels/shellscript';
 import { PythonLanguageProvider } from './kernels/python';
@@ -26,7 +26,7 @@ import { UplinkProvider } from './components/UplinkViewer';
 
 export class VscodeHermes implements CoreApi {
     private subscriptions: vscode.Disposable[] = [];
-    private evrPanel?: EvrPanel;
+    private eventPanel?: EventPanel;
     private connectionViewer?: ConnectionViewer;
     private downlinkProvider?: DownlinkProvider;
     private uplinkProvider?: UplinkProvider;
@@ -56,7 +56,7 @@ export class VscodeHermes implements CoreApi {
         this.connectionViewer = new ConnectionViewer(this.extensionPath, this.api, this);
         this.downlinkProvider = new DownlinkProvider(this.api);
         this.uplinkProvider = new UplinkProvider(this.api);
-        this.evrPanel = new EvrPanel(this.api, this.extensionPath);
+        this.eventPanel = new EventPanel(this.api, this.extensionPath);
 
         this.subscriptions.push(
             this.registerShellscriptBinPath(path.join(this.extensionPath, 'out', 'bin')),
@@ -66,7 +66,7 @@ export class VscodeHermes implements CoreApi {
             // Hermes Notebook support
             ...NotebookController.registerCommands(),
             vscode.workspace.registerNotebookSerializer('hermes.notebook', new HermesNotebookSerializer()),
-            vscode.window.registerCustomEditorProvider('hermes.evr', new EvrViewer(this.extensionPath, 'hermes.evr'), {
+            vscode.window.registerCustomEditorProvider('hermes.evr', new EventViewer(this.extensionPath, 'hermes.evr'), {
                 webviewOptions: {
                     // Don't unload the webview when we switch off of it
                     // It can be annoying to find the spot in the playback again
@@ -74,7 +74,7 @@ export class VscodeHermes implements CoreApi {
                 },
             }),
 
-            this.evrPanel,
+            this.eventPanel,
             this.connectionViewer,
 
             this.registerNotebookType("hermes.notebook"),
@@ -84,7 +84,7 @@ export class VscodeHermes implements CoreApi {
             this.registerNotebookLanguageProvider('shellscript', new ShellScriptLanguageProvider(this)),
             this.registerNotebookLanguageProvider('uplink', new UplinkLanguageProvider(this.api)),
 
-            evrMessaging(),
+            eventMessaging(),
         );
 
         // Only load the workspace config in host mode

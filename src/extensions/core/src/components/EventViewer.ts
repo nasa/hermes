@@ -8,7 +8,7 @@ import { FrontendMessage, BackendMessage } from '../../common/evrs';
 import { DebounceEmitter } from '../utils/DebounceEmitter';
 import { eventToDisplayEvent } from '@gov.nasa.jpl.hermes/types/src/conversion';
 
-export class EvrViewerBase extends WebViewPanelBase {
+export class EventViewerBase extends WebViewPanelBase {
     static parse(text: string) {
         let evrs: any;
         try {
@@ -44,7 +44,7 @@ export class EvrViewerBase extends WebViewPanelBase {
     }
 }
 
-export class EvrViewer extends EvrViewerBase implements vscode.CustomTextEditorProvider {
+export class EventViewer extends EventViewerBase implements vscode.CustomTextEditorProvider {
     constructor(extensionPath: string, viewName: string) {
         super(extensionPath, viewName);
     }
@@ -54,7 +54,7 @@ export class EvrViewer extends EvrViewerBase implements vscode.CustomTextEditorP
         webviewPanel: vscode.WebviewPanel,
         _token: vscode.CancellationToken
     ): Promise<void> {
-        await this.resolveWebviewEvr(webviewPanel.webview, EvrViewer.parse(document.getText()));
+        await this.resolveWebviewEvr(webviewPanel.webview, EventViewer.parse(document.getText()));
 
         const messenger = new WebViewMessenger<FrontendMessage, BackendMessage>(async (msg) => {
             switch (msg.type) {
@@ -68,7 +68,7 @@ export class EvrViewer extends EvrViewerBase implements vscode.CustomTextEditorP
                 try {
                     messenger.postMessage({
                         type: 'update',
-                        events: EvrViewerBase.parse(e.document.getText())
+                        events: EventViewerBase.parse(e.document.getText())
                     });
                 }
                 catch (_) {
@@ -87,9 +87,17 @@ export class EvrViewer extends EvrViewerBase implements vscode.CustomTextEditorP
 }
 
 
-export class EvrPanel extends EvrViewerBase implements vscode.WebviewViewProvider {
+export class EventPanel extends EventViewerBase implements vscode.WebviewViewProvider {
+    panelEvents: Sourced<Event>[];
+    debouncer: DebounceEmitter<DisplayEvent>;
+
     constructor(readonly api: Api, extensionPath: string) {
         super(extensionPath, 'hermes.evrPanel');
+        this.panelEvents = [];
+        this.debouncer = new DebounceEmitter<DisplayEvent>({
+            merge: (evrs) => evrs as unknown as DisplayEvent
+        });
+
         this.subscriptions.push(
             vscode.window.registerWebviewViewProvider(this.viewName, this, {
                 webviewOptions:
@@ -98,6 +106,10 @@ export class EvrPanel extends EvrViewerBase implements vscode.WebviewViewProvide
                     // This will make hiding and displaying EVRs instant
                     retainContextWhenHidden: true
                 }
+            }),
+            this.api.onEvent((evr) => {
+                this.panelEvents.push(evr);
+                this.debouncer.fire(eventToDisplayEvent(evr));
             })
         );
     }
@@ -105,43 +117,30 @@ export class EvrPanel extends EvrViewerBase implements vscode.WebviewViewProvide
     async resolveWebviewView(webviewView: vscode.WebviewView): Promise<void> {
         await this.resolveWebviewEvr(webviewView.webview);
 
-        let panelEvrs: Sourced<Event>[] = [];
-
         const messenger = new WebViewMessenger<FrontendMessage, BackendMessage>((msg) => {
             switch (msg.type) {
                 case 'refresh':
                     messenger.postMessage({
                         type: 'update',
-                        events: panelEvrs.map(eventToDisplayEvent)
+                        events: this.panelEvents.map(eventToDisplayEvent)
                     });
                     break;
                 case 'clear':
-                    panelEvrs = [];
+                    this.panelEvents = [];
                     messenger.postMessage({
                         type: 'update',
-                        events: panelEvrs.map(eventToDisplayEvent)
+                        events: this.panelEvents.map(eventToDisplayEvent)
                     });
             }
         }, webviewView.webview);
 
-        const debouncer = new DebounceEmitter<DisplayEvent>({
-            merge: (evrs) => evrs as unknown as DisplayEvent
-        });
-
-        const evrWatcher = this.api.onEvent((evr) => {
-            panelEvrs.push(evr);
-            debouncer.fire(eventToDisplayEvent(evr));
-        });
-
-        const disp = debouncer.event((events) => {
+        const disp = this.debouncer.event((events) => {
             messenger.postMessage({ type: 'append', events });
         });
 
         webviewView.onDidDispose(() => {
             messenger.dispose();
-            debouncer.dispose();
             disp.dispose();
-            evrWatcher.dispose();
         });
     }
 }
