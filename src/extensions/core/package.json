@@ -436,8 +436,8 @@
         "backend:linux-arm64": "cd ../../../ && GOOS=linux GOARCH=arm64 CGO_ENABLED=0 GO_FLAGS='-trimpath -ldflags=\"-s -w\"' make out/backend && cp out/backend src/extensions/core/out/backend",
         "backend:darwin-x64": "cd ../../../ && GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 GO_FLAGS='-trimpath -ldflags=\"-s -w\"' make out/backend && cp out/backend src/extensions/core/out/backend",
         "backend:darwin-arm64": "cd ../../../ && GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 GO_FLAGS='-trimpath -ldflags=\"-s -w\"' make out/backend && cp out/backend src/extensions/core/out/backend",
-        "backend:win32-x64": "cd ../../../ && GOOS=windows GOARCH=amd64 CGO_ENABLED=0 GO_FLAGS='-trimpath -ldflags=\"-s -w\"' make out/backend && cp out/backend.exe src/extensions/core/out/backend.exe",
-        "backend:win32-arm64": "cd ../../../ && GOOS=windows GOARCH=arm64 CGO_ENABLED=0 GO_FLAGS='-trimpath -ldflags=\"-s -w\"' make out/backend && cp out/backend.exe src/extensions/core/out/backend.exe",
+        "backend:win32-x64": "cd ../../../ && GOOS=windows GOARCH=amd64 CGO_ENABLED=0 GO_FLAGS='-trimpath -ldflags=\"-s -w\"' make out/backend && cp out/backend src/extensions/core/out/backend.exe",
+        "backend:win32-arm64": "cd ../../../ && GOOS=windows GOARCH=arm64 CGO_ENABLED=0 GO_FLAGS='-trimpath -ldflags=\"-s -w\"' make out/backend && cp out/backend src/extensions/core/out/backend.exe",
         "package:platform": "yarn clean && yarn compile && yarn backend:${VSCODE_TARGET} && vsce package --yarn --target ${VSCODE_TARGET}"
     },
     "devDependencies": {
