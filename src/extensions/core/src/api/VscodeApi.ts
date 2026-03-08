@@ -14,9 +14,11 @@ import { Remote } from './Remote';
  * or re-subscribing to events.
  */
 export class VscodeApi implements Hermes.Api {
+    private _onContextRefresh = new vscode.EventEmitter<void>();
+    onContextRefresh = this._onContextRefresh.event;
+
     private currentApi?: Hermes.Api;
 
-    // Stable event emitters - created once, never replaced
     private _onFswChange = new vscode.EventEmitter<Hermes.Fsw[]>();
     private _onProvidersChange = new vscode.EventEmitter<Proto.IProfileProvider[]>();
     private _onProfilesChange = new vscode.EventEmitter<Record<string, Proto.IStatefulProfile>>();
@@ -25,16 +27,13 @@ export class VscodeApi implements Hermes.Api {
     private _onUplink = new vscode.EventEmitter<Proto.IFileUplink>();
     private _onFileTransfer = new vscode.EventEmitter<Proto.IFileTransferState>();
 
-    // Track handlers for method-based subscriptions (onEvent, onTelemetry)
     private eventSubscribers = new Map<(pkt: Sourced<Event>) => void, Proto.IBusFilter | undefined>();
     private telemetrySubscribers = new Map<(pkt: Sourced<Telemetry>) => void, Proto.IBusFilter | undefined>();
 
-    // Track subscription disposables for cleanup
     private apiSubscriptions: vscode.Disposable[] = [];
     private eventSubscriptions = new Map<(pkt: Sourced<Event>) => void, vscode.Disposable>();
     private telemetrySubscriptions = new Map<(pkt: Sourced<Telemetry>) => void, vscode.Disposable>();
 
-    // Expose stable events
     onFswChange = this._onFswChange.event;
     onProvidersChange = this._onProvidersChange.event;
     onProfilesChange = this._onProfilesChange.event;
@@ -99,6 +98,7 @@ export class VscodeApi implements Hermes.Api {
 
     exited() {
         this.cleanup();
+        this.currentApi = new Offline(this.context, this.log);
 
         this.primaryItem.show();
         this.secondaryItem.hide();
@@ -109,7 +109,6 @@ export class VscodeApi implements Hermes.Api {
 
         this.secondaryItem.command = undefined;
         this.secondaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.background");
-
 
         const hostType = Settings.hostType();
         switch (hostType) {
@@ -131,10 +130,13 @@ export class VscodeApi implements Hermes.Api {
                 this.secondaryItem.show();
                 break;
         }
+
+        this._onContextRefresh.fire();
     }
 
     invalidate(err: string) {
         this.cleanup();
+        this.currentApi = new Offline(this.context, this.log);
 
         this.primaryItem.show();
         this.secondaryItem.show();
@@ -168,6 +170,8 @@ export class VscodeApi implements Hermes.Api {
                 this.secondaryItem.tooltip = "Change host URL";
                 break;
         }
+
+        this._onContextRefresh.fire();
     }
 
     async update(): Promise<void> {
@@ -251,6 +255,8 @@ export class VscodeApi implements Hermes.Api {
             this.telemetrySubscriptions.set(handler, subscription);
             this.apiSubscriptions.push(subscription);
         }
+
+        this._onContextRefresh.fire();
     }
 
     // Method-based subscription handlers that track subscribers
@@ -413,11 +419,9 @@ export class VscodeApi implements Hermes.Api {
 
         this.log.info('Disposing VscodeApi');
 
-        // Clean up all subscriptions
         this.apiSubscriptions.forEach(d => d.dispose());
         this.apiSubscriptions = [];
 
-        // Dispose event emitters
         this._onFswChange.dispose();
         this._onProvidersChange.dispose();
         this._onProfilesChange.dispose();
@@ -426,11 +430,9 @@ export class VscodeApi implements Hermes.Api {
         this._onUplink.dispose();
         this._onFileTransfer.dispose();
 
-        // Dispose current API
         this.currentApi?.dispose();
         this.currentApi = undefined;
 
-        // Clear tracked subscribers
         this.eventSubscribers.clear();
         this.telemetrySubscribers.clear();
         this.eventSubscriptions.clear();

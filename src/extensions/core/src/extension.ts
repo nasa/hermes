@@ -50,16 +50,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
     });
 
     // Create reconnectable API wrapper
-    const reconnectableApi = new VscodeApi(context, log);
+    const api = new VscodeApi(context, log);
 
-    const vscodeContext = new VscodeHermes(context.extensionPath, log, reconnectableApi, context);
+    const vscodeContext = new VscodeHermes(context.extensionPath, log, api, context);
     await vscodeContext.activate();
 
     // Make sure things clean up properly when this extension shuts down
     context.subscriptions.push(
-        reconnectableApi,
+        api,
         vscodeContext,
         vscodeLogger,
+
+        api.onContextRefresh(() => {
+            vscodeContext.refresh();
+        }),
 
         vscode.workspace.onDidChangeConfiguration(async (e) => {
             if (e.affectsConfiguration(Settings.names.host.type) ||
@@ -131,12 +135,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
         }),
         vscode.commands.registerCommand('hermes.host.reconnect', async () => {
             try {
-                await reconnectableApi.update();
-                vscodeContext.refresh();
+                await api.update();
             } catch (err) {
                 vscode.window.showErrorMessage(`Failed to update Hermes host: ${err}`);
-                reconnectableApi.invalidate(`${err}`);
-                vscodeContext.refresh();
+                api.invalidate(`${err}`);
             }
         }),
         vscode.commands.registerCommand('hermes.terminal.focusBackend', () => {
