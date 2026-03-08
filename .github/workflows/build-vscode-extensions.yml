@@ -149,7 +149,7 @@ jobs:
         run: |
           mkdir -p src/extensions/core/out
           if [[ "${{ steps.go-platform.outputs.goos }}" == "windows" ]]; then
-            cp out/backend.exe src/extensions/core/out/backend.exe
+            cp out/backend src/extensions/core/out/backend.exe
             echo "Copied backend.exe to extension directory"
             ls -lh src/extensions/core/out/backend.exe
           else
