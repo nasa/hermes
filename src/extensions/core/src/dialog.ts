@@ -73,6 +73,7 @@ export async function pickBackendModeDialog(current: State): Promise<State | und
 interface RemoteQuickPickItem extends vscode.QuickPickItem {
     createNew?: true;
     remote?: Settings.Remote;
+    invalid?: boolean;
 }
 
 function remoteToQuickPickItem(key: string, remote: Settings.Remote): RemoteQuickPickItem {
@@ -107,6 +108,7 @@ function remoteToQuickPickItem(key: string, remote: Settings.Remote): RemoteQuic
         description: saneRemote.url,
         detail: errors.length > 0 ? ("$(alert) Invalid Remote: " + errors.join(". ")) : undefined,
         remote: saneRemote,
+        invalid: errors.length > 0
     };
 }
 
@@ -157,7 +159,11 @@ export async function pickRemoteDialog(current?: Settings.Remote): Promise<Setti
             }),
             quickPick.onDidAccept(() => {
                 if (quickPick.selectedItems.length > 0) {
-                    resolve(quickPick.selectedItems[0]);
+                    if (quickPick.selectedItems[0].invalid) {
+                        quickPick.selectedItems = [];
+                    } else {
+                        resolve(quickPick.selectedItems[0]);
+                    }
                 } else {
                     resolve(undefined);
                 }
