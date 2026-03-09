@@ -8,7 +8,50 @@ import { Local } from './Local';
 import { Remote } from './Remote';
 
 /**
- * ReconnectableApi wraps the actual API implementation and maintains stable
+ * Controls what backend to use
+ */
+export enum BackendType {
+    /**
+     * Offline only allows loading dictionaries and writing notebooks/sequences
+     * You cannot connect to anything and send command/receive telemetry
+     */
+    OFFLINE = 'offline',
+
+    /**
+     * Connect to a Hermes backend that is managed by this VSCode extension to allow
+     * configuring/running profiles Telemetry can be subscribed to show up in the
+     * frontend.
+     */
+    LOCAL = 'local',
+
+    /**
+     * Connect to a Hermes backend to allow configuring/running profiles
+     * Telemetry can be subscribed to show up in the frontend
+     */
+    REMOTE = 'remote',
+}
+
+export interface OfflineState {
+    type: BackendType.OFFLINE;
+}
+
+export interface LocalState {
+    type: BackendType.LOCAL;
+}
+
+export interface RemoteState {
+    type: BackendType.REMOTE;
+    remote: Settings.Remote;
+}
+
+export type State = (
+    | OfflineState
+    | LocalState
+    | RemoteState
+);
+
+/**
+ * VscodeApi wraps the actual API implementation and maintains stable
  * event subscriptions that persist across reconnections. This allows the
  * extension to change backend connections without requiring a window reload
  * or re-subscribing to events.
@@ -49,6 +92,8 @@ export class VscodeApi implements Hermes.Api {
 
     private readonly disposables: vscode.Disposable[];
 
+    state: State;
+
     constructor(
         readonly context: vscode.ExtensionContext,
         readonly log: Hermes.Log
@@ -59,6 +104,8 @@ export class VscodeApi implements Hermes.Api {
         this.secondaryItem = vscode.window.createStatusBarItem(
             'hermes.secondaryStatus', vscode.StatusBarAlignment.Left, 999
         );
+
+        this.state = { type: BackendType.OFFLINE };
 
         this.primaryItem.hide();
         this.secondaryItem.hide();
@@ -103,30 +150,32 @@ export class VscodeApi implements Hermes.Api {
         this.primaryItem.show();
         this.secondaryItem.hide();
 
+        this.primaryItem.color = undefined;
         this.primaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.background");
         this.primaryItem.tooltip = "Change Mode or Restart";
         this.primaryItem.command = "hermes.host.changeMode";
 
-        this.secondaryItem.command = undefined;
+        this.secondaryItem.color = undefined;
         this.secondaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.background");
+        this.secondaryItem.command = undefined;
+        this.secondaryItem.tooltip = undefined;
 
-        const hostType = Settings.hostType();
-        switch (hostType) {
-            case Settings.BackendType.OFFLINE:
+        switch (this.state.type) {
+            case BackendType.OFFLINE:
                 this.primaryItem.text = "$(close) Hermes: Offline (exited)";
                 this.primaryItem.tooltip = "Retry";
                 this.secondaryItem.text = "Backend Exited";
                 break;
-            case Settings.BackendType.LOCAL:
+            case BackendType.LOCAL:
                 this.primaryItem.text = "$(close) Hermes: Local (exited)";
                 this.primaryItem.tooltip = "Restart";
                 this.secondaryItem.text = "Backend Exited";
                 break;
-            case Settings.BackendType.REMOTE:
+            case BackendType.REMOTE:
                 this.primaryItem.text = "$(close) Hermes: Remote (exited)";
                 this.primaryItem.tooltip = "Reconnect";
-                this.secondaryItem.text = `$(extensions-remote) ${Settings.hostUrl()}`;
-                this.secondaryItem.command = "hermes.host.changeUrl";
+                this.secondaryItem.text = `$(radio-tower) ${this.state.remote.label}`;
+                this.secondaryItem.command = "hermes.host.changeRemote";
                 this.secondaryItem.show();
                 break;
         }
@@ -141,32 +190,33 @@ export class VscodeApi implements Hermes.Api {
         this.primaryItem.show();
         this.secondaryItem.show();
 
+        this.primaryItem.color = undefined;
         this.primaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.errorBackground");
         this.primaryItem.command = "hermes.host.changeMode";
 
+        this.secondaryItem.color = undefined;
+        this.secondaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.errorBackground");
         this.secondaryItem.command = undefined;
         this.secondaryItem.tooltip = err;
-        this.secondaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.errorBackground");
 
-        const hostType = Settings.hostType();
-        switch (hostType) {
-            case Settings.BackendType.OFFLINE:
+        switch (this.state.type) {
+            case BackendType.OFFLINE:
                 this.primaryItem.text = "$(alert) Hermes: Offline";
                 this.primaryItem.tooltip = "Retry";
                 this.secondaryItem.text = "Initialization Failed";
                 break;
-            case Settings.BackendType.LOCAL:
+            case BackendType.LOCAL:
                 this.primaryItem.text = "$(alert) Hermes: Local";
                 this.primaryItem.tooltip = "Restart";
                 this.secondaryItem.text = "Execution Failed";
                 this.secondaryItem.command = "hermes.terminal.focusBackend";
                 this.secondaryItem.tooltip = "Show logs";
                 break;
-            case Settings.BackendType.REMOTE:
+            case BackendType.REMOTE:
                 this.primaryItem.text = "$(alert) Hermes: Remote";
                 this.primaryItem.tooltip = "Reconnect";
-                this.secondaryItem.text = `$(extensions-remote) ${Settings.hostUrl()}`;
-                this.secondaryItem.command = "hermes.host.changeUrl";
+                this.secondaryItem.text = `$(radio-tower) ${this.state.remote.label}`;
+                this.secondaryItem.command = "hermes.host.changeRemote";
                 this.secondaryItem.tooltip = "Change host URL";
                 break;
         }
@@ -174,51 +224,60 @@ export class VscodeApi implements Hermes.Api {
         this._onContextRefresh.fire();
     }
 
-    async update(): Promise<void> {
+    async update(newState: State): Promise<void> {
         this.cleanup();
         this.cancelActivate = new vscode.CancellationTokenSource();
 
         this.primaryItem.show();
         this.secondaryItem.hide();
 
+        this.primaryItem.color = new vscode.ThemeColor("statusBarItem.remoteForeground");
+        this.primaryItem.backgroundColor = undefined;
         this.primaryItem.command = "hermes.backend.cancel";
         this.primaryItem.tooltip = "Cancel";
-        this.primaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.background");
-        this.secondaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.background");
 
-        const hostType = Settings.hostType();
-        switch (hostType) {
-            case Settings.BackendType.OFFLINE:
+        this.secondaryItem.color = undefined;
+        this.secondaryItem.backgroundColor = undefined;
+        this.secondaryItem.command = undefined;
+        this.secondaryItem.tooltip = undefined;
+
+        this.state = newState;
+
+        switch (this.state.type) {
+            case BackendType.OFFLINE:
                 this.currentApi = new Offline(this.context, this.log);
 
+                this.primaryItem.color = new vscode.ThemeColor("statusBarItem.remoteForeground");
                 this.primaryItem.text = "$(sync~spin) Hermes: Initializing...";
                 this.currentApi = await Offline.activate(this.context, this.log, this.cancelActivate.token);
-                this.primaryItem.text = "$(home) Hermes: Offline";
+                this.primaryItem.color = undefined;
+                this.primaryItem.text = "$(debug-disconnect) Hermes: Offline";
                 this.secondaryItem.command = undefined;
 
                 break;
-            case Settings.BackendType.LOCAL:
+            case BackendType.LOCAL:
+                this.primaryItem.color = new vscode.ThemeColor("statusBarItem.remoteForeground");
                 this.primaryItem.text = "$(sync~spin) Hermes: Starting...";
                 this.currentApi = await Local.activate(this.context, this.log, this.cancelActivate.token);
+                this.primaryItem.color = undefined;
                 this.primaryItem.text = "$(terminal) Hermes: Local";
 
-                this.primaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.debuggingBackground");
                 this.secondaryItem.show();
                 this.secondaryItem.text = "$(terminal)";
                 this.secondaryItem.tooltip = "Show Hermes Backend Logs";
                 this.secondaryItem.command = "hermes.terminal.focusBackend";
                 break;
-            case Settings.BackendType.REMOTE:
+            case BackendType.REMOTE:
+                this.primaryItem.color = new vscode.ThemeColor("statusBarItem.remoteForeground");
                 this.primaryItem.text = "$(sync~spin) Hermes: Connecting...";
-                this.currentApi = await Remote.activate(this.log, this.cancelActivate.token);
-                this.primaryItem.text = "$(extensions-remote) Hermes: Remote";
+                this.currentApi = await Remote.activate(this.state.remote, this.log, this.cancelActivate.token);
+                this.primaryItem.text = "$(radio-tower) Hermes: Remote";
 
-                this.primaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.debuggingBackground");
                 this.secondaryItem.show();
-                this.secondaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.debuggingBackground");
-                this.secondaryItem.text = `$(extensions-remote) ${Settings.hostUrl()}`;
-                this.secondaryItem.tooltip = "Change host URL";
-                this.secondaryItem.command = "hermes.host.changeUrl";
+                this.secondaryItem.color = this.state.remote.color;
+                this.secondaryItem.text = `$(radio-tower) ${this.state.remote.label}`;
+                this.secondaryItem.tooltip = "Change remote host";
+                this.secondaryItem.command = "hermes.host.changeRemote";
                 break;
         }
 

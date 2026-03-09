@@ -104,8 +104,8 @@
                 "category": "Hermes"
             },
             {
-                "command": "hermes.host.changeUrl",
-                "title": "Hermes: Change Backend URL",
+                "command": "hermes.host.changeRemote",
+                "title": "Hermes: Change Remote Selection",
                 "category": "Hermes"
             },
             {
@@ -259,58 +259,57 @@
             {
                 "title": "Host (Backend)",
                 "properties": {
-                    "hermes.host.type": {
-                        "description": "Determines which Hermes backend to use. Remote backends are used when connecting to a testbed or during operations. The external Hermes backend must be running separately to connect to. The local backend is for local development of sequences and procedures and supports loading dictionaries.",
-                        "default": "offline",
-                        "type": "string",
-                        "enum": [
-                            "offline",
-                            "local",
-                            "remote"
-                        ],
-                        "enumItemLabels": [
-                            "Local",
-                            "Remote",
-                            "Offline"
-                        ],
-                        "enumDescriptions": [
-                            "Offline backends are just for writing sequences and procedures. You can load dictionaries and create notebooks with this backend.",
-                            "Local backends support creating profiles for connecting to flight-software and processing telemetry. They start up a backend within VSCode ",
-                            "Remote backends support creating profiles for connecting to flight-software and processing telemetry. They connect to an already running backend."
-                        ]
-                    },
-                    "hermes.host.url": {
-                        "description": "Host URL. Use 'https://' address to enable encryption and authentication",
-                        "default": "http://localhost:6880",
-                        "type": "string"
-                    },
-                    "hermes.host.authenticationMethod": {
-                        "markdownDescription": "Authentication method to use when connecting to the server.\n\nA non-'none' authentication method also requires an 'https' (encryption enabled) host address.",
-                        "default": "none",
-                        "type": "string",
-                        "enum": [
-                            "none",
-                            "userpass",
-                            "token"
-                        ],
-                        "enumItemLabels": [
-                            "No Authentication",
-                            "Username/Password",
-                            "Authentication Token"
-                        ],
-                        "enumDescriptions": [
-                            "Credential-less connection",
-                            "Username/Password usually connected to LDAP login",
-                            "Token based authentication. Request a token from your Hermes administrator"
-                        ]
-                    },
-                    "hermes.host.skipTLSVerify": {
-                        "description": "Skip SSL/TLS certificate validation from the server. This is useful when the client is not set up with the proper certificates to allow connecting to internal websites",
-                        "default": false,
-                        "type": "boolean"
+                    "hermes.host.remotes": {
+                        "type": "object",
+                        "description": "Set of configured remote Hermes services to connect to",
+                        "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                                "label": {
+                                    "type": "string",
+                                    "description": "Human readable label of this remote connection. Leave blank to use the URL instead",
+                                    "default": ""
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "description": "Host URL. Use 'https://' address to enable encryption and authentication",
+                                    "default": "http://localhost:6880"
+                                },
+                                "authenticationMethod": {
+                                    "type": "string",
+                                    "markdownDescription": "Authentication method to use when connecting to the server.\n\nA non-'none' authentication method also requires an 'https' (encryption enabled) host address.",
+                                    "default": "none",
+                                    "enum": [
+                                        "none",
+                                        "userpass",
+                                        "token"
+                                    ],
+                                    "enumItemLabels": [
+                                        "No Authentication",
+                                        "Username/Password",
+                                        "Authentication Token"
+                                    ],
+                                    "enumDescriptions": [
+                                        "Credential-less connection",
+                                        "Username/Password usually connected to LDAP login",
+                                        "Token based authentication. Request a token from your Hermes administrator"
+                                    ]
+                                },
+                                "skipTLSVerify": {
+                                    "type": "boolean",
+                                    "description": "Skip SSL/TLS certificate validation from the server. This is useful when the client is not set up with the proper certificates to allow connecting to internal websites",
+                                    "default": false
+                                },
+                                "color": {
+                                    "type": "string",
+                                    "description": "Color override (in the form #AABBCC hex) to display on the VSCode status bar when connected to this remote. Leave blank to not apply a color.",
+                                    "default": ""
+                                }
+                            }
+                        }
                     },
                     "hermes.host.binary": {
-                        "description": "Path to a Hermes backend binary to run instead of the pre-installed backend",
+                        "description": "Path to a Hermes backend binary to run for 'local' host mode. Leave blank to use bundled backend binary.",
                         "type": "string"
                     }
                 }

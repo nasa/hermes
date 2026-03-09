@@ -5,11 +5,12 @@ import winston from 'winston';
 import * as grpc from '@grpc/grpc-js';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
-import { Settings, CoreApi } from '@gov.nasa.jpl.hermes/vscode';
+import { CoreApi } from '@gov.nasa.jpl.hermes/vscode';
 
 import { VscodeHermes } from './context';
-import { VscodeApi } from './api/VscodeApi';
+import { BackendType, State, VscodeApi } from './api';
 import { VSCTransport } from './log';
+import { pickBackendModeDialog, pickRemoteDialog } from './dialog';
 
 export async function activate(context: vscode.ExtensionContext): Promise<CoreApi> {
     const vscodeLogger = new VSCTransport({
@@ -64,82 +65,28 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
         api.onContextRefresh(() => {
             vscodeContext.refresh();
         }),
-
-        vscode.workspace.onDidChangeConfiguration(async (e) => {
-            if (e.affectsConfiguration(Settings.names.host.type) ||
-                e.affectsConfiguration(Settings.names.host.url) ||
-                e.affectsConfiguration(Settings.names.host.authenticationMethod) ||
-                e.affectsConfiguration(Settings.names.host.skipTLSVerify)
-            ) {
-                vscode.commands.executeCommand("hermes.host.reconnect");
-            }
-        }),
-        vscode.commands.registerCommand('hermes.host.changeMode', async () => {
-            const currentMode = Settings.hostType();
-            const offlineCheck = currentMode === Settings.BackendType.OFFLINE ? "$(check) " : "";
-            const localCheck = currentMode === Settings.BackendType.LOCAL ? "$(check) " : "";
-            const remoteCheck = currentMode === Settings.BackendType.REMOTE ? "$(check) " : "";
-
-            vscode.window.showQuickPick<vscode.QuickPickItem & {
-                type?: Settings.BackendType;
-                reconnect?: true;
-            }>([
-                {
-                    label: offlineCheck + "$(home) Offline",
-                    description: "Use offline backend stub",
-                    detail: "Offline backends are just for writing sequences and procedures. You can load dictionaries and create notebooks with this backend.",
-                    type: Settings.BackendType.OFFLINE,
-                },
-                {
-                    label: localCheck + "$(terminal) Local",
-                    description: "Use builtin local backend",
-                    detail: "Local backends will start and manage a Hermes backend and connect to it locally.",
-                    type: Settings.BackendType.LOCAL,
-                },
-                {
-                    label: remoteCheck + "$(remote) Remote",
-                    description: "Connect to an Hermes backend",
-                    detail: "Remote backends support creating run profiles for connecting to flight-software and processing telemetry.",
-                    type: Settings.BackendType.REMOTE,
-                },
-                {
-                    label: "",
-                    kind: vscode.QuickPickItemKind.Separator,
-                },
-                {
-                    label: "$(sync) Reconnect",
-                    detail: "Try to reconnect/rerun the current backend",
-                    reconnect: true,
-                }
-            ], {
-                title: 'Hermes Backend Mode',
-            }).then((value) => {
-                if (value) {
-                    if (value.reconnect) {
-                        vscode.commands.executeCommand("hermes.host.reconnect");
-                    } else {
-                        vscode.workspace.getConfiguration().update(Settings.names.host.type, value.type);
-                    }
-                }
-            });
-        }),
-        vscode.commands.registerCommand('hermes.host.changeUrl', async () => {
-            vscode.window.showInputBox({
-                title: 'Hermes Host Address',
-                value: await vscode.workspace.getConfiguration().get(Settings.names.host.url)
-            }).then((value) => {
-                if (value) {
-                    vscode.workspace.getConfiguration().update(Settings.names.host.url, value);
-                }
-            });
-        }),
-        vscode.commands.registerCommand('hermes.host.reconnect', async () => {
+        vscode.commands.registerCommand('hermes.host.set', async (state: State) => {
             try {
-                await api.update();
+                await api.update(state);
             } catch (err) {
                 vscode.window.showErrorMessage(`Failed to update Hermes host: ${err}`);
                 api.invalidate(`${err}`);
             }
+        }),
+        vscode.commands.registerCommand('hermes.host.changeMode', async () => {
+            const nextState = await pickBackendModeDialog(api.state);
+            if (nextState) {
+                vscode.commands.executeCommand('hermes.host.set', nextState);
+            }
+        }),
+        vscode.commands.registerCommand('hermes.host.changeRemote', async () => {
+            const newRemote = await pickRemoteDialog(api.state.type === BackendType.REMOTE ? api.state.remote : undefined);
+            if (newRemote) {
+                vscode.commands.executeCommand('hermes.host.set', { type: BackendType.REMOTE, remote: newRemote });
+            }
+        }),
+        vscode.commands.registerCommand('hermes.host.reconnect', () => {
+            vscode.commands.executeCommand('hermes.host.set', api.state);
         }),
         vscode.commands.registerCommand('hermes.terminal.focusBackend', () => {
             const terminal = vscode.window.terminals.find((t) => {

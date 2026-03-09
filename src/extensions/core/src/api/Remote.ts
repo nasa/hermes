@@ -12,15 +12,15 @@ export class Remote extends Rpc.Client implements Hermes.Api {
         this.grpcClient = client;
     }
 
-    static async activate(log: Hermes.Log, token?: vscode.CancellationToken) {
+    static async activate(remote: Settings.Remote, log: Hermes.Log, token?: vscode.CancellationToken) {
         const credPrompter = new CredentialsPrompter();
-        const credentials = await credPrompter.promptCredentials();
+        const credentials = await credPrompter.promptCredentials(remote.authenticationMethod);
         credPrompter.dispose();
 
         const client = new Rpc.GrpcClient(log, {
-            hostAddress: Settings.hostUrl(),
-            authMethod: Settings.authenticationMethod(),
-            skipTLSVerify: Settings.skipTLSVerify(),
+            hostAddress: remote.url,
+            authMethod: remote.authenticationMethod,
+            skipTLSVerify: remote.skipTLSVerify,
             credentials
         });
 
@@ -124,8 +124,8 @@ class CredentialsPrompter implements vscode.Disposable {
         });
     }
 
-    async promptCredentials(): Promise<string | undefined> {
-        switch (Settings.authenticationMethod()) {
+    async promptCredentials(authenticationMethod: Rpc.HostAuthenticationKind): Promise<string | undefined> {
+        switch (authenticationMethod) {
             case Rpc.HostAuthenticationKind.NONE:
                 return undefined;
             case Rpc.HostAuthenticationKind.USER_PASS:
