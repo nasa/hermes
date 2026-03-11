@@ -17,6 +17,8 @@ import { parseFprimeJsonDictionary } from './dictionaryJson';
 const textDecoder = new TextDecoder();
 
 class FprimeXmlDictionaryProvider extends FileDictionaryProvider {
+    title = "F Prime (XML, <4.0)";
+
     constructor() {
         super({
             canSelectFiles: true,
@@ -43,6 +45,8 @@ class FprimeXmlDictionaryProvider extends FileDictionaryProvider {
 }
 
 class FprimeJsonDictionaryProvider extends FileDictionaryProvider {
+    title = "F Prime (JSON, >=4.0)";
+
     constructor() {
         super({
             canSelectFiles: true,
@@ -71,8 +75,8 @@ export async function activate(context: vscode.ExtensionContext) {
     const nbLanguage = new FprimeNotebookLanguageProvider(hermesVSCode.api, ext);
 
     context.subscriptions.push(
-        hermesVSCode.registerDictionaryProvider("F Prime (JSON, >4.0)", new FprimeJsonDictionaryProvider()),
-        hermesVSCode.registerDictionaryProvider("F Prime (XML, <4.0)", new FprimeXmlDictionaryProvider()),
+        hermesVSCode.registerDictionaryProvider("fprime.json", new FprimeJsonDictionaryProvider()),
+        hermesVSCode.registerDictionaryProvider("fprime.xml", new FprimeXmlDictionaryProvider()),
         hermesVSCode.registerLanguageDictionaryItem(dictionaryItem),
         hermesVSCode.registerNotebookLanguageProvider("fprime", nbLanguage),
 

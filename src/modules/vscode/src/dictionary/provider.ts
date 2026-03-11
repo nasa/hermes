@@ -11,6 +11,8 @@ import { Dictionary } from '@gov.nasa.jpl.hermes/types';
  * multiple files.
  */
 export interface DictionaryProvider {
+    title: string;
+
     /**
      * Signal fires when dictionaries provided by {@link provideExternalDictionaries}
      * needs to be called again.

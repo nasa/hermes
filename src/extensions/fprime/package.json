@@ -134,6 +134,47 @@
                 "fileMatch": "*.dat",
                 "url": "fprimeschema:///parameter-database"
             }
+        ],
+        "taskDefinitions": [
+            {
+                "type": "hermes-fprime-deployment",
+                "required": [
+                    "name",
+                    "dictionary",
+                    "protocol"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "FSW Connection name"
+                    },
+                    "dictionary": {
+                        "type": "string",
+                        "description": "The F Prime JSON dictionary to load"
+                    },
+                    "command": {
+                        "type": "string",
+                        "description": "The command to execute to start the flight software after the ground system has been started"
+                    },
+                    "protocol": {
+                        "type": "string",
+                        "description": "The protocol to use when communicating with the FSW",
+                        "default": "ccsds",
+                        "enum": [
+                            "ccsds",
+                            "fprime"
+                        ]
+                    },
+                    "serverPort": {
+                        "type": "number",
+                        "description": "When provided, the ground system will host a TCP server at this port which the FSW will connect to"
+                    },
+                    "clientAddress": {
+                        "type": "string",
+                        "description": "When provided, the ground system will connect to a TCP port at this address"
+                    }
+                }
+            }
         ]
     },
     "scripts": {

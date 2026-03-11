@@ -16,9 +16,7 @@ export class Local extends Rpc.Client {
         readonly exitWatcher: vscode.Disposable,
         log: Hermes.Log
     ) {
-
         super(log, client);
-
         this.grpcClient = client;
     }
 

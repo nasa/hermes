@@ -428,3 +428,12 @@ func (sp *statefulProfile[T]) Config() ProfileConfig {
 		Settings: sp.settings,
 	}
 }
+
+var _ RuntimeProfile = (*nonPersistentProfile)(nil)
+
+type nonPersistentProfile struct {
+	StatefulProfile
+}
+
+// IsRuntimeProfile implements [RuntimeProfile].
+func (n *nonPersistentProfile) IsRuntimeProfile() {}

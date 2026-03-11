@@ -107,11 +107,18 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
 
             this.vscodeApi.onDictionaryProvidersChanged(() => {
                 this.msg?.postMessage({
-                    dictionaryProviders: Array.from(this.vscodeApi.dictionaryProviders.keys()),
+                    dictionaryProviders: this.getDictionaryProvider(),
                 });
             }),
         );
     }
+
+    private getDictionaryProvider(): { key: string, title: string }[] {
+        return Array.from(Array.from(
+            this.vscodeApi.dictionaryProviders.entries()
+        ).map(([key, prov]) => ({ key, title: prov.title })));
+    }
+
     async refresh() {
         // Request the entire state and wait for it all to return back
         const [
@@ -127,7 +134,7 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
         ]);
 
         this.msg?.postMessage({
-            dictionaryProviders: Array.from(this.vscodeApi.dictionaryProviders.keys()),
+            dictionaryProviders: this.getDictionaryProvider(),
             profileProviders,
             profiles,
             connections: connections.map((v) => ({

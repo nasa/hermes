@@ -4294,10 +4294,10 @@ export interface IDictionaryHead {
      */
     type?: (string|null);
 
-    /** Name given to dictionary, can be changed by the user */
+    /** DictionaryHead name */
     name?: (string|null);
 
-    /** (optional) Dictionary/FSW release version */
+    /** DictionaryHead version */
     version?: (string|null);
 }
 
@@ -4319,10 +4319,10 @@ export class DictionaryHead implements IDictionaryHead {
      */
     public type: string;
 
-    /** Name given to dictionary, can be changed by the user */
+    /** DictionaryHead name. */
     public name: string;
 
-    /** (optional) Dictionary/FSW release version */
+    /** DictionaryHead version. */
     public version: string;
 
     /**
@@ -4535,6 +4535,9 @@ export interface IDictionary {
 
     /** Dictionary metadata */
     metadata?: ({ [k: string]: string }|null);
+
+    /** Dictionary id */
+    id?: (string|null);
 }
 
 /** Represents a Dictionary. */
@@ -4554,6 +4557,9 @@ export class Dictionary implements IDictionary {
 
     /** Dictionary metadata. */
     public metadata: { [k: string]: string };
+
+    /** Dictionary id. */
+    public id: string;
 
     /**
      * Creates a new Dictionary instance using the specified properties.
@@ -7955,6 +7961,9 @@ export interface IProfile {
 
     /** Profile settings */
     settings?: (string|null);
+
+    /** Profile id */
+    id?: (string|null);
 }
 
 /** Represents a Profile. */
@@ -7974,6 +7983,9 @@ export class Profile implements IProfile {
 
     /** Profile settings. */
     public settings: string;
+
+    /** Profile id. */
+    public id: string;
 
     /**
      * Creates a new Profile instance using the specified properties.

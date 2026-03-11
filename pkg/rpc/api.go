@@ -590,7 +590,7 @@ func (r *apiServer) AddDictionary(ctx context.Context, dict *pb.Dictionary) (*pb
 
 // AddProfile implements pb.ApiServer.
 func (r *apiServer) AddProfile(ctx context.Context, profile *pb.Profile) (*pb.Id, error) {
-	id, err := host.Profiles.Add(profile)
+	id, err := host.Profiles.Add(ctx, profile)
 	if err != nil {
 		return nil, err
 	}

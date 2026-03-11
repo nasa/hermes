@@ -11573,8 +11573,8 @@ $root.DictionaryHead = (function() {
      * of dictionaries that can be tracked.
      * 
      * This is set by the provider.
-     * @property {string|null} [name] Name given to dictionary, can be changed by the user
-     * @property {string|null} [version] (optional) Dictionary/FSW release version
+     * @property {string|null} [name] DictionaryHead name
+     * @property {string|null} [version] DictionaryHead version
      */
 
     /**
@@ -11605,7 +11605,7 @@ $root.DictionaryHead = (function() {
     DictionaryHead.prototype.type = "";
 
     /**
-     * Name given to dictionary, can be changed by the user
+     * DictionaryHead name.
      * @member {string} name
      * @memberof DictionaryHead
      * @instance
@@ -11613,7 +11613,7 @@ $root.DictionaryHead = (function() {
     DictionaryHead.prototype.name = "";
 
     /**
-     * (optional) Dictionary/FSW release version
+     * DictionaryHead version.
      * @member {string} version
      * @memberof DictionaryHead
      * @instance
@@ -12331,6 +12331,7 @@ $root.Dictionary = (function() {
      * @property {IDictionaryHead|null} [head] Dictionary head
      * @property {Object.<string,IDictionaryNamespace>|null} [content] Dictionary content
      * @property {Object.<string,string>|null} [metadata] Dictionary metadata
+     * @property {string|null} [id] Dictionary id
      */
 
     /**
@@ -12375,6 +12376,14 @@ $root.Dictionary = (function() {
     Dictionary.prototype.metadata = $util.emptyObject;
 
     /**
+     * Dictionary id.
+     * @member {string} id
+     * @memberof Dictionary
+     * @instance
+     */
+    Dictionary.prototype.id = "";
+
+    /**
      * Creates a new Dictionary instance using the specified properties.
      * @function create
      * @memberof Dictionary
@@ -12408,6 +12417,8 @@ $root.Dictionary = (function() {
         if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
             for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
                 writer.uint32(/* id 3, wireType 2 =*/26).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.metadata[keys[i]]).ldelim();
+        if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+            writer.uint32(/* id 4, wireType 2 =*/34).string(message.id);
         return writer;
     };
 
@@ -12492,6 +12503,10 @@ $root.Dictionary = (function() {
                     message.metadata[key] = value;
                     break;
                 }
+            case 4: {
+                    message.id = reader.string();
+                    break;
+                }
             default:
                 reader.skipType(tag & 7);
                 break;
@@ -12550,6 +12565,9 @@ $root.Dictionary = (function() {
                 if (!$util.isString(message.metadata[key[i]]))
                     return "metadata: string{k:string} expected";
         }
+        if (message.id != null && message.hasOwnProperty("id"))
+            if (!$util.isString(message.id))
+                return "id: string expected";
         return null;
     };
 
@@ -12587,6 +12605,8 @@ $root.Dictionary = (function() {
             for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i)
                 message.metadata[keys[i]] = String(object.metadata[keys[i]]);
         }
+        if (object.id != null)
+            message.id = String(object.id);
         return message;
     };
 
@@ -12607,8 +12627,10 @@ $root.Dictionary = (function() {
             object.content = {};
             object.metadata = {};
         }
-        if (options.defaults)
+        if (options.defaults) {
             object.head = null;
+            object.id = "";
+        }
         if (message.head != null && message.hasOwnProperty("head"))
             object.head = $root.DictionaryHead.toObject(message.head, options);
         var keys2;
@@ -12622,6 +12644,8 @@ $root.Dictionary = (function() {
             for (var j = 0; j < keys2.length; ++j)
                 object.metadata[keys2[j]] = message.metadata[keys2[j]];
         }
+        if (message.id != null && message.hasOwnProperty("id"))
+            object.id = message.id;
         return object;
     };
 
@@ -20871,6 +20895,7 @@ $root.Profile = (function() {
      * @property {string|null} [name] Profile name
      * @property {string|null} [provider] Profile provider
      * @property {string|null} [settings] Profile settings
+     * @property {string|null} [id] Profile id
      */
 
     /**
@@ -20913,6 +20938,14 @@ $root.Profile = (function() {
     Profile.prototype.settings = "";
 
     /**
+     * Profile id.
+     * @member {string} id
+     * @memberof Profile
+     * @instance
+     */
+    Profile.prototype.id = "";
+
+    /**
      * Creates a new Profile instance using the specified properties.
      * @function create
      * @memberof Profile
@@ -20942,6 +20975,8 @@ $root.Profile = (function() {
             writer.uint32(/* id 2, wireType 2 =*/18).string(message.provider);
         if (message.settings != null && Object.hasOwnProperty.call(message, "settings"))
             writer.uint32(/* id 3, wireType 2 =*/26).string(message.settings);
+        if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+            writer.uint32(/* id 5, wireType 2 =*/42).string(message.id);
         return writer;
     };
 
@@ -20988,6 +21023,10 @@ $root.Profile = (function() {
                     message.settings = reader.string();
                     break;
                 }
+            case 5: {
+                    message.id = reader.string();
+                    break;
+                }
             default:
                 reader.skipType(tag & 7);
                 break;
@@ -21032,6 +21071,9 @@ $root.Profile = (function() {
         if (message.settings != null && message.hasOwnProperty("settings"))
             if (!$util.isString(message.settings))
                 return "settings: string expected";
+        if (message.id != null && message.hasOwnProperty("id"))
+            if (!$util.isString(message.id))
+                return "id: string expected";
         return null;
     };
 
@@ -21053,6 +21095,8 @@ $root.Profile = (function() {
             message.provider = String(object.provider);
         if (object.settings != null)
             message.settings = String(object.settings);
+        if (object.id != null)
+            message.id = String(object.id);
         return message;
     };
 
@@ -21073,6 +21117,7 @@ $root.Profile = (function() {
             object.name = "";
             object.provider = "";
             object.settings = "";
+            object.id = "";
         }
         if (message.name != null && message.hasOwnProperty("name"))
             object.name = message.name;
@@ -21080,6 +21125,8 @@ $root.Profile = (function() {
             object.provider = message.provider;
         if (message.settings != null && message.hasOwnProperty("settings"))
             object.settings = message.settings;
+        if (message.id != null && message.hasOwnProperty("id"))
+            object.id = message.id;
         return object;
     };
 

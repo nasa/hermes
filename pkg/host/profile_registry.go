@@ -134,7 +134,7 @@ func (r *profileRegistry) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (r *profileRegistry) Add(p *pb.Profile) (string, error) {
+func (r *profileRegistry) Add(ctx context.Context, p *pb.Profile) (string, error) {
 	defer r.UpdateProfiles()
 
 	r.mux.RLock()
@@ -145,7 +145,68 @@ func (r *profileRegistry) Add(p *pb.Profile) (string, error) {
 		return "", fmt.Errorf("no profile provider: '%s'", p.Provider)
 	}
 
-	profile := prov.Create(p.Name, r)
+	var id string
+	var profile StatefulProfile
+
+	if p.Id != "" {
+		r.mux.RLock()
+		old, ok := r.profiles[p.Id]
+		r.mux.RUnlock()
+
+		id = p.Id
+
+		// Remove old profile
+		if ok {
+			r.logger.Info(
+				"removing overlapping non-persistent profile",
+				"id", id,
+			)
+
+			oldProfState, err := old.State()
+			if err != nil {
+				return "", fmt.Errorf("failed to get non-persistent profile state: %w", err)
+			}
+
+			switch oldProfState.State {
+			case pb.ProfileState_PROFILE_ACTIVE:
+				err := old.Stop(ctx)
+				if err != nil {
+					return "", fmt.Errorf("failed to stop old profile: %w", err)
+				}
+			case pb.ProfileState_PROFILE_CONNECTING, pb.ProfileState_PROFILE_DISCONNECT:
+				return "", fmt.Errorf("cannot stop or remove profile that has not been started or stopped")
+			case pb.ProfileState_PROFILE_IDLE:
+			default:
+				panic(fmt.Sprintf("unexpected pb.ProfileState: %#v", oldProfState.State))
+			}
+
+			if oldProfRuntime, ok := old.(RuntimeProfile); ok {
+				r.RemoveRuntime(oldProfRuntime)
+			} else {
+				err = r.Remove(id)
+				if err != nil {
+					return "", fmt.Errorf("failed to remove old persistent profile: %w", err)
+				}
+			}
+		}
+
+		profile = &nonPersistentProfile{StatefulProfile: prov.Create(p.Name, r)}
+		r.logger.Info(
+			"adding non persistent profile",
+			"name", profile.Name(),
+			"provider", profile.Config().Provider,
+			"id", id,
+		)
+	} else {
+		id = util.GenerateShortUID()
+		profile = prov.Create(p.Name, r)
+		r.logger.Info(
+			"adding profile",
+			"name", profile.Name(),
+			"provider", profile.Config().Provider,
+			"id", id,
+		)
+	}
 
 	if p.Settings != "" {
 		err := profile.Update(p.Settings)
@@ -153,14 +214,6 @@ func (r *profileRegistry) Add(p *pb.Profile) (string, error) {
 			return "", fmt.Errorf("failed to create profile: %w", err)
 		}
 	}
-
-	id := util.GenerateShortUID()
-	r.logger.Info(
-		"adding profile",
-		"name", profile.Name(),
-		"provider", profile.Config().Provider,
-		"id", id,
-	)
 
 	r.mux.Lock()
 	r.profiles[id] = profile
@@ -352,7 +405,7 @@ func (r *profileRegistry) Load(config []ProfileConfig) error {
 			return fmt.Errorf("configuration %s has invalid json settings: %w", cfg.Name, err)
 		}
 
-		_, err = r.Add(&pb.Profile{
+		_, err = r.Add(context.Background(), &pb.Profile{
 			Name:     cfg.Name,
 			Provider: cfg.Provider,
 			Settings: string(jsonSettings),

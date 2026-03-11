@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rprofile.proto\"B\n\x0fProfileProvider\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0e\n\x06schema\x18\x02 \x01(\t\x12\x11\n\tui_schema\x18\x03 \x01(\t\";\n\x07Profile\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x10\n\x08provider\x18\x02 \x01(\t\x12\x10\n\x08settings\x18\x03 \x01(\t*d\n\x0cProfileState\x12\x10\n\x0cPROFILE_IDLE\x10\x00\x12\x16\n\x12PROFILE_CONNECTING\x10\x01\x12\x12\n\x0ePROFILE_ACTIVE\x10\x02\x12\x16\n\x12PROFILE_DISCONNECT\x10\x03\x42\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rprofile.proto\"B\n\x0fProfileProvider\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0e\n\x06schema\x18\x02 \x01(\t\x12\x11\n\tui_schema\x18\x03 \x01(\t\"G\n\x07Profile\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x10\n\x08provider\x18\x02 \x01(\t\x12\x10\n\x08settings\x18\x03 \x01(\t\x12\n\n\x02id\x18\x05 \x01(\t*d\n\x0cProfileState\x12\x10\n\x0cPROFILE_IDLE\x10\x00\x12\x16\n\x12PROFILE_CONNECTING\x10\x01\x12\x12\n\x0ePROFILE_ACTIVE\x10\x02\x12\x16\n\x12PROFILE_DISCONNECT\x10\x03\x42\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,10 +32,10 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'profile_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z\035github.com/nasa/hermes/pkg/pb'
-  _globals['_PROFILESTATE']._serialized_start=146
-  _globals['_PROFILESTATE']._serialized_end=246
+  _globals['_PROFILESTATE']._serialized_start=158
+  _globals['_PROFILESTATE']._serialized_end=258
   _globals['_PROFILEPROVIDER']._serialized_start=17
   _globals['_PROFILEPROVIDER']._serialized_end=83
   _globals['_PROFILE']._serialized_start=85
-  _globals['_PROFILE']._serialized_end=144
+  _globals['_PROFILE']._serialized_end=156
 # @@protoc_insertion_point(module_scope)

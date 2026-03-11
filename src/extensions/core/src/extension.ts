@@ -95,7 +95,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
 
             terminal?.show();
         }),
-
     );
 
     vscode.commands.executeCommand("hermes.host.reconnect");

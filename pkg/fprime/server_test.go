@@ -112,7 +112,7 @@ func TestServerProfile(t *testing.T) {
 
 	dictId := host.Dictionaries.Add(testDictionary)
 
-	profId, err := host.Profiles.Add(&pb.Profile{
+	profId, err := host.Profiles.Add(t.Context(), &pb.Profile{
 		Name:     "test",
 		Provider: "FPrime Server",
 		Settings: fmt.Sprintf(`{

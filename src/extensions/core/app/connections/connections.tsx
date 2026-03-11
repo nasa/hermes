@@ -436,10 +436,10 @@ export default function ConnectionUi() {
     const [connections, setConnections] = useState<Proto.IFsw[]>([]);
     const [dictionaries, setDictionaries] = useState<Record<string, Proto.IDictionaryHead>>({});
 
-    const [dictionaryProviders, setDictionaryProviders] = useState<string[]>([]);
+    const [dictionaryProviders, setDictionaryProviders] = useState<{ key: string, title: string }[]>([]);
     const [profileProviders, setProfileProviders] = useState<Record<string, ProfileProvider>>({});
 
-    const [selectedDictionaryProvider, setSelectedDictionaryProvider] = useState<string>();
+    const [selectedDictionaryProvider, setSelectedDictionaryProvider] = useState<{ key: string, title: string }>();
     const [selectedProfileProvider, setSelectedProfileProvider] = useState<string>();
 
     const [dictionaryLoading, setDictionaryLoading] = useState<boolean>(false);
@@ -534,7 +534,7 @@ export default function ConnectionUi() {
     }, [selectedProfileProvider]);
 
     const onOpenDictionary = useCallback(() => {
-        messages.postMessage({ type: "dictionaryOpen", provider: selectedDictionaryProvider! });
+        messages.postMessage({ type: "dictionaryOpen", provider: selectedDictionaryProvider!.key });
     }, [selectedDictionaryProvider]);
 
     const onProfileUpdate = useCallback((cfgId: string, settings: any) => {
@@ -578,12 +578,12 @@ export default function ConnectionUi() {
             <VStack>
                 <Progress active={dictionaryLoading} />
                 <VSCodeDropdown
-                    value={selectedDictionaryProvider}
+                    value={selectedDictionaryProvider?.key}
                     disabled={dictionaryLoading}
                     onChange={e => setSelectedDictionaryProvider((e.target as any).value)}
                     id="provider-dropdown"
                 >
-                    {dictionaryProviders.map((v, i) => <VSCodeOption key={i}>{v}</VSCodeOption>)}
+                    {dictionaryProviders.map((v, i) => <VSCodeOption key={i} value={v.key}>{v.title}</VSCodeOption>)}
                 </VSCodeDropdown>
                 <VSCodeButton disabled={selectedDictionaryProvider === undefined || dictionaryLoading || writeDisabled} className="full" style={{ maxWidth: "100%" }} appearance="primary" onClick={onOpenDictionary}>
                     Open Dictionary

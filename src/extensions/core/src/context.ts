@@ -99,20 +99,20 @@ export class VscodeHermes implements CoreApi {
     }
 
     registerDictionaryProvider(
-        name: string,
+        id: string,
         dictionaryProvider: DictionaryProvider,
     ): vscode.Disposable {
-        if (this.dictionaryProviders.has(name)) {
-            throw new Error(`Dictionary provider named '${name}' already registered`);
+        if (this.dictionaryProviders.has(id)) {
+            throw new Error(`Dictionary provider named '${id}' already registered`);
         }
 
-        this.log.info(`Registering dictionary provider ${name}`);
-        this.dictionaryProviders.set(name, dictionaryProvider);
+        this.log.info(`Registering dictionary provider ${id}`);
+        this.dictionaryProviders.set(id, dictionaryProvider);
         this.dictionaryProvidersChanged.fire();
         return {
             dispose: () => {
-                this.log.info(`Unregistering dictionary provider ${name}`);
-                this.dictionaryProviders.delete(name);
+                this.log.info(`Unregistering dictionary provider ${id}`);
+                this.dictionaryProviders.delete(id);
                 this.dictionaryProvidersChanged.fire();
             }
         };
