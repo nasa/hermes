@@ -57,6 +57,8 @@ const (
 // ApiClient is the client API for Api service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// Public service for interacting with the Hermes state
 type ApiClient interface {
 	// *
 	// Send a command sequence to the FSW to execute.
@@ -134,7 +136,7 @@ type ApiClient interface {
 	StopProfile(ctx context.Context, in *pb.Id, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Update a profile
 	UpdateProfile(ctx context.Context, in *pb.ProfileUpdate, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Create a new profile, returns it's registered ID
+	// Create a new Profile and return it's ID
 	AddProfile(ctx context.Context, in *pb.Profile, opts ...grpc.CallOption) (*pb.Id, error)
 	// Delete a profile by its id
 	RemoveProfile(ctx context.Context, in *pb.Id, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -170,7 +172,7 @@ type ApiClient interface {
 	//	  - "*": The entire namespace
 	//	Example: "sections": [".events", "ns-1.*", "ns-2.telemetry"]
 	GetDictionary(ctx context.Context, in *pb.Id, opts ...grpc.CallOption) (*pb.Dictionary, error)
-	// Add a new dictionary entry
+	// Add a new dictionary entry, return it's ID.
 	AddDictionary(ctx context.Context, in *pb.Dictionary, opts ...grpc.CallOption) (*pb.Id, error)
 	// Remove specified dictionary
 	RemoveDictionary(ctx context.Context, in *pb.Id, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -595,6 +597,8 @@ type Api_SubFileTransferClient = grpc.ServerStreamingClient[pb.FileTransferState
 // ApiServer is the server API for Api service.
 // All implementations must embed UnimplementedApiServer
 // for forward compatibility.
+//
+// Public service for interacting with the Hermes state
 type ApiServer interface {
 	// *
 	// Send a command sequence to the FSW to execute.
@@ -672,7 +676,7 @@ type ApiServer interface {
 	StopProfile(context.Context, *pb.Id) (*emptypb.Empty, error)
 	// Update a profile
 	UpdateProfile(context.Context, *pb.ProfileUpdate) (*emptypb.Empty, error)
-	// Create a new profile, returns it's registered ID
+	// Create a new Profile and return it's ID
 	AddProfile(context.Context, *pb.Profile) (*pb.Id, error)
 	// Delete a profile by its id
 	RemoveProfile(context.Context, *pb.Id) (*emptypb.Empty, error)
@@ -708,7 +712,7 @@ type ApiServer interface {
 	//	  - "*": The entire namespace
 	//	Example: "sections": [".events", "ns-1.*", "ns-2.telemetry"]
 	GetDictionary(context.Context, *pb.Id) (*pb.Dictionary, error)
-	// Add a new dictionary entry
+	// Add a new dictionary entry, return it's ID.
 	AddDictionary(context.Context, *pb.Dictionary) (*pb.Id, error)
 	// Remove specified dictionary
 	RemoveDictionary(context.Context, *pb.Id) (*emptypb.Empty, error)
@@ -1492,7 +1496,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// API to provide interface with an external software
+// API to provide interfaces with external software
 type ProviderClient interface {
 	// *
 	// A long lived connection telling the host that a link is active with
@@ -1583,7 +1587,7 @@ type Provider_TelemetryClient = grpc.ClientStreamingClient[pb.SourcedTelemetry, 
 // All implementations must embed UnimplementedProviderServer
 // for forward compatibility.
 //
-// API to provide interface with an external software
+// API to provide interfaces with external software
 type ProviderServer interface {
 	// *
 	// A long lived connection telling the host that a link is active with

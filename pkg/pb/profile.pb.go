@@ -142,7 +142,11 @@ type Profile struct {
 	// Profile this corresponds to
 	Provider string `protobuf:"bytes,2,opt,name=provider,proto3" json:"provider,omitempty"`
 	// JSON parameters that fill in the provider schema
-	Settings      string `protobuf:"bytes,3,opt,name=settings,proto3" json:"settings,omitempty"`
+	Settings string `protobuf:"bytes,3,opt,name=settings,proto3" json:"settings,omitempty"`
+	// (optional) This profile is externally managed and should not be persisted
+	// in the non-volatile Hermes state. If this ID is non-unique with an already
+	// created profile, the other profile will be stopped and removed
+	Id            string `protobuf:"bytes,5,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -198,6 +202,13 @@ func (x *Profile) GetSettings() string {
 	return ""
 }
 
+func (x *Profile) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
 var File_profile_proto protoreflect.FileDescriptor
 
 const file_profile_proto_rawDesc = "" +
@@ -206,11 +217,12 @@ const file_profile_proto_rawDesc = "" +
 	"\x0fProfileProvider\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
 	"\x06schema\x18\x02 \x01(\tR\x06schema\x12\x1b\n" +
-	"\tui_schema\x18\x03 \x01(\tR\buiSchema\"U\n" +
+	"\tui_schema\x18\x03 \x01(\tR\buiSchema\"e\n" +
 	"\aProfile\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
 	"\bprovider\x18\x02 \x01(\tR\bprovider\x12\x1a\n" +
-	"\bsettings\x18\x03 \x01(\tR\bsettings*d\n" +
+	"\bsettings\x18\x03 \x01(\tR\bsettings\x12\x0e\n" +
+	"\x02id\x18\x05 \x01(\tR\x02id*d\n" +
 	"\fProfileState\x12\x10\n" +
 	"\fPROFILE_IDLE\x10\x00\x12\x16\n" +
 	"\x12PROFILE_CONNECTING\x10\x01\x12\x12\n" +

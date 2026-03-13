@@ -8,6 +8,7 @@ import (
 	"maps"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	grpcpb "github.com/nasa/hermes/pkg/grpc"
@@ -590,7 +591,7 @@ func (r *apiServer) AddDictionary(ctx context.Context, dict *pb.Dictionary) (*pb
 
 // AddProfile implements pb.ApiServer.
 func (r *apiServer) AddProfile(ctx context.Context, profile *pb.Profile) (*pb.Id, error) {
-	id, err := host.Profiles.Add(profile)
+	id, err := host.Profiles.Add(ctx, profile)
 	if err != nil {
 		return nil, err
 	}
@@ -736,6 +737,12 @@ func (r *apiServer) StopProfile(ctx context.Context, id *pb.Id) (*emptypb.Empty,
 
 	if err := prof.Stop(ctx); err != nil {
 		return nil, err
+	}
+
+	// Runtime profiles are not configurable by the user
+	// We should not allow the profile to fall into idle state
+	if rProf, ok := prof.(host.RuntimeProfile); ok {
+		host.Profiles.RemoveRuntime(rProf)
 	}
 
 	return &emptypb.Empty{}, nil
@@ -934,11 +941,44 @@ func (r *apiServer) SubscribeFsw(_ *emptypb.Empty, s grpc.ServerStreamingServer[
 
 // SubscribeProfiles implements pb.ApiServer.
 func (r *apiServer) SubscribeProfiles(_ *emptypb.Empty, s grpc.ServerStreamingServer[pb.ProfileList]) error {
+	var (
+		mu           sync.Mutex
+		timer        *time.Timer
+		pendingState map[string]*pb.StatefulProfile
+	)
+
 	host.Profiles.ProfileState.Subscribe(s.Context(), func(sp map[string]*pb.StatefulProfile) {
-		s.Send(&pb.ProfileList{All: sp})
+		mu.Lock()
+		defer mu.Unlock()
+
+		// Store the latest state
+		pendingState = sp
+
+		// Reset or create the debounce timer
+		if timer != nil {
+			timer.Stop()
+		}
+
+		timer = time.AfterFunc(20*time.Millisecond, func() {
+			mu.Lock()
+			stateToSend := pendingState
+			mu.Unlock()
+
+			if stateToSend != nil {
+				s.Send(&pb.ProfileList{All: stateToSend})
+			}
+		})
 	})
 
 	<-s.Context().Done()
+
+	// Clean up timer on context cancellation
+	mu.Lock()
+	if timer != nil {
+		timer.Stop()
+	}
+	mu.Unlock()
+
 	return nil
 }
 

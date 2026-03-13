@@ -46,7 +46,12 @@ export interface Profile {
     provider: string;
 
     // JSON parameters that fill in the provider schema
-    setting: string;
+    settings: string;
+
+    // Directly provide an ID to the server
+    // If this ID overlaps with another profile.
+    // that profile will be stopped and deleted.
+    id?: string;
 }
 
 export interface Fsw {
@@ -269,12 +274,12 @@ export interface Api extends vscode.Disposable {
     /**
      * Subscribe to file downlink updates
      */
-    onDownlink: vscode.Event<Proto.IFileDownlink>;
+    onFileDownlink: vscode.Event<Proto.IFileDownlink>;
 
     /**
      * Subscribe to file uplink updates
      */
-    onUplink: vscode.Event<Proto.IFileUplink>;
+    onFileUplink: vscode.Event<Proto.IFileUplink>;
 
     /**
      * Subscribe to file uplink and downlink progress

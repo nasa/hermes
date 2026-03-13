@@ -11,7 +11,7 @@ from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 import msg_pb2 as msg__pb2
 import profile_pb2 as profile__pb2
 
-GRPC_GENERATED_VERSION = '1.76.0'
+GRPC_GENERATED_VERSION = '1.78.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -32,7 +32,8 @@ if _version_not_supported:
 
 
 class ApiStub(object):
-    """Missing associated documentation comment in .proto file."""
+    """Public service for interacting with the Hermes state
+    """
 
     def __init__(self, channel):
         """Constructor.
@@ -198,7 +199,8 @@ class ApiStub(object):
 
 
 class ApiServicer(object):
-    """Missing associated documentation comment in .proto file."""
+    """Public service for interacting with the Hermes state
+    """
 
     def Sequence(self, request, context):
         """*
@@ -331,7 +333,7 @@ class ApiServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def AddProfile(self, request, context):
-        """Create a new profile, returns it's registered ID
+        """Create a new Profile and return it's ID
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -416,7 +418,7 @@ class ApiServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def AddDictionary(self, request, context):
-        """Add a new dictionary entry
+        """Add a new dictionary entry, return it's ID.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -645,7 +647,8 @@ def add_ApiServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class Api(object):
-    """Missing associated documentation comment in .proto file."""
+    """Public service for interacting with the Hermes state
+    """
 
     @staticmethod
     def Sequence(request,
@@ -1486,7 +1489,7 @@ class Api(object):
 
 
 class ProviderStub(object):
-    """API to provide interface with an external software
+    """API to provide interfaces with external software
     """
 
     def __init__(self, channel):
@@ -1518,7 +1521,7 @@ class ProviderStub(object):
 
 
 class ProviderServicer(object):
-    """API to provide interface with an external software
+    """API to provide interfaces with external software
     """
 
     def Connection(self, request_iterator, context):
@@ -1596,7 +1599,7 @@ def add_ProviderServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class Provider(object):
-    """API to provide interface with an external software
+    """API to provide interfaces with external software
     """
 
     @staticmethod

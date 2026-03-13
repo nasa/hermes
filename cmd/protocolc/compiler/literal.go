@@ -48,7 +48,7 @@ func (a *LiteralType) Field(b StructBuilder, name string) {}
 // Marshal implements Type.
 func (a *LiteralType) Marshal(b BlockBuilder, name string) {
 	if a.marshal {
-		b.Appendf(a.code)
+		b.Appendf("%s", a.code)
 	}
 }
 
@@ -60,6 +60,6 @@ func (a *LiteralType) Name(Context) string {
 // Unmarshal implements Type.
 func (a *LiteralType) Unmarshal(b BlockBuilder, name string) {
 	if !a.marshal {
-		b.Appendf(a.code)
+		b.Appendf("%s", a.code)
 	}
 }

@@ -7,11 +7,8 @@
     "search.exclude": {
         "**/out": true,
     },
-    // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
-    "typescript.tsc.autoDetect": "off",
     "editor.tabSize": 4,
     "editor.detectIndentation": true,
-    "typescript.tsdk": "node_modules/typescript/lib",
     "jest.runMode": "on-demand",
     "files.exclude": {
         "src/**/node_modules": true

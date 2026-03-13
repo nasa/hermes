@@ -94,17 +94,19 @@ func waitForFSWConnection(t *testing.T, client hermesGrpc.ApiClient, profileID s
 			return false
 		}
 
-		// Poll the fsw connections once
+		// Subscribe to FSW updates
+		stream, err := client.SubscribeFsw(ctx, &emptypb.Empty{})
+		require.NoError(t, err, "Failed to subscribe to FSW updates")
+		defer stream.CloseSend()
+
+		// Poll the current FSW list (to catch any that connected before subscription)
 		all, err := client.AllFsw(ctx, &emptypb.Empty{})
 		require.NoError(t, err, "Failed to get FSW list")
 		if check(all) {
 			return
 		}
 
-		// Subscribe to profile updates
-		stream, err := client.SubscribeFsw(ctx, &emptypb.Empty{})
-		require.NoError(t, err, "Failed to subscribe to profiles")
-
+		// Listen for new FSW connections from the stream
 		for {
 			update, err := stream.Recv()
 			if err != nil {

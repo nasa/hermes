@@ -17,7 +17,7 @@
         "protocol": {
             "type": "string",
             "title": "Protocol",
-            "default": "fprime-ccsds",
+            "default": "ccsds",
             "description": "Framing protocol to communicate over",
             "enum": [
                 "fprime",

@@ -9,7 +9,7 @@
 ############################################################
 # Backend build stage
 ############################################################
-FROM golang:1.25-alpine AS builder-backend
+FROM golang:1.26-alpine AS builder-backend
 
 # Install build dependencies
 RUN apk add --no-cache git make

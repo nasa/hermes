@@ -1,0 +1,496 @@
+name: Build VSCode Extensions
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'cmd/**'
+      - 'pkg/**'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'build.js'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/build-vscode-extensions.yml'
+
+jobs:
+  build-core:
+    name: Build Core ${{ matrix.platform }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - linux-x64
+          - linux-arm64
+          - darwin-x64
+          - darwin-arm64
+          - win32-x64
+          - win32-arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - name: Get version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            # Remove 'v' prefix if present
+            SEMVER="${VERSION#v}"
+
+            # VSCode only supports major.minor.patch, no pre-release tags
+            # Verify version is clean semver (no hyphens)
+            if [[ "$SEMVER" == *-* ]]; then
+              echo "Error: VSCode versions must be clean semver (major.minor.patch) without pre-release tags"
+              echo "Found: $SEMVER"
+              echo "Use GitHub's pre-release flag instead of version suffixes"
+              exit 1
+            fi
+
+            # Use GitHub's pre-release flag
+            IS_PRERELEASE="${{ github.event.release.prerelease }}"
+          else
+            VERSION="dev-$(git rev-parse --short HEAD)"
+            SEMVER="0.0.0"
+            IS_PRERELEASE="false"
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "semver=$SEMVER" >> $GITHUB_OUTPUT
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION (semver: $SEMVER, pre-release: $IS_PRERELEASE)"
+
+      - name: Map VSCode platform to Go platform
+        id: go-platform
+        run: |
+          PLATFORM="${{ matrix.platform }}"
+
+          case "$PLATFORM" in
+            linux-x64)
+              GOOS="linux"
+              GOARCH="amd64"
+              ;;
+            linux-arm64)
+              GOOS="linux"
+              GOARCH="arm64"
+              ;;
+            darwin-x64)
+              GOOS="darwin"
+              GOARCH="amd64"
+              ;;
+            darwin-arm64)
+              GOOS="darwin"
+              GOARCH="arm64"
+              ;;
+            win32-x64)
+              GOOS="windows"
+              GOARCH="amd64"
+              ;;
+            win32-arm64)
+              GOOS="windows"
+              GOARCH="arm64"
+              ;;
+            *)
+              echo "Unknown platform: $PLATFORM"
+              exit 1
+              ;;
+          esac
+
+          echo "goos=$GOOS" >> $GITHUB_OUTPUT
+          echo "goarch=$GOARCH" >> $GITHUB_OUTPUT
+          echo "Platform $PLATFORM -> GOOS=$GOOS GOARCH=$GOARCH"
+
+      - name: Update package.json versions
+        run: |
+          # Update root package.json
+          jq --arg version "${{ steps.version.outputs.semver }}" '.version = $version' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+          # Update core extension package.json
+          jq --arg version "${{ steps.version.outputs.semver }}" '.version = $version' src/extensions/core/package.json > src/extensions/core/package.json.tmp
+          mv src/extensions/core/package.json.tmp src/extensions/core/package.json
+
+          echo "Updated versions to ${{ steps.version.outputs.semver }}"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install vsce
+        run: yarn global add @vscode/vsce
+
+      - name: Build backend binary for ${{ matrix.platform }}
+        env:
+          GOOS: ${{ steps.go-platform.outputs.goos }}
+          GOARCH: ${{ steps.go-platform.outputs.goarch }}
+          CGO_ENABLED: 0
+          GO_FLAGS: -trimpath -ldflags="-s -w"
+        run: |
+          echo "Building backend for GOOS=$GOOS GOARCH=$GOARCH..."
+          make out/backend
+          ls -lh out/backend* || true
+
+      - name: Copy backend to extension directory
+        run: |
+          mkdir -p src/extensions/core/out
+          if [[ "${{ steps.go-platform.outputs.goos }}" == "windows" ]]; then
+            cp out/backend src/extensions/core/out/backend.exe
+            echo "Copied backend.exe to extension directory"
+            ls -lh src/extensions/core/out/backend.exe
+          else
+            cp out/backend src/extensions/core/out/backend
+            chmod +x src/extensions/core/out/backend
+            echo "Copied backend to extension directory"
+            ls -lh src/extensions/core/out/backend
+          fi
+
+      - name: Build TypeScript extensions
+        run: yarn build
+
+      - name: Package core extension for ${{ matrix.platform }}
+        run: |
+          cd src/extensions/core
+          vsce package --yarn --target ${{ matrix.platform }} -o ../../../hermes-${{ steps.version.outputs.version }}-${{ matrix.platform }}.vsix
+          cd ../../..
+          echo "Packaged core extension for ${{ matrix.platform }}"
+          ls -lh hermes-${{ steps.version.outputs.version }}-${{ matrix.platform }}.vsix
+
+      - name: Upload core extension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermes-${{ steps.version.outputs.version }}-${{ matrix.platform }}
+          path: hermes-${{ steps.version.outputs.version }}-${{ matrix.platform }}.vsix
+          retention-days: 30
+
+      - name: Upload core extension to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: hermes-${{ steps.version.outputs.version }}-${{ matrix.platform }}.vsix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-fprime:
+    name: Build FPrime Extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Get version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            # Remove 'v' prefix if present
+            SEMVER="${VERSION#v}"
+
+            # VSCode only supports major.minor.patch, no pre-release tags
+            # Verify version is clean semver (no hyphens)
+            if [[ "$SEMVER" == *-* ]]; then
+              echo "Error: VSCode versions must be clean semver (major.minor.patch) without pre-release tags"
+              echo "Found: $SEMVER"
+              echo "Use GitHub's pre-release flag instead of version suffixes"
+              exit 1
+            fi
+
+            # Use GitHub's pre-release flag
+            IS_PRERELEASE="${{ github.event.release.prerelease }}"
+          else
+            VERSION="dev-$(git rev-parse --short HEAD)"
+            SEMVER="0.0.0"
+            IS_PRERELEASE="false"
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "semver=$SEMVER" >> $GITHUB_OUTPUT
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION (semver: $SEMVER, pre-release: $IS_PRERELEASE)"
+
+      - name: Update package.json versions
+        run: |
+          # Update root package.json
+          jq --arg version "${{ steps.version.outputs.semver }}" '.version = $version' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+          # Update fprime extension package.json
+          jq --arg version "${{ steps.version.outputs.semver }}" '.version = $version' src/extensions/fprime/package.json > src/extensions/fprime/package.json.tmp
+          mv src/extensions/fprime/package.json.tmp src/extensions/fprime/package.json
+
+          echo "Updated versions to ${{ steps.version.outputs.semver }}"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install vsce
+        run: yarn global add @vscode/vsce
+
+      - name: Build TypeScript extensions
+        run: yarn build
+
+      - name: Package fprime extension (universal)
+        run: |
+          cd src/extensions/fprime
+          vsce package -o ../../../hermes-fprime-${{ steps.version.outputs.version }}.vsix
+          cd ../../..
+          echo "Packaged fprime extension (universal)"
+          ls -lh hermes-fprime-${{ steps.version.outputs.version }}.vsix
+
+      - name: Upload fprime extension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermes-fprime-${{ steps.version.outputs.version }}
+          path: hermes-fprime-${{ steps.version.outputs.version }}.vsix
+          retention-days: 30
+
+      - name: Upload fprime extension to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: hermes-fprime-${{ steps.version.outputs.version }}.vsix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-core:
+    name: Publish Core to Marketplace
+    runs-on: ubuntu-latest
+    needs: build-core
+    if: github.event_name == 'release'
+    strategy:
+      matrix:
+        platform:
+          - linux-x64
+          - linux-arm64
+          - darwin-x64
+          - darwin-arm64
+          - win32-x64
+          - win32-arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          # Remove 'v' prefix if present
+          SEMVER="${VERSION#v}"
+
+          # VSCode only supports major.minor.patch, no pre-release tags
+          # Verify version is clean semver (no hyphens)
+          if [[ "$SEMVER" == *-* ]]; then
+            echo "Error: VSCode versions must be clean semver (major.minor.patch) without pre-release tags"
+            echo "Found: $SEMVER"
+            echo "Use GitHub's pre-release flag instead of version suffixes"
+            exit 1
+          fi
+
+          # Use GitHub's pre-release flag
+          IS_PRERELEASE="${{ github.event.release.prerelease }}"
+          if [[ "$IS_PRERELEASE" == "true" ]]; then
+            PRERELEASE_FLAG="--pre-release"
+          else
+            PRERELEASE_FLAG=""
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "semver=$SEMVER" >> $GITHUB_OUTPUT
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "prerelease_flag=$PRERELEASE_FLAG" >> $GITHUB_OUTPUT
+          echo "Publishing version: $SEMVER (pre-release: $IS_PRERELEASE)"
+
+      - name: Map VSCode platform to Go platform
+        id: go-platform
+        run: |
+          PLATFORM="${{ matrix.platform }}"
+
+          case "$PLATFORM" in
+            linux-x64)
+              GOOS="linux"
+              GOARCH="amd64"
+              ;;
+            linux-arm64)
+              GOOS="linux"
+              GOARCH="arm64"
+              ;;
+            darwin-x64)
+              GOOS="darwin"
+              GOARCH="amd64"
+              ;;
+            darwin-arm64)
+              GOOS="darwin"
+              GOARCH="arm64"
+              ;;
+            win32-x64)
+              GOOS="windows"
+              GOARCH="amd64"
+              ;;
+            win32-arm64)
+              GOOS="windows"
+              GOARCH="arm64"
+              ;;
+            *)
+              echo "Unknown platform: $PLATFORM"
+              exit 1
+              ;;
+          esac
+
+          echo "goos=$GOOS" >> $GITHUB_OUTPUT
+          echo "goarch=$GOARCH" >> $GITHUB_OUTPUT
+
+      - name: Update package.json versions
+        run: |
+          # Update root package.json
+          jq --arg version "${{ steps.version.outputs.semver }}" '.version = $version' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+          # Update core extension package.json
+          jq --arg version "${{ steps.version.outputs.semver }}" '.version = $version' src/extensions/core/package.json > src/extensions/core/package.json.tmp
+          mv src/extensions/core/package.json.tmp src/extensions/core/package.json
+
+          # Update fprime extension package.json
+          jq --arg version "${{ steps.version.outputs.semver }}" '.version = $version' src/extensions/fprime/package.json > src/extensions/fprime/package.json.tmp
+          mv src/extensions/fprime/package.json.tmp src/extensions/fprime/package.json
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install vsce
+        run: yarn global add @vscode/vsce
+
+      - name: Build backend binary for ${{ matrix.platform }}
+        env:
+          GOOS: ${{ steps.go-platform.outputs.goos }}
+          GOARCH: ${{ steps.go-platform.outputs.goarch }}
+          CGO_ENABLED: 0
+          GO_FLAGS: -trimpath -ldflags="-s -w"
+        run: |
+          echo "Building backend for GOOS=$GOOS GOARCH=$GOARCH..."
+          make out/backend
+
+      - name: Copy backend to extension directory
+        run: |
+          mkdir -p src/extensions/core/out
+          if [[ "${{ steps.go-platform.outputs.goos }}" == "windows" ]]; then
+            cp out/backend.exe src/extensions/core/out/backend.exe
+          else
+            cp out/backend src/extensions/core/out/backend
+            chmod +x src/extensions/core/out/backend
+          fi
+
+      - name: Build TypeScript extensions
+        run: yarn build
+
+      - name: Publish core extension to marketplace for ${{ matrix.platform }}
+        run: |
+          cd src/extensions/core
+          vsce publish --yarn --target ${{ matrix.platform }} ${{ steps.version.outputs.prerelease_flag }} -p ${{ secrets.VSCE_PAT }}
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+  publish-fprime:
+    name: Publish FPrime to Marketplace
+    runs-on: ubuntu-latest
+    needs: build-fprime
+    if: github.event_name == 'release'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          # Remove 'v' prefix if present
+          SEMVER="${VERSION#v}"
+
+          # VSCode only supports major.minor.patch, no pre-release tags
+          # Verify version is clean semver (no hyphens)
+          if [[ "$SEMVER" == *-* ]]; then
+            echo "Error: VSCode versions must be clean semver (major.minor.patch) without pre-release tags"
+            echo "Found: $SEMVER"
+            echo "Use GitHub's pre-release flag instead of version suffixes"
+            exit 1
+          fi
+
+          # Use GitHub's pre-release flag
+          IS_PRERELEASE="${{ github.event.release.prerelease }}"
+          if [[ "$IS_PRERELEASE" == "true" ]]; then
+            PRERELEASE_FLAG="--pre-release"
+          else
+            PRERELEASE_FLAG=""
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "semver=$SEMVER" >> $GITHUB_OUTPUT
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "prerelease_flag=$PRERELEASE_FLAG" >> $GITHUB_OUTPUT
+          echo "Publishing version: $SEMVER (pre-release: $IS_PRERELEASE)"
+
+      - name: Update package.json versions
+        run: |
+          # Update root package.json
+          jq --arg version "${{ steps.version.outputs.semver }}" '.version = $version' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+          # Update fprime extension package.json
+          jq --arg version "${{ steps.version.outputs.semver }}" '.version = $version' src/extensions/fprime/package.json > src/extensions/fprime/package.json.tmp
+          mv src/extensions/fprime/package.json.tmp src/extensions/fprime/package.json
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install vsce
+        run: yarn global add @vscode/vsce
+
+      - name: Build TypeScript extensions
+        run: yarn build
+
+      - name: Publish fprime extension to marketplace (universal)
+        run: |
+          cd src/extensions/fprime
+          vsce publish ${{ steps.version.outputs.prerelease_flag }} -p ${{ secrets.VSCE_PAT }}
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}

@@ -4,6 +4,7 @@
     "displayName": "Hermes FPrime",
     "description": "Hermes FPrime C++ and Testbed Support",
     "version": "4.0.0",
+    "icon": "icons/hermes-fprime.png",
     "keywords": [
         "visualization",
         "notebookRenderer"
@@ -13,9 +14,6 @@
         "type": "git"
     },
     "isHermesPlugin": true,
-    "files": [
-        "extension.vsix"
-    ],
     "license": "Apache-2.0",
     "author": {
         "name": "Andrei Tumbar",
@@ -136,12 +134,72 @@
                 "fileMatch": "*.dat",
                 "url": "fprimeschema:///parameter-database"
             }
+        ],
+        "taskDefinitions": [
+            {
+                "type": "hermes-fprime-deployment",
+                "required": [
+                    "title",
+                    "profileProvider",
+                    "profileSettings"
+                ],
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "description": "Deployment task name"
+                    },
+                    "profileProvider": {
+                        "type": "string",
+                        "description": "Profile provider type",
+                        "enum": [
+                            "FPrime Server",
+                            "FPrime Client"
+                        ],
+                        "default": "FPrime Server"
+                    },
+                    "profileSettings": {
+                        "type": "object",
+                        "description": "Profile settings",
+                        "required": [
+                            "name",
+                            "address",
+                            "dictionary",
+                            "protocol"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Profile name"
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "TCP address (e.g., '0.0.0.0:50000' for server, 'localhost:50000' for client)"
+                            },
+                            "dictionary": {
+                                "type": "string",
+                                "description": "Dictionary ID to use"
+                            },
+                            "protocol": {
+                                "type": "string",
+                                "description": "Protocol to use",
+                                "enum": [
+                                    "ccsds",
+                                    "fprime"
+                                ],
+                                "default": "ccsds"
+                            }
+                        }
+                    },
+                    "fswCommand": {
+                        "type": "string",
+                        "description": "FSW binary command (optional, for reference)"
+                    }
+                }
+            }
         ]
     },
     "scripts": {
         "vscode:prepublish": "yarn clean && yarn compile",
-        "prepublishOnly": "node ../../../prepublish.js",
-        "postpublish": "mv package.tmp.json package.json",
         "clean": "rm -rf ./out",
         "compile": "cd ../../../ && node build src/extensions/fprime",
         "package": "vsce package"

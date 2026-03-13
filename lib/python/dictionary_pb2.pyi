@@ -173,7 +173,7 @@ class DictionaryNamespace(_message.Message):
     def __init__(self, commands: _Optional[_Mapping[str, CommandDef]] = ..., events: _Optional[_Mapping[str, EventDef]] = ..., telemetry: _Optional[_Mapping[str, TelemetryDef]] = ..., parameters: _Optional[_Mapping[str, ParameterDef]] = ..., types: _Optional[_Mapping[str, _type_pb2.Type]] = ...) -> None: ...
 
 class Dictionary(_message.Message):
-    __slots__ = ("head", "content", "metadata")
+    __slots__ = ("head", "content", "metadata", "id")
     class ContentEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -191,7 +191,9 @@ class Dictionary(_message.Message):
     HEAD_FIELD_NUMBER: _ClassVar[int]
     CONTENT_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
     head: DictionaryHead
     content: _containers.MessageMap[str, DictionaryNamespace]
     metadata: _containers.ScalarMap[str, str]
-    def __init__(self, head: _Optional[_Union[DictionaryHead, _Mapping]] = ..., content: _Optional[_Mapping[str, DictionaryNamespace]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    id: str
+    def __init__(self, head: _Optional[_Union[DictionaryHead, _Mapping]] = ..., content: _Optional[_Mapping[str, DictionaryNamespace]] = ..., metadata: _Optional[_Mapping[str, str]] = ..., id: _Optional[str] = ...) -> None: ...

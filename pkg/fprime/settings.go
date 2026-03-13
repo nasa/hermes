@@ -13,29 +13,29 @@ import (
 var TimeBases map[int]hostutil.TimeSystem
 
 var Config = struct {
-	DownlinkTimeout          util.Duration `toml:"downlink-timeout" comment:"Maximum duration to wait between downlink chunks before giving up on the downlink. Use 0s to wait forever"`
-	UplinkChunkSize          uint32        `toml:"uplink-chunk-size" comment:"Size in bytes of the 'data' portion on file uplinks. Note packets will include additional overhead around the raw data."`
-	UplinkTruncateSourcePath bool          `toml:"uplink-truncate-source-path" comment:"Save uplink bandwidth by sending '/' instead of the real source path of a file."`
-	UplinkRateLimit          float64       `toml:"uplink-rate-limit" comment:"Uplink rate limit in bytes per second, use '0.0' to disable limiter."`
+	DownlinkTimeout          util.Duration `json:"downlinkTimeout" toml:"downlink-timeout" comment:"Maximum duration to wait between downlink chunks before giving up on the downlink. Use 0s to wait forever"`
+	UplinkChunkSize          uint32        `json:"uplinkChunkSize" toml:"uplink-chunk-size" comment:"Size in bytes of the 'data' portion on file uplinks. Note packets will include additional overhead around the raw data."`
+	UplinkTruncateSourcePath bool          `json:"uplinkTruncateSourcePath" toml:"uplink-truncate-source-path" comment:"Save uplink bandwidth by sending '/' instead of the real source path of a file."`
+	UplinkRateLimit          float64       `json:"uplinkRateLimit" toml:"uplink-rate-limit" comment:"Uplink rate limit in bytes per second, use '0.0' to disable limiter."`
 
-	PacketDescriptorType pb.IntKind `toml:"packet-descriptor-type"`
-	OpcodeType           pb.IntKind `toml:"opcode-type"`
-	ChanIdType           pb.IntKind `toml:"chan-id-type"`
-	EventIdType          pb.IntKind `toml:"event-id-type"`
-	PrmIdType            pb.IntKind `toml:"prm-id-type"`
-	TlmPacketizeIdType   pb.IntKind `toml:"tlm-packetize-type"`
-	BuffSizeType         pb.IntKind `toml:"buff-size-type"`
-	EnumStoreType        pb.IntKind `toml:"enum-store-type"`
+	PacketDescriptorType pb.IntKind `json:"packetDescriptorType" toml:"packet-descriptor-type"`
+	OpcodeType           pb.IntKind `json:"opcodeType" toml:"opcode-type"`
+	ChanIdType           pb.IntKind `json:"chanIdType" toml:"chan-id-type"`
+	EventIdType          pb.IntKind `json:"eventIdType" toml:"event-id-type"`
+	PrmIdType            pb.IntKind `json:"prmIdType" toml:"prm-id-type"`
+	TlmPacketizeIdType   pb.IntKind `json:"tlmPacketizeIdType" toml:"tlm-packetize-type"`
+	BuffSizeType         pb.IntKind `json:"buffSizeType" toml:"buff-size-type"`
+	EnumStoreType        pb.IntKind `json:"enumStoreType" toml:"enum-store-type"`
 
-	TimeBaseStoreType    pb.IntKind `toml:"time-base-store-type"`
-	TimeContextStoreType pb.IntKind `toml:"time-context-store-type"`
-	UseTimeBase          bool       `toml:"use-time-base" comment:"Expect timebase to be encoded into timestamp values"`
-	UseTimeContext       bool       `toml:"use-time-context" comment:"Expect time context to be encoded into timestamp values"`
+	TimeBaseStoreType    pb.IntKind `json:"timeBaseStoreType" toml:"time-base-store-type"`
+	TimeContextStoreType pb.IntKind `json:"timeContextStoreType" toml:"time-context-store-type"`
+	UseTimeBase          bool       `json:"useTimeBase" toml:"use-time-base" comment:"Expect timebase to be encoded into timestamp values"`
+	UseTimeContext       bool       `json:"useTimeContext" toml:"use-time-context" comment:"Expect time context to be encoded into timestamp values"`
 
-	TimeBases map[int]hostutil.TimeSettings `toml:"time-bases" comment:"Time bases SCLK conversions. If no mapping is found UTC is assumed"`
+	TimeBases map[int]hostutil.TimeSettings `json:"timeBases" toml:"time-bases" comment:"Time bases SCLK conversions. If no mapping is found UTC is assumed"`
 
-	TrueValue  uint `toml:"true-value" comment:"Binary to encode 'true' boolean values as"`
-	FalseValue uint `toml:"false-value" comment:"Binary to encode 'false' boolean values as"`
+	TrueValue  uint `json:"trueValue" toml:"true-value" comment:"Binary to encode 'true' boolean values as"`
+	FalseValue uint `json:"falseValue" toml:"false-value" comment:"Binary to encode 'false' boolean values as"`
 }{
 	DownlinkTimeout:          util.Duration(10 * time.Second),
 	UplinkChunkSize:          256,
