@@ -383,6 +383,34 @@
                         "default": true
                     }
                 }
+            },
+            {
+                "title": "Dictionaries",
+                "properties": {
+                    "hermes.dictionaries": {
+                        "type": "array",
+                        "markdownDescription": "Additional dictionaries to load (beyond auto-discovered dictionaries in `build-artifacts/`). Each dictionary must specify a loader and file path.",
+                        "default": [],
+                        "items": {
+                            "type": "object",
+                            "required": ["loader", "file"],
+                            "properties": {
+                                "loader": {
+                                    "type": "string",
+                                    "description": "Dictionary loader ID (e.g., 'fprime.json', 'fprime.xml')"
+                                },
+                                "file": {
+                                    "type": "string",
+                                    "description": "Path to the dictionary file"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "description": "Optional: Explicit dictionary ID (defaults to filename)"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         ],
         "languages": [

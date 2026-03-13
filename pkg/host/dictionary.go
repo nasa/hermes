@@ -154,6 +154,7 @@ func (r *dictionaryRegistry) Add(dict *pb.Dictionary) string {
 	if dict.Id != "" {
 		// Remove any old dictionary
 		r.Remove(dict.Id) // ignore error return
+		id = dict.Id
 
 		r.logger.Info("adding non-persistent dictionary",
 			"id", id,
@@ -161,8 +162,6 @@ func (r *dictionaryRegistry) Add(dict *pb.Dictionary) string {
 			"type", dict.Head.GetType(),
 			"version", dict.Head.GetVersion(),
 		)
-
-		id = dict.Id
 	} else {
 		id = util.GenerateShortUID()
 		r.logger.Info("adding dictionary",

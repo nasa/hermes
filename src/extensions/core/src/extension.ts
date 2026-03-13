@@ -11,6 +11,7 @@ import { VscodeHermes } from './context';
 import { BackendType, State, VscodeApi } from './api';
 import { VSCTransport } from './log';
 import { pickBackendModeDialog, pickRemoteDialog } from './dialog';
+import { ProfileTaskProvider } from './tasks';
 
 export async function activate(context: vscode.ExtensionContext): Promise<CoreApi> {
     const vscodeLogger = new VSCTransport({
@@ -55,6 +56,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
 
     const vscodeContext = new VscodeHermes(context.extensionPath, log, api, context);
     await vscodeContext.activate();
+
+    // Register task providers
+    context.subscriptions.push(
+        vscode.tasks.registerTaskProvider(
+            'hermes-create-profile',
+            new ProfileTaskProvider(api)
+        ),
+    );
 
     // Make sure things clean up properly when this extension shuts down
     context.subscriptions.push(

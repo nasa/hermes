@@ -139,39 +139,70 @@
             {
                 "type": "hermes-fprime-deployment",
                 "required": [
-                    "name",
-                    "dictionary",
-                    "protocol"
+                    "title",
+                    "profileProvider",
+                    "profileSettings"
                 ],
                 "properties": {
-                    "name": {
+                    "title": {
                         "type": "string",
-                        "description": "FSW Connection name"
+                        "description": "Deployment task name"
                     },
-                    "dictionary": {
+                    "profileProvider": {
                         "type": "string",
-                        "description": "The F Prime JSON dictionary to load"
-                    },
-                    "command": {
-                        "type": "string",
-                        "description": "The command to execute to start the flight software after the ground system has been started"
-                    },
-                    "protocol": {
-                        "type": "string",
-                        "description": "The protocol to use when communicating with the FSW",
-                        "default": "ccsds",
+                        "description": "Profile provider type",
                         "enum": [
-                            "ccsds",
-                            "fprime"
-                        ]
+                            "FPrime Server",
+                            "FPrime Client"
+                        ],
+                        "default": "FPrime Server"
                     },
-                    "serverPort": {
-                        "type": "number",
-                        "description": "When provided, the ground system will host a TCP server at this port which the FSW will connect to"
+                    "profileSettings": {
+                        "type": "object",
+                        "description": "Profile settings",
+                        "required": [
+                            "name",
+                            "address",
+                            "dictionary",
+                            "protocol"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Profile name"
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "TCP address (e.g., '0.0.0.0:50000' for server, 'localhost:50000' for client)"
+                            },
+                            "dictionary": {
+                                "type": "string",
+                                "description": "Dictionary ID to use"
+                            },
+                            "protocol": {
+                                "type": "string",
+                                "description": "Protocol to use",
+                                "enum": [
+                                    "ccsds",
+                                    "fprime"
+                                ],
+                                "default": "ccsds"
+                            }
+                        }
                     },
-                    "clientAddress": {
+                    "autoStartProfile": {
+                        "type": "boolean",
+                        "description": "Whether to auto-start the profile",
+                        "default": true
+                    },
+                    "fswCommand": {
                         "type": "string",
-                        "description": "When provided, the ground system will connect to a TCP port at this address"
+                        "description": "FSW binary command (optional, for reference)"
+                    },
+                    "startFsw": {
+                        "type": "boolean",
+                        "description": "Whether to start FSW (note: FSW should be started via separate shell task)",
+                        "default": false
                     }
                 }
             }

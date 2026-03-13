@@ -336,7 +336,6 @@ func (sp *statefulProfile[T]) Start(ctx context.Context) error {
 		sp.listener.UpdateProfiles()
 
 		err := sp.provider.api.Start(sp.runtimeCtx, sp.settings, sp)
-		sp.state.Store(pb.ProfileState_PROFILE_IDLE)
 
 		if err != nil {
 			sp.logger.Error(
@@ -351,6 +350,7 @@ func (sp *statefulProfile[T]) Start(ctx context.Context) error {
 		}
 
 		close(sp.runtime)
+		sp.state.Store(pb.ProfileState_PROFILE_IDLE)
 	}()
 
 	select {

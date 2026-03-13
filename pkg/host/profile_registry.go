@@ -150,46 +150,19 @@ func (r *profileRegistry) Add(ctx context.Context, p *pb.Profile) (string, error
 
 	if p.Id != "" {
 		r.mux.RLock()
-		old, ok := r.profiles[p.Id]
+		_, oldOk := r.profiles[p.Id]
 		r.mux.RUnlock()
 
-		id = p.Id
-
-		// Remove old profile
-		if ok {
+		if oldOk {
 			r.logger.Info(
-				"removing overlapping non-persistent profile",
+				"overlapping non-persistent profile",
 				"id", id,
 			)
 
-			oldProfState, err := old.State()
-			if err != nil {
-				return "", fmt.Errorf("failed to get non-persistent profile state: %w", err)
-			}
-
-			switch oldProfState.State {
-			case pb.ProfileState_PROFILE_ACTIVE:
-				err := old.Stop(ctx)
-				if err != nil {
-					return "", fmt.Errorf("failed to stop old profile: %w", err)
-				}
-			case pb.ProfileState_PROFILE_CONNECTING, pb.ProfileState_PROFILE_DISCONNECT:
-				return "", fmt.Errorf("cannot stop or remove profile that has not been started or stopped")
-			case pb.ProfileState_PROFILE_IDLE:
-			default:
-				panic(fmt.Sprintf("unexpected pb.ProfileState: %#v", oldProfState.State))
-			}
-
-			if oldProfRuntime, ok := old.(RuntimeProfile); ok {
-				r.RemoveRuntime(oldProfRuntime)
-			} else {
-				err = r.Remove(id)
-				if err != nil {
-					return "", fmt.Errorf("failed to remove old persistent profile: %w", err)
-				}
-			}
+			return "", fmt.Errorf("overlapping non-persistent profile")
 		}
 
+		id = p.Id
 		profile = &nonPersistentProfile{StatefulProfile: prov.Create(p.Name, r)}
 		r.logger.Info(
 			"adding non persistent profile",
@@ -291,11 +264,25 @@ func (r *profileRegistry) Remove(id string) error {
 
 	profile, ok := r.profiles[id]
 	if !ok {
+		r.logger.Error(
+			"cannot remove profile, not found",
+			"name", profile.Name(),
+			"provider", profile.Config().Provider,
+			"id", id,
+		)
 		return fmt.Errorf("no profile with id %s", id)
 	}
 
-	if _, ok := profile.(RuntimeProfile); ok {
-		return fmt.Errorf("cannot remove profile with id %s", id)
+	if _, isRuntimeProfile := profile.(RuntimeProfile); isRuntimeProfile {
+		if _, isNonPersistent := profile.(*nonPersistentProfile); !isNonPersistent {
+			r.logger.Warn(
+				"attempted to remove runtime profile. forbidden operation",
+				"name", profile.Name(),
+				"provider", profile.Config().Provider,
+				"id", id,
+			)
+			return fmt.Errorf("cannot remove profile with id %s", id)
+		}
 	}
 
 	r.logger.Info(

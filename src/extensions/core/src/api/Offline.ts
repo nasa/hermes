@@ -1,14 +1,10 @@
 import * as vscode from 'vscode';
-import { randomBytes } from 'crypto';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { Proto } from '@gov.nasa.jpl.hermes/types';
+import { generateShortUid } from '@gov.nasa.jpl.hermes/util';
 
 const nullDisposable: vscode.Disposable = { dispose: () => { } };
-
-function generateShortUid(): string {
-    return randomBytes(4).toString('hex'); // Generate a short UID
-}
 
 export class Offline implements Hermes.Api {
     private dictionaryCache = new Map<string, Proto.IDictionary>();
@@ -126,22 +122,26 @@ export class Offline implements Hermes.Api {
     }
 
     async addDictionary(dict: Proto.IDictionary): Promise<string> {
-        const id = generateShortUid();
-
-        if (!this.context.storageUri) {
-            this.dictionaryCache.set(id, dict);
-            this.dictionaryUpdate();
-            return id;
+        let id: string;
+        let save: boolean;
+        if (dict.id) {
+            id = dict.id;
+            save = false;
+        } else {
+            id = generateShortUid();
+            save = true;
         }
 
-        await vscode.workspace.fs.createDirectory(this.context.storageUri);
-        const dictPath = vscode.Uri.joinPath(
-            this.context.storageUri,
-            `${id}.dictionary.pb`
-        );
+        if (save && this.context.storageUri) {
+            await vscode.workspace.fs.createDirectory(this.context.storageUri);
+            const dictPath = vscode.Uri.joinPath(
+                this.context.storageUri,
+                `${id}.dictionary.pb`
+            );
 
-        this.log.info(`writing dictionary to ${dictPath.path}`);
-        await vscode.workspace.fs.writeFile(dictPath, Proto.Dictionary.encode(dict).finish());
+            this.log.info(`writing dictionary to ${dictPath.path}`);
+            await vscode.workspace.fs.writeFile(dictPath, Proto.Dictionary.encode(dict).finish());
+        }
 
         this.dictionaryCache.set(id, dict);
         this.dictionaryUpdate();

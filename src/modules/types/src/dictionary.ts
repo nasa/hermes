@@ -413,6 +413,12 @@ export class Dictionary {
     version?: string;
     metadata: Record<string, string>;
 
+    /**
+     * Optional deterministic ID for the dictionary.
+     * If set, this ID will be used when adding the dictionary to the backend.
+     */
+    id?: string;
+
     namespaces: Map<string, DictionaryNamespace>;
 
     private referencesResolved: boolean;
@@ -448,6 +454,7 @@ export class Dictionary {
                 namespace.toProto()
             ])),
             metadata: this.metadata,
+            id: this.id,
         };
 
         return out;

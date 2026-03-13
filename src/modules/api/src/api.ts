@@ -46,7 +46,12 @@ export interface Profile {
     provider: string;
 
     // JSON parameters that fill in the provider schema
-    setting: string;
+    settings: string;
+
+    // Directly provide an ID to the server
+    // If this ID overlaps with another profile.
+    // that profile will be stopped and deleted.
+    id?: string;
 }
 
 export interface Fsw {

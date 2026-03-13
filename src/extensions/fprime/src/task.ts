@@ -1,154 +1,64 @@
 import * as vscode from 'vscode';
-import { platform as nodePlatform } from "os";
-import * as child_process from "child_process";
+import * as path from 'path';
+import * as child_process from 'child_process';
 import winston from "winston";
 import Transport, { TransportStreamOptions } from "winston-transport";
 import { MESSAGE } from 'triple-beam';
 
 import * as Hermes from "@gov.nasa.jpl.hermes/api";
+import { generateShortUid } from '@gov.nasa.jpl.hermes/util';
 
-interface FprimeDeploymentTaskDefinition extends vscode.TaskDefinition {
-    /**
-     * Name of the connection
-     */
-    name: string;
-
-    /**
-     * Path to the dictionary for this deployment
-     */
-    dictionary: string;
+/**
+ * Task definition for F Prime deployment
+ * Creates profile and optionally starts FSW
+ */
+export interface FprimeDeploymentTaskDefinition {
+    readonly type: 'hermes-fprime-deployment';
 
     /**
-     * The command to execute to start the flight software
-     * after the ground system has been started
+     * Profile name
      */
-    command?: string;
+    title: string;
 
     /**
-     * The protocol to use when communicating with the FSW
+     * Profile provider type
      */
-    protocol: "ccsds" | "fprime";
+    profileProvider: "FPrime Server" | "FPrime Client";
 
     /**
-     * When provided, the ground system will host a TCP
-     * server at this port which the FSW will connect to
+     * Profile settings (address, dictionary, protocol)
      */
-    serverPort?: number;
+    profileSettings: {
+        name: string;
+        address: string;
+        dictionary: string;
+        protocol: string;
+    };
 
     /**
-     * When provided, the ground system will connect to a
-     * TCP port at this address
+     * Whether to auto-start the profile (default: true)
      */
-    clientAddress?: string;
+    autoStartProfile?: boolean;
+
+    /**
+     * FSW binary path (optional)
+     * If provided, will start FSW after profile is created
+     */
+    fswCommand?: string;
+
+    /**
+     * Whether to start FSW (default: false)
+     */
+    startFsw?: boolean;
 }
 
-export class FprimeDeploymentProvider implements vscode.TaskProvider {
-    constructor(readonly api: Hermes.Api) { }
-
-    async provideTasks(token: vscode.CancellationToken): Promise<vscode.Task[]> {
-        const files = await vscode.workspace.findFiles('**/build-artifacts/*', null, undefined, token);
-        const buildArtifactsSet = new Set<string>();
-        for (const file of files) {
-            buildArtifactsSet.add(file.toString());
-        }
-
-        let toolchainName: string;
-        switch (nodePlatform()) {
-            case 'aix':
-            case 'android':
-            case 'freebsd':
-            case 'haiku':
-            case 'openbsd':
-            case 'sunos':
-            case 'cygwin':
-            case 'netbsd':
-            case 'win32': // TODO(tumbar) How does this interact with WSL2?
-            default:
-                return [];
-            case 'darwin':
-                toolchainName = 'Darwin';
-                break;
-            case 'linux':
-                toolchainName = 'Linux';
-                break;
-        }
-
-        const buildArtifacts = Array.from(buildArtifactsSet).map(
-            v => vscode.Uri.parse(v)
-        );
-
-        const deployments: FprimeDeploymentTaskDefinition[] = [];
-        const tasks: vscode.TaskDefinition[] = [];
-        let basePort = 8000;
-
-        for (const artifact of buildArtifacts) {
-            // We can only support running builds that are for the current system
-            const builtToolchain = vscode.Uri.joinPath(artifact, toolchainName);
-            for (const [deploymentName, deployment] of await vscode.workspace.fs.readDirectory(builtToolchain)) {
-                if (deployment === vscode.FileType.Directory) {
-                    // Get dictionary
-                    const dictionaryFiles = await vscode.workspace.fs.readDirectory(
-                        vscode.Uri.joinPath(artifact, toolchainName, deploymentName, "dict")
-                    );
-
-                    const dictionaryFile = dictionaryFiles.find(v => v[0].endsWith(".json"));
-                    if (dictionaryFile) {
-                        const binary = vscode.Uri.joinPath(
-                            artifact, toolchainName, deploymentName,
-                            "bin", deploymentName
-                        );
-
-                        // TODO(tumbar) Look at fprime-gds.yaml?
-                        tasks.push(
-                            {
-                                type: "hermes.load-dictionary",
-                                loader: "fprime.json",
-                                file: vscode.Uri.joinPath(
-                                    artifact, toolchainName, deploymentName,
-                                    "dict", dictionaryFile[0],
-                                ).fsPath,
-                            }
-                        );
-                        deployments.push({
-                            type: "hermes-fprime-deployment",
-                            name: deploymentName,
-                            dictionary: "",
-                            protocol: "ccsds",
-                            command: `${binary.fsPath} -a 0.0.0.0 -p ${basePort}`,
-                            serverPort: basePort,
-                        });
-
-                        basePort += 1;
-                    }
-                }
-            }
-        }
-
-        const tasks: vscode.Task[] = [];
-        for (const def of deployments) {
-            tasks.push(new vscode.Task(
-                def, vscode.TaskScope.Workspace, def.name, "hermes"
-            ));
-        }
-
-        return deployments.map(def => );
-    }
-
-    resolveTask(task: vscode.Task, _token: vscode.CancellationToken): vscode.Task | undefined {
-        task.execution = new vscode.CustomExecution(async (def1) => {
-            const def: FprimeDeploymentTaskDefinition = <any>def1;
-            return new FprimeDeploymentPsuedoTerminal(this.api, def);
-        });
-
-        return task;
-    }
-}
-
+/**
+ * Winston transport that writes to a VSCode EventEmitter
+ */
 class EventTransport extends Transport {
     emitter: vscode.EventEmitter<string>;
     constructor(options: TransportStreamOptions & { emitter: vscode.EventEmitter<string> }) {
         super(options);
-
         this.emitter = options.emitter;
     }
 
@@ -163,7 +73,11 @@ class EventTransport extends Transport {
     }
 }
 
-class FprimeDeploymentPsuedoTerminal implements vscode.Pseudoterminal {
+/**
+ * Pseudoterminal for F Prime deployment
+ * Creates profile and optionally starts FSW
+ */
+class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal {
     private _onDidWrite = new vscode.EventEmitter<string>();
     onDidWrite = this._onDidWrite.event;
 
@@ -171,11 +85,12 @@ class FprimeDeploymentPsuedoTerminal implements vscode.Pseudoterminal {
     onDidClose = this._onDidClose.event;
 
     logger!: winston.Logger;
-    exec?: child_process.ChildProcessWithoutNullStreams;
+    private fswProcess?: child_process.ChildProcess;
+    private profileId?: string;
 
     constructor(readonly api: Hermes.Api, readonly def: FprimeDeploymentTaskDefinition) { }
 
-    open(_initialDimensions: vscode.TerminalDimensions | undefined): void {
+    async open(_initialDimensions: vscode.TerminalDimensions | undefined): Promise<void> {
         this.logger = winston.createLogger({
             transports: [new EventTransport({ emitter: this._onDidWrite })],
             levels: {
@@ -196,34 +111,251 @@ class FprimeDeploymentPsuedoTerminal implements vscode.Pseudoterminal {
             )
         });
 
-        if (this.def.command) {
-            this.logger.info("Spawning F Prime FSW deployment");
-            this.logger.info(this.def.command);
-            this.exec = child_process.spawn(this.def.command);
+        const autoStartProfile = this.def.autoStartProfile ?? true;
+        const startFsw = this.def.startFsw ?? false;
 
-            this.exec.stdout.on('data', (out) => {
-                this._onDidWrite.fire(out);
+        try {
+            // Step 1: Create and start profile
+            this.logger.info(`Creating profile: ${this.def.title}`);
+            this.logger.info(`  Provider: ${this.def.profileProvider}`);
+            const settings = JSON.stringify(this.def.profileSettings);
+            this.logger.info(`  Settings: ${settings}`);
+
+            this.profileId = await this.api.addProfile({
+                name: this.def.title,
+                provider: this.def.profileProvider,
+                settings,
+                id: generateShortUid(),
             });
 
-            this.exec.stderr.on('data', (out) => {
-                this._onDidWrite.fire(out);
-            });
+            this.onDidClose(async () => {
+                if (this.profileId) {
+                    const profileId = this.profileId;
+                    this.profileId = undefined;
 
-            this.exec.on("close", (code) => {
-                if (code !== 0) {
-                    this.logger.error(`F Prime FSW deployment exited with code: ${code}`);
-                } else {
-                    this.logger.info(`F Prime FSW deployment exited with code: 0`);
+                    try {
+                        await this.api.stopProfile(profileId);
+                    } catch (err) {
+                        this.logger.error(`failed to stop profile on close: ${err}`);
+                    }
+
+                    try {
+                        await this.api.removeProfile(profileId);
+                    } catch  (err) {
+                        this.logger.error(`failed to remove profile on close: ${err}`);
+                    }
                 }
-
-                this._onDidClose.fire(code ?? 0);
             });
+
+            this.logger.info(`Profile created successfully with ID: ${this.profileId}`);
+
+            if (autoStartProfile) {
+                this.logger.info(`Starting profile...`);
+                await this.api.startProfile(this.profileId);
+                this.logger.info(`Profile started successfully`);
+            }
+        } catch (err) {
+            this.logger.error(`Failed to create/start deployment: ${err}`);
+            this._onDidClose.fire(1);
+            return;
+        }
+
+        // Step 2: Start FSW if requested
+        if (startFsw && this.def.fswCommand) {
+            this.logger.info(`Starting FSW: ${this.def.fswCommand}`);
+
+            try {
+                // Spawn FSW process
+                this.fswProcess = child_process.spawn(this.def.fswCommand, [], {
+                    shell: true,
+                    cwd: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
+                });
+
+                // Pipe stdout to terminal
+                this.fswProcess.stdout?.on('data', (data: Buffer) => {
+                    // Normalize line endings: replace \n with \r\n, and standalone \r with \r\n
+                    const normalized = data.toString()
+                        .replace(/\r\n/g, '\n')  // First normalize \r\n to \n
+                        .replace(/\r/g, '\n')     // Then convert standalone \r to \n
+                        .replace(/\n/g, '\r\n');  // Finally convert all \n to \r\n
+                    this._onDidWrite.fire(normalized);
+                });
+
+                // Pipe stderr to terminal
+                this.fswProcess.stderr?.on('data', (data: Buffer) => {
+                    // Normalize line endings: replace \n with \r\n, and standalone \r with \r\n
+                    const normalized = data.toString()
+                        .replace(/\r\n/g, '\n')  // First normalize \r\n to \n
+                        .replace(/\r/g, '\n')     // Then convert standalone \r to \n
+                        .replace(/\n/g, '\r\n');  // Finally convert all \n to \r\n
+                    this._onDidWrite.fire(normalized);
+                });
+
+                // Handle process exit
+                this.fswProcess.on('exit', (code, signal) => {
+                    if (code !== null) {
+                        this.logger.info(`FSW process exited with code ${code}`);
+                    } else if (signal) {
+                        this.logger.info(`FSW process killed with signal ${signal}`);
+                    }
+                    this._onDidClose.fire(code ?? 0);
+                });
+
+                // Handle process errors
+                this.fswProcess.on('error', (err) => {
+                    this.logger.error(`Failed to start FSW process: ${err.message}`);
+                    this._onDidClose.fire(1);
+                });
+
+                this.logger.info(`FSW process started with PID ${this.fswProcess.pid}`);
+                // Keep terminal open - it will close when FSW exits
+            } catch (err) {
+                this.logger.error(`Failed to spawn FSW: ${err}`);
+                this._onDidClose.fire(1);
+            }
         } else {
-            this.logger.info(`F Prime FSW deployment exited with code: 0`);
+            // Profile only, task completes after creation
+            this._onDidClose.fire(0);
         }
     }
 
     close(): void {
+        // Kill FSW process if still running
+        if (this.fswProcess && !this.fswProcess.killed) {
+            this.logger.info("Stopping FSW...");
+            this.fswProcess.kill('SIGTERM');
 
+
+
+            // Force kill after 5 seconds if still alive
+            setTimeout(() => {
+                if (this.fswProcess && !this.fswProcess.killed) {
+                    this.logger.info("FSW did not stop in 5s, killing...");
+                    this.fswProcess.kill('SIGKILL');
+                }
+            }, 5000);
+        }
+    }
+}
+
+/**
+ * Task provider for F Prime deployments
+ * Auto-discovers deployments from build-artifacts and creates tasks for deployment
+ */
+export class FprimeDeploymentProvider implements vscode.TaskProvider {
+    constructor(readonly api: Hermes.Api) { }
+
+    async provideTasks(token: vscode.CancellationToken): Promise<vscode.Task[]> {
+        // Find all build artifact directories
+        const buildArtifactsFiles = await vscode.workspace.findFiles('**/build-artifacts/*', null, undefined, token);
+        const tasks: vscode.Task[] = [];
+        let basePort = 8000; // F Prime convention
+
+        const buildArtifactsSet = new Set(buildArtifactsFiles.map((v) => path.dirname(v.fsPath)));
+        const buildArtifacts = Array.from(buildArtifactsSet).map(v => vscode.Uri.file(v));
+
+        for (const artifactDir of buildArtifacts) {
+            // Discover all toolchains in build-artifacts
+            let toolchains: [string, vscode.FileType][];
+            try {
+                toolchains = await vscode.workspace.fs.readDirectory(artifactDir);
+            } catch (_err) {
+                continue; // Can't read build-artifacts directory
+            }
+
+            for (const [toolchainName, toolchainType] of toolchains) {
+                if (toolchainType !== vscode.FileType.Directory) {
+                    continue;
+                }
+
+                const builtToolchain = vscode.Uri.joinPath(artifactDir, toolchainName);
+
+                let deployments: [string, vscode.FileType][];
+                try {
+                    deployments = await vscode.workspace.fs.readDirectory(builtToolchain);
+                } catch (_err) {
+                    continue; // Can't read toolchain directory
+                }
+
+                for (const [deploymentName, fileType] of deployments) {
+                    if (fileType !== vscode.FileType.Directory) continue;
+
+                    // Check for dictionary
+                    const dictPath = vscode.Uri.joinPath(builtToolchain, deploymentName, "dict");
+                    let dictionaryFiles: [string, vscode.FileType][];
+                    try {
+                        dictionaryFiles = await vscode.workspace.fs.readDirectory(dictPath);
+                    } catch {
+                        continue; // No dict directory, skip
+                    }
+
+                    const dictionaryFile = dictionaryFiles.find(v => v[0].endsWith(".json"));
+                    if (!dictionaryFile) continue;
+
+                    const binaryPath = vscode.workspace.asRelativePath(vscode.Uri.joinPath(
+                        builtToolchain,
+                        deploymentName,
+                        "bin",
+                        deploymentName
+                    ));
+
+                    // Create F Prime deployment task
+                    const taskDef: FprimeDeploymentTaskDefinition = {
+                        type: 'hermes-fprime-deployment',
+                        title: deploymentName,
+                        profileProvider: 'FPrime Server',
+                        profileSettings: {
+                            name: deploymentName,
+                            address: `0.0.0.0:${basePort}`,
+                            dictionary: deploymentName,
+                            protocol: 'ccsds',
+                        },
+                        autoStartProfile: true,
+                        fswCommand: `\${workspaceFolder}/${binaryPath} -a 0.0.0.0 -p ${basePort}`,
+                        startFsw: true,
+                    };
+
+                    const task = new vscode.Task(
+                        taskDef,
+                        vscode.TaskScope.Workspace,
+                        `${deploymentName}: Deploy`,
+                        'fprime',
+                        new vscode.CustomExecution(async () => {
+                            return new FprimeDeploymentPseudoTerminal(this.api, taskDef);
+                        })
+                    );
+
+                    task.isBackground = true;
+                    task.problemMatchers = [];
+                    task.detail = `Create profile and optionally start FSW for ${deploymentName}`;
+                    task.group = vscode.TaskGroup.Build;
+
+                    tasks.push(task);
+
+                    basePort += 1;
+                }
+            }
+        }
+
+        return tasks;
+    }
+
+    resolveTask(task: vscode.Task, _token: vscode.CancellationToken): vscode.Task | undefined {
+        const def = task.definition as FprimeDeploymentTaskDefinition;
+
+        if (def.type !== 'hermes-fprime-deployment') {
+            return undefined;
+        }
+
+        return new vscode.Task(
+            task.definition,
+            vscode.TaskScope.Workspace,
+            task.name,
+            "fprime",
+            new vscode.CustomExecution(async (resolvedDef) => {
+                const deploymentDef = resolvedDef as FprimeDeploymentTaskDefinition;
+                return new FprimeDeploymentPseudoTerminal(this.api, deploymentDef);
+            })
+        );
     }
 }
