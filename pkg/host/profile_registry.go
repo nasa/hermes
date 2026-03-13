@@ -266,11 +266,19 @@ func (r *profileRegistry) Remove(id string) error {
 	if !ok {
 		r.logger.Error(
 			"cannot remove profile, not found",
+			"id", id,
+		)
+		return fmt.Errorf("no profile with id %s", id)
+	}
+
+	if _, ok := profile.(RuntimeProfile); ok {
+		r.logger.Error(
+			"cannot remove profile",
 			"name", profile.Name(),
 			"provider", profile.Config().Provider,
 			"id", id,
 		)
-		return fmt.Errorf("no profile with id %s", id)
+		return fmt.Errorf("cannot remove profile: '%s' is runtime configured", id)
 	}
 
 	r.logger.Info(

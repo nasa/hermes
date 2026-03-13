@@ -122,12 +122,12 @@ func TestNonPersistentProfile(t *testing.T) {
 	assert.Contains(t, err.Error(), "cannot remove profile")
 }
 
-func TestNonPersistentProfileReplacesPersistent(t *testing.T) {
+func TestCannotAddProfileWithExistingID(t *testing.T) {
 	prov := mocks.NewMockProfileProvider[testParams](t)
 
-	prov.EXPECT().Default().Return(testParams{Name: "defaultname"}).Times(2)
+	prov.EXPECT().Default().Return(testParams{Name: "defaultname"}).Times(1)
 
-	dispose, err := host.RegisterProfileProvider("test-replace", prov, `{
+	dispose, err := host.RegisterProfileProvider("test-overlap", prov, `{
 "type": "object",
 "properties": {
 	"name": {
@@ -141,7 +141,7 @@ func TestNonPersistentProfileReplacesPersistent(t *testing.T) {
 	// Add a persistent profile first
 	persistentID, err := host.Profiles.Add(t.Context(), &pb.Profile{
 		Name:     "persistent-profile",
-		Provider: "test-replace",
+		Provider: "test-overlap",
 		Settings: `{"name": "persistent"}`,
 	})
 	assert.NoError(t, err)
@@ -152,159 +152,43 @@ func TestNonPersistentProfileReplacesPersistent(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, allProfiles[persistentID].RuntimeOnly)
 
-	// Now add a non-persistent profile with the same ID
-	newID, err := host.Profiles.Add(t.Context(), &pb.Profile{
+	// Try to add a profile with the same ID - should fail
+	_, err = host.Profiles.Add(t.Context(), &pb.Profile{
 		Id:       persistentID,
 		Name:     "non-persistent-replacement",
-		Provider: "test-replace",
+		Provider: "test-overlap",
 		Settings: `{"name": "nonpersistent"}`,
 	})
-	assert.NoError(t, err)
-	assert.Equal(t, persistentID, newID, "ID should remain the same")
+	assert.Error(t, err, "should not allow overlapping profile IDs")
+	assert.Contains(t, err.Error(), "overlapping", "error should mention overlapping profiles")
 
-	// Verify the profile was replaced
+	// Verify the original profile is unchanged
 	prof, err := host.Profiles.GetProfile(persistentID)
 	assert.NoError(t, err)
-	assert.Equal(t, "non-persistent-replacement", prof.Name())
+	assert.Equal(t, "persistent-profile", prof.Name())
 
-	// Verify it's now RuntimeOnly
+	// Verify it's still persistent (not RuntimeOnly)
 	allProfiles, err = host.Profiles.AllProfiles()
 	assert.NoError(t, err)
-	assert.True(t, allProfiles[persistentID].RuntimeOnly, "replaced profile should now be RuntimeOnly")
+	assert.False(t, allProfiles[persistentID].RuntimeOnly)
 
-	// Verify it's not in config
+	// Verify it's still in config
 	configs := host.Profiles.Config()
+	found := false
 	for _, cfg := range configs {
-		assert.NotEqual(t, "non-persistent-replacement", cfg.Name)
+		if cfg.Name == "persistent-profile" {
+			found = true
+			break
+		}
 	}
-}
+	assert.True(t, found, "persistent profile should remain in config")
 
-func TestNonPersistentProfileReplacesActive(t *testing.T) {
-	prov := mocks.NewMockProfileProvider[testParams](t)
-
-	prov.EXPECT().Default().Return(testParams{Name: "defaultname"}).Times(2)
-
-	// First profile will be started and run until stopped
-	prov.EXPECT().Start(
-		mock.Anything,
-		testParams{Name: "first"},
-		mock.Anything,
-	).RunAndReturn(func(ctx context.Context, tp testParams, cs host.ConnectSession) error {
-		cs.Started()
-		<-ctx.Done()
-		return nil
-	})
-
-	dispose, err := host.RegisterProfileProvider("test-replace-active", prov, `{
-"type": "object",
-"properties": {
-	"name": {
-		"type": "string",
-		"description": "Test description"
-	}
-}}`)
-	assert.NoError(t, err)
-	defer dispose()
-
-	// Add and start a persistent profile
-	persistentID, err := host.Profiles.Add(t.Context(), &pb.Profile{
-		Name:     "active-profile",
-		Provider: "test-replace-active",
-		Settings: `{"name": "first"}`,
-	})
-	assert.NoError(t, err)
-	defer host.Profiles.Remove(persistentID)
-
-	prof, err := host.Profiles.GetProfile(persistentID)
-	assert.NoError(t, err)
-
-	err = prof.Start(context.Background())
-	assert.NoError(t, err)
-
-	// Verify it's active
-	state, err := prof.State()
-	assert.NoError(t, err)
-	assert.Equal(t, pb.ProfileState_PROFILE_ACTIVE, state.State)
-
-	// Now replace it with a non-persistent profile with the same ID
-	// This should stop the old profile
-	newID, err := host.Profiles.Add(t.Context(), &pb.Profile{
-		Id:       persistentID,
-		Name:     "replacement-profile",
-		Provider: "test-replace-active",
-		Settings: `{"name": "second"}`,
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, persistentID, newID)
-
-	// Verify the new profile exists and is idle
-	newProf, err := host.Profiles.GetProfile(persistentID)
-	assert.NoError(t, err)
-	assert.Equal(t, "replacement-profile", newProf.Name())
-
-	newState, err := newProf.State()
-	assert.NoError(t, err)
-	assert.Equal(t, pb.ProfileState_PROFILE_IDLE, newState.State)
-}
-
-func TestNonPersistentProfileReplacesNonPersistent(t *testing.T) {
-	prov := mocks.NewMockProfileProvider[testParams](t)
-
-	prov.EXPECT().Default().Return(testParams{Name: "defaultname"}).Times(2)
-
-	dispose, err := host.RegisterProfileProvider("test-replace-nonpersist", prov, `{
-"type": "object",
-"properties": {
-	"name": {
-		"type": "string",
-		"description": "Test description"
-	}
-}}`)
-	assert.NoError(t, err)
-	defer dispose()
-
-	fixedID := "fixed-id-456"
-
-	// Add first non-persistent profile
-	id1, err := host.Profiles.Add(t.Context(), &pb.Profile{
-		Id:       fixedID,
-		Name:     "first-non-persistent",
-		Provider: "test-replace-nonpersist",
-		Settings: `{"name": "first"}`,
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, fixedID, id1)
-
-	// Verify first profile
-	prof1, err := host.Profiles.GetProfile(fixedID)
-	assert.NoError(t, err)
-	assert.Equal(t, "first-non-persistent", prof1.Name())
-
-	// Replace with second non-persistent profile
-	id2, err := host.Profiles.Add(t.Context(), &pb.Profile{
-		Id:       fixedID,
-		Name:     "second-non-persistent",
-		Provider: "test-replace-nonpersist",
-		Settings: `{"name": "second"}`,
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, fixedID, id2)
-
-	// Verify the profile was replaced
-	prof2, err := host.Profiles.GetProfile(fixedID)
-	assert.NoError(t, err)
-	assert.Equal(t, "second-non-persistent", prof2.Name())
-
-	// Verify still RuntimeOnly
-	allProfiles, err := host.Profiles.AllProfiles()
-	assert.NoError(t, err)
-	assert.True(t, allProfiles[fixedID].RuntimeOnly)
 }
 
 func TestNonPersistentProfileLifecycle(t *testing.T) {
 	prov := mocks.NewMockProfileProvider[testParams](t)
 
-	prov.EXPECT().Default().Return(testParams{Name: "defaultname"}).Times(2)
+	prov.EXPECT().Default().Return(testParams{Name: "defaultname"}).Times(1)
 
 	prov.EXPECT().Start(
 		mock.Anything,
@@ -357,23 +241,4 @@ func TestNonPersistentProfileLifecycle(t *testing.T) {
 	state, err = prof.State()
 	assert.NoError(t, err)
 	assert.Equal(t, pb.ProfileState_PROFILE_IDLE, state.State)
-
-	// Verify still marked as RuntimeOnly even after stop
-	allProfiles, err := host.Profiles.AllProfiles()
-	assert.NoError(t, err)
-	assert.True(t, allProfiles[fixedID].RuntimeOnly)
-
-	// Now we can replace it since it's idle
-	newID, err := host.Profiles.Add(t.Context(), &pb.Profile{
-		Id:       fixedID,
-		Name:     "replaced-lifecycle-profile",
-		Provider: "test-lifecycle",
-		Settings: `{"name": "lifecycle"}`,
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, fixedID, newID)
-
-	replacedProf, err := host.Profiles.GetProfile(fixedID)
-	assert.NoError(t, err)
-	assert.Equal(t, "replaced-lifecycle-profile", replacedProf.Name())
 }
