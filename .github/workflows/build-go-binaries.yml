@@ -5,12 +5,9 @@ on:
     types: [published]
   workflow_dispatch:
   pull_request:
-    paths:
-      - 'cmd/**'
-      - 'pkg/**'
-      - 'go.mod'
-      - 'go.sum'
-      - '.github/workflows/build-go-binaries.yml'
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
 
 jobs:
   test:
