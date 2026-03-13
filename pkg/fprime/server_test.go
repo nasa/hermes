@@ -6,7 +6,6 @@ import (
 	"net"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/nasa/hermes/mocks"
 	"github.com/nasa/hermes/pkg/host"
@@ -34,7 +33,6 @@ func TestServerConnDisc(t *testing.T) {
 	started := make(chan struct{})
 	connected := make(chan struct{})
 	disconnected := make(chan struct{})
-	canCloseFirstConn := make(chan struct{})
 
 	cs.EXPECT().Started().Run(func() {
 		close(started)
@@ -94,24 +92,14 @@ func TestServerConnDisc(t *testing.T) {
 		// Wait for the Connect callback to be called
 		<-connected
 
-		// Wait for signal to close the connection
-		<-canCloseFirstConn
+		// Connect a second time while the first connection is still active
+		// This should be rejected and not init another FSW
+		clientConn2, err := net.Dial("tcp", "localhost:65345")
+		if assert.NoError(t, err) {
+			err = clientConn2.Close()
+			assert.NoError(t, err)
+		}
 	})
-
-	time.Sleep(500 * time.Millisecond)
-
-	// Connect a second time while the first connection is still active
-	// This should be rejected and not init another FSW
-	clientConn2, err := net.Dial("tcp", "localhost:65345")
-	if assert.NoError(t, err) {
-		err = clientConn2.Close()
-		assert.NoError(t, err)
-	}
-
-	time.Sleep(500 * time.Millisecond)
-
-	// Signal the first connection to close
-	close(canCloseFirstConn)
 
 	wg.Wait()
 
