@@ -6,7 +6,6 @@ import (
 	"io"
 	"net"
 	"sync"
-	"sync/atomic"
 
 	"github.com/nasa/hermes/pkg/host"
 	"github.com/nasa/hermes/pkg/infra"
@@ -39,11 +38,10 @@ func TcpServerProvider(
 		return fmt.Errorf("failed to bind server: %w", err)
 	}
 
-	var numActiveConnections atomic.Int32
+	numActiveConnectionsMux := sync.Mutex{}
+	numActiveConnections := 0
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 
 		session.Started()
 
@@ -65,9 +63,10 @@ func TcpServerProvider(
 				}
 			}
 
-			logger.Info("accepted connection", "localAddr", conn.LocalAddr(), "remoteAddr", conn.RemoteAddr())
+			numActiveConnectionsMux.Lock()
 
-			if params.SingleClient && numActiveConnections.Load() > 0 {
+			if params.SingleClient && numActiveConnections > 0 {
+				numActiveConnectionsMux.Unlock()
 				logger.Warn(
 					"only one active connection is allowed at a time, closing",
 					"localAddr", conn.LocalAddr(), "remoteAddr", conn.RemoteAddr(),
@@ -76,40 +75,40 @@ func TcpServerProvider(
 				continue
 			}
 
-			numActiveConnections.Add(1)
+			logger.Info("accepted connection", "localAddr", conn.LocalAddr(), "remoteAddr", conn.RemoteAddr())
+			numActiveConnections += 1
+			numActiveConnectionsMux.Unlock()
 
 			connClosed := make(chan struct{})
 
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				select {
 				case <-connClosed:
 					return
 				case <-shutdown:
 					conn.Close()
 				}
-			}()
+			})
 
-			wg.Add(1)
-			go func() {
+			wg.Go(func() {
 				defer func() {
+					numActiveConnectionsMux.Lock()
+					numActiveConnections -= 1
+					numActiveConnectionsMux.Unlock()
+
 					conn.Close()
-					numActiveConnections.Add(-1)
 
 					session.Log().Info("closed connection", "localAddr", conn.LocalAddr(), "remoteAddr", conn.RemoteAddr())
 					close(connClosed)
-
-					wg.Done()
 				}()
 
 				// Blocks until the connection is closed and all data is processed
 				if err := connectionHandler(infra.MonitoredReadWriter(conn, name)); err != nil {
 					session.Log().Error("failed to handle connection", "err", err)
 				}
-			}()
+			})
 		}
-	}()
+	})
 
 	<-ctx.Done()
 	close(shutdown)
