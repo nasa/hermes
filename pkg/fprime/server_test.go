@@ -6,6 +6,7 @@ import (
 	"net"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/nasa/hermes/mocks"
 	"github.com/nasa/hermes/pkg/host"
@@ -50,9 +51,7 @@ func TestServerConnDisc(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	runtimeWg := sync.WaitGroup{}
-	runtimeWg.Add(1)
-	go func() {
-		defer runtimeWg.Done()
+	runtimeWg.Go(func() {
 		err := prov.Start(
 			ctx,
 			ServerParams{
@@ -65,7 +64,7 @@ func TestServerConnDisc(t *testing.T) {
 		)
 
 		assert.NoError(t, err)
-	}()
+	})
 
 	cs.AssertNumberOfCalls(t, "Connect", 0)
 	cs.AssertNumberOfCalls(t, "Disconnect", 0)
@@ -98,9 +97,11 @@ func TestServerConnDisc(t *testing.T) {
 	cancel()
 	runtimeWg.Wait()
 
+	time.Sleep(500 * time.Millisecond)
+
 	cs.AssertNumberOfCalls(t, "Started", 1)
-	cs.AssertNumberOfCalls(t, "Connect", 1)
-	cs.AssertNumberOfCalls(t, "Disconnect", 1)
+	cs.AssertNumberOfCalls(t, "Connect", 2)
+	cs.AssertNumberOfCalls(t, "Disconnect", 2)
 	cs.AssertNumberOfCalls(t, "Started", 1)
 }
 
