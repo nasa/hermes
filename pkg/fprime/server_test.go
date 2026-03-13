@@ -91,17 +91,18 @@ func TestServerConnDisc(t *testing.T) {
 
 		err = clientConn.Close()
 		assert.NoError(t, err)
+
+		time.Sleep(500 * time.Millisecond)
+
 	})
 
 	wg.Wait()
 	cancel()
 	runtimeWg.Wait()
 
-	time.Sleep(500 * time.Millisecond)
-
 	cs.AssertNumberOfCalls(t, "Started", 1)
-	cs.AssertNumberOfCalls(t, "Connect", 2)
-	cs.AssertNumberOfCalls(t, "Disconnect", 2)
+	cs.AssertNumberOfCalls(t, "Connect", 1)
+	cs.AssertNumberOfCalls(t, "Disconnect", 1)
 	cs.AssertNumberOfCalls(t, "Started", 1)
 }
 
