@@ -80,34 +80,29 @@ func TcpServerProvider(
 
 			connClosed := make(chan struct{})
 
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				select {
 				case <-connClosed:
 					return
 				case <-shutdown:
 					conn.Close()
 				}
-			}()
+			})
 
-			wg.Add(1)
-			go func() {
+			wg.Go(func() {
 				defer func() {
 					conn.Close()
 					numActiveConnections.Add(-1)
 
 					session.Log().Info("closed connection", "localAddr", conn.LocalAddr(), "remoteAddr", conn.RemoteAddr())
 					close(connClosed)
-
-					wg.Done()
 				}()
 
 				// Blocks until the connection is closed and all data is processed
 				if err := connectionHandler(infra.MonitoredReadWriter(conn, name)); err != nil {
 					session.Log().Error("failed to handle connection", "err", err)
 				}
-			}()
+			})
 		}
 	}()
 

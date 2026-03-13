@@ -33,6 +33,7 @@ func TestServerConnDisc(t *testing.T) {
 	started := make(chan struct{})
 	connected := make(chan struct{})
 	disconnected := make(chan struct{})
+	canCloseFirstConn := make(chan struct{})
 
 	cs.EXPECT().Started().Run(func() {
 		close(started)
@@ -42,13 +43,13 @@ func TestServerConnDisc(t *testing.T) {
 		return assert.NotNil(t, fsw)
 	})).Run(func(fsw host.Fsw) {
 		close(connected)
-	}).Return()
+	}).Return().Once()
 
 	cs.EXPECT().Disconnect(mock.MatchedBy(func(fsw *Fsw) bool {
 		return assert.NotNil(t, fsw)
 	})).Run(func(fsw host.Fsw) {
 		close(disconnected)
-	}).Return()
+	}).Return().Once()
 
 	cs.EXPECT().Log().Return(logger)
 
@@ -87,25 +88,31 @@ func TestServerConnDisc(t *testing.T) {
 		if !assert.NoError(t, err) {
 			return
 		}
+		defer clientConn.Close()
 
 		// Wait for the Connect callback to be called
 		<-connected
 
-		// Connect a second time, this connect should be rejected and not init another FSW
-		clientConn2, err := net.Dial("tcp", "localhost:65345")
-		if assert.NoError(t, err) {
-			err = clientConn2.Close()
-			assert.NoError(t, err)
-		}
-
-		err = clientConn.Close()
-		assert.NoError(t, err)
+		// Wait for signal to close the connection
+		<-canCloseFirstConn
 	})
+
+	// Connect a second time while the first connection is still active
+	// This should be rejected and not init another FSW
+	clientConn2, err := net.Dial("tcp", "localhost:65345")
+	if assert.NoError(t, err) {
+		err = clientConn2.Close()
+		assert.NoError(t, err)
+	}
+
+	// Signal the first connection to close
+	close(canCloseFirstConn)
 
 	wg.Wait()
 
-	// Wait for Disconnect to be called before shutting down
+	// Wait for Disconnect to be called
 	<-disconnected
+
 
 	cancel()
 	runtimeWg.Wait()
