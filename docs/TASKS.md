@@ -4,53 +4,36 @@ This document describes the task system in Hermes, including built-in task types
 
 ## Task Types
 
-### Core Task Types
+### F Prime Extension Task Types
 
-These task types are provided by the core Hermes extension and work with any flight software framework.
+#### `hermes-fprime-deployment`
 
-#### `hermes-load-dictionary`
-
-Loads a dictionary using a registered dictionary provider.
+Creates a profile and optionally starts FSW for an F Prime deployment.
 
 **Parameters:**
-- `loader` (string, required): Dictionary provider ID (e.g., "fprime.json", "fprime.xml")
-- `file` (string, required): Path to the dictionary file
-- `id` (string, optional): Dictionary ID to use (defaults to dictionary name)
+- `title` (string, required): Profile name / deployment title
+- `profileProvider` (string, required): Profile provider type ("FPrime Server" or "FPrime Client")
+- `profileSettings` (object, required): Profile settings
+  - `name` (string): Profile name
+  - `address` (string): Network address (e.g., "0.0.0.0:50000")
+  - `dictionary` (string): Dictionary ID to use
+  - `protocol` (string): Protocol type (e.g., "ccsds")
+- `fswCommand` (string, optional): FSW command to execute after profile creation
 
 **Example:**
 ```json
 {
-  "label": "Load Dictionary",
-  "type": "hermes-load-dictionary",
-  "loader": "fprime.json",
-  "file": "${workspaceFolder}/build-artifacts/Darwin/Ref/dict/RefTopologyAppDictionary.json"
-}
-```
-
-#### `hermes-create-profile`
-
-Creates and optionally starts a Hermes profile.
-
-**Parameters:**
-- `name` (string, required): Profile name
-- `provider` (string, required): Profile provider type (e.g., "FPrime Server", "FPrime Client")
-- `settings` (object or string, required): Provider-specific settings
-- `autoStart` (boolean, optional): Whether to start the profile after creation (default: true)
-
-**Example:**
-```json
-{
-  "label": "Create Profile",
-  "type": "hermes-create-profile",
-  "name": "Ref",
-  "provider": "FPrime Server",
-  "settings": {
+  "label": "Deploy Ref",
+  "type": "hermes-fprime-deployment",
+  "title": "Ref",
+  "profileProvider": "FPrime Server",
+  "profileSettings": {
     "name": "Ref",
     "address": "0.0.0.0:50000",
     "dictionary": "Ref",
     "protocol": "ccsds"
   },
-  "autoStart": true
+  "fswCommand": "${workspaceFolder}/build-artifacts/Darwin/Ref/bin/Ref -a 0.0.0.0 -p 50000"
 }
 ```
 
@@ -83,95 +66,65 @@ VSCode's task system supports dependencies, allowing you to compose complex work
 
 ### Quick Start: Using Auto-Discovered Tasks
 
-The simplest way to compose tasks is to reference the auto-discovered tasks by their label. For example, if you have a deployment named "Ref", you'll automatically get these tasks:
-- `Ref: Create Profile`
-- `Ref: Start FSW (Local)`
+The simplest way to use an F Prime deployment is to run the auto-discovered task directly from the task picker. For example, if you have a deployment named "Ref", you'll automatically get:
+- `Ref: Deploy` - Creates profile and starts FSW
 
-Create a `.vscode/tasks.json` file to compose them:
+Just run the task from the Command Palette:
+1. Open Command Palette (Cmd+Shift+P or Ctrl+Shift+P)
+2. Run "Tasks: Run Task"
+3. Select "Ref: Deploy"
 
-```json
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Deploy Ref",
-      "dependsOn": [
-        "Ref: Create Profile",
-        "Ref: Start FSW (Local)"
-      ],
-      "dependsOrder": "sequence"
-    }
-  ]
-}
-```
+The task will:
+1. Create and start a profile for the deployment
+2. Start the FSW binary (if available)
+3. Keep running until you terminate it
 
-That's it! Run "Deploy Ref" and it will execute all three steps in order.
+If you need to customize the deployment workflow (different port, custom FSW command, etc.), create a custom task in your `.vscode/tasks.json` file using the `hermes-fprime-deployment` task type.
 
-### Example: Full F Prime Deployment (Manual)
+### Example: Customizing F Prime Deployment
 
-If you need more control or want to customize the tasks, you can define them manually in your `.vscode/tasks.json` file:
+If you need to customize the auto-discovered task, you can define a manual task in your `.vscode/tasks.json` file:
 
 ```json
 {
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Load Ref Dictionary",
-      "type": "hermes-load-dictionary",
-      "loader": "fprime.json",
-      "file": "${workspaceFolder}/build-artifacts/Darwin/Ref/dict/RefTopologyAppDictionary.json",
-      "problemMatcher": []
-    },
-    {
-      "label": "Create Ref Profile",
-      "type": "hermes-create-profile",
-      "name": "Ref",
-      "provider": "FPrime Server",
-      "settings": {
+      "label": "Deploy Ref (Custom)",
+      "type": "hermes-fprime-deployment",
+      "title": "Ref",
+      "profileProvider": "FPrime Server",
+      "profileSettings": {
         "name": "Ref",
-        "address": "0.0.0.0:50000",
+        "address": "0.0.0.0:8000",
         "dictionary": "Ref",
         "protocol": "ccsds"
       },
-      "autoStart": true,
-      "dependsOn": ["Load Ref Dictionary"],
-      "problemMatcher": []
-    },
-    {
-      "label": "Start Ref FSW",
-      "type": "shell",
-      "command": "${workspaceFolder}/build-artifacts/Darwin/Ref/bin/Ref -a 0.0.0.0 -p 50000",
-      "dependsOn": ["Create Ref Profile"],
+      "fswCommand": "${workspaceFolder}/build-artifacts/Darwin/Ref/bin/Ref -a 0.0.0.0 -p 8000",
       "isBackground": true,
-      "problemMatcher": []
-    },
-    {
-      "label": "Deploy Ref",
-      "dependsOn": ["Start Ref FSW"],
-      "dependsOrder": "sequence",
       "problemMatcher": []
     }
   ]
 }
 ```
 
-### Task Execution Order
+### Task Execution
 
-With the above configuration:
+When the task runs:
 
-1. **"Deploy Ref"** task triggers
-2. **"Load Ref Dictionary"** runs first (dependency of "Create Ref Profile")
-3. **"Create Ref Profile"** runs second (dependency of "Start Ref FSW")
-4. **"Start Ref FSW"** runs last
-5. **"Deploy Ref"** completes when all dependencies finish
+1. Creates and starts a profile named "Ref"
+2. If `fswCommand` is provided, starts the FSW binary
+3. Pipes FSW stdout/stderr to the terminal
+4. Keeps running until FSW exits or you terminate it
+5. Automatically stops the profile when the task is terminated
 
 ### Benefits of Task Composition
 
-1. **Modularity**: Each task does one thing well
-2. **Reusability**: Tasks can be reused in different compositions
-3. **Flexibility**: Easy to add/remove steps or change the order
-4. **Debugging**: Can run individual tasks for troubleshooting
-5. **Customization**: Easy to add custom steps between standard tasks
+1. **Modularity**: Each deployment task is self-contained and handles profile + FSW lifecycle
+2. **Reusability**: Tasks can be reused in different compositions (parallel deployments, custom workflows)
+3. **Flexibility**: Easy to customize FSW commands, ports, and connection modes
+4. **Debugging**: Can run individual deployment tasks for troubleshooting
+5. **Customization**: Easy to add custom pre/post steps (logging, health checks, cleanup)
 
 ### Common Patterns with Auto-Discovered Tasks
 
@@ -181,9 +134,9 @@ With the above configuration:
 {
   "label": "Deploy All Deployments",
   "dependsOn": [
-    "Ref: Start FSW",
-    "MyComponent: Start FSW",
-    "TestHarness: Start FSW"
+    "Ref: Deploy",
+    "MyComponent: Deploy",
+    "TestHarness: Deploy"
   ],
   "dependsOrder": "parallel"
 }
@@ -201,11 +154,29 @@ With the above configuration:
   "label": "Deploy Ref with Checks",
   "dependsOn": [
     "Pre-Flight Checks",
-    "Ref: Load Dictionary",
-    "Ref: Create Profile",
-    "Ref: Start FSW"
+    "Ref: Deploy"
   ],
   "dependsOrder": "sequence"
+}
+```
+
+#### Profile Only (No FSW)
+
+To create a profile without starting FSW, omit the `fswCommand` parameter:
+
+```json
+{
+  "label": "Ref Profile Only",
+  "type": "hermes-fprime-deployment",
+  "title": "Ref",
+  "profileProvider": "FPrime Server",
+  "profileSettings": {
+    "name": "Ref",
+    "address": "0.0.0.0:8000",
+    "dictionary": "Ref",
+    "protocol": "ccsds"
+  },
+  "problemMatcher": []
 }
 ```
 
@@ -213,41 +184,19 @@ With the above configuration:
 
 ```json
 {
-  "label": "Ref Client Mode Profile",
-  "type": "hermes-create-profile",
-  "name": "RefClient",
-  "provider": "FPrime Client",
-  "settings": {
+  "label": "Deploy Ref Client Mode",
+  "type": "hermes-fprime-deployment",
+  "title": "RefClient",
+  "profileProvider": "FPrime Client",
+  "profileSettings": {
     "name": "RefClient",
-    "address": "localhost:50000",
+    "address": "localhost:8000",
     "dictionary": "Ref",
     "protocol": "ccsds"
   },
-  "autoStart": true
-},
-{
-  "label": "Deploy Ref Client Mode",
-  "dependsOn": [
-    "Ref: Load Dictionary",
-    "Ref Client Mode Profile",
-    "Ref: Start FSW"
-  ],
-  "dependsOrder": "sequence"
-}
-```
-
-#### Load Only the Dictionary (No Profile or FSW)
-
-Just run the auto-discovered task `Ref: Load Dictionary` directly from the task picker, or reference it:
-
-```json
-{
-  "label": "Load All Dictionaries",
-  "dependsOn": [
-    "Ref: Load Dictionary",
-    "MyComponent: Load Dictionary"
-  ],
-  "dependsOrder": "parallel"
+  "fswCommand": "${workspaceFolder}/build-artifacts/Darwin/Ref/bin/Ref -a 0.0.0.0 -p 8000",
+  "isBackground": true,
+  "problemMatcher": []
 }
 ```
 
@@ -259,15 +208,19 @@ If you need more control beyond what auto-discovery provides, you can define tas
 
 ```json
 {
-  "type": "hermes-create-profile",
-  "name": "MyDeployment",
-  "provider": "FPrime Server",
-  "settings": {
+  "label": "Deploy MyDeployment (Server)",
+  "type": "hermes-fprime-deployment",
+  "title": "MyDeployment",
+  "profileProvider": "FPrime Server",
+  "profileSettings": {
     "name": "MyDeployment",
     "address": "0.0.0.0:8000",
     "dictionary": "MyDeployment",
     "protocol": "ccsds"
-  }
+  },
+  "fswCommand": "${workspaceFolder}/path/to/MyDeployment -a 0.0.0.0 -p 8000",
+  "isBackground": true,
+  "problemMatcher": []
 }
 ```
 
@@ -275,26 +228,30 @@ If you need more control beyond what auto-discovery provides, you can define tas
 
 ```json
 {
-  "type": "hermes-create-profile",
-  "name": "MyDeployment",
-  "provider": "FPrime Client",
-  "settings": {
+  "label": "Deploy MyDeployment (Client)",
+  "type": "hermes-fprime-deployment",
+  "title": "MyDeployment",
+  "profileProvider": "FPrime Client",
+  "profileSettings": {
     "name": "MyDeployment",
     "address": "localhost:8000",
     "dictionary": "MyDeployment",
     "protocol": "ccsds"
-  }
+  },
+  "fswCommand": "${workspaceFolder}/path/to/MyDeployment -a 0.0.0.0 -p 8000",
+  "isBackground": true,
+  "problemMatcher": []
 }
 ```
 
-#### Loading Multiple Dictionaries
+#### Deploying Multiple FSW Instances
 
 ```json
 {
-  "label": "Load All Dictionaries",
+  "label": "Deploy All",
   "dependsOn": [
-    "Load Deployment A Dictionary",
-    "Load Deployment B Dictionary"
+    "Deploy FSW A",
+    "Deploy FSW B"
   ],
   "dependsOrder": "parallel"
 }
@@ -313,24 +270,30 @@ If you need more control beyond what auto-discovery provides, you can define tas
   "label": "Deploy with Checks",
   "dependsOn": [
     "Pre-Flight Checks",
-    "Load Dictionary",
-    "Create Profile",
-    "Start FSW"
+    "MyDeployment: Deploy"
   ],
   "dependsOrder": "sequence"
 }
 ```
 
-## Custom FSW Deployment Tasks
+## Custom FSW Deployment Scenarios
 
-The auto-discovered "Start FSW (Local)" task is a template for running a local binary. You'll typically need to create custom FSW tasks in your `.vscode/tasks.json` for your specific deployment scenario:
+The auto-discovered deployment task uses a basic local binary command. You'll typically need to create custom tasks in your `.vscode/tasks.json` for your specific deployment scenario:
 
 ### Example: Simulator Deployment
 ```json
 {
-  "label": "Ref: Start FSW (Simulator)",
-  "type": "shell",
-  "command": "${workspaceFolder}/build-artifacts/Darwin/Ref/bin/Ref -a 0.0.0.0 -p 50000 --sim",
+  "label": "Ref: Deploy (Simulator)",
+  "type": "hermes-fprime-deployment",
+  "title": "Ref",
+  "profileProvider": "FPrime Server",
+  "profileSettings": {
+    "name": "Ref",
+    "address": "0.0.0.0:8000",
+    "dictionary": "Ref",
+    "protocol": "ccsds"
+  },
+  "fswCommand": "${workspaceFolder}/build-artifacts/Darwin/Ref/bin/Ref -a 0.0.0.0 -p 8000 --sim",
   "isBackground": true,
   "problemMatcher": []
 }
@@ -340,8 +303,16 @@ The auto-discovered "Start FSW (Local)" task is a template for running a local b
 ```json
 {
   "label": "Ref: Deploy to Hardware",
-  "type": "shell",
-  "command": "fprime-util flash --port /dev/ttyUSB0 && fprime-util connect",
+  "type": "hermes-fprime-deployment",
+  "title": "Ref",
+  "profileProvider": "FPrime Server",
+  "profileSettings": {
+    "name": "Ref",
+    "address": "0.0.0.0:8000",
+    "dictionary": "Ref",
+    "protocol": "ccsds"
+  },
+  "fswCommand": "fprime-util flash --port /dev/ttyUSB0 && fprime-util connect",
   "isBackground": true,
   "problemMatcher": []
 }
@@ -350,9 +321,17 @@ The auto-discovered "Start FSW (Local)" task is a template for running a local b
 ### Example: Remote Testbed
 ```json
 {
-  "label": "Ref: Start FSW (Testbed)",
-  "type": "shell",
-  "command": "ssh testbed 'cd /opt/fsw && ./Ref -a 0.0.0.0 -p 50000'",
+  "label": "Ref: Deploy (Testbed)",
+  "type": "hermes-fprime-deployment",
+  "title": "Ref",
+  "profileProvider": "FPrime Server",
+  "profileSettings": {
+    "name": "Ref",
+    "address": "0.0.0.0:8000",
+    "dictionary": "Ref",
+    "protocol": "ccsds"
+  },
+  "fswCommand": "ssh testbed 'cd /opt/fsw && ./Ref -a 0.0.0.0 -p 8000'",
   "isBackground": true,
   "problemMatcher": []
 }
@@ -361,55 +340,71 @@ The auto-discovered "Start FSW (Local)" task is a template for running a local b
 ### Example: Custom Toolchain (ARM)
 ```json
 {
-  "label": "Ref: Start FSW (ARM)",
-  "type": "shell",
-  "command": "${workspaceFolder}/build-artifacts/arm-linux-gnueabihf/Ref/bin/Ref -a 0.0.0.0 -p 50000",
+  "label": "Ref: Deploy (ARM)",
+  "type": "hermes-fprime-deployment",
+  "title": "Ref",
+  "profileProvider": "FPrime Server",
+  "profileSettings": {
+    "name": "Ref",
+    "address": "0.0.0.0:8000",
+    "dictionary": "Ref",
+    "protocol": "ccsds"
+  },
+  "fswCommand": "${workspaceFolder}/build-artifacts/arm-linux-gnueabihf/Ref/bin/Ref -a 0.0.0.0 -p 8000",
   "isBackground": true,
   "problemMatcher": []
 }
 ```
 
-Then compose with profile creation:
-```json
-{
-  "label": "Deploy Ref to Hardware",
-  "dependsOn": [
-    "Ref: Create Profile",
-    "Ref: Deploy to Hardware"
-  ],
-  "dependsOrder": "sequence"
-}
-```
-
 ## Task Discovery
 
-The F Prime extension automatically discovers F Prime deployments in your workspace and creates multiple tasks for each deployment:
+The F Prime extension automatically discovers F Prime deployments in your workspace and creates tasks for each deployment:
 
 ### Auto-Discovered Tasks
 
-For each deployment found in `build-artifacts/<toolchain>/<deployment>/`, the following tasks are created:
+For each deployment found in `build-artifacts/<toolchain>/<deployment>/` with a valid dictionary file, the following task is created:
 
-1. **`<DeploymentName>: Create Profile`** - Creates and starts a profile (type: `hermes-create-profile`, background task)
-2. **`<DeploymentName>: Start FSW (Local)`** - Template task for starting local binary (type: `shell`, background task)
+**`<DeploymentName>: Deploy`** - Combined task that creates a profile and optionally starts FSW (type: `hermes-fprime-deployment`, background task)
+
+This auto-discovered task:
+- Creates and starts a profile for the deployment
+- Starts the local FSW binary (if available) at the default port starting from 8000 (incrementing for each deployment)
+- Uses the "FPrime Server" profile provider (FSW connects to GDS)
+- Automatically references the deployment's dictionary
+- Uses CCSDS protocol
 
 **Note:** Tasks are discovered for all toolchains in `build-artifacts/`, not just the current platform. This allows you to see all available deployments across different build configurations.
 
-**Important:** The "Start FSW (Local)" task is a template based on detecting a local binary. You will typically need to customize this task in your `.vscode/tasks.json` for your specific deployment workflow:
+**Important:** The auto-discovered task is a template based on detecting a local binary. You will typically need to create custom tasks in your `.vscode/tasks.json` for your specific deployment workflow:
 - Custom toolchains (baremetal, cross-compile, simulator)
 - Hardware deployment (flashing, bootloader, JTAG)
 - Remote/testbed deployment
 - Custom FSW arguments and environment
+- Client mode instead of server mode
 
 ### Using Auto-Discovered Tasks
 
-You can reference these tasks in your `.vscode/tasks.json` file by their label:
+You can reference auto-discovered tasks in your `.vscode/tasks.json` file by their label:
 
 ```json
 {
-  "label": "Deploy Ref",
+  "label": "Deploy All Components",
   "dependsOn": [
-    "Ref: Create Profile",
-    "Ref: Start FSW (Local)"
+    "Ref: Deploy",
+    "MyComponent: Deploy"
+  ],
+  "dependsOrder": "parallel"
+}
+```
+
+Or add pre/post steps to an existing deployment:
+
+```json
+{
+  "label": "Deploy Ref with Logging",
+  "dependsOn": [
+    "Start Logger",
+    "Ref: Deploy"
   ],
   "dependsOrder": "sequence"
 }
@@ -422,7 +417,7 @@ To see all available tasks:
 2. Run "Tasks: Run Task"
 3. Select a task from the list
 
-The auto-discovered tasks will appear with their deployment name prefix (e.g., "Ref: Create Profile").
+The auto-discovered tasks will appear with their deployment name prefix (e.g., "Ref: Deploy").
 
 ## Variables
 
@@ -454,9 +449,15 @@ Example:
 
 ### Task not found
 
-If a task type is not recognized, ensure the relevant extension is installed:
-- `hermes-load-dictionary`, `hermes-create-profile`: Core Hermes extension
-- `fprime-start-fsw`, `fprime-deployment`: F Prime extension
+If a task type is not recognized, ensure the F Prime extension is installed:
+- `hermes-fprime-deployment`: F Prime extension (`jet-propulsion-laboratory.hermes-fprime`)
+
+### Auto-discovered tasks not appearing
+
+Ensure:
+1. Your workspace has a `build-artifacts/` directory with built deployments
+2. Each deployment has a `dict/` directory with a `.json` dictionary file
+3. The F Prime extension is installed and activated
 
 ### Dependencies not running
 
@@ -474,15 +475,26 @@ Check the Terminal panel for task output. Tasks write logs to their respective t
 
 ### Dictionary not found
 
-Verify the dictionary file path is correct and the file exists. Use `${workspaceFolder}` for portable paths.
+The deployment task automatically references the dictionary by name. Ensure:
+1. The dictionary was discovered by Hermes (check auto-discovery or manual settings)
+2. The `dictionary` field in `profileSettings` matches the dictionary ID
+3. The backend is running (check status bar)
 
 ### Profile creation fails
 
 Ensure:
-1. The dictionary was loaded first (use `dependsOn`)
-2. The dictionary ID matches the one loaded
-3. The backend is running (check status bar)
-4. The profile provider name is correct (case-sensitive)
+1. The dictionary ID in `profileSettings.dictionary` matches an available dictionary
+2. The backend is running (check status bar)
+3. The profile provider name is correct (case-sensitive: "FPrime Server" or "FPrime Client")
+4. The address format is correct (e.g., "0.0.0.0:8000" or "localhost:8000")
+
+### FSW fails to start
+
+Check the task terminal output for errors. Common issues:
+1. Binary path is incorrect or doesn't exist
+2. Port is already in use
+3. Binary doesn't have execute permissions
+4. Command syntax is incorrect (check shell escaping)
 
 ## See Also
 
