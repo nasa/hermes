@@ -76,6 +76,7 @@ func TcpServerProvider(
 			}
 
 			logger.Info("accepted connection", "localAddr", conn.LocalAddr(), "remoteAddr", conn.RemoteAddr())
+			numActiveConnections += 1
 			numActiveConnectionsMux.Unlock()
 
 			connClosed := make(chan struct{})
