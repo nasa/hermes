@@ -98,6 +98,8 @@ func TestServerConnDisc(t *testing.T) {
 		<-canCloseFirstConn
 	})
 
+	time.Sleep(500 * time.Millisecond)
+
 	// Connect a second time while the first connection is still active
 	// This should be rejected and not init another FSW
 	clientConn2, err := net.Dial("tcp", "localhost:65345")
@@ -106,7 +108,7 @@ func TestServerConnDisc(t *testing.T) {
 		assert.NoError(t, err)
 	}
 
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 
 	// Signal the first connection to close
 	close(canCloseFirstConn)
