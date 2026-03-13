@@ -178,6 +178,11 @@ func (s *Storage) storeDictionaries() {
 	// Write out dictionaries
 	dicts := []string{}
 	for id, dict := range dictionaries {
+		if dict.Id != "" {
+			// Dictionary is non-persistent
+			continue
+		}
+
 		dicts = append(dicts, id)
 
 		dictFile := path.Join(s.root, fmt.Sprintf("%s.dictionary.pb", id))

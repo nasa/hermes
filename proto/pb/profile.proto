@@ -20,6 +20,11 @@ message Profile {
 
   /* JSON parameters that fill in the provider schema */
   string settings = 3;
+
+  // (optional) This profile is externally managed and should not be persisted
+  // in the non-volatile Hermes state. If this ID is non-unique with an already
+  // created profile, the other profile will be stopped and removed
+  string id = 5;
 }
 
 enum ProfileState {

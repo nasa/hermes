@@ -399,6 +399,10 @@
           "keyType": "string",
           "type": "string",
           "id": 3
+        },
+        "id": {
+          "type": "string",
+          "id": 4
         }
       }
     },
@@ -1445,6 +1449,10 @@
         "settings": {
           "type": "string",
           "id": 3
+        },
+        "id": {
+          "type": "string",
+          "id": 5
         }
       }
     },

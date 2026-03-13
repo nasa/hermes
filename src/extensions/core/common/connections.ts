@@ -5,7 +5,7 @@ export interface State {
     writeDisabled?: boolean;
 
     profileProviders?: Proto.IProfileProvider[];
-    dictionaryProviders?: string[];
+    dictionaryProviders?: { key: string, title: string }[];
 
     profiles?: Record<string, Proto.IStatefulProfile>;
     dictionaries?: Record<string, Proto.IDictionaryHead>;

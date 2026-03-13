@@ -602,10 +602,8 @@ type DictionaryHead struct {
 	//
 	// This is set by the provider.
 	Type string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
-	// *
 	// Name given to dictionary, can be changed by the user
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	// *
 	// (optional) Dictionary/FSW release version
 	Version       string `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -744,10 +742,14 @@ func (x *DictionaryNamespace) GetTypes() map[string]*Type {
 }
 
 type Dictionary struct {
-	state         protoimpl.MessageState          `protogen:"open.v1"`
-	Head          *DictionaryHead                 `protobuf:"bytes,1,opt,name=head,proto3" json:"head,omitempty"`
-	Content       map[string]*DictionaryNamespace `protobuf:"bytes,2,rep,name=content,proto3" json:"content,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Metadata      map[string]string               `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	state    protoimpl.MessageState          `protogen:"open.v1"`
+	Head     *DictionaryHead                 `protobuf:"bytes,1,opt,name=head,proto3" json:"head,omitempty"`
+	Content  map[string]*DictionaryNamespace `protobuf:"bytes,2,rep,name=content,proto3" json:"content,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Metadata map[string]string               `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// (optional) This dictionary is externally managed and should be persisted
+	// in the non-volatile Hermes state. If this ID is non-unique with an already
+	// added dictionary, the overlapping dictionary will be removed.
+	Id            string `protobuf:"bytes,4,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -801,6 +803,13 @@ func (x *Dictionary) GetMetadata() map[string]string {
 		return x.Metadata
 	}
 	return nil
+}
+
+func (x *Dictionary) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
 }
 
 var File_dictionary_proto protoreflect.FileDescriptor
@@ -881,12 +890,13 @@ const file_dictionary_proto_rawDesc = "" +
 	"\n" +
 	"TypesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x1b\n" +
-	"\x05value\x18\x02 \x01(\v2\x05.TypeR\x05value:\x028\x01\"\xab\x02\n" +
+	"\x05value\x18\x02 \x01(\v2\x05.TypeR\x05value:\x028\x01\"\xbb\x02\n" +
 	"\n" +
 	"Dictionary\x12#\n" +
 	"\x04head\x18\x01 \x01(\v2\x0f.DictionaryHeadR\x04head\x122\n" +
 	"\acontent\x18\x02 \x03(\v2\x18.Dictionary.ContentEntryR\acontent\x125\n" +
-	"\bmetadata\x18\x03 \x03(\v2\x19.Dictionary.MetadataEntryR\bmetadata\x1aP\n" +
+	"\bmetadata\x18\x03 \x03(\v2\x19.Dictionary.MetadataEntryR\bmetadata\x12\x0e\n" +
+	"\x02id\x18\x04 \x01(\tR\x02id\x1aP\n" +
 	"\fContentEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
 	"\x05value\x18\x02 \x01(\v2\x14.DictionaryNamespaceR\x05value:\x028\x01\x1a;\n" +

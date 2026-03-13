@@ -11,18 +11,36 @@ import { Dictionary } from '@gov.nasa.jpl.hermes/types';
  * multiple files.
  */
 export interface DictionaryProvider {
+    title: string;
+
     /**
      * Signal fires when dictionaries provided by {@link provideExternalDictionaries}
      * needs to be called again.
+     *
+     * Use this to notify Hermes when:
+     * - New dictionaries are discovered in the workspace (e.g., file watching)
+     * - Existing auto-discovered dictionaries have been modified
+     * - Dictionary availability has changed
      */
     onExternalDictionariesUpdated?: vscode.Event<void>;
 
     /**
-     * When this is implemented, this loader supports loading a dictionary
-     * without being explicitely prompted. This is usually used for loading
-     * "official" dictionaries released to a fixed distribution.
-     * 
-     * If this listing needs to be updated, you can externally fire {@link onExternalDictionariesUpdated}
+     * Provide dictionaries that are auto-discovered from the workspace,
+     * without requiring explicit user prompting. This is typically used for:
+     * - Auto-discovering dictionaries from standard build output locations
+     * - Loading "official" dictionaries from fixed distribution paths
+     * - Workspace-specific dictionary configurations
+     *
+     * This method should return all currently available auto-discovered
+     * dictionaries. When the set of available dictionaries changes,
+     * fire {@link onExternalDictionariesUpdated} to trigger a refresh.
+     *
+     * Common patterns:
+     * - Scan build artifacts for dictionary files
+     * - Watch specific workspace directories for dictionary changes
+     * - Load dictionaries from workspace settings
+     *
+     * @returns Array of auto-discovered dictionaries, or null/undefined if none found
      */
     provideExternalDictionaries?(): vscode.ProviderResult<Dictionary[]>;
 

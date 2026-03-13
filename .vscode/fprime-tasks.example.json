@@ -1,0 +1,119 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Deploy MyDeployment (Sequential)",
+      "detail": "Compose auto-discovered tasks with dependencies",
+      "dependsOn": [
+        "MyDeployment: Load Dictionary",
+        "MyDeployment: Create Profile",
+        "MyDeployment: Start FSW"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "Deploy All Deployments",
+      "detail": "Start multiple deployments in parallel",
+      "dependsOn": [
+        "Deployment1: Start FSW",
+        "Deployment2: Start FSW"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      "label": "Custom: Deploy with Pre-Flight Checks",
+      "dependsOn": [
+        "Pre-Flight Checks",
+        "MyDeployment: Load Dictionary",
+        "MyDeployment: Create Profile",
+        "MyDeployment: Start FSW"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "Pre-Flight Checks",
+      "type": "shell",
+      "command": "echo 'Running pre-flight checks...' && echo 'System OK'",
+      "problemMatcher": []
+    },
+    {
+      "label": "Custom: Client Mode Deployment",
+      "detail": "Use client mode instead of server mode",
+      "dependsOn": [
+        "MyDeployment: Load Dictionary",
+        "Custom: Create Client Profile",
+        "MyDeployment: Start FSW"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "Custom: Create Client Profile",
+      "type": "hermes-create-profile",
+      "name": "MyDeploymentClient",
+      "provider": "FPrime Client",
+      "settings": {
+        "name": "MyDeploymentClient",
+        "address": "localhost:8000",
+        "dictionary": "MyDeployment",
+        "protocol": "ccsds"
+      },
+      "autoStart": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Custom: Load Dictionary Only",
+      "detail": "Manually defined task to load a specific dictionary",
+      "type": "hermes-load-dictionary",
+      "loader": "fprime.json",
+      "file": "${workspaceFolder}/build-artifacts/Darwin/Ref/dict/RefTopologyAppDictionary.json",
+      "problemMatcher": []
+    },
+    {
+      "label": "Custom: Create Profile with Custom Settings",
+      "detail": "Manually defined task with custom profile settings",
+      "type": "hermes-create-profile",
+      "name": "CustomRef",
+      "provider": "FPrime Server",
+      "settings": {
+        "name": "CustomRef",
+        "address": "0.0.0.0:9999",
+        "dictionary": "Ref",
+        "protocol": "fprime"
+      },
+      "autoStart": true,
+      "dependsOn": ["Custom: Load Dictionary Only"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Custom: Start FSW with Custom Args",
+      "detail": "Manually defined task with custom FSW arguments",
+      "type": "shell",
+      "command": "${workspaceFolder}/build-artifacts/Darwin/Ref/bin/Ref -a 0.0.0.0 -p 9999 --verbose",
+      "dependsOn": ["Custom: Create Profile with Custom Settings"],
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Load Multiple Dictionaries",
+      "detail": "Load dictionaries for multiple deployments in parallel",
+      "dependsOn": [
+        "Deployment1: Load Dictionary",
+        "Deployment2: Load Dictionary",
+        "Deployment3: Load Dictionary"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      "label": "Stop All FSW",
+      "detail": "Kill all running FSW processes",
+      "type": "shell",
+      "command": "pkill -f 'bin/(Ref|MyDeployment)' || echo 'No FSW processes running'",
+      "problemMatcher": []
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import "bus.proto";
 import "profile.proto";
 import "msg.proto";
 
+// Public service for interacting with the Hermes state
 service Api {
   /**
    * Send a command sequence to the FSW to execute.
@@ -99,7 +100,7 @@ service Api {
   // Update a profile
   rpc UpdateProfile(ProfileUpdate) returns (google.protobuf.Empty);
 
-  // Create a new profile, returns it's registered ID
+  // Create a new Profile and return it's ID
   rpc AddProfile(Profile) returns (Id);
 
   // Delete a profile by its id
@@ -146,7 +147,7 @@ service Api {
    */
   rpc GetDictionary(Id) returns (Dictionary);
 
-  // Add a new dictionary entry
+  // Add a new dictionary entry, return it's ID.
   rpc AddDictionary(Dictionary) returns (Id);
 
   // Remove specified dictionary
@@ -174,7 +175,7 @@ service Api {
   rpc SubFileTransfer(google.protobuf.Empty) returns (stream FileTransferState);
 }
 
-// API to provide interface with an external software
+// API to provide interfaces with external software
 service Provider {
   /**
    * A long lived connection telling the host that a link is active with

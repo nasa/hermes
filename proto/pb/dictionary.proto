@@ -148,14 +148,10 @@ message DictionaryHead {
    */
   string type = 1;
 
-  /**
-   * Name given to dictionary, can be changed by the user
-   */
+  // Name given to dictionary, can be changed by the user
   string name = 2;
 
-  /**
-   * (optional) Dictionary/FSW release version
-   */
+  // (optional) Dictionary/FSW release version
   string version = 3;
 }
 
@@ -176,4 +172,9 @@ message Dictionary {
   DictionaryHead                   head     = 1;
   map<string, DictionaryNamespace> content  = 2;
   map<string, string>              metadata = 3;
+
+  // (optional) This dictionary is externally managed and should be persisted
+  // in the non-volatile Hermes state. If this ID is non-unique with an already
+  // added dictionary, the overlapping dictionary will be removed.
+  string id = 4;
 }

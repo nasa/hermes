@@ -18,11 +18,12 @@ export interface CoreApi {
 
     /**
      * Register a new dictionary provider for loading dictionaries
-     * @param name Name of the provider
+     * @param id ID of provider
+     * @param title Name of the provider
      * @param dictionaryProvider Dictionary provider
      */
     registerDictionaryProvider(
-        name: string,
+        id: string,
         dictionaryProvider: DictionaryProvider,
     ): vscode.Disposable;
 

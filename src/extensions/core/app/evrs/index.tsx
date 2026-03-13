@@ -320,7 +320,7 @@ export function EvrTable() {
         return <p style={{
             width: "100%",
             textAlign: 'center'
-        }}>Waiting for EVRs...</p>;
+        }}>Waiting for event records...</p>;
     }
 
     return (

@@ -1,6 +1,6 @@
 module github.com/nasa/hermes
 
-go 1.25
+go 1.26
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0

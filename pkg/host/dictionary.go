@@ -149,18 +149,31 @@ func newDictionaryRegistry() *dictionaryRegistry {
 }
 
 func (r *dictionaryRegistry) Add(dict *pb.Dictionary) string {
+	// Create a new ID for this dictionary
+	var id string
+	if dict.Id != "" {
+		// Remove any old dictionary
+		r.Remove(dict.Id) // ignore error return
+		id = dict.Id
+
+		r.logger.Info("adding non-persistent dictionary",
+			"id", id,
+			"name", dict.Head.GetName(),
+			"type", dict.Head.GetType(),
+			"version", dict.Head.GetVersion(),
+		)
+	} else {
+		id = util.GenerateShortUID()
+		r.logger.Info("adding dictionary",
+			"id", id,
+			"name", dict.Head.GetName(),
+			"type", dict.Head.GetType(),
+			"version", dict.Head.GetVersion(),
+		)
+	}
+
 	r.mux.Lock()
 	defer r.mux.Unlock()
-
-	// Create a new ID for this dictionary
-	id := util.GenerateShortUID()
-	r.logger.Info("adding dictionary",
-		"id", id,
-		"name", dict.Head.GetName(),
-		"type", dict.Head.GetType(),
-		"version", dict.Head.GetVersion(),
-	)
-
 	r.content[id] = dict
 	r.update()
 

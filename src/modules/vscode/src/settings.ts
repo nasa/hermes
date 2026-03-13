@@ -24,10 +24,8 @@ export const names = {
         }
     },
     host: {
-        type: "hermes.host.type",
-        url: "hermes.host.url",
-        authenticationMethod: "hermes.host.authenticationMethod",
-        skipTLSVerify: "hermes.host.skipTLSVerify"
+        remotes: "hermes.host.remotes",
+        binary: "hermes.host.binary",
     }
 };
 
@@ -72,35 +70,20 @@ export function signoffName(): string {
     return getSetting(names.notebook.signoff.name, "OPERATOR NAME");
 }
 
-/**
- * Controls what backend to use
- */
-export enum BackendType {
-    /**
-     * Local only allows loading dictionaries and writing notebooks/sequences
-     * You cannot connect to anything and send command/receive telemetry
-     */
-    LOCAL = 'local',
-
-    /**
-     * Connect to an Hermes backend to allow configuring/running profiles
-     * Telemetry can be subscribed to show up in the frontend
-     */
-    REMOTE = 'remote',
+export interface Remote {
+    key: string;
+    label: string;
+    url: string;
+    authenticationMethod: HostAuthenticationKind;
+    skipTLSVerify: boolean;
+    color?: string;
 }
 
-export function hostType(): BackendType {
-    return getSetting(names.host.type, BackendType.LOCAL);
+export function hostBinary(): string | undefined {
+    const b = getSetting(names.host.binary, undefined);
+    return b === "" ? undefined : b;
 }
 
-export function hostUrl(): string {
-    return getSetting(names.host.url, "http://localhost:6880");
-}
-
-export function authenticationMethod(): HostAuthenticationKind {
-    return getSetting(names.host.authenticationMethod, HostAuthenticationKind.NONE);
-}
-
-export function skipTLSVerify(): boolean {
-    return getSetting(names.host.skipTLSVerify, false);
+export function hostRemotes(): Record<string, Remote> {
+    return getSetting(names.host.remotes, {});
 }

@@ -4,6 +4,8 @@ import { Dictionary } from '@gov.nasa.jpl.hermes/types';
 import { DictionaryProvider } from "./provider";
 
 export abstract class FileDictionaryProvider implements DictionaryProvider {
+    abstract title: string;
+
     constructor(readonly options?: vscode.OpenDialogOptions) { }
 
     /**

@@ -27,11 +27,13 @@ class ProfileProvider(_message.Message):
     def __init__(self, name: _Optional[str] = ..., schema: _Optional[str] = ..., ui_schema: _Optional[str] = ...) -> None: ...
 
 class Profile(_message.Message):
-    __slots__ = ("name", "provider", "settings")
+    __slots__ = ("name", "provider", "settings", "id")
     NAME_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     SETTINGS_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
     name: str
     provider: str
     settings: str
-    def __init__(self, name: _Optional[str] = ..., provider: _Optional[str] = ..., settings: _Optional[str] = ...) -> None: ...
+    id: str
+    def __init__(self, name: _Optional[str] = ..., provider: _Optional[str] = ..., settings: _Optional[str] = ..., id: _Optional[str] = ...) -> None: ...

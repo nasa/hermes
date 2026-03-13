@@ -7,12 +7,12 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/nasa/hermes/mocks"
 	"github.com/nasa/hermes/pkg/host"
 	"github.com/nasa/hermes/pkg/log"
 	"github.com/nasa/hermes/pkg/pb"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 var testDictionary = &pb.Dictionary{
@@ -75,9 +75,7 @@ func TestServerConnDisc(t *testing.T) {
 
 	// Connect to the server with a client
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 
 		clientConn, err := net.Dial("tcp", "localhost:65345")
 
@@ -94,7 +92,7 @@ func TestServerConnDisc(t *testing.T) {
 
 		err = clientConn.Close()
 		assert.NoError(t, err)
-	}()
+	})
 
 	wg.Wait()
 	cancel()
@@ -114,13 +112,14 @@ func TestServerProfile(t *testing.T) {
 
 	dictId := host.Dictionaries.Add(testDictionary)
 
-	profId, err := host.Profiles.Add(&pb.Profile{
+	profId, err := host.Profiles.Add(t.Context(), &pb.Profile{
 		Name:     "test",
 		Provider: "FPrime Server",
 		Settings: fmt.Sprintf(`{
 	"name": "test-fsw",
 	"address": "localhost:65346",
-	"dictionary": "%s"
+	"dictionary": "%s",
+	"protocol": "fprime"
 }`, dictId),
 	})
 
@@ -137,16 +136,14 @@ func TestServerProfile(t *testing.T) {
 
 	// Connect to the server with a client
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 
 		clientConn, err := net.Dial("tcp", "localhost:65346")
 		if assert.NoError(t, err) {
 			err = clientConn.Close()
 			assert.NoError(t, err)
 		}
-	}()
+	})
 
 	wg.Wait()
 
