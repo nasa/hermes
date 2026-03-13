@@ -273,18 +273,6 @@ func (r *profileRegistry) Remove(id string) error {
 		return fmt.Errorf("no profile with id %s", id)
 	}
 
-	if _, isRuntimeProfile := profile.(RuntimeProfile); isRuntimeProfile {
-		if _, isNonPersistent := profile.(*nonPersistentProfile); !isNonPersistent {
-			r.logger.Warn(
-				"attempted to remove runtime profile. forbidden operation",
-				"name", profile.Name(),
-				"provider", profile.Config().Provider,
-				"id", id,
-			)
-			return fmt.Errorf("cannot remove profile with id %s", id)
-		}
-	}
-
 	r.logger.Info(
 		"removing profile",
 		"name", profile.Name(),

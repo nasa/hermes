@@ -190,19 +190,9 @@
                             }
                         }
                     },
-                    "autoStartProfile": {
-                        "type": "boolean",
-                        "description": "Whether to auto-start the profile",
-                        "default": true
-                    },
                     "fswCommand": {
                         "type": "string",
                         "description": "FSW binary command (optional, for reference)"
-                    },
-                    "startFsw": {
-                        "type": "boolean",
-                        "description": "Whether to start FSW (note: FSW should be started via separate shell task)",
-                        "default": false
                     }
                 }
             }

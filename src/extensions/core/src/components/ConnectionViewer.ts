@@ -170,7 +170,7 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
                         await this.api.addProfile({
                             name: msg.provider,
                             provider: msg.provider,
-                            setting: "{}",
+                            settings: "{}",
                         }, token);
                         break;
                     case "profileStart":
@@ -238,7 +238,7 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
                         return assertUnreachable(msg);
                 }
             } catch (err) {
-                vscode.window.showErrorMessage(String(err));
+                vscode.window.showErrorMessage(`Hermes: (${msg.type}) ${err}`);
             }
         }, webviewView.webview);
 

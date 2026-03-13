@@ -36,20 +36,10 @@ export interface FprimeDeploymentTaskDefinition {
     };
 
     /**
-     * Whether to auto-start the profile (default: true)
-     */
-    autoStartProfile?: boolean;
-
-    /**
      * FSW binary path (optional)
      * If provided, will start FSW after profile is created
      */
     fswCommand?: string;
-
-    /**
-     * Whether to start FSW (default: false)
-     */
-    startFsw?: boolean;
 }
 
 /**
@@ -111,9 +101,6 @@ class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal {
             )
         });
 
-        const autoStartProfile = this.def.autoStartProfile ?? true;
-        const startFsw = this.def.startFsw ?? false;
-
         try {
             // Step 1: Create and start profile
             this.logger.info(`Creating profile: ${this.def.title}`);
@@ -138,22 +125,13 @@ class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal {
                     } catch (err) {
                         this.logger.error(`failed to stop profile on close: ${err}`);
                     }
-
-                    try {
-                        await this.api.removeProfile(profileId);
-                    } catch  (err) {
-                        this.logger.error(`failed to remove profile on close: ${err}`);
-                    }
                 }
             });
 
             this.logger.info(`Profile created successfully with ID: ${this.profileId}`);
-
-            if (autoStartProfile) {
-                this.logger.info(`Starting profile...`);
-                await this.api.startProfile(this.profileId);
-                this.logger.info(`Profile started successfully`);
-            }
+            this.logger.info(`Starting profile...`);
+            await this.api.startProfile(this.profileId);
+            this.logger.info(`Profile started successfully`);
         } catch (err) {
             this.logger.error(`Failed to create/start deployment: ${err}`);
             this._onDidClose.fire(1);
@@ -161,7 +139,7 @@ class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal {
         }
 
         // Step 2: Start FSW if requested
-        if (startFsw && this.def.fswCommand) {
+        if (this.def.fswCommand) {
             this.logger.info(`Starting FSW: ${this.def.fswCommand}`);
 
             try {
@@ -310,9 +288,7 @@ export class FprimeDeploymentProvider implements vscode.TaskProvider {
                             dictionary: deploymentName,
                             protocol: 'ccsds',
                         },
-                        autoStartProfile: true,
                         fswCommand: `\${workspaceFolder}/${binaryPath} -a 0.0.0.0 -p ${basePort}`,
-                        startFsw: true,
                     };
 
                     const task = new vscode.Task(
