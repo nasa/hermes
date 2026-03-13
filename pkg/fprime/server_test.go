@@ -6,6 +6,7 @@ import (
 	"net"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/nasa/hermes/mocks"
 	"github.com/nasa/hermes/pkg/host"
@@ -105,6 +106,8 @@ func TestServerConnDisc(t *testing.T) {
 		assert.NoError(t, err)
 	}
 
+	time.Sleep(200 * time.Millisecond)
+
 	// Signal the first connection to close
 	close(canCloseFirstConn)
 
@@ -112,7 +115,6 @@ func TestServerConnDisc(t *testing.T) {
 
 	// Wait for Disconnect to be called
 	<-disconnected
-
 
 	cancel()
 	runtimeWg.Wait()
