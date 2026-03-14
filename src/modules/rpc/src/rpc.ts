@@ -176,9 +176,8 @@ export class Client implements Hermes.Api {
                     data.telemetry.value,
                     new Convert.ConversionContext(["value"]),
                 ) : null,
-                def: Convert.telemetryFromProto(
-                    data.telemetry?.ref ?? {},
-                    new Convert.ConversionContext(["def"]),
+                def: Convert.telemetryRefFromProto(
+                    data.telemetry?.ref ?? {}
                 ),
                 source: data.source ?? "[unknown]"
             })

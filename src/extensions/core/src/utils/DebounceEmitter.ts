@@ -1,12 +1,12 @@
 import { EventEmitter, Event } from "vscode";
 import { LinkedList } from "./LinkedList";
 
-class PauseableEmitter<T> {
+class PauseableEmitter<I, T> {
 
     private _pausableSize = 0;
     private _isPaused = 0;
-    protected _eventQueue = new LinkedList<T>();
-    private _mergeFn?: (input: T[]) => T;
+    protected _eventQueue = new LinkedList<I>();
+    private _mergeFn: (input: I[]) => T;
 
     private parentEmitter: EventEmitter<T>;
 
@@ -16,8 +16,8 @@ class PauseableEmitter<T> {
 
     event: Event<T>;
 
-    constructor(options?: { merge?: (input: T[]) => T }) {
-        this._mergeFn = options?.merge;
+    constructor(merge: (input: I[]) => T) {
+        this._mergeFn = merge;
         this.parentEmitter = new EventEmitter();
         this.event = (...args) => {
             this._pausableSize++;
@@ -37,31 +37,22 @@ class PauseableEmitter<T> {
 
     resume(): void {
         if (this._isPaused !== 0 && --this._isPaused === 0) {
-            if (this._mergeFn) {
-                // use the merge function to create a single composite
-                // event. make a copy in case firing pauses this emitter
-                if (this._eventQueue.size > 0) {
-                    const events = Array.from(this._eventQueue);
-                    this._eventQueue.clear();
-                    this.parentEmitter.fire(this._mergeFn(events));
-                }
-
-            } else {
-                // no merging, fire each event individually and test
-                // that this emitter isn't paused halfway through
-                while (!this._isPaused && this._eventQueue.size !== 0) {
-                    this.parentEmitter.fire(this._eventQueue.shift()!);
-                }
+            // use the merge function to create a single composite
+            // event. make a copy in case firing pauses this emitter
+            if (this._eventQueue.size > 0) {
+                const events = Array.from(this._eventQueue);
+                this._eventQueue.clear();
+                this.parentEmitter.fire(this._mergeFn(events));
             }
         }
     }
 
-    fire(event: T): void {
+    fire(event: I): void {
         if (this._pausableSize) {
             if (this._isPaused !== 0) {
                 this._eventQueue.push(event);
             } else {
-                this.parentEmitter.fire(event);
+                this.parentEmitter.fire(this._mergeFn([event]));
             }
         }
     }
@@ -71,13 +62,13 @@ class PauseableEmitter<T> {
     }
 }
 
-export class DebounceEmitter<T> extends PauseableEmitter<T> {
+export class DebounceEmitter<T, TM = T[]> extends PauseableEmitter<T, TM> {
 
     private readonly _delay: number;
     private _handle: any | undefined;
 
-    constructor(options: { merge: (input: T[]) => T; delay?: number }) {
-        super(options);
+    constructor(options: { merge: (input: T[]) => TM; delay?: number }) {
+        super(options.merge);
         this._delay = options.delay ?? 100;
     }
 

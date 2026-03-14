@@ -110,7 +110,7 @@ export interface Telemetry {
      */
     value: any;
 
-    def: Def.Telemetry;
+    def: Def.TelemetryRef;
 }
 
 export interface DownlinkedFile {

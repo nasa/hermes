@@ -281,7 +281,7 @@ export function valueFromProto(
     } else if (filled(proto.f)) {
         return proto.f;
     } else if (filled(proto.i)) {
-        return proto.i;
+        return toNumber(proto.i);
     } else if (filled(proto.o?.o)) {
         return Object.fromEntries(Object.entries(proto.o.o).map(([key, value]) => [
             key,
@@ -340,7 +340,7 @@ export function valueFromProto(
     } else if (filled(proto.s)) {
         return proto.s;
     } else if (filled(proto.u)) {
-        return proto.u;
+        return toNumber(proto.u);
     } else if (filled(proto.e?.formatted)) {
         return proto.e!.formatted;
     } else if (filled(proto.e?.raw)) {
@@ -451,6 +451,16 @@ export function telemetryFromProto(
         name: ctx.value(proto, 'name'),
         type: typeFromProto(ctx.value(proto, 'type'), ctx.with("type")),
         metadata: optional(proto.metadata, JSON.parse),
+    };
+}
+
+export function telemetryRefFromProto(
+    proto: Proto.ITelemetryRef,
+): Def.TelemetryRef {
+    return {
+        id: proto.id ?? 0,
+        component: proto.component ?? "",
+        name: proto.name ?? "",
     };
 }
 
