@@ -198,8 +198,8 @@ jobs:
           - linux-arm64
           - darwin-x64
           - darwin-arm64
-          # - win32-x64
-          # - win32-arm64
+          - win32-x64
+          - win32-arm64
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -244,7 +244,7 @@ jobs:
       - name: Copy backend to extension directory
         run: |
           mkdir -p src/extensions/core/out
-          cp out/${{ steps.platform-map.outputs.backend_file }} src/extensions/core/out/
+          cp out/backend src/extensions/core/out/${{ steps.platform-map.outputs.backend_file }}
           if [[ "${{ matrix.platform }}" != win32-* ]]; then
             chmod +x src/extensions/core/out/${{ steps.platform-map.outputs.backend_file }}
           fi
