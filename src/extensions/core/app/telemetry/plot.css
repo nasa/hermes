@@ -29,6 +29,10 @@ body {
     fill: var(--vscode-editor-foreground);
 }
 
+.interpolation-mode-select {
+    background: var(--vscode-editor-background);
+}
+
 .interpolation-mode-select vscode-button {
     width: 25px;
     height: 25px;
