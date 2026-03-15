@@ -1,45 +1,49 @@
 import * as vscode from 'vscode';
 
-import { Telemetry, Sourced } from '@gov.nasa.jpl.hermes/types';
+import { Telemetry, Sourced, TimeFormat } from '@gov.nasa.jpl.hermes/types';
 import { Api } from '@gov.nasa.jpl.hermes/api';
 import { WebViewMessenger, WebViewPanelBase } from '@gov.nasa.jpl.hermes/vscode';
 
-import { FrontendMessage, BackendMessage, TelemetrySeries, TelemetrySeriesData } from '../../common/telemetry';
+import { FrontendTableMessage, BackendTableMessage, FrontendPlotMessage, BackendPlotMessage, TelemetrySeries, TelemetrySeriesData, TableState } from '../../common/telemetry';
 import { DebounceEmitter } from '../utils/DebounceEmitter';
 
 const MAX_POINTS_PER_CHANNEL = 10000; // ~10 minutes at 10Hz
-const CHANNEL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 export class TelemetryDatabase implements vscode.Disposable {
     /// Time-series metadata for each channel
-    private telemetrySeries: Map<string, TelemetrySeries>;
+    readonly series: Map<string, TelemetrySeries>;
 
     // Time-series data for each channel (column-wise storage)
-    private telemetryData: Map<string, TelemetrySeriesData>;
+    readonly data: Map<string, TelemetrySeriesData>;
+
+    // Table state (selected channels for plotting)
+    private _tableState: TableState = {
+        timeFormat: TimeFormat.SCLK,
+        channels: []
+    };
+
+    private tableStateEmitter = new vscode.EventEmitter<TableState>();
+    onTableStateChanged = this.tableStateEmitter.event;
 
     private telemetryDebouncer = new DebounceEmitter<Sourced<Telemetry>>({
         merge: (tlms) => tlms
     });
     onNewTelemetryData = this.telemetryDebouncer.event;
 
-    // Timer to purge old channels
-    private purgeTimer: ReturnType<typeof setInterval>;
     private telemetrySubscription: vscode.Disposable;
-    constructor(readonly api: Api) {
-        this.telemetrySeries = new Map();
-        this.telemetryData = new Map();
 
-        // Start periodic cleanup of stale channels
-        this.purgeTimer = setInterval(() => this.purgeStaleChannels(), 60000);
+    constructor(readonly api: Api) {
+        this.series = new Map();
+        this.data = new Map();
 
         this.telemetrySubscription = this.api.onTelemetry((telem) => {
             const key = this.getChannelKey(telem);
 
             // Initialize series metadata if needed
-            if (!this.telemetrySeries.has(key)) {
+            if (!this.series.has(key)) {
                 const component = telem.def.component ?? '';
                 const name = telem.def.name ?? '';
-                this.telemetrySeries.set(key, {
+                this.series.set(key, {
                     source: telem.source,
                     component,
                     name
@@ -47,8 +51,8 @@ export class TelemetryDatabase implements vscode.Disposable {
             }
 
             // Initialize column arrays if needed
-            if (!this.telemetryData.has(key)) {
-                this.telemetryData.set(key, {
+            if (!this.data.has(key)) {
+                this.data.set(key, {
                     time: [],
                     sclk: [],
                     valueStr: [],
@@ -56,7 +60,7 @@ export class TelemetryDatabase implements vscode.Disposable {
                 });
             }
 
-            const data = this.telemetryData.get(key)!;
+            const data = this.data.get(key)!;
             const time = telem.time ?? Date.now();
             const sclk = telem.time ?? 0;
 
@@ -109,39 +113,28 @@ export class TelemetryDatabase implements vscode.Disposable {
         return `${telem.source}.${telem.def.component}.${telem.def.name}`;
     }
 
-    private purgeStaleChannels(): void {
-        const now = Date.now();
-        const staleKeys: string[] = [];
-
-        for (const [key, data] of this.telemetryData.entries()) {
-            // Check if the last time entry is too old
-            if (data.time.length > 0) {
-                const lastTime = data.time[data.time.length - 1];
-                if (now - lastTime > CHANNEL_TIMEOUT_MS) {
-                    staleKeys.push(key);
-                }
-            }
-        }
-
-        for (const key of staleKeys) {
-            this.telemetryData.delete(key);
-            this.telemetrySeries.delete(key);
-        }
-    }
-
     clear() {
-        this.telemetryData.clear();
-        this.telemetrySeries.clear();
+        this.data.clear();
+        this.series.clear();
     }
 
     get(channelKey: string): TelemetrySeriesData | undefined {
-        return this.telemetryData.get(channelKey);
+        return this.data.get(channelKey);
+    }
+
+    get tableState(): TableState {
+        return this._tableState;
+    }
+
+    set tableState(state: TableState) {
+        this._tableState = state;
+        this.tableStateEmitter.fire(state);
     }
 
     dispose() {
-        clearInterval(this.purgeTimer);
         this.telemetrySubscription.dispose();
         this.telemetryDebouncer.dispose();
+        this.tableStateEmitter.dispose();
     }
 }
 
@@ -153,11 +146,10 @@ export class TelemetryTablePanel extends WebViewPanelBase implements vscode.Webv
         this.subscriptions.push(
             vscode.window.registerWebviewViewProvider(this.viewName, this, {
                 webviewOptions: {
-                    // Keep context when hidden for performance
-                    retainContextWhenHidden: true
+                    // Clear context for memory and CPU usage
+                    retainContextWhenHidden: false
                 }
             }),
-
         );
     }
 
@@ -167,49 +159,48 @@ export class TelemetryTablePanel extends WebViewPanelBase implements vscode.Webv
             'telemetry-table'
         );
 
-        const messenger = new WebViewMessenger<FrontendMessage, BackendMessage>((msg) => {
+        const messenger = new WebViewMessenger<FrontendTableMessage, BackendTableMessage>((msg) => {
             switch (msg.type) {
-                case 'refresh':
-                    // Send all current channel data (we can't easily send "latest values" with column-wise storage)
-                    // The frontend will need to extract the latest values from the arrays
-                    // For now, send empty update to trigger frontend refresh
+                case 'refresh': {
+                    // Get all the latest values from all the channels
+                    const channels: Record<string, any> = {};
+                    for (const [key, series] of this.db.series.entries()) {
+                        const data = this.db.data.get(key)!;
+                        if (data.time.length < 1) {
+                            continue;
+                        }
+
+                        const lastIdx = data.time.length - 1;
+                        const valueNum = data.valueNum?.[lastIdx];
+                        const isNumerical = valueNum !== undefined && !isNaN(valueNum) && valueNum !== 0;
+
+                        channels[key] = {
+                            ...series,
+                            time: data.time[lastIdx],
+                            sclk: data.sclk[lastIdx],
+                            valueStr: data.valueStr?.[lastIdx],
+                            valueNum,
+                            isNumerical
+                        };
+                    }
+
+                    messenger.postMessage({
+                        type: "latest",
+                        channels
+                    });
+
                     break;
+                }
 
                 case 'clear':
                     // Clear all telemetry data
                     this.db.clear();
                     break;
 
-                case 'requestHistory': {
-                    // Send historical data for a specific channel
-                    const data = this.db.get(msg.channelKey);
-                    if (data) {
-                        // Filter to requested time window
-                        const cutoffTime = Date.now() - msg.timeWindow;
-
-                        // Find the first index within the time window
-                        let startIdx = 0;
-                        for (let i = 0; i < data.time.length; i++) {
-                            if (data.time[i] >= cutoffTime) {
-                                startIdx = i;
-                                break;
-                            }
-                        }
-
-                        // Slice the arrays from startIdx to end
-                        messenger.postMessage({
-                            type: 'history',
-                            channelKey: msg.channelKey,
-                            data: {
-                                time: data.time.slice(startIdx),
-                                sclk: data.sclk.slice(startIdx),
-                                valueStr: data.valueStr?.slice(startIdx),
-                                valueNum: data.valueNum?.slice(startIdx)
-                            }
-                        });
-                    }
+                case 'tableState':
+                    // Update table state in database (will notify plot panel)
+                    this.db.tableState = msg.state;
                     break;
-                }
             }
         }, webviewView.webview);
 
@@ -230,6 +221,8 @@ export class TelemetryTablePanel extends WebViewPanelBase implements vscode.Webv
 
 
 export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.WebviewViewProvider {
+    private timeWindow: number = Infinity; // Default to all data
+
     constructor(readonly db: TelemetryDatabase, extensionPath: string) {
         super(extensionPath, 'hermes.telemetryPlot');
 
@@ -251,12 +244,11 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
             'telemetry-plot'
         );
 
-        const messenger = new WebViewMessenger<FrontendMessage, BackendMessage>((msg) => {
+        const messenger = new WebViewMessenger<FrontendPlotMessage, BackendPlotMessage>((msg) => {
             switch (msg.type) {
                 case 'refresh':
-                    // Send all current channel data (we can't easily send "latest values" with column-wise storage)
-                    // The frontend will need to extract the latest values from the arrays
-                    // For now, send empty update to trigger frontend refresh
+                    // Send full data for all selected channels
+                    this.sendFullData(messenger);
                     break;
 
                 case 'clear':
@@ -264,50 +256,113 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
                     this.db.clear();
                     break;
 
-                case 'requestHistory': {
-                    // Send historical data for a specific channel
-                    const data = this.db.get(msg.channelKey);
-                    if (data) {
-                        // Filter to requested time window
-                        const cutoffTime = Date.now() - msg.timeWindow;
-
-                        // Find the first index within the time window
-                        let startIdx = 0;
-                        for (let i = 0; i < data.time.length; i++) {
-                            if (data.time[i] >= cutoffTime) {
-                                startIdx = i;
-                                break;
-                            }
-                        }
-
-                        // Slice the arrays from startIdx to end
-                        messenger.postMessage({
-                            type: 'history',
-                            channelKey: msg.channelKey,
-                            data: {
-                                time: data.time.slice(startIdx),
-                                sclk: data.sclk.slice(startIdx),
-                                valueStr: data.valueStr?.slice(startIdx),
-                                valueNum: data.valueNum?.slice(startIdx)
-                            }
-                        });
-                    }
+                case 'timeWindow':
+                    // Update time window and resend full data
+                    this.timeWindow = msg.timeWindow;
+                    this.sendFullData(messenger);
                     break;
-                }
             }
         }, webviewView.webview);
 
-        // Forward batched updates to frontend
-        const disp = this.db.onNewTelemetryData((points) => {
-            messenger.postMessage({
-                type: 'append',
-                points
-            });
+        // Listen for table state changes and resend full data
+        const tableStateDisp = this.db.onTableStateChanged(() => {
+            this.sendFullData(messenger);
+        });
+
+        // Forward batched updates to frontend (only for selected channels)
+        const telemetryDisp = this.db.onNewTelemetryData((points) => {
+            const selectedChannels = new Set(this.db.tableState.channels);
+            if (selectedChannels.size === 0) {
+                return; // No channels selected, don't send anything
+            }
+
+            // Filter telemetry to only selected channels
+            const filteredData: Record<string, TelemetrySeriesData> = {};
+
+            for (const telem of points) {
+                const key = `${telem.source}.${telem.def.component}.${telem.def.name}`;
+                if (!selectedChannels.has(key)) {
+                    continue; // Skip unselected channels
+                }
+
+                const data = this.db.get(key);
+                if (!data || data.time.length === 0) {
+                    continue;
+                }
+
+                // Get only the latest point
+                const lastIdx = data.time.length - 1;
+                filteredData[key] = {
+                    time: [data.time[lastIdx]],
+                    sclk: [data.sclk[lastIdx]],
+                    valueStr: data.valueStr ? [data.valueStr[lastIdx]] : undefined,
+                    valueNum: data.valueNum ? [data.valueNum[lastIdx]] : undefined
+                };
+            }
+
+            if (Object.keys(filteredData).length > 0) {
+                messenger.postMessage({
+                    type: 'append',
+                    data: filteredData
+                });
+            }
         });
 
         webviewView.onDidDispose(() => {
             messenger.dispose();
-            disp.dispose();
+            tableStateDisp.dispose();
+            telemetryDisp.dispose();
+        });
+    }
+
+    private sendFullData(messenger: WebViewMessenger<FrontendPlotMessage, BackendPlotMessage>) {
+        const selectedChannels = new Set(this.db.tableState.channels);
+        if (selectedChannels.size === 0) {
+            // No channels selected, send empty data
+            messenger.postMessage({
+                type: 'full',
+                data: {}
+            });
+            return;
+        }
+
+        const fullData: Record<string, { info: TelemetrySeries; data: TelemetrySeriesData }> = {};
+        const cutoffTime = this.timeWindow === Infinity ? 0 : Date.now() - this.timeWindow;
+
+        for (const channelKey of selectedChannels) {
+            const series = this.db.series.get(channelKey);
+            const data = this.db.get(channelKey);
+
+            if (!series || !data || data.time.length === 0) {
+                continue;
+            }
+
+            // Find the first index within the time window
+            let startIdx = 0;
+            if (cutoffTime > 0) {
+                for (let i = 0; i < data.time.length; i++) {
+                    if (data.time[i] >= cutoffTime) {
+                        startIdx = i;
+                        break;
+                    }
+                }
+            }
+
+            // Slice the arrays from startIdx to end
+            fullData[channelKey] = {
+                info: series,
+                data: {
+                    time: data.time.slice(startIdx),
+                    sclk: data.sclk.slice(startIdx),
+                    valueStr: data.valueStr?.slice(startIdx),
+                    valueNum: data.valueNum?.slice(startIdx)
+                }
+            };
+        }
+
+        messenger.postMessage({
+            type: 'full',
+            data: fullData
         });
     }
 }

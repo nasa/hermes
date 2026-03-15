@@ -7,50 +7,30 @@ import React, {
 import { createRoot } from 'react-dom/client';
 import uPlot from 'uplot';
 
-import { TimeFormat } from '@gov.nasa.jpl.hermes/types';
 
 import { getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
-import type { BackendMessage, FrontendMessage, TelemetrySeriesData } from '../../common/telemetry';
+import type { BackendPlotMessage, FrontendPlotMessage, TelemetrySeries, TelemetrySeriesData } from '../../common/telemetry';
 
 import 'uplot/dist/uPlot.min.css';
 import './style.css';
+import { VscodeOption, VscodeSingleSelect } from '@vscode-elements/react-elements';
 
-const messages = getMessages<FrontendMessage, BackendMessage>();
+const messages = getMessages<FrontendPlotMessage, BackendPlotMessage>();
 
-interface ChannelInfo {
-    index: number;
-    key: string;
-    source: string;
-    component: string;
-    name: string;
-    // Latest values for table display
-    time: number;
-    sclk: number;
-    valueStr: string;
-    valueNum?: number;
-    isNumerical: boolean;
-}
+// Default time window: 5 minutes
+const DEFAULT_TIME_WINDOW = 5 * 60 * 1000;
 
-const localTimeOffset = (new Date()).getTimezoneOffset() * 60000;
-
-function formatTimeForPlot(time: number, format: TimeFormat): string {
-    const date = new Date(time);
-    switch (format) {
-        case TimeFormat.UTC:
-            return date.toISOString().slice(11, 19); // HH:MM:SS
-        case TimeFormat.LOCAL:
-            return new Date(time - localTimeOffset).toISOString().slice(11, 19);
-        case TimeFormat.SCLK:
-            return (time / 1000).toFixed(1); // Convert to seconds
-        default:
-            return date.toISOString().slice(11, 19);
-    }
-}
+const TIME_WINDOWS = [
+    { label: "1m", value: 60 * 1000 },
+    { label: "5m", value: 5 * 60 * 1000 },
+    { label: "30m", value: 30 * 60 * 1000 },
+    { label: "1h", value: 60 * 60 * 1000 },
+    { label: "All", value: Infinity },
+];
 
 function TelemetryPlot() {
-    const [channels, setChannels] = useState<ChannelInfo[]>([]);
-    const [selectedChannels, setSelectedChannels] = useState<Set<string>>(new Set());
-    const [plotDataMap, setPlotDataMap] = useState<Map<string, TelemetrySeriesData>>(new Map());
+    const [timeWindow, setTimeWindow] = useState<number>(DEFAULT_TIME_WINDOW);
+    const [plotData, setPlotData] = useState<Record<string, { info: TelemetrySeries; data: TelemetrySeriesData }>>({});
 
     const plotContainerRef = useRef<HTMLDivElement>(null);
     const plotRef = useRef<uPlot | null>(null);
@@ -60,72 +40,44 @@ function TelemetryPlot() {
         messages.postMessage({ type: 'refresh' });
     }, []);
 
+    // Send time window to backend when it changes
+    useEffect(() => {
+        messages.postMessage({ type: 'timeWindow', timeWindow });
+    }, [timeWindow]);
+
     // Handle messages from backend
-    const handleMessages = useCallback((msg: BackendMessage) => {
+    const handleMessages = useCallback((msg: BackendPlotMessage) => {
         switch (msg.type) {
-            case 'append':
-                setChannels(prev => {
-                    const channelMap = new Map(prev.map(ch => [ch.key, ch]));
-
-                    // Process each telemetry point
-                    for (const telem of msg.points) {
-                        const component = telem.def.component ?? '';
-                        const name = telem.def.name ?? '';
-                        const key = `${telem.source}.${component}.${name}`;
-                        const existing = channelMap.get(key);
-
-                        const time = telem.time ?? Date.now();
-                        const sclk = telem.time ?? 0;
-                        const value = telem.value;
-
-                        // Process value based on type
-                        let valueStr: string = '';
-                        let valueNum: number | undefined = undefined;
-
-                        if (value !== null && value !== undefined) {
-                            switch (typeof value) {
-                                case 'string':
-                                    valueStr = value;
-                                    break;
-                                case 'number':
-                                    valueStr = value.toFixed(3);
-                                    valueNum = value;
-                                    break;
-                                case 'bigint':
-                                    valueNum = Number(value);
-                                    valueStr = String(valueNum);
-                                    break;
-                                case 'boolean':
-                                    valueStr = value.toString();
-                                    break;
-                                default:
-                                    valueStr = JSON.stringify(value);
-                                    break;
-                            }
-                        }
-
-                        channelMap.set(key, {
-                            source: telem.source,
-                            component,
-                            name,
-                            index: existing?.index ?? channelMap.size,
-                            key,
-                            time,
-                            sclk,
-                            valueStr,
-                            valueNum,
-                            isNumerical: valueNum !== undefined && !isNaN(valueNum)
-                        });
-                    }
-
-                    return Array.from(channelMap.values()).sort((a, b) => a.index - b.index);
-                });
+            case 'full':
+                // Replace all data with new full dataset
+                setPlotData(msg.data);
                 break;
 
-            case 'history':
-                setPlotDataMap(prev => {
-                    const next = new Map(prev);
-                    next.set(msg.channelKey, msg.data);
+            case 'append':
+                // Append new points to existing data
+                setPlotData(prev => {
+                    const next = { ...prev };
+                    for (const [channelKey, newData] of Object.entries(msg.data)) {
+                        if (!next[channelKey]) {
+                            continue; // Skip if channel not in current data
+                        }
+
+                        // Append new data points
+                        const existing = next[channelKey].data;
+                        next[channelKey] = {
+                            ...next[channelKey],
+                            data: {
+                                time: [...existing.time, ...newData.time],
+                                sclk: [...existing.sclk, ...newData.sclk],
+                                valueStr: existing.valueStr && newData.valueStr
+                                    ? [...existing.valueStr, ...newData.valueStr]
+                                    : undefined,
+                                valueNum: existing.valueNum && newData.valueNum
+                                    ? [...existing.valueNum, ...newData.valueNum]
+                                    : undefined,
+                            }
+                        };
+                    }
                     return next;
                 });
                 break;
@@ -139,7 +91,9 @@ function TelemetryPlot() {
 
     // Update plot when data changes
     useEffect(() => {
-        if (!plotContainerRef.current || selectedChannels.size === 0) {
+        const channelEntries = Object.entries(plotData);
+
+        if (!plotContainerRef.current || channelEntries.length === 0) {
             if (plotRef.current) {
                 plotRef.current.destroy();
                 plotRef.current = null;
@@ -147,51 +101,38 @@ function TelemetryPlot() {
             return;
         }
 
-        // Prepare data for uplot
-        const selectedData = Array.from(selectedChannels)
-            .map(key => ({
-                key,
-                data: plotDataMap.get(key),
-                channel: channels.find(ch => ch.key === key)
-            }))
-            .filter(d => d.data && d.channel);
-
-        if (selectedData.length === 0) {
-            return;
-        }
-
         // Merge all timestamps and create aligned data
         const allTimes = new Set<number>();
-        selectedData.forEach(d => {
-            d.data!.time.forEach((t: number) => allTimes.add(t));
+        channelEntries.forEach(([, { data }]) => {
+            data.time.forEach((t: number) => allTimes.add(t));
         });
 
         const sortedTimes = Array.from(allTimes).sort((a, b) => a - b);
 
-        // Filter by time window
-        const cutoffTime = Date.now() - timeWindow;
-        const filteredTimes = sortedTimes.filter(t => t >= cutoffTime);
+        if (sortedTimes.length === 0) {
+            return;
+        }
 
         // Build uplot data structure: [times, series1, series2, ...]
-        const plotData: uPlot.AlignedData = [filteredTimes.map(t => t / 1000)]; // Convert to seconds
+        const uplotData: uPlot.AlignedData = [sortedTimes.map(t => t / 1000)]; // Convert to seconds
 
-        selectedData.forEach(({ data }) => {
+        channelEntries.forEach(([, { data }]) => {
             const seriesValues: (number | null)[] = [];
             const dataMap = new Map<number, number>();
 
             // Build map from time to value
-            data!.time.forEach((t: number, i: number) => {
-                const value = data!.valueNum?.[i];
+            data.time.forEach((t: number, i: number) => {
+                const value = data.valueNum?.[i];
                 if (value !== undefined) {
                     dataMap.set(t, value);
                 }
             });
 
-            filteredTimes.forEach(t => {
+            sortedTimes.forEach(t => {
                 seriesValues.push(dataMap.get(t) ?? null);
             });
 
-            plotData.push(seriesValues);
+            uplotData.push(seriesValues);
         });
 
         // Create or update plot
@@ -200,13 +141,12 @@ function TelemetryPlot() {
             height: 400,
             scales: {
                 x: {
-                    time: false,
+                    time: true,
                 },
             },
             axes: [
                 {
-                    label: timeFormat === TimeFormat.SCLK ? "SCLK (s)" : "Time",
-                    values: (u, vals) => vals.map(v => formatTimeForPlot(v * 1000, timeFormat)),
+                    label: "Time",
                 },
                 {
                     label: "Value",
@@ -214,9 +154,9 @@ function TelemetryPlot() {
             ],
             series: [
                 { label: "Time" },
-                ...selectedData.map(({ channel }) => ({
-                    label: `${channel!.component}.${channel!.name}`,
-                    stroke: `hsl(${Math.abs(hashCode(channel!.key)) % 360}, 70%, 50%)`,
+                ...channelEntries.map(([key, { info }]) => ({
+                    label: `${info.component}.${info.name}`,
+                    stroke: `hsl(${Math.abs(hashCode(key)) % 360}, 70%, 50%)`,
                     width: 2,
                 })),
             ],
@@ -224,16 +164,16 @@ function TelemetryPlot() {
 
         // Destroy and recreate if series count changed, otherwise just update data
         if (!plotRef.current ||
-            (plotRef.current.series.length - 1) !== selectedData.length) {
+            (plotRef.current.series.length - 1) !== channelEntries.length) {
             if (plotRef.current) {
                 plotRef.current.destroy();
             }
 
-            plotRef.current = new uPlot(opts, plotData, plotContainerRef.current);
+            plotRef.current = new uPlot(opts, uplotData, plotContainerRef.current);
         } else {
-            plotRef.current.setData(plotData);
+            plotRef.current.setData(uplotData);
         }
-    }, [selectedChannels, plotDataMap, channels, timeWindow, timeFormat]);
+    }, [plotData]);
 
     // Handle window resize
     useEffect(() => {
@@ -260,18 +200,28 @@ function TelemetryPlot() {
         };
     }, []);
 
-    if (channels.length === 0) {
-        return <p style={{ width: "100%", textAlign: 'center' }}>
-            Waiting for telemetry...
-        </p>;
-    }
+    const channelCount = Object.keys(plotData).length;
 
     return (
         <div className="telemetry-container">
+            <div className="toolbar">
+                <VscodeSingleSelect
+                    style={{ width: "6em" }}
+                    value={timeWindow.toString()}
+                    onChange={e => setTimeWindow(parseInt((e.target as any).value))}
+                >
+                    {TIME_WINDOWS.map(tw => (
+                        <VscodeOption key={tw.label} value={tw.value.toString()}>
+                            {tw.label}
+                        </VscodeOption>
+                    ))}
+                </VscodeSingleSelect>
+            </div>
+
             <div className="plot-area">
-                {selectedChannels.size === 0 ? (
+                {channelCount === 0 ? (
                     <div className="plot-placeholder">
-                        Select channels to plot
+                        Select channels to plot in the table view
                     </div>
                 ) : (
                     <div ref={plotContainerRef} className="plot-container" />

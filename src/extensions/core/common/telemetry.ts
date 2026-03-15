@@ -1,4 +1,4 @@
-import { Sourced, Telemetry } from "@gov.nasa.jpl.hermes/types";
+import { Sourced, Telemetry, TimeFormat } from "@gov.nasa.jpl.hermes/types";
 
 export interface TelemetrySeries {
     /**
@@ -15,6 +15,14 @@ export interface TelemetrySeries {
      * Channel name (scoped by component)
      */
     name: string;
+}
+
+export interface TelemetrySeriesDataPoint {
+    time: number;
+    sclk: number;
+    valueStr?: string;
+    valueNum?: number;
+    isNumerical?: boolean;
 }
 
 export interface TelemetrySeriesData {
@@ -39,19 +47,34 @@ export interface TelemetrySeriesData {
     valueNum?: number[];
 }
 
-export interface TelemetryHistory {
-    channelKey: string;
-    times: number[];
-    values: number[];
+export interface TableState {
+    timeFormat: TimeFormat;
+    channels: string[];
 }
 
-export type BackendMessage = (
-    | { type: "append", points: Sourced<Telemetry>[]; }
-    | { type: "history", channelKey: string, data: TelemetrySeriesData }
+export type BackendTableMessage = (
+    | { type: "latest", channels: Record<string, TelemetrySeries & TelemetrySeriesDataPoint> }
+    | { type: "append", points: Sourced<Telemetry>[] }
 );
 
-export type FrontendMessage = (
+export type FrontendTableMessage = (
     | { type: "refresh" }
     | { type: "clear" }
-    | { type: "requestHistory", channelKey: string, timeWindow: number }
+    | { type: "tableState", state: TableState, }
 );
+
+export type BackendPlotMessage = (
+    | {
+        type: "full", data: Record<string, {
+            info: TelemetrySeries;
+            data: TelemetrySeriesData;
+        }>
+    }
+    | { type: "append", data: Record<string, TelemetrySeriesData> }
+)
+
+export type FrontendPlotMessage = (
+    | { type: "refresh" }
+    | { type: "clear" }
+    | { type: "timeWindow", timeWindow: number }
+)

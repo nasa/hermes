@@ -125,3 +125,16 @@ tbody tr {
 .plot-container .u-value {
     font-family: var(--vscode-editor-font-family);
 }
+
+.components-dropdown {
+    width: 14ch;
+}
+
+.components-dropdown.single {
+    width: var(--component-width);
+}
+
+.components-dropdown:focus {
+    width: auto;
+    flex-grow: 1;
+}

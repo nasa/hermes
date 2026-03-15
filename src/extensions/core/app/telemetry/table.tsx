@@ -19,39 +19,19 @@ import {
 import { TimeFormat } from '@gov.nasa.jpl.hermes/types';
 
 import { getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
-import type { BackendMessage, FrontendMessage } from '../../common/telemetry';
+import type { BackendTableMessage, FrontendTableMessage, TelemetrySeries, TelemetrySeriesDataPoint } from '../../common/telemetry';
 
 import './style.css';
 import AnnotatedMultiSelect from '../common/AnnotatedMultiSelect';
 
-const messages = getMessages<FrontendMessage, BackendMessage>();
+const messages = getMessages<FrontendTableMessage, BackendTableMessage>();
 
-interface ChannelInfo {
+interface ChannelInfo extends TelemetrySeries, TelemetrySeriesDataPoint {
     index: number;
     key: string;
-    source: string;
-    component: string;
-    name: string;
-    // Latest values for table display
-    time: number;
-    sclk: number;
-    valueStr: string;
-    valueNum?: number;
-    isNumerical: boolean;
 }
 
 const localTimeOffset = (new Date()).getTimezoneOffset() * 60000;
-
-// Default time window: 5 minutes
-const DEFAULT_TIME_WINDOW = 5 * 60 * 1000;
-
-const TIME_WINDOWS = [
-    { label: "1m", value: 60 * 1000 },
-    { label: "5m", value: 5 * 60 * 1000 },
-    { label: "30m", value: 30 * 60 * 1000 },
-    { label: "1h", value: 60 * 60 * 1000 },
-    { label: "All", value: Infinity },
-];
 
 function formatTime(channel: ChannelInfo, format: TimeFormat): string {
     switch (format) {
@@ -72,7 +52,6 @@ export function TelemetryTable() {
     const [filteredSources, setFilteredSources] = useState<string[]>(['*']);
     const [filteredComponents, setFilteredComponents] = useState<string[]>(['*']);
     const [timeFormat, setTimeFormat] = useState<TimeFormat>(TimeFormat.SCLK);
-    const [timeWindow, setTimeWindow] = useState<number>(DEFAULT_TIME_WINDOW);
     const [selectedChannels, setSelectedChannels] = useState<Set<string>>(new Set());
 
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -87,17 +66,12 @@ export function TelemetryTable() {
     }, [channels]);
 
     // Extract unique components
-    const [components, longestComponentName] = useMemo(() => {
+    const components = useMemo(() => {
         const cmps = new Set<string>();
-        let longestName = 0;
         for (const ch of channels) {
-            if (ch.component.length > longestName) {
-                longestName = ch.component.length;
-            }
-
             cmps.add(ch.component);
         }
-        return [Array.from(cmps.values()).sort(), longestName];
+        return Array.from(cmps.values()).sort();
     }, [channels]);
 
     // Filter channels
@@ -140,8 +114,15 @@ export function TelemetryTable() {
     }, []);
 
     // Handle messages from backend
-    const handleMessages = useCallback((msg: BackendMessage) => {
+    const handleMessages = useCallback((msg: BackendTableMessage) => {
         switch (msg.type) {
+            case 'latest':
+                setChannels(Object.entries(msg.channels).map(([key, chn], index) => ({
+                    key,
+                    index,
+                    ...chn
+                })));
+                break;
             case 'append':
                 setChannels(prev => {
                     const channelMap = new Map(prev.map(ch => [ch.key, ch]));
@@ -218,16 +199,21 @@ export function TelemetryTable() {
                 next.delete(channelKey);
             } else {
                 next.add(channelKey);
-                // Request history for this channel
-                messages.postMessage({
-                    type: 'requestHistory',
-                    channelKey,
-                    timeWindow
-                });
             }
             return next;
         });
-    }, [timeWindow]);
+    }, []);
+
+    // Send table state to backend when selected channels or time format changes
+    useEffect(() => {
+        messages.postMessage({
+            type: 'tableState',
+            state: {
+                timeFormat,
+                channels: Array.from(selectedChannels)
+            }
+        });
+    }, [selectedChannels, timeFormat]);
 
     const onClickClear = useCallback(() => {
         messages.postMessage({ type: 'clear' });
@@ -324,7 +310,11 @@ export function TelemetryTable() {
                 </AnnotatedMultiSelect>}
                 {components.length > 1 && <AnnotatedMultiSelect
                     multipleLabel="Components"
-                    style={{ width: `${longestComponentName + 2}ch` }}
+                    className={'components-dropdown ' + (filteredComponents.length === 1 ? 'single' : '')}
+                    style={{
+                        // @ts-expect-error Pass custom attribute to CSS
+                        "--component-width": `${filteredComponents[0]?.length}ch`
+                    }}
                     value={filteredComponents}
                     onChange={onComponentFilterChanged}
                 >
@@ -338,18 +328,6 @@ export function TelemetryTable() {
                     value={filter}
                     onInput={(e: any) => setFilter(e.target.value)}
                 />
-
-                <VscodeSingleSelect
-                    style={{ width: "6em" }}
-                    value={timeWindow.toString()}
-                    onChange={e => setTimeWindow(parseInt((e.target as any).value))}
-                >
-                    {TIME_WINDOWS.map(tw => (
-                        <VscodeOption key={tw.label} value={tw.value.toString()}>
-                            {tw.label}
-                        </VscodeOption>
-                    ))}
-                </VscodeSingleSelect>
 
                 <VscodeToolbarButton
                     title="Clear Telemetry"
@@ -389,7 +367,7 @@ export function TelemetryTable() {
                                         <td>
                                             {channel.isNumerical && <VscodeCheckbox
                                                 checked={isSelected}
-                                                onChange={() => toggleChannel(channel.key, channel.isNumerical)}
+                                                onChange={() => toggleChannel(channel.key, channel.isNumerical ?? false)}
                                             />}
                                         </td>
                                         {sources.length > 1 && <td>{channel.source}</td>}
