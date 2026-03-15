@@ -89,7 +89,7 @@ tbody tr {
 }
 
 .components-dropdown {
-    width: 14ch;
+    width: 15ch;
 }
 
 .components-dropdown.single {
@@ -97,6 +97,5 @@ tbody tr {
 }
 
 .components-dropdown:focus {
-    width: auto;
-    flex-grow: 1;
+    width: 100%;
 }

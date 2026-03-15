@@ -1,4 +1,16 @@
 export { UPlotChart } from './Plot';
-export { UPlotConfigBuilder } from './UPlotConfigBuilder';
 export type { PlotProps, PlotConfig, PlotSelection } from './types';
-export type { SeriesConfig, AxisConfig, ScaleConfig } from './UPlotConfigBuilder';
+
+// Export config builders
+export {
+    UPlotConfigBuilder,
+    UPlotAxisBuilder,
+    UPlotScaleBuilder,
+    UPlotSeriesBuilder,
+    AxisPlacement,
+    ScaleOrientation,
+    ScaleDirection,
+    LineInterpolation,
+} from './config';
+
+export type { AxisProps, ScaleProps, SeriesProps } from './config';

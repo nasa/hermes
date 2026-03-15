@@ -11,7 +11,7 @@ import uPlot from 'uplot';
 import { getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
 import type { BackendPlotMessage, FrontendPlotMessage, TelemetrySeries, TelemetrySeriesData } from '../../common/telemetry';
 
-import { UPlotChart, UPlotConfigBuilder } from './uplot';
+import { UPlotChart, UPlotConfigBuilder, AxisPlacement, type ScaleProps, ScaleDirection, ScaleOrientation } from './uplot';
 import './plot.css';
 
 import { VscodeOption, VscodeSingleSelect } from '@vscode-elements/react-elements';
@@ -29,20 +29,68 @@ const TIME_WINDOWS = [
     { label: "All", value: Infinity },
 ];
 
+const palette = [
+    '#7EB26D', // 0: pale green
+    '#EAB839', // 1: mustard
+    '#6ED0E0', // 2: light blue
+    '#EF843C', // 3: orange
+    '#E24D42', // 4: red
+    '#1F78C1', // 5: ocean
+    '#BA43A9', // 6: purple
+    '#705DA0', // 7: violet
+    '#508642', // 8: dark green
+    '#CCA300', // 9: dark sand
+];
+
+// Helper to get CSS variable value
+function getCSSVariable(name: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+/**
+ * Creates an x-axis scale configuration with a fixed time range.
+ * For finite time windows, the scale shows the last N milliseconds from "now".
+ * For infinite time windows (All mode), the scale shows all available data.
+ */
+function createTimeScaleProps(timeWindow: number): ScaleProps {
+    return {
+        scaleKey: 'x',
+        isTime: true,
+        range: (_u, dataMin, dataMax) => {
+            if (timeWindow === Infinity) {
+                // For "All" mode, show all data
+                return [dataMin, dataMax];
+            }
+            // For fixed time windows, show the last N milliseconds
+            const now = Date.now();
+            const min = now - (timeWindow);
+            return [min, now];
+        },
+    };
+}
+
 function TelemetryPlot() {
     const [timeWindow, setTimeWindow] = useState<number>(DEFAULT_TIME_WINDOW);
     const [plotData, setPlotData] = useState<Record<string, { info: TelemetrySeries; data: TelemetrySeriesData }>>({});
     const [plotDimensions, setPlotDimensions] = useState({ width: 800, height: 400 });
-    const [plotConfig, setPlotConfig] = useState<UPlotConfigBuilder>(() => {
-        const builder = new UPlotConfigBuilder();
-        builder.addScale('x', { time: true });
-        builder.addScale('y', { auto: true });
-        builder.addAxis({ scale: 'x', side: 2, label: 'Time' });
-        builder.addAxis({ scale: 'y', side: 3, label: 'Value' });
-        return builder;
-    });
+    const [plotConfig, setPlotConfig] = useState<UPlotConfigBuilder | null>(null);
+    const [tick, setTick] = useState(0); // Force periodic rerenders
 
     const plotContainerRef = useRef<HTMLDivElement>(null);
+
+    // Periodic rerender to keep time axis relative to wall clock
+    useEffect(() => {
+        if (timeWindow === Infinity) {
+            return; // No need to update time axis in "All" mode
+        }
+
+        // Update every second to keep the time axis moving
+        const interval = setInterval(() => {
+            setTick(t => t + 1);
+        }, 100);
+
+        return () => clearInterval(interval);
+    }, [timeWindow]);
 
     // Initialize messages
     useEffect(() => {
@@ -65,23 +113,70 @@ function TelemetryPlot() {
                 const channelEntries = Object.entries(msg.data);
                 const builder = new UPlotConfigBuilder();
 
-                // Add scales
-                builder.addScale('x', { time: true });
-                builder.addScale('y', { auto: true });
+                // Add scales with fixed time range
+                builder.addScale(createTimeScaleProps(timeWindow));
+                builder.addScale({
+                    scaleKey: 'y',
+                    auto: true,
+                    direction: ScaleDirection.Down,
+                    orientation: ScaleOrientation.Vertical
+                });
+
+                builder.setCursor({
+                    points: {
+                        size: (u, seriesIdx) => (u.series[seriesIdx].points?.size ?? 0) * 1.5,
+                        width: (u, seriesIdx, size) => size / 4,
+                        // @ts-expect-error Stroke is a callback
+                        stroke: (u, seriesIdx) => (u.series[seriesIdx].points?.stroke?.(u, seriesIdx) ?? "") + '90',
+                        fill: () => "#fff",
+                    }
+                });
+
+                const axisColor = getCSSVariable('--vscode-editor-foreground') ?? '#c7d0d9';
 
                 // Add axes
-                builder.addAxis({ scale: 'x', side: 2, label: 'Time' });
-                builder.addAxis({ scale: 'y', side: 3 });
+                builder.addAxis({
+                    scaleKey: 'x',
+                    placement: AxisPlacement.Bottom,
+                    stroke: axisColor,
+                    grid: {
+                        width: 1 / devicePixelRatio,
+                        stroke: "#2c3235",
+                    },
+                    ticks: {
+                        width: 1 / devicePixelRatio,
+                        stroke: "#2c3235",
+                    }
+                });
+                builder.addAxis({
+                    scaleKey: 'y', placement: AxisPlacement.Left,
+                    stroke: axisColor,
+                    grid: {
+                        width: 1 / devicePixelRatio,
+                        stroke: "#2c3235",
+                    },
+                    ticks: {
+                        width: 1 / devicePixelRatio,
+                        stroke: "#2c3235",
+                    }
+                });
 
                 // Add series
-                channelEntries.forEach(([key, { info }]) => {
+                let index = 0;
+                for (const [_, { info }] of channelEntries) {
+                    if (index >= palette.length) {
+                        break;
+                    }
+
                     builder.addSeries({
+                        scaleKey: 'y',
                         label: `${info.component}.${info.name}`,
-                        stroke: `hsl(${Math.abs(hashCode(key)) % 360}, 70%, 50%)`,
+                        stroke: palette[index],
                         width: 2,
-                        scale: 'y',
                     });
-                });
+
+                    index++;
+                }
 
                 setPlotConfig(builder);
                 break;
@@ -140,49 +235,27 @@ function TelemetryPlot() {
 
     useEffect(() => {
         const disp = messages.onDidReceiveMessage(handleMessages);
+
         return () => disp.dispose();
     }, [handleMessages]);
 
     // Build uPlot data (separate from config)
-    const data = useMemo(() => {
-        const channelEntries = Object.entries(plotData);
-
-        if (channelEntries.length === 0) {
-            return [[], []] as uPlot.AlignedData;
+    // Depends on tick to force rerender even when no new data arrives
+    const data = useMemo<uPlot.AlignedData>(() => {
+        const channels = Object.values(plotData);
+        if (channels.length === 0) {
+            return [[], []];
         }
 
-        // Merge all timestamps and create aligned data
-        const allTimes = new Set<number>();
-        channelEntries.forEach(([, { data }]) => {
-            data.time.forEach((t: number) => allTimes.add(t));
-        });
-
-        const sortedTimes = Array.from(allTimes).sort((a, b) => a - b);
-
-        // Build uplot data structure: [times, series1, series2, ...]
-        const uplotData: uPlot.AlignedData = [sortedTimes];
-
-        channelEntries.forEach(([, { data }]) => {
-            const seriesValues: (number | null)[] = [];
-            const dataMap = new Map<number, number>();
-
-            // Build map from time to value
-            data.time.forEach((t: number, i: number) => {
-                const value = data.valueNum?.[i];
-                if (value !== undefined) {
-                    dataMap.set(t, value);
-                }
-            });
-
-            sortedTimes.forEach(t => {
-                seriesValues.push(dataMap.get(t) ?? null);
-            });
-
-            uplotData.push(seriesValues);
-        });
-
-        return uplotData;
+        return uPlot.join(
+            channels.map(({ data }) => [
+                data.time,
+                data.valueNum!
+            ])
+        );
     }, [plotData]);
+
+    const realtimeData = useMemo<uPlot.AlignedData>(() => [...data], [data, tick]);
 
     // Handle window resize and measure container
     useEffect(() => {
@@ -230,7 +303,7 @@ function TelemetryPlot() {
                 ) : (
                     <div ref={plotContainerRef} className="plot-container">
                         <UPlotChart
-                            data={data}
+                            data={realtimeData}
                             config={plotConfig}
                             width={plotDimensions.width}
                             height={plotDimensions.height}
@@ -240,17 +313,6 @@ function TelemetryPlot() {
             </div>
         </div>
     );
-}
-
-// Simple hash function for consistent colors
-function hashCode(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-    return hash;
 }
 
 const rootDOM = document.getElementById('root');

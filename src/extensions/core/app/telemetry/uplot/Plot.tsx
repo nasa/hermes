@@ -46,7 +46,7 @@ export class UPlotChart extends Component<PlotProps, UPlotChartState> {
       return;
     }
 
-    this.props.config.addHook('setSize', (u) => {
+    this.props.config.addHook('setSize', (u: any) => {
       const canvas = u.over;
       if (!canvas) {
         return;
