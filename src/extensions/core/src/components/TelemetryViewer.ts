@@ -230,8 +230,7 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
         this.subscriptions.push(
             vscode.window.registerWebviewViewProvider(this.viewName, this, {
                 webviewOptions: {
-                    // Keep context when hidden for performance
-                    retainContextWhenHidden: true
+                    retainContextWhenHidden: false
                 }
             }),
 

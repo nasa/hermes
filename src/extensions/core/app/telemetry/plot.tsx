@@ -8,7 +8,7 @@ import React, {
 import { createRoot } from 'react-dom/client';
 import uPlot from 'uplot';
 
-import { getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
+import { getMessages, vscode } from '@gov.nasa.jpl.hermes/vscode/browser';
 import type { BackendPlotMessage, FrontendPlotMessage, TelemetrySeries, TelemetrySeriesData } from '../../common/telemetry';
 
 import { UPlotChart, UPlotConfigBuilder, AxisPlacement, type ScaleProps, ScaleDirection, ScaleOrientation, LineInterpolation } from './uplot';
@@ -74,13 +74,24 @@ function createTimeScaleProps(timeWindow: number): ScaleProps {
     };
 }
 
+interface PlotState {
+    timeWindow: number;
+    interpolationMode: LineInterpolation;
+}
+
+const initialState = vscode.getState<PlotState | undefined>() ?? {
+    timeWindow: DEFAULT_TIME_WINDOW,
+    interpolationMode: LineInterpolation.Linear
+};
+
 function TelemetryPlot() {
-    const [timeWindow, setTimeWindow] = useState<number>(DEFAULT_TIME_WINDOW);
+    const [timeWindow, setTimeWindow] = useState(initialState.timeWindow);
+    const [interpolationMode, setInterpolationMode] = useState(initialState.interpolationMode);
+
     const [plotInfo, setPlotInfo] = useState<Record<string, TelemetrySeries>>({});
     const [plotData, setPlotData] = useState<Record<string, TelemetrySeriesData>>({});
     const [plotDimensions, setPlotDimensions] = useState({ width: 800, height: 400 });
     // const [plotConfig, setPlotConfig] = useState<UPlotConfigBuilder | null>(null);
-    const [interpolationMode, setInterpolationMode] = useState<LineInterpolation>(LineInterpolation.Linear);
 
     const [tick, setTick] = useState(0); // Force periodic rerenders
 
@@ -90,6 +101,13 @@ function TelemetryPlot() {
     useEffect(() => {
         messages.postMessage({ type: 'refresh' });
     }, []);
+
+    useEffect(() => {
+        vscode.setState({
+            timeWindow,
+            interpolationMode,
+        });
+    }, [timeWindow, interpolationMode]);
 
     // Send time window to backend when it changes
     useEffect(() => {

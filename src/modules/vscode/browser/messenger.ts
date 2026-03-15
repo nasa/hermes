@@ -1,12 +1,12 @@
 type VSCode = {
     postMessage(message: any): void;
-    getState(): any;
-    setState(state: any): void;
+    getState<T>(): T;
+    setState<T>(state: T): void;
 };
 
-export declare function acquireVsCodeApi(): VSCode;
+declare function acquireVsCodeApi(): VSCode;
 
-const vscode = acquireVsCodeApi();
+export const vscode = acquireVsCodeApi();
 
 interface M<T> {
     id: number;

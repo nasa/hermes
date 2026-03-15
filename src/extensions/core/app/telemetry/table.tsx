@@ -18,8 +18,8 @@ import {
 
 import { TimeFormat } from '@gov.nasa.jpl.hermes/types';
 
-import { getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
-import type { BackendTableMessage, FrontendTableMessage, TelemetrySeries, TelemetrySeriesDataPoint } from '../../common/telemetry';
+import { vscode, getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
+import type { BackendTableMessage, FrontendTableMessage, TableState, TelemetrySeries, TelemetrySeriesDataPoint } from '../../common/telemetry';
 
 import './table.css';
 import AnnotatedMultiSelect from '../common/AnnotatedMultiSelect';
@@ -46,13 +46,18 @@ function formatTime(channel: ChannelInfo, format: TimeFormat): string {
     }
 }
 
+const initialState: TableState = vscode.getState<TableState | undefined>() ?? {
+    timeFormat: TimeFormat.SCLK,
+    channels: []
+};
+
 export function TelemetryTable() {
     const [channels, setChannels] = useState<ChannelInfo[]>([]);
     const [filter, setFilter] = useState('');
     const [filteredSources, setFilteredSources] = useState<string[]>(['*']);
     const [filteredComponents, setFilteredComponents] = useState<string[]>(['*']);
-    const [timeFormat, setTimeFormat] = useState<TimeFormat>(TimeFormat.SCLK);
-    const [selectedChannels, setSelectedChannels] = useState<Set<string>>(new Set());
+    const [timeFormat, setTimeFormat] = useState<TimeFormat>(initialState.timeFormat);
+    const [selectedChannels, setSelectedChannels] = useState<Set<string>>(new Set(initialState.channels));
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -206,13 +211,12 @@ export function TelemetryTable() {
 
     // Send table state to backend when selected channels or time format changes
     useEffect(() => {
-        messages.postMessage({
-            type: 'tableState',
-            state: {
-                timeFormat,
-                channels: Array.from(selectedChannels)
-            }
-        });
+        const state = {
+            timeFormat,
+            channels: Array.from(selectedChannels)
+        };
+        vscode.setState(state);
+        messages.postMessage({ type: 'tableState', state });
     }, [selectedChannels, timeFormat]);
 
     const onClickClear = useCallback(() => {
