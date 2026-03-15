@@ -86,20 +86,6 @@ function TelemetryPlot() {
 
     const plotContainerRef = useRef<HTMLDivElement>(null);
 
-    // Periodic rerender to keep time axis relative to wall clock
-    useEffect(() => {
-        if (timeWindow === Infinity) {
-            return; // No need to update time axis in "All" mode
-        }
-
-        // Update every second to keep the time axis moving
-        const interval = setInterval(() => {
-            setTick(t => t + 1);
-        }, 100);
-
-        return () => clearInterval(interval);
-    }, [timeWindow]);
-
     // Initialize messages
     useEffect(() => {
         messages.postMessage({ type: 'refresh' });
@@ -265,39 +251,54 @@ function TelemetryPlot() {
         return builder;
     }, [plotInfo, interpolationMode]);
 
-    const realtimeData = useMemo<uPlot.AlignedData>(() => [...data], [data, tick]);
-
-    // Handle window resize and measure container
+    // Periodic rerender to keep time axis relative to wall clock
     useEffect(() => {
-        const updateDimensions = () => {
-            if (plotContainerRef.current) {
-                const rect = plotContainerRef.current.getBoundingClientRect();
+        // Update every second to keep the time axis moving
+        const interval = setInterval(() => {
+            setTick(t => t + 1);
+        }, 100);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    const realtimeData = useMemo<uPlot.AlignedData>(
+        () => [...data], [data, tick]
+    );
+
+    // Handle resize and measure container using ResizeObserver
+    useEffect(() => {
+        if (!plotContainerRef.current) {
+            return;
+        }
+
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const { width, height } = entry.contentRect;
                 setPlotDimensions({
-                    width: rect.width || 800,
-                    height: 400,
+                    width: width || 800,
+                    height: height || 400,
                 });
             }
+        });
+
+        resizeObserver.observe(plotContainerRef.current);
+
+        return () => {
+            resizeObserver.disconnect();
         };
-
-        // Initial measurement
-        updateDimensions();
-
-        // Update on resize
-        window.addEventListener('resize', updateDimensions);
-        return () => window.removeEventListener('resize', updateDimensions);
     }, []);
 
     const channelCount = Object.keys(plotData).length;
 
     return (
         <div className="telemetry-container">
-            <div className="plot-area">
+            <div ref={plotContainerRef} className="plot-area">
                 {(channelCount === 0 || plotConfig === null) ? (
                     <div className="plot-placeholder">
                         Select channels to plot in the table view
                     </div>
                 ) : (
-                    <div ref={plotContainerRef} className="plot-container">
+                    <div className="plot-container">
                         <UPlotChart
                             data={realtimeData}
                             config={plotConfig}
@@ -313,7 +314,7 @@ function TelemetryPlot() {
                     onChange={setInterpolationMode}
                 />
                 <VscodeSingleSelect
-                    style={{ width: "4em" }}
+                    style={{ width: "5em" }}
                     value={timeWindow.toString()}
                     onChange={e => setTimeWindow(parseInt((e.target as any).value))}
                 >
