@@ -3,16 +3,17 @@ import React, {
     useState,
     useEffect,
     useRef,
+    useMemo,
 } from 'react';
 import { createRoot } from 'react-dom/client';
 import uPlot from 'uplot';
 
-
 import { getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
 import type { BackendPlotMessage, FrontendPlotMessage, TelemetrySeries, TelemetrySeriesData } from '../../common/telemetry';
 
-import 'uplot/dist/uPlot.min.css';
-import './style.css';
+import { UPlotChart, UPlotConfigBuilder } from './uplot';
+import './plot.css';
+
 import { VscodeOption, VscodeSingleSelect } from '@vscode-elements/react-elements';
 
 const messages = getMessages<FrontendPlotMessage, BackendPlotMessage>();
@@ -31,9 +32,17 @@ const TIME_WINDOWS = [
 function TelemetryPlot() {
     const [timeWindow, setTimeWindow] = useState<number>(DEFAULT_TIME_WINDOW);
     const [plotData, setPlotData] = useState<Record<string, { info: TelemetrySeries; data: TelemetrySeriesData }>>({});
+    const [plotDimensions, setPlotDimensions] = useState({ width: 800, height: 400 });
+    const [plotConfig, setPlotConfig] = useState<UPlotConfigBuilder>(() => {
+        const builder = new UPlotConfigBuilder();
+        builder.addScale('x', { time: true });
+        builder.addScale('y', { auto: true });
+        builder.addAxis({ scale: 'x', side: 2, label: 'Time' });
+        builder.addAxis({ scale: 'y', side: 3, label: 'Value' });
+        return builder;
+    });
 
     const plotContainerRef = useRef<HTMLDivElement>(null);
-    const plotRef = useRef<uPlot | null>(null);
 
     // Initialize messages
     useEffect(() => {
@@ -48,15 +57,43 @@ function TelemetryPlot() {
     // Handle messages from backend
     const handleMessages = useCallback((msg: BackendPlotMessage) => {
         switch (msg.type) {
-            case 'full':
+            case 'full': {
                 // Replace all data with new full dataset
                 setPlotData(msg.data);
+
+                // Rebuild config when channel list changes (full refresh)
+                const channelEntries = Object.entries(msg.data);
+                const builder = new UPlotConfigBuilder();
+
+                // Add scales
+                builder.addScale('x', { time: true });
+                builder.addScale('y', { auto: true });
+
+                // Add axes
+                builder.addAxis({ scale: 'x', side: 2, label: 'Time' });
+                builder.addAxis({ scale: 'y', side: 3 });
+
+                // Add series
+                channelEntries.forEach(([key, { info }]) => {
+                    builder.addSeries({
+                        label: `${info.component}.${info.name}`,
+                        stroke: `hsl(${Math.abs(hashCode(key)) % 360}, 70%, 50%)`,
+                        width: 2,
+                        scale: 'y',
+                    });
+                });
+
+                setPlotConfig(builder);
                 break;
+            }
 
             case 'append':
                 // Append new points to existing data
                 setPlotData(prev => {
                     const next = { ...prev };
+                    const now = Date.now();
+                    const cutoffTime = timeWindow === Infinity ? 0 : now - timeWindow;
+
                     for (const [channelKey, newData] of Object.entries(msg.data)) {
                         if (!next[channelKey]) {
                             continue; // Skip if channel not in current data
@@ -64,41 +101,54 @@ function TelemetryPlot() {
 
                         // Append new data points
                         const existing = next[channelKey].data;
+                        const combinedData = {
+                            time: [...existing.time, ...newData.time],
+                            sclk: [...existing.sclk, ...newData.sclk],
+                            valueStr: existing.valueStr && newData.valueStr
+                                ? [...existing.valueStr, ...newData.valueStr]
+                                : undefined,
+                            valueNum: existing.valueNum && newData.valueNum
+                                ? [...existing.valueNum, ...newData.valueNum]
+                                : undefined,
+                        };
+
+                        // Cull points outside the time window
+                        if (timeWindow !== Infinity) {
+                            const startIdx = combinedData.time.findIndex(t => t >= cutoffTime);
+                            if (startIdx > 0) {
+                                combinedData.time = combinedData.time.slice(startIdx);
+                                combinedData.sclk = combinedData.sclk.slice(startIdx);
+                                if (combinedData.valueStr) {
+                                    combinedData.valueStr = combinedData.valueStr.slice(startIdx);
+                                }
+                                if (combinedData.valueNum) {
+                                    combinedData.valueNum = combinedData.valueNum.slice(startIdx);
+                                }
+                            }
+                        }
+
                         next[channelKey] = {
                             ...next[channelKey],
-                            data: {
-                                time: [...existing.time, ...newData.time],
-                                sclk: [...existing.sclk, ...newData.sclk],
-                                valueStr: existing.valueStr && newData.valueStr
-                                    ? [...existing.valueStr, ...newData.valueStr]
-                                    : undefined,
-                                valueNum: existing.valueNum && newData.valueNum
-                                    ? [...existing.valueNum, ...newData.valueNum]
-                                    : undefined,
-                            }
+                            data: combinedData,
                         };
                     }
                     return next;
                 });
                 break;
         }
-    }, []);
+    }, [timeWindow]);
 
     useEffect(() => {
         const disp = messages.onDidReceiveMessage(handleMessages);
         return () => disp.dispose();
     }, [handleMessages]);
 
-    // Update plot when data changes
-    useEffect(() => {
+    // Build uPlot data (separate from config)
+    const data = useMemo(() => {
         const channelEntries = Object.entries(plotData);
 
-        if (!plotContainerRef.current || channelEntries.length === 0) {
-            if (plotRef.current) {
-                plotRef.current.destroy();
-                plotRef.current = null;
-            }
-            return;
+        if (channelEntries.length === 0) {
+            return [[], []] as uPlot.AlignedData;
         }
 
         // Merge all timestamps and create aligned data
@@ -109,12 +159,8 @@ function TelemetryPlot() {
 
         const sortedTimes = Array.from(allTimes).sort((a, b) => a - b);
 
-        if (sortedTimes.length === 0) {
-            return;
-        }
-
         // Build uplot data structure: [times, series1, series2, ...]
-        const uplotData: uPlot.AlignedData = [sortedTimes.map(t => t / 1000)]; // Convert to seconds
+        const uplotData: uPlot.AlignedData = [sortedTimes];
 
         channelEntries.forEach(([, { data }]) => {
             const seriesValues: (number | null)[] = [];
@@ -135,69 +181,27 @@ function TelemetryPlot() {
             uplotData.push(seriesValues);
         });
 
-        // Create or update plot
-        const opts: uPlot.Options = {
-            width: plotContainerRef.current.clientWidth,
-            height: 400,
-            scales: {
-                x: {
-                    time: true,
-                },
-            },
-            axes: [
-                {
-                    label: "Time",
-                },
-                {
-                    label: "Value",
-                },
-            ],
-            series: [
-                { label: "Time" },
-                ...channelEntries.map(([key, { info }]) => ({
-                    label: `${info.component}.${info.name}`,
-                    stroke: `hsl(${Math.abs(hashCode(key)) % 360}, 70%, 50%)`,
-                    width: 2,
-                })),
-            ],
-        };
-
-        // Destroy and recreate if series count changed, otherwise just update data
-        if (!plotRef.current ||
-            (plotRef.current.series.length - 1) !== channelEntries.length) {
-            if (plotRef.current) {
-                plotRef.current.destroy();
-            }
-
-            plotRef.current = new uPlot(opts, uplotData, plotContainerRef.current);
-        } else {
-            plotRef.current.setData(uplotData);
-        }
+        return uplotData;
     }, [plotData]);
 
-    // Handle window resize
+    // Handle window resize and measure container
     useEffect(() => {
-        const handleResize = () => {
-            if (plotRef.current && plotContainerRef.current) {
-                plotRef.current.setSize({
-                    width: plotContainerRef.current.clientWidth,
-                    height: 400
+        const updateDimensions = () => {
+            if (plotContainerRef.current) {
+                const rect = plotContainerRef.current.getBoundingClientRect();
+                setPlotDimensions({
+                    width: rect.width || 800,
+                    height: 400,
                 });
             }
         };
 
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+        // Initial measurement
+        updateDimensions();
 
-    // Cleanup plot on unmount
-    useEffect(() => {
-        return () => {
-            if (plotRef.current) {
-                plotRef.current.destroy();
-                plotRef.current = null;
-            }
-        };
+        // Update on resize
+        window.addEventListener('resize', updateDimensions);
+        return () => window.removeEventListener('resize', updateDimensions);
     }, []);
 
     const channelCount = Object.keys(plotData).length;
@@ -224,7 +228,14 @@ function TelemetryPlot() {
                         Select channels to plot in the table view
                     </div>
                 ) : (
-                    <div ref={plotContainerRef} className="plot-container" />
+                    <div ref={plotContainerRef} className="plot-container">
+                        <UPlotChart
+                            data={data}
+                            config={plotConfig}
+                            width={plotDimensions.width}
+                            height={plotDimensions.height}
+                        />
+                    </div>
                 )}
             </div>
         </div>

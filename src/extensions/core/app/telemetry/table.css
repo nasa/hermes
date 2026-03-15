@@ -1,0 +1,102 @@
+body {
+    padding: 0;
+
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+td,
+th {
+    padding: 0;
+    text-align: left;
+    /* height: 36px; */
+    white-space: nowrap;
+}
+
+tbody tr {
+    height: 36px;
+    box-sizing: border-box;
+}
+
+.telemetry-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    flex: 1;
+}
+
+.toolbar {
+    display: flex;
+    gap: 6px;
+    margin: 6px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.channel-list {
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 3px;
+    flex: 1;
+}
+
+.channel-list table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.channel-list thead {
+    position: sticky;
+    top: 0;
+    background-color: var(--vscode-editor-background);
+    z-index: 1;
+}
+
+.channel-list th {
+    text-align: left;
+    padding: 6px 8px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--vscode-panel-border);
+    white-space: nowrap;
+}
+
+.channel-list tbody tr:hover {
+    background-color: var(--vscode-list-hoverBackground);
+}
+
+.channel-list td {
+    padding: 4px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.channel-list td.numerical {
+    font-family: var(--vscode-editor-font-family);
+}
+
+.channel-list td.non-numerical {
+    color: var(--vscode-descriptionForeground);
+}
+
+.channel-list td.time {
+    font-family: var(--vscode-editor-font-family);
+    font-size: 11px;
+    color: var(--vscode-descriptionForeground);
+}
+
+.components-dropdown {
+    width: 14ch;
+}
+
+.components-dropdown.single {
+    width: var(--component-width);
+}
+
+.components-dropdown:focus {
+    width: auto;
+    flex-grow: 1;
+}

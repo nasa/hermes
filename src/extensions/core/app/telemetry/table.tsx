@@ -21,7 +21,7 @@ import { TimeFormat } from '@gov.nasa.jpl.hermes/types';
 import { getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
 import type { BackendTableMessage, FrontendTableMessage, TelemetrySeries, TelemetrySeriesDataPoint } from '../../common/telemetry';
 
-import './style.css';
+import './table.css';
 import AnnotatedMultiSelect from '../common/AnnotatedMultiSelect';
 
 const messages = getMessages<FrontendTableMessage, BackendTableMessage>();
