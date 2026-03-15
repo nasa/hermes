@@ -321,12 +321,14 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
             // No channels selected, send empty data
             messenger.postMessage({
                 type: 'full',
+                info: {},
                 data: {}
             });
             return;
         }
 
-        const fullData: Record<string, { info: TelemetrySeries; data: TelemetrySeriesData }> = {};
+        const fullInfo: Record<string, TelemetrySeries> = {};
+        const fullData: Record<string, TelemetrySeriesData> = {};
         const cutoffTime = this.timeWindow === Infinity ? 0 : Date.now() - this.timeWindow;
 
         for (const channelKey of selectedChannels) {
@@ -349,20 +351,19 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
             }
 
             // Slice the arrays from startIdx to end
+            fullInfo[channelKey] = series;
             fullData[channelKey] = {
-                info: series,
-                data: {
-                    time: data.time.slice(startIdx),
-                    sclk: data.sclk.slice(startIdx),
-                    valueStr: data.valueStr?.slice(startIdx),
-                    valueNum: data.valueNum?.slice(startIdx)
-                }
+                time: data.time.slice(startIdx),
+                sclk: data.sclk.slice(startIdx),
+                valueStr: data.valueStr?.slice(startIdx),
+                valueNum: data.valueNum?.slice(startIdx)
             };
         }
 
         messenger.postMessage({
             type: 'full',
-            data: fullData
+            data: fullData,
+            info: fullInfo,
         });
     }
 }

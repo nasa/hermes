@@ -1,7 +1,7 @@
 import * as React from 'react';
 import uPlot, { Options, AlignedData } from 'uplot';
 
-import { UPlotConfigBuilder } from './UPlotConfigBuilder';
+import { UPlotConfigBuilder } from './config/UPlotConfigBuilder';
 
 /**
  * @internal -- not a public API

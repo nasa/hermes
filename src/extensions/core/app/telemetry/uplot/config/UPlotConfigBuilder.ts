@@ -101,7 +101,7 @@ export class UPlotConfigBuilder {
         this.invalidateCache();
     }
 
-    private invalidateCache() {
+    invalidateCache() {
         this.cachedConfig = undefined;
     }
 

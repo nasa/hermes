@@ -11,10 +11,15 @@ import uPlot from 'uplot';
 import { getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
 import type { BackendPlotMessage, FrontendPlotMessage, TelemetrySeries, TelemetrySeriesData } from '../../common/telemetry';
 
-import { UPlotChart, UPlotConfigBuilder, AxisPlacement, type ScaleProps, ScaleDirection, ScaleOrientation } from './uplot';
+import { UPlotChart, UPlotConfigBuilder, AxisPlacement, type ScaleProps, ScaleDirection, ScaleOrientation, LineInterpolation } from './uplot';
 import './plot.css';
 
-import { VscodeOption, VscodeSingleSelect } from '@vscode-elements/react-elements';
+import {
+    VscodeButton,
+    VscodeButtonGroup,
+    VscodeOption,
+    VscodeSingleSelect
+} from '@vscode-elements/react-elements';
 
 const messages = getMessages<FrontendPlotMessage, BackendPlotMessage>();
 
@@ -26,7 +31,7 @@ const TIME_WINDOWS = [
     { label: "5m", value: 5 * 60 * 1000 },
     { label: "30m", value: 30 * 60 * 1000 },
     { label: "1h", value: 60 * 60 * 1000 },
-    { label: "All", value: Infinity },
+    { label: "3h", value: 3 * 60 * 60 * 1000 },
 ];
 
 const palette = [
@@ -71,9 +76,12 @@ function createTimeScaleProps(timeWindow: number): ScaleProps {
 
 function TelemetryPlot() {
     const [timeWindow, setTimeWindow] = useState<number>(DEFAULT_TIME_WINDOW);
-    const [plotData, setPlotData] = useState<Record<string, { info: TelemetrySeries; data: TelemetrySeriesData }>>({});
+    const [plotInfo, setPlotInfo] = useState<Record<string, TelemetrySeries>>({});
+    const [plotData, setPlotData] = useState<Record<string, TelemetrySeriesData>>({});
     const [plotDimensions, setPlotDimensions] = useState({ width: 800, height: 400 });
-    const [plotConfig, setPlotConfig] = useState<UPlotConfigBuilder | null>(null);
+    // const [plotConfig, setPlotConfig] = useState<UPlotConfigBuilder | null>(null);
+    const [interpolationMode, setInterpolationMode] = useState<LineInterpolation>(LineInterpolation.Linear);
+
     const [tick, setTick] = useState(0); // Force periodic rerenders
 
     const plotContainerRef = useRef<HTMLDivElement>(null);
@@ -108,77 +116,7 @@ function TelemetryPlot() {
             case 'full': {
                 // Replace all data with new full dataset
                 setPlotData(msg.data);
-
-                // Rebuild config when channel list changes (full refresh)
-                const channelEntries = Object.entries(msg.data);
-                const builder = new UPlotConfigBuilder();
-
-                // Add scales with fixed time range
-                builder.addScale(createTimeScaleProps(timeWindow));
-                builder.addScale({
-                    scaleKey: 'y',
-                    auto: true,
-                    direction: ScaleDirection.Down,
-                    orientation: ScaleOrientation.Vertical
-                });
-
-                builder.setCursor({
-                    points: {
-                        size: (u, seriesIdx) => (u.series[seriesIdx].points?.size ?? 0) * 1.5,
-                        width: (u, seriesIdx, size) => size / 4,
-                        // @ts-expect-error Stroke is a callback
-                        stroke: (u, seriesIdx) => (u.series[seriesIdx].points?.stroke?.(u, seriesIdx) ?? "") + '90',
-                        fill: () => "#fff",
-                    }
-                });
-
-                const axisColor = getCSSVariable('--vscode-editor-foreground') ?? '#c7d0d9';
-
-                // Add axes
-                builder.addAxis({
-                    scaleKey: 'x',
-                    placement: AxisPlacement.Bottom,
-                    stroke: axisColor,
-                    grid: {
-                        width: 1 / devicePixelRatio,
-                        stroke: "#2c3235",
-                    },
-                    ticks: {
-                        width: 1 / devicePixelRatio,
-                        stroke: "#2c3235",
-                    }
-                });
-                builder.addAxis({
-                    scaleKey: 'y', placement: AxisPlacement.Left,
-                    stroke: axisColor,
-                    grid: {
-                        width: 1 / devicePixelRatio,
-                        stroke: "#2c3235",
-                    },
-                    ticks: {
-                        width: 1 / devicePixelRatio,
-                        stroke: "#2c3235",
-                    }
-                });
-
-                // Add series
-                let index = 0;
-                for (const [_, { info }] of channelEntries) {
-                    if (index >= palette.length) {
-                        break;
-                    }
-
-                    builder.addSeries({
-                        scaleKey: 'y',
-                        label: `${info.component}.${info.name}`,
-                        stroke: palette[index],
-                        width: 2,
-                    });
-
-                    index++;
-                }
-
-                setPlotConfig(builder);
+                setPlotInfo(msg.info);
                 break;
             }
 
@@ -195,7 +133,7 @@ function TelemetryPlot() {
                         }
 
                         // Append new data points
-                        const existing = next[channelKey].data;
+                        const existing = next[channelKey];
                         const combinedData = {
                             time: [...existing.time, ...newData.time],
                             sclk: [...existing.sclk, ...newData.sclk],
@@ -224,7 +162,7 @@ function TelemetryPlot() {
 
                         next[channelKey] = {
                             ...next[channelKey],
-                            data: combinedData,
+                            ...combinedData,
                         };
                     }
                     return next;
@@ -248,12 +186,84 @@ function TelemetryPlot() {
         }
 
         return uPlot.join(
-            channels.map(({ data }) => [
+            channels.map((data) => [
                 data.time,
                 data.valueNum!
             ])
         );
     }, [plotData]);
+
+    const plotConfig = useMemo(() => {
+        const builder = new UPlotConfigBuilder();
+
+        // Add scales with fixed time range
+        builder.addScale(createTimeScaleProps(timeWindow));
+        builder.addScale({
+            scaleKey: 'y',
+            auto: true,
+            direction: ScaleDirection.Down,
+            orientation: ScaleOrientation.Vertical
+        });
+
+        builder.setCursor({
+            points: {
+                size: (u, seriesIdx) => (u.series[seriesIdx].points?.size ?? 0) * 1.5,
+                width: (u, seriesIdx, size) => size / 4,
+                // @ts-expect-error Stroke is a callback
+                stroke: (u, seriesIdx) => (u.series[seriesIdx].points?.stroke?.(u, seriesIdx) ?? "") + '90',
+                fill: () => "#fff",
+            }
+        });
+
+        const axisColor = getCSSVariable('--vscode-editor-foreground') ?? '#c7d0d9';
+
+        // Add axes
+        builder.addAxis({
+            scaleKey: 'x',
+            placement: AxisPlacement.Bottom,
+            stroke: axisColor,
+            grid: {
+                width: 1 / devicePixelRatio,
+                stroke: "#2c3235",
+            },
+            ticks: {
+                width: 1 / devicePixelRatio,
+                stroke: "#2c3235",
+            }
+        });
+        builder.addAxis({
+            scaleKey: 'y', placement: AxisPlacement.Left,
+            stroke: axisColor,
+            grid: {
+                width: 1 / devicePixelRatio,
+                stroke: "#2c3235",
+            },
+            ticks: {
+                width: 1 / devicePixelRatio,
+                stroke: "#2c3235",
+            }
+        });
+
+        // Add series
+        let index = 0;
+        for (const info of Object.values(plotInfo)) {
+            if (index >= palette.length) {
+                break;
+            }
+
+            builder.addSeries({
+                scaleKey: 'y',
+                label: `${info.component}.${info.name}`,
+                stroke: palette[index],
+                lineInterpolation: interpolationMode,
+                width: 2,
+            });
+
+            index++;
+        }
+
+        return builder;
+    }, [plotInfo, interpolationMode]);
 
     const realtimeData = useMemo<uPlot.AlignedData>(() => [...data], [data, tick]);
 
@@ -281,22 +291,8 @@ function TelemetryPlot() {
 
     return (
         <div className="telemetry-container">
-            <div className="toolbar">
-                <VscodeSingleSelect
-                    style={{ width: "6em" }}
-                    value={timeWindow.toString()}
-                    onChange={e => setTimeWindow(parseInt((e.target as any).value))}
-                >
-                    {TIME_WINDOWS.map(tw => (
-                        <VscodeOption key={tw.label} value={tw.value.toString()}>
-                            {tw.label}
-                        </VscodeOption>
-                    ))}
-                </VscodeSingleSelect>
-            </div>
-
             <div className="plot-area">
-                {channelCount === 0 ? (
+                {(channelCount === 0 || plotConfig === null) ? (
                     <div className="plot-placeholder">
                         Select channels to plot in the table view
                     </div>
@@ -311,7 +307,61 @@ function TelemetryPlot() {
                     </div>
                 )}
             </div>
+            <div className="toolbar">
+                <InterpolationModeButtonGroup
+                    value={interpolationMode}
+                    onChange={setInterpolationMode}
+                />
+                <VscodeSingleSelect
+                    style={{ width: "4em" }}
+                    value={timeWindow.toString()}
+                    onChange={e => setTimeWindow(parseInt((e.target as any).value))}
+                >
+                    {TIME_WINDOWS.map(tw => (
+                        <VscodeOption key={tw.label} value={tw.value.toString()}>
+                            {tw.label}
+                        </VscodeOption>
+                    ))}
+                </VscodeSingleSelect>
+            </div>
         </div>
+    );
+}
+
+function InterpolationModeButton({
+    mode,
+    value,
+    onChange,
+    children
+}: React.PropsWithChildren<{ mode: LineInterpolation, value: LineInterpolation, onChange: (v: LineInterpolation) => void }>) {
+    return (
+        <VscodeButton onClick={() => onChange(mode)} secondary={value != mode} iconOnly>
+            {children}
+        </VscodeButton>
+    );
+}
+
+function InterpolationModeButtonGroup({
+    value, onChange
+}: {
+    value: LineInterpolation,
+    onChange: (v: LineInterpolation) => void
+}) {
+    return (
+        <VscodeButtonGroup className='interpolation-mode-select'>
+            <InterpolationModeButton value={value} onChange={onChange} mode={LineInterpolation.Linear}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28.5 20" aria-hidden="true" width="30" height="16"><circle cx="14.17" cy="2.67" r="2.67"></circle><circle cx="25.83" cy="17.33" r="2.67"></circle><rect x="19.25" y="-1.21" width="1.5" height="22.42" transform="translate(-1.79 15.03) rotate(-39.57)"></rect><circle cx="2.67" cy="17.33" r="2.67"></circle><rect x="-2.71" y="9.25" width="22.42" height="1.5" transform="translate(-4.62 10.18) rotate(-50.44)"></rect></svg>
+            </InterpolationModeButton>
+            <InterpolationModeButton value={value} onChange={onChange} mode={LineInterpolation.Smooth}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28.34 20" aria-hidden="true" width="30" height="16"><circle cx="14.17" cy="2.67" r="2.67"></circle><circle cx="2.67" cy="17.33" r="2.67"></circle><path d="M3.42,17.33H1.92c0-6.46,4.39-15.41,12.64-15.41v1.5C7.29,3.42,3.42,11.5,3.42,17.33Z"></path><circle cx="25.67" cy="17.33" r="2.67"></circle><path d="M26.42,17.33h-1.5c0-5.83-3.87-13.91-11.14-13.91V1.92C22,1.92,26.42,10.87,26.42,17.33Z"></path></svg>
+            </InterpolationModeButton>
+            <InterpolationModeButton value={value} onChange={onChange} mode={LineInterpolation.StepBefore}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28.34 20" aria-hidden="true" width="30" height="16"><circle cx="14.17" cy="2.67" r="2.67"></circle><circle cx="2.67" cy="17.33" r="2.67"></circle><circle cx="25.67" cy="17.33" r="2.67"></circle><polygon points="3.42 17.33 1.92 17.33 1.92 1.92 13.78 1.92 13.78 3.42 3.42 3.42 3.42 17.33"></polygon><polygon points="25.67 18.08 13.42 18.08 13.42 2.67 14.92 2.67 14.92 16.58 25.67 16.58 25.67 18.08"></polygon></svg>
+            </InterpolationModeButton>
+            <InterpolationModeButton value={value} onChange={onChange} mode={LineInterpolation.StepAfter}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28.34 20" aria-hidden="true" width="30" height="16"><circle cx="14.17" cy="2.67" r="2.67"></circle><circle cx="25.67" cy="17.33" r="2.67"></circle><circle cx="2.67" cy="17.33" r="2.67"></circle><polygon points="26.42 17.33 24.92 17.33 24.92 3.42 14.56 3.42 14.56 1.92 26.42 1.92 26.42 17.33"></polygon><polygon points="14.92 18.08 2.67 18.08 2.67 16.58 13.42 16.58 13.42 2.67 14.92 2.67 14.92 18.08"></polygon></svg>
+            </InterpolationModeButton>
+        </VscodeButtonGroup>
     );
 }
 

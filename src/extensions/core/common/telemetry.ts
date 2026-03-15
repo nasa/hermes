@@ -65,10 +65,9 @@ export type FrontendTableMessage = (
 
 export type BackendPlotMessage = (
     | {
-        type: "full", data: Record<string, {
-            info: TelemetrySeries;
-            data: TelemetrySeriesData;
-        }>
+        type: "full",
+        info: Record<string, TelemetrySeries>,
+        data: Record<string, TelemetrySeriesData>
     }
     | { type: "append", data: Record<string, TelemetrySeriesData> }
 )
