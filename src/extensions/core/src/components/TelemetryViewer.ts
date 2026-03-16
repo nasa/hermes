@@ -172,7 +172,7 @@ export class TelemetryTablePanel extends WebViewPanelBase implements vscode.Webv
 
                         const lastIdx = data.time.length - 1;
                         const valueNum = data.valueNum?.[lastIdx];
-                        const isNumerical = valueNum !== undefined && !isNaN(valueNum) && valueNum !== 0;
+                        const isNumerical = valueNum !== undefined && !isNaN(valueNum);
 
                         channels[key] = {
                             ...series,
