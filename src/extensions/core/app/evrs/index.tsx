@@ -12,7 +12,6 @@ import {
     VscodeSingleSelect,
     VscodeOption,
     VscodeTextfield,
-    VscodeMultiSelect,
 } from "@vscode-elements/react-elements";
 
 import VscodeToolbarButton from "@vscode-elements/react-elements/dist/components/VscodeToolbarButton";
@@ -23,7 +22,7 @@ import { getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
 import type { BackendMessage, FrontendMessage } from '../../common/evrs';
 
 import './style.css';
-import SourceFilterMultiSelect from './SourceFilterMultiSelect';
+import AnnotatedMultiSelect from '../common/AnnotatedMultiSelect';
 
 const messages = getMessages<FrontendMessage, BackendMessage>();
 
@@ -124,6 +123,19 @@ export function EvrTable() {
         });
     }, []);
 
+    // Resize the header table to match the virtualized table column widths
+    if (tableBodyRef.current && tableHeaderRef.current) {
+        resizeHeader();
+    }
+
+    useEffect(() => {
+        window.addEventListener('resize', resizeHeader);
+
+        return () => {
+            window.removeEventListener('resize', resizeHeader);
+        };
+    }, []);
+
     const virtualizer = useVirtualizer({
         count: filteredEvrs.length,
         getScrollElement: () => scrollRef.current,
@@ -164,11 +176,6 @@ export function EvrTable() {
             disp.dispose();
         };
     }, [handleMessages]);
-
-    // Resize the header table to match the virtualized table column widths
-    if (tableBodyRef.current && tableHeaderRef.current) {
-        resizeHeader();
-    }
 
     if (autoscroll) {
         scrollToBottom();
@@ -229,14 +236,6 @@ export function EvrTable() {
         messages.postMessage({
             type: 'clear'
         });
-    }, []);
-
-    useEffect(() => {
-        window.addEventListener('resize', resizeHeader);
-
-        return () => {
-            window.removeEventListener('resize', resizeHeader);
-        };
     }, []);
 
     useEffect(() => {
@@ -328,7 +327,7 @@ export function EvrTable() {
             <div style={{
                 display: 'flex',
                 gap: '6px',
-                margin: "0 6px"
+                margin: "6px"
             }}>
                 <VscodeSingleSelect
                     style={{ width: "5em" }}
@@ -341,7 +340,8 @@ export function EvrTable() {
                     <VscodeOption value={TimeFormat.LOCAL}>Local</VscodeOption>
                     <VscodeOption value={TimeFormat.UTC}>UTC</VscodeOption>
                 </VscodeSingleSelect>
-                {sources.length > 1 && <SourceFilterMultiSelect
+                {sources.length > 1 && <AnnotatedMultiSelect
+                    multipleLabel="Sources"
                     style={{ width: "10em" }}
                     value={filteredSources}
                     onChange={onSourceFilterChanged}
@@ -349,15 +349,16 @@ export function EvrTable() {
                 >
                     <VscodeOption value='*'>All</VscodeOption>
                     {sources?.map((src) => <VscodeOption key={src}>{src}</VscodeOption>)}
-                </SourceFilterMultiSelect>}
-                <VscodeMultiSelect
+                </AnnotatedMultiSelect>}
+                <AnnotatedMultiSelect
+                    multipleLabel="Severities"
                     style={{ width: "10em" }}
                     value={filteredSeverities}
                     onChange={onSeverityFilterChanged}
                 >
                     <VscodeOption value='*'>All</VscodeOption>
                     {severities?.map((src) => <VscodeOption key={src}>{src}</VscodeOption>)}
-                </VscodeMultiSelect>
+                </AnnotatedMultiSelect>
                 <div style={{ flexGrow: 1, display: "flex" }}>
                     <VscodeTextfield
                         placeholder='Filter Events'
@@ -400,6 +401,7 @@ export function EvrTable() {
                                     >
                                         <td className='idx'>{evr.index + 1}</td>
                                         <td>{formatTime(evr, timeFormat)}</td>
+                                        {sources.length > 1 && <td>{evr.source}</td>}
                                         <td>{evr.severity}</td>
                                         <td>{evr.component}</td>
                                         <td>{evr.name}</td>

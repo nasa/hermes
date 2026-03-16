@@ -138,9 +138,14 @@
         "viewsContainers": {
             "panel": [
                 {
-                    "id": "hermes-evrPanel",
-                    "title": "Hermes",
+                    "id": "hermes-events",
+                    "title": "Hermes: Events",
                     "icon": "$(list-unordered)"
+                },
+                {
+                    "id": "hermes-telemetry",
+                    "title": "Hermes: Telemetry",
+                    "icon": "$(graph-line)"
                 }
             ],
             "activitybar": [
@@ -152,12 +157,26 @@
             ]
         },
         "views": {
-            "hermes-evrPanel": [
+            "hermes-events": [
                 {
                     "type": "webview",
-                    "id": "hermes.evrPanel",
-                    "name": "EVR Panel",
+                    "id": "hermes.eventPanel",
+                    "name": "Events",
                     "icon": "$(list-unordered)"
+                }
+            ],
+            "hermes-telemetry": [
+                {
+                    "type": "webview",
+                    "id": "hermes.telemetryTable",
+                    "name": "Telemetry Table",
+                    "icon": "$(database)"
+                },
+                {
+                    "type": "webview",
+                    "id": "hermes.telemetryPlot",
+                    "name": "Telemetry Plot",
+                    "icon": "$(graph-line)"
                 }
             ],
             "hermes": [
@@ -393,7 +412,10 @@
                         "default": [],
                         "items": {
                             "type": "object",
-                            "required": ["loader", "file"],
+                            "required": [
+                                "loader",
+                                "file"
+                            ],
                             "properties": {
                                 "loader": {
                                     "type": "string",
@@ -488,6 +510,7 @@
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "sass": "^1.53.0",
+        "uplot": "^1.6.30",
         "util": "^0.12.4",
         "vscode-notebook-error-overlay": "^1.0.1"
     },

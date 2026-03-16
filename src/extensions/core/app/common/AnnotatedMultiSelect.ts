@@ -13,7 +13,16 @@ const __decorate = function (decorators: any[], target: any) {
     return r;
 };
 
-class SourceFilterMultiSelect extends VscodeMultiSelect {
+class AnnotatedMultiSelect extends VscodeMultiSelect {
+    multipleLabel: string = "Selected";
+
+    static get properties() {
+        return {
+            ...super.properties,
+            multipleLabel: { type: String }
+        };
+    }
+
     constructor() {
         super();
 
@@ -25,22 +34,22 @@ class SourceFilterMultiSelect extends VscodeMultiSelect {
                     return html`<span class="select-face-badge">${this._opts.options[this._opts.selectedIndexes[0]].label}</span>`;
                 default:
                     return html`<span class="select-face-badge"
-                  >${this._opts.selectedIndexes.length} Sources</span
+                  >${this._opts.selectedIndexes.length} ${this.multipleLabel}</span
                 >`;
             }
         };
     }
 }
 
-(SourceFilterMultiSelect as any) = (__decorate as any)([
-    customElement('source-filter-multi-select')
-], SourceFilterMultiSelect);
+(AnnotatedMultiSelect as any) = (__decorate as any)([
+    customElement('annotated-multi-select')
+], AnnotatedMultiSelect);
 
-const SourceFilterMultiSelectComp = createComponent({
-    tagName: "source-filter-multi-select",
-    elementClass: SourceFilterMultiSelect,
+const AnnotatedMultiSelectComp = createComponent({
+    tagName: "annotated-multi-select",
+    elementClass: AnnotatedMultiSelect,
     react: React,
-    displayName: "SourceFilterMultiSelect",
+    displayName: "AnnotatedMultiSelect",
     events: {
         onChange: "change",
         onInvalid: "invalid",
@@ -48,4 +57,4 @@ const SourceFilterMultiSelectComp = createComponent({
     },
 });
 
-export default SourceFilterMultiSelectComp;
+export default AnnotatedMultiSelectComp;

@@ -843,6 +843,23 @@ export interface Telemetry extends Item<{
     type: Type;
 }
 
+export interface TelemetryRef extends Item {
+    /**
+     * Raw ID used for identifying incoming serialized telemetry
+     */
+    id?: number;
+
+    /**
+     * Telemetry name
+     */
+    name: string;
+
+    /**
+     * Component or module that owns this telemetry
+     */
+    component: string;
+}
+
 export function isNumberTypeKind(kind: TypeKind): kind is NumberTypeKind {
     switch (kind) {
         case TypeKind.u8:

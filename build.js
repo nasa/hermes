@@ -216,6 +216,18 @@ const builds = {
             entryPoints: ['app/evrs/index.tsx']
         },
 
+        'telemetry-table': {
+            ...browserOptions(),
+            outfile: 'out/telemetry-table.js',
+            entryPoints: ['app/telemetry/table.tsx']
+        },
+
+        'telemetry-plot': {
+            ...browserOptions(),
+            outfile: 'out/telemetry-plot.js',
+            entryPoints: ['app/telemetry/plot.tsx']
+        },
+
         'connections': {
             ...browserOptions(),
             outfile: 'out/connections.js',

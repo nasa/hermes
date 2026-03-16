@@ -16,6 +16,7 @@ import {
 } from './notebook';
 import { ConnectionViewer } from './components/ConnectionViewer';
 import { EventPanel, EventViewer } from './components/EventViewer';
+import { TelemetryDatabase, TelemetryTablePanel, TelemetryPlotPanel } from './components/TelemetryViewer';
 import { eventMessaging } from './notebook/evrMessaging';
 
 import { ShellScriptLanguageProvider } from './kernels/shellscript';
@@ -27,6 +28,9 @@ import { UplinkProvider } from './components/UplinkViewer';
 export class VscodeHermes implements CoreApi {
     private subscriptions: vscode.Disposable[] = [];
     private eventPanel?: EventPanel;
+    private telemetryDb?: TelemetryDatabase;
+    private telemetryTablePanel?: TelemetryTablePanel;
+    private telemetryPlotPanel?: TelemetryPlotPanel;
     private connectionViewer?: ConnectionViewer;
     private downlinkProvider?: DownlinkProvider;
     private uplinkProvider?: UplinkProvider;
@@ -61,6 +65,9 @@ export class VscodeHermes implements CoreApi {
         this.downlinkProvider = new DownlinkProvider(this.api);
         this.uplinkProvider = new UplinkProvider(this.api);
         this.eventPanel = new EventPanel(this.api, this.extensionPath);
+        this.telemetryDb = new TelemetryDatabase(this.api);
+        this.telemetryTablePanel = new TelemetryTablePanel(this.telemetryDb, this.extensionPath);
+        this.telemetryTablePanel = new TelemetryPlotPanel(this.telemetryDb, this.extensionPath);
 
         this.subscriptions.push(
             this.registerShellscriptBinPath(path.join(this.extensionPath, 'out', 'bin')),
@@ -79,6 +86,9 @@ export class VscodeHermes implements CoreApi {
             }),
 
             this.eventPanel,
+            this.telemetryDb,
+            this.telemetryTablePanel,
+            this.telemetryTablePanel,
             this.connectionViewer,
 
             this.registerNotebookType("hermes.notebook"),

@@ -71,6 +71,7 @@ export class Local extends Rpc.Client {
             task.presentationOptions.focus = false;
             task.presentationOptions.clear = false;
             task.presentationOptions.close = false;
+            task.isBackground = true;
 
             const execution = await vscode.tasks.executeTask(task);
             const exitTask = vscode.tasks.onDidEndTaskProcess((e) => {

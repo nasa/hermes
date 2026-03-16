@@ -30,7 +30,7 @@ export class EventViewerBase extends WebViewPanelBase {
         throw new Error('Method not implemented.');
     }
 
-    protected resolveWebviewEvr(webview: vscode.Webview, evrs?: Event[]) {
+    protected resolveWebviewEvent(webview: vscode.Webview, evrs?: Event[]) {
         return super.resolveWebview(
             webview,
             'evrs',
@@ -54,7 +54,7 @@ export class EventViewer extends EventViewerBase implements vscode.CustomTextEdi
         webviewPanel: vscode.WebviewPanel,
         _token: vscode.CancellationToken
     ): Promise<void> {
-        await this.resolveWebviewEvr(webviewPanel.webview, EventViewer.parse(document.getText()));
+        await this.resolveWebviewEvent(webviewPanel.webview, EventViewer.parse(document.getText()));
 
         const messenger = new WebViewMessenger<FrontendMessage, BackendMessage>(async (msg) => {
             switch (msg.type) {
@@ -92,10 +92,10 @@ export class EventPanel extends EventViewerBase implements vscode.WebviewViewPro
     debouncer: DebounceEmitter<DisplayEvent>;
 
     constructor(readonly api: Api, extensionPath: string) {
-        super(extensionPath, 'hermes.evrPanel');
+        super(extensionPath, 'hermes.eventPanel');
         this.panelEvents = [];
         this.debouncer = new DebounceEmitter<DisplayEvent>({
-            merge: (evrs) => evrs as unknown as DisplayEvent
+            merge: (evrs) => evrs
         });
 
         this.subscriptions.push(
@@ -115,7 +115,7 @@ export class EventPanel extends EventViewerBase implements vscode.WebviewViewPro
     }
 
     async resolveWebviewView(webviewView: vscode.WebviewView): Promise<void> {
-        await this.resolveWebviewEvr(webviewView.webview);
+        await this.resolveWebviewEvent(webviewView.webview);
 
         const messenger = new WebViewMessenger<FrontendMessage, BackendMessage>((msg) => {
             switch (msg.type) {

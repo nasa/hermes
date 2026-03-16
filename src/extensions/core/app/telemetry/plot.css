@@ -1,0 +1,265 @@
+body {
+    padding: 0;
+
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.telemetry-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    flex: 1;
+}
+
+.toolbar {
+    display: flex;
+    /* position: absolute; */
+    /* right: 6px; */
+    /* top: 6px; */
+    margin: 6px;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.toolbar svg {
+    fill: var(--vscode-editor-foreground);
+}
+
+.interpolation-mode-select {
+    background: var(--vscode-editor-background);
+}
+
+.toolbar vscode-button {
+    width: 25px;
+    height: 25px;
+}
+
+.toolbar svg {
+    width: 15px;
+    height: 15px;
+}
+
+.plot-area {
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    justify-content: center;
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 3px;
+    background-color: var(--vscode-editor-background);
+}
+
+.plot-placeholder {
+    color: var(--vscode-descriptionForeground);
+    font-size: 14px;
+    text-align: center;
+}
+
+.plot-container {
+    width: 100%;
+    height: 100%;
+}
+
+.legend-area {
+    padding: 12px;
+    border-top: 1px solid var(--vscode-panel-border);
+    background-color: var(--vscode-editor-background);
+    max-height: 300px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+/* uPlot styling overrides for VSCode theme */
+.plot-container .u-legend {
+    background-color: var(--vscode-editor-background);
+    color: var(--vscode-editor-foreground);
+    border: 1px solid var(--vscode-panel-border);
+    font-size: 11px;
+}
+
+.plot-container .u-series {
+    color: var(--vscode-editor-foreground);
+}
+
+.plot-container .u-value {
+    font-family: var(--vscode-editor-font-family);
+}
+
+.u-axis .u-text {
+    fill: var(--vscode-editor-foreground);
+    color: var(--vscode-editor-foreground);
+}
+
+/* Legend Table Styles */
+.legend-table {
+    width: 100%;
+}
+
+.legend-table th:first-child {
+    width: 100%;
+    border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.legend-table-header {
+    color: var(--vscode-editor-foreground);
+    font-weight: 500;
+    border-bottom: 1px solid var(--vscode-panel-border);
+    padding: 2px 8px;
+    font-size: 11px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.legend-table-name-header {
+    text-align: left;
+    padding-left: 30px;
+}
+
+.legend-table-with-icon {
+    padding-right: 4px;
+}
+
+.legend-table-header-sortable {
+    cursor: pointer;
+}
+
+/* Legend Table Item Styles */
+.legend-row {
+    font-size: 12px;
+    border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.legend-row td {
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+
+.legend-row:hover {
+    background: var(--vscode-list-hoverBackground);
+}
+
+.legend-label {
+    white-space: nowrap;
+    background: none;
+    border: none;
+    font-size: inherit;
+    padding: 0;
+    max-width: 600px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    user-select: text;
+    color: var(--vscode-editor-foreground);
+    cursor: pointer;
+}
+
+.legend-label-disabled {
+    color: var(--vscode-disabledForeground);
+}
+
+.legend-item-wrapper {
+    display: flex;
+    white-space: nowrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-value {
+    text-align: right;
+}
+
+.legend-y-axis-label {
+    color: var(--vscode-descriptionForeground);
+}
+
+/* Series Icon Styles */
+.series-icon {
+    display: inline-block;
+    width: 14px;
+    height: 4px;
+}
+
+.legend-row.disabled {
+    opacity: 0.5;
+}
+
+.legend-row.disabled .legend-value {
+    color: var(--vscode-disabledForeground);
+}
+
+/* Plot Tooltip Styles */
+.plot-tooltip-portal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+.plot-tooltip-container {
+    transition: transform ease-out 0.1s;
+}
+
+.plot-tooltip-content {
+    background: var(--vscode-editorHoverWidget-background);
+    border: 1px solid var(--vscode-editorHoverWidget-border);
+    border-radius: 3px;
+    padding: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    font-size: 12px;
+    color: var(--vscode-editorHoverWidget-foreground);
+    min-width: 150px;
+}
+
+.tooltip-timestamp {
+    font-weight: 600;
+    font-size: 11px;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--vscode-panel-border);
+    color: var(--vscode-editor-foreground);
+}
+
+.tooltip-series-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tooltip-series-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+}
+
+.tooltip-series-color {
+    width: 12px;
+    height: 3px;
+    border-radius: 1px;
+    flex-shrink: 0;
+}
+
+.tooltip-series-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--vscode-editor-foreground);
+}
+
+.tooltip-series-value {
+    font-weight: 500;
+    text-align: right;
+    white-space: nowrap;
+    color: var(--vscode-editor-foreground);
+}
