@@ -14,7 +14,7 @@ interface VizLegendSeriesIconProps {
  * @internal
  */
 export const VizLegendSeriesIcon = memo(
-    ({ seriesName, color, gradient, readonly, lineStyle }: VizLegendSeriesIconProps) => {
+    ({ color, gradient, lineStyle }: VizLegendSeriesIconProps) => {
         // Simplified version without color picker functionality
         // In the future, this could be enhanced with color changing capabilities
         return <SeriesIcon color={color} gradient={gradient} lineStyle={lineStyle} />;
