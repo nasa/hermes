@@ -13,6 +13,7 @@ import type { BackendPlotMessage, FrontendPlotMessage, TelemetrySeries, Telemetr
 
 import { UPlotChart, UPlotConfigBuilder, AxisPlacement, type ScaleProps, ScaleDirection, ScaleOrientation, LineInterpolation } from './uplot';
 import { VizLegendTable, VizLegendItem } from './VizLegend';
+import { PlotTooltip, PlotTooltipContent } from './PlotTooltip';
 import './plot.css';
 
 import {
@@ -97,6 +98,12 @@ function TelemetryPlot() {
     const [tick, setTick] = useState(0); // Force periodic rerenders
     // const [hoveredSeries, setHoveredSeries] = useState<string | null>(null);
     const [disabledSeries, setDisabledSeries] = useState<Set<string>>(new Set());
+
+    // Tooltip state
+    const [tooltipVisible, setTooltipVisible] = useState(false);
+    const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+    const [tooltipDataIdx, setTooltipDataIdx] = useState<(number | null)[] | null>(null);
+    const uPlotInstanceRef = useRef<uPlot | null>(null);
 
     const plotContainerRef = useRef<HTMLDivElement>(null);
 
@@ -226,6 +233,42 @@ function TelemetryPlot() {
             }
         });
 
+        let bbox: DOMRect | undefined = undefined;
+
+        // Add hooks for tooltip tracking
+        builder.addHook('init', (u) => {
+            uPlotInstanceRef.current = u;
+
+            // Show tooltip on mouse enter
+            u.over.addEventListener('mouseenter', () => {
+                setTooltipVisible(true);
+            });
+
+            // Hide tooltip on mouse leave
+            u.over.addEventListener('mouseleave', () => {
+                setTooltipVisible(false);
+            });
+        });
+
+        builder.addHook('setLegend', (u) => {
+            if (u.legend.idxs !== null && u.legend.idxs !== undefined) {
+                setTooltipDataIdx([...u.legend.idxs]);
+            }
+        });
+
+        builder.addHook('syncRect', (u, rect) => (bbox = rect));
+
+        builder.addHook('setCursor', (u) => {
+            if (!bbox) {
+                return;
+            }
+
+            const cL = u.cursor.left || 0;
+            const cT = u.cursor.top || 0;
+
+            setTooltipPosition({ x: bbox.left + cL, y: bbox.top + cT });
+        });
+
         const axisColor = getCSSVariable('--vscode-editor-foreground') ?? '#c7d0d9';
 
         // Add axes
@@ -277,7 +320,7 @@ function TelemetryPlot() {
         }
 
         return builder;
-    }, [plotInfo, interpolationMode, disabledSeries]);
+    }, [plotInfo, interpolationMode, disabledSeries, timeWindow]);
 
     // Periodic rerender to keep time axis relative to wall clock
     useEffect(() => {
@@ -399,6 +442,52 @@ function TelemetryPlot() {
     //     setHoveredSeries(null);
     // }, []);
 
+    // Build tooltip content based on hovered data point
+    const tooltipContent = useMemo(() => {
+        if (!tooltipVisible || tooltipDataIdx === null || data.length === 0) {
+            return null;
+        }
+
+        const seriesValues: Array<{ color: string; label: string; value: string }> = [];
+
+        // Get enabled channels in same order as displayed
+        plotConfig.getSeries().forEach((series, seriesIdxN1) => {
+            const seriesIdx = seriesIdxN1 + 1;
+            const config = series.getConfig();
+
+            // Get the index for this specific series
+            const dataIdx = tooltipDataIdx[seriesIdx];
+            if (dataIdx !== null && dataIdx !== undefined) {
+                const value = data[seriesIdx][dataIdx];
+                if (value !== null && value !== undefined) {
+                    seriesValues.push({
+                        color: palette[seriesIdxN1],
+                        label: config.label?.toString() ?? "",
+                        value: value.toFixed(3),
+                    });
+                }
+            }
+        });
+
+        if (seriesValues.length === 0) {
+            return null;
+        }
+
+        // Get timestamp from aligned data (data[0] is the time axis)
+        // Use the first series' index (tooltipDataIdx[1] is the first data series after time)
+        const timeIdx = tooltipDataIdx[0];
+        if (timeIdx === null || timeIdx === undefined) {
+            return null;
+        }
+
+        const timestamp = data[0][timeIdx];
+        if (timestamp === null || timestamp === undefined) {
+            return null;
+        }
+
+        return <PlotTooltipContent timestamp={new Date(timestamp).toISOString()} series={seriesValues} />;
+    }, [tooltipVisible, tooltipDataIdx, data, disabledSeries]);
+
     return (
         <div className="telemetry-container">
             <div ref={plotContainerRef} className="plot-area">
@@ -444,6 +533,13 @@ function TelemetryPlot() {
                         isSortable={true}
                     />
                 </div>
+            )}
+            {tooltipVisible && (
+                <PlotTooltip
+                    position={tooltipPosition}
+                    offset={{ x: 10, y: 10 }}
+                    content={tooltipContent}
+                />
             )}
         </div>
     );
