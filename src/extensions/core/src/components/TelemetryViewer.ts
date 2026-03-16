@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { tmpdir } from 'tmp';
 
 import { Telemetry, Sourced, TimeFormat } from '@gov.nasa.jpl.hermes/types';
 import { Api } from '@gov.nasa.jpl.hermes/api';
@@ -250,16 +251,28 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
                     this.sendFullData(messenger);
                     break;
 
-                case 'clear':
-                    // Clear all telemetry data
-                    this.db.clear();
-                    break;
-
                 case 'timeWindow':
                     // Update time window and resend full data
                     this.timeWindow = msg.timeWindow;
                     this.sendFullData(messenger);
                     break;
+                case 'snapshot': {
+                    const uri = vscode.Uri.joinPath(
+                        vscode.workspace.workspaceFolders?.[0].uri ?? vscode.Uri.file(tmpdir),
+                        "telemetry-plot-" + (new Date()).toISOString() + ".png"
+                    );
+
+                    vscode.workspace.fs.writeFile(
+                        uri,
+                        Buffer.from(msg.pngData, "base64")
+                    ).then(() => {
+                        vscode.window.showInformationMessage("Captured telemetry plot screenshot", "Open").then((v) => {
+                            if (v === "Open") {
+                                vscode.commands.executeCommand("vscode.open", uri);
+                            }
+                        });
+                    });
+                }
             }
         }, webviewView.webview);
 

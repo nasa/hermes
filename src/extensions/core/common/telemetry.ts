@@ -73,7 +73,7 @@ export type BackendPlotMessage = (
 )
 
 export type FrontendPlotMessage = (
+    | { type: "snapshot", pngData: string }
     | { type: "refresh" }
-    | { type: "clear" }
     | { type: "timeWindow", timeWindow: number }
 )

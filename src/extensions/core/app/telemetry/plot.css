@@ -16,10 +16,11 @@ body {
 }
 
 .toolbar {
-    display: inline-flex;
-    position: absolute;
-    right: 6px;
-    top: 6px;
+    display: flex;
+    /* position: absolute; */
+    /* right: 6px; */
+    /* top: 6px; */
+    margin: 6px;
     gap: 6px;
     align-items: center;
     flex-shrink: 0;
@@ -33,18 +34,19 @@ body {
     background: var(--vscode-editor-background);
 }
 
-.interpolation-mode-select vscode-button {
+.toolbar vscode-button {
     width: 25px;
     height: 25px;
 }
 
-.interpolation-mode-select svg {
+.toolbar svg {
     width: 15px;
     height: 15px;
 }
 
 .plot-area {
     flex: 1;
+    flex-direction: column;
     overflow: hidden;
     display: flex;
     align-items: center;

@@ -19,6 +19,7 @@ import './plot.css';
 import {
     VscodeButton,
     VscodeButtonGroup,
+    VscodeIcon,
     VscodeOption,
     VscodeSingleSelect
 } from '@vscode-elements/react-elements';
@@ -93,7 +94,6 @@ function TelemetryPlot() {
     const [plotInfo, setPlotInfo] = useState<Record<string, TelemetrySeries>>({});
     const [plotData, setPlotData] = useState<Record<string, TelemetrySeriesData>>({});
     const [plotDimensions, setPlotDimensions] = useState({ width: 800, height: 400 });
-    // const [plotConfig, setPlotConfig] = useState<UPlotConfigBuilder | null>(null);
 
     const [tick, setTick] = useState(0); // Force periodic rerenders
     // const [hoveredSeries, setHoveredSeries] = useState<string | null>(null);
@@ -488,25 +488,26 @@ function TelemetryPlot() {
         return <PlotTooltipContent timestamp={new Date(timestamp).toISOString()} series={seriesValues} />;
     }, [tooltipVisible, tooltipDataIdx, data, disabledSeries]);
 
+    const takeScreenshot = useCallback(async () => {
+        if (uPlotInstanceRef.current) {
+            const canvas = uPlotInstanceRef.current.ctx.canvas;
+            const dataUrl = canvas.toDataURL("image/png");
+
+            console.log(dataUrl.substring(0, 40));
+            messages.postMessage({
+                type: "snapshot",
+                pngData: dataUrl.substring(dataUrl.indexOf(',') + 1)
+            });
+        }
+    }, []);
+
     return (
         <div className="telemetry-container">
-            <div ref={plotContainerRef} className="plot-area">
-                {(channelCount === 0 || plotConfig === null) ? (
-                    <div className="plot-placeholder">
-                        Select channels to plot in the table view
-                    </div>
-                ) : (
-                    <div className="plot-container">
-                        <UPlotChart
-                            data={realtimeData}
-                            config={plotConfig}
-                            width={plotDimensions.width}
-                            height={plotDimensions.height}
-                        />
-                    </div>
-                )}
-            </div>
             <div className="toolbar">
+                <div style={{ flexGrow: 1 }} />
+                {(channelCount !== 0 && plotConfig) && <VscodeButton onClick={takeScreenshot} secondary iconOnly>
+                    <VscodeIcon name="device-camera" />
+                </VscodeButton>}
                 <InterpolationModeButtonGroup
                     value={interpolationMode}
                     onChange={setInterpolationMode}
@@ -522,6 +523,22 @@ function TelemetryPlot() {
                         </VscodeOption>
                     ))}
                 </VscodeSingleSelect>
+            </div>
+            <div ref={plotContainerRef} className="plot-area">
+                {(channelCount === 0 || !plotConfig) ? (
+                    <div className="plot-placeholder">
+                        Select channels to plot in the table view
+                    </div>
+                ) : (
+                    <div className="plot-container">
+                        <UPlotChart
+                            data={realtimeData}
+                            config={plotConfig}
+                            width={plotDimensions.width}
+                            height={plotDimensions.height}
+                        />
+                    </div>
+                )}
             </div>
             {legendItems.length > 0 && (
                 <div className="legend-area">
