@@ -10,21 +10,6 @@ import { eventToDisplayEvent } from '@gov.nasa.jpl.hermes/types/src/conversion';
 
 const ENCODING_VERSION = 3.1;
 
-
-interface LegacyJsonNotebookCell {
-    language: string;
-    value: string;
-    kind: vscode.NotebookCellKind;
-    metadata?: { [name: string]: any }
-    outputs?: {
-        items: {
-            data: string;
-            mime: string;
-        }[],
-        metadata: any
-    }[]
-}
-
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
@@ -132,22 +117,6 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
     ): Promise<vscode.NotebookData> {
         const contents = textDecoder.decode(content);
 
-        if (contents.startsWith('[')) {
-            vscode.window.showInformationMessage(
-                "Hermes Notebook is a legacy JSON format. " +
-                "On the next save it will be saved in the new 'readable/diffable' format. " +
-                "Please make a change to the document and save it to apply this new format"
-            );
-            return await this.deserializeNotebookLegacy(content, _token);
-        } else if (!contents.startsWith('<!-- hermes: ')) {
-            vscode.window.showInformationMessage(
-                "Hermes Notebook is a legacy ';' comment format. " +
-                "On the next save it will saved in the new Markdown encoding. " +
-                "Please make a change to the document and save it to apply this new format"
-            );
-            return await this.deserializeNotebook_version2(content, _token);
-        }
-
         const file = contents.split('\n');
 
         const parseMeta = (line: string) => {
@@ -166,18 +135,22 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
             throw new Error(`Failed to read version from line 1: ${e}`);
         }
 
-        // For now, we only support the current version since the previous two are manually handled
-        if (versionTag?.type !== Encoding3.TagType.VERSION) {
-            throw new Error(`Expected encoding version: ${versionTag} on line 1: ${file[0]}`);
-        }
+        let version: number;
+        if (versionTag !== null) {
+            if (versionTag.type !== Encoding3.TagType.VERSION) {
+                throw new Error(`Expected encoding version: ${JSON.stringify(versionTag)} on line 1: ${file[0]}`);
+            }
 
-        const version = versionTag.value;
-        switch (version) {
-            case 3:
-            case 3.1:
-                break;
-            default:
-                throw new Error(`Encoding version: ${version} is not supported`);
+            version = versionTag.value;
+            switch (version) {
+                case 3:
+                case 3.1:
+                    break;
+                default:
+                    throw new Error(`Encoding version: ${version} is not supported`);
+            }
+        } else {
+            version = 3.1;
         }
 
         let cell: vscode.NotebookCellData | undefined;
@@ -428,35 +401,6 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
                 throw new Error(`Error on line: ${lineNo}: ${e}`);
             }
         }
-
-        return new vscode.NotebookData(cells);
-    }
-
-    async deserializeNotebookLegacy(
-        content: Uint8Array,
-        _token: vscode.CancellationToken
-    ): Promise<vscode.NotebookData> {
-
-        const contents = textDecoder.decode(content);
-
-        let raw: LegacyJsonNotebookCell[];
-        try {
-            raw = <LegacyJsonNotebookCell[]>JSON.parse(contents);
-        } catch {
-            raw = [];
-        }
-
-        const cells = raw.map(
-            item => {
-                const out = new vscode.NotebookCellData(item.kind, item.value, item.language);
-                out.metadata = item.metadata;
-                out.outputs = item.outputs?.map(e => new vscode.NotebookCellOutput(
-                    e.items.map(i => new vscode.NotebookCellOutputItem(Buffer.from(i.data, "base64"), i.mime)),
-                    e.metadata
-                ));
-                return out;
-            }
-        );
 
         return new vscode.NotebookData(cells);
     }
