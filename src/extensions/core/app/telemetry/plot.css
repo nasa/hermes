@@ -66,6 +66,15 @@ body {
     height: 100%;
 }
 
+.legend-area {
+    padding: 12px;
+    border-top: 1px solid var(--vscode-panel-border);
+    background-color: var(--vscode-editor-background);
+    max-height: 300px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
 /* uPlot styling overrides for VSCode theme */
 .plot-container .u-legend {
     background-color: var(--vscode-editor-background);
@@ -85,4 +94,100 @@ body {
 .u-axis .u-text {
     fill: var(--vscode-editor-foreground);
     color: var(--vscode-editor-foreground);
+}
+
+/* Legend Table Styles */
+.legend-table {
+    width: 100%;
+}
+
+.legend-table th:first-child {
+    width: 100%;
+    border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.legend-table-header {
+    color: var(--vscode-editor-foreground);
+    font-weight: 500;
+    border-bottom: 1px solid var(--vscode-panel-border);
+    padding: 2px 8px;
+    font-size: 11px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.legend-table-name-header {
+    text-align: left;
+    padding-left: 30px;
+}
+
+.legend-table-with-icon {
+    padding-right: 4px;
+}
+
+.legend-table-header-sortable {
+    cursor: pointer;
+}
+
+/* Legend Table Item Styles */
+.legend-row {
+    font-size: 12px;
+    border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.legend-row td {
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+
+.legend-row:hover {
+    background: var(--vscode-list-hoverBackground);
+}
+
+.legend-label {
+    white-space: nowrap;
+    background: none;
+    border: none;
+    font-size: inherit;
+    padding: 0;
+    max-width: 600px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    user-select: text;
+    color: var(--vscode-editor-foreground);
+    cursor: pointer;
+}
+
+.legend-label-disabled {
+    color: var(--vscode-disabledForeground);
+}
+
+.legend-item-wrapper {
+    display: flex;
+    white-space: nowrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-value {
+    text-align: right;
+}
+
+.legend-y-axis-label {
+    color: var(--vscode-descriptionForeground);
+}
+
+/* Series Icon Styles */
+.series-icon {
+    display: inline-block;
+    width: 14px;
+    height: 4px;
+}
+
+.legend-row.disabled {
+    opacity: 0.5;
+}
+
+.legend-row.disabled .legend-value {
+    color: var(--vscode-disabledForeground);
 }

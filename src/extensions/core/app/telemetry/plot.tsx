@@ -12,6 +12,7 @@ import { getMessages, vscode } from '@gov.nasa.jpl.hermes/vscode/browser';
 import type { BackendPlotMessage, FrontendPlotMessage, TelemetrySeries, TelemetrySeriesData } from '../../common/telemetry';
 
 import { UPlotChart, UPlotConfigBuilder, AxisPlacement, type ScaleProps, ScaleDirection, ScaleOrientation, LineInterpolation } from './uplot';
+import { VizLegendTable, VizLegendItem } from './VizLegend';
 import './plot.css';
 
 import {
@@ -94,6 +95,8 @@ function TelemetryPlot() {
     // const [plotConfig, setPlotConfig] = useState<UPlotConfigBuilder | null>(null);
 
     const [tick, setTick] = useState(0); // Force periodic rerenders
+    // const [hoveredSeries, setHoveredSeries] = useState<string | null>(null);
+    const [disabledSeries, setDisabledSeries] = useState<Set<string>>(new Set());
 
     const plotContainerRef = useRef<HTMLDivElement>(null);
 
@@ -184,18 +187,22 @@ function TelemetryPlot() {
     // Build uPlot data (separate from config)
     // Depends on tick to force rerender even when no new data arrives
     const data = useMemo<uPlot.AlignedData>(() => {
-        const channels = Object.values(plotData);
-        if (channels.length === 0) {
+        // Filter out disabled series
+        const enabledChannels = Object.entries(plotData)
+            .filter(([channelKey]) => !disabledSeries.has(channelKey))
+            .map(([_, data]) => data);
+
+        if (enabledChannels.length === 0) {
             return [[], []];
         }
 
         return uPlot.join(
-            channels.map((data) => [
+            enabledChannels.map((data) => [
                 data.time,
                 data.valueNum!
             ])
         );
-    }, [plotData]);
+    }, [plotData, disabledSeries]);
 
     const plotConfig = useMemo(() => {
         const builder = new UPlotConfigBuilder();
@@ -248,26 +255,29 @@ function TelemetryPlot() {
             }
         });
 
-        // Add series
+        // Add series (only enabled ones)
         let index = 0;
-        for (const info of Object.values(plotInfo)) {
+        for (const [channelKey, info] of Object.entries(plotInfo)) {
             if (index >= palette.length) {
                 break;
             }
 
-            builder.addSeries({
-                scaleKey: 'y',
-                label: `${info.component}.${info.name}`,
-                stroke: palette[index],
-                lineInterpolation: interpolationMode,
-                width: 2,
-            });
+            // Skip disabled series
+            if (!disabledSeries.has(channelKey)) {
+                builder.addSeries({
+                    scaleKey: 'y',
+                    label: `${info.component}.${info.name}`,
+                    stroke: palette[index],
+                    lineInterpolation: interpolationMode,
+                    width: 2,
+                });
+            }
 
             index++;
         }
 
         return builder;
-    }, [plotInfo, interpolationMode]);
+    }, [plotInfo, interpolationMode, disabledSeries]);
 
     // Periodic rerender to keep time axis relative to wall clock
     useEffect(() => {
@@ -308,6 +318,87 @@ function TelemetryPlot() {
 
     const channelCount = Object.keys(plotData).length;
 
+    // Create legend items from plot data
+    const legendItems = useMemo<VizLegendItem[]>(() => {
+        const items: VizLegendItem[] = [];
+        let index = 0;
+
+        for (const [channelKey, info] of Object.entries(plotInfo)) {
+            if (index >= palette.length) {
+                break;
+            }
+
+            const data = plotData[channelKey];
+            const label = `${info.component}.${info.name}`;
+
+            // Calculate statistics if numeric data is available
+            const getDisplayValues = data?.valueNum && data.valueNum.length > 0 ? () => {
+                const values = data.valueNum!;
+                const latest = values[values.length - 1];
+                const min = Math.min(...values);
+                const max = Math.max(...values);
+
+                return [
+                    {
+                        title: 'Min',
+                        numeric: min,
+                        text: min.toFixed(2),
+                    },
+                    {
+                        title: 'Max',
+                        numeric: max,
+                        text: max.toFixed(2),
+                    },
+                    {
+                        title: 'Last',
+                        numeric: latest,
+                        text: latest?.toFixed(2) ?? 'N/A',
+                    },
+                ];
+            } : undefined;
+
+            items.push({
+                label,
+                color: palette[index],
+                yAxis: 1,
+                disabled: disabledSeries.has(channelKey),
+                fieldName: channelKey,
+                getDisplayValues,
+                getItemKey: () => channelKey,
+                lineStyle: { fill: 'solid' },
+            });
+
+            index++;
+        }
+
+        return items;
+    }, [plotInfo, plotData, disabledSeries]);
+
+    const handleLegendClick = useCallback((item: VizLegendItem) => {
+        const channelKey = item.fieldName;
+        if (!channelKey) {
+            return;
+        }
+
+        setDisabledSeries(prev => {
+            const next = new Set(prev);
+            if (next.has(channelKey)) {
+                next.delete(channelKey);
+            } else {
+                next.add(channelKey);
+            }
+            return next;
+        });
+    }, []);
+
+    // const handleLegendMouseOver = useCallback((item: VizLegendItem) => {
+    //     setHoveredSeries(item.fieldName ?? null);
+    // }, []);
+
+    // const handleLegendMouseOut = useCallback(() => {
+    //     setHoveredSeries(null);
+    // }, []);
+
     return (
         <div className="telemetry-container">
             <div ref={plotContainerRef} className="plot-area">
@@ -343,6 +434,17 @@ function TelemetryPlot() {
                     ))}
                 </VscodeSingleSelect>
             </div>
+            {legendItems.length > 0 && (
+                <div className="legend-area">
+                    <VizLegendTable
+                        items={legendItems}
+                        onLabelClick={handleLegendClick}
+                        // onLabelMouseOver={handleLegendMouseOver}
+                        // onLabelMouseOut={handleLegendMouseOut}
+                        isSortable={true}
+                    />
+                </div>
+            )}
         </div>
     );
 }
