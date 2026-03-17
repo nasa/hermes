@@ -216,7 +216,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
         return await fsw.sequence(seq, token);
     }
 
-    async getFsw(cell: vscode.NotebookCell, token?: vscode.CancellationToken): Promise<Hermes.Fsw | undefined> {
+    private async getFsw(cell: vscode.NotebookCell, token?: vscode.CancellationToken): Promise<Hermes.Fsw | undefined> {
         const allFsws = await this.validFsws(token);
 
         const fswName = cell.metadata.hermes?.fsw as string | undefined;
@@ -276,7 +276,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
         };
 
         const fsw = await this.getFsw(cell, token);
-        const auto = fsw && cell.metadata.hermes?.fsw === fsw?.id;
+        const auto = cell.metadata.hermes?.fsw === undefined;
 
         if (fsw) {
             if (auto) {

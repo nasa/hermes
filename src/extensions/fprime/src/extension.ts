@@ -34,6 +34,18 @@ export async function activate(context: vscode.ExtensionContext) {
         hermesVSCode.registerNotebookLanguageProvider("fprime", nbLanguage),
         jsonProvider.startWatching(),
 
+        hermesVSCode.api.onFswChange((fsws) => {
+            // Automatically select the proper dictionary when an FSW connects
+            // Only do it when there is a single F Prime connection
+            const fprimeFsws = fsws.filter(f => f.type === "fprime");
+            if (fprimeFsws.length === 1) {
+                const dictionary = fprimeFsws[0].dictionary;
+                if (dictionary) {
+                    dictionaryItem.set(dictionary);
+                }
+            }
+        }),
+
         // Register task provider for F Prime deployment auto-discovery
         vscode.tasks.registerTaskProvider(
             'hermes-fprime-deployment',
