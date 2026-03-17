@@ -121,7 +121,7 @@ export class VscodeApi implements Hermes.Api {
                 if (err) {
                     this.invalidate(err);
                 } else {
-                    this.update({ type: BackendType.OFFLINE });
+                    this.exited();
                 }
             }),
         ];
@@ -143,9 +143,47 @@ export class VscodeApi implements Hermes.Api {
         this.currentApi = undefined;
     }
 
-    invalidate(err: string) {
+    async exited() {
         this.cleanup();
-        this.currentApi = new Offline(this.context, this.log);
+        this.currentApi = await Offline.activate(this.context, this.log);
+
+        this.primaryItem.show();
+        this.secondaryItem.hide();
+
+        this.primaryItem.color = undefined;
+        this.primaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.background");
+        this.primaryItem.tooltip = "Change Mode or Restart";
+        this.primaryItem.command = "hermes.host.changeMode";
+
+        this.secondaryItem.color = undefined;
+        this.secondaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.background");
+        this.secondaryItem.command = undefined;
+        this.secondaryItem.tooltip = undefined;
+
+        switch (this.state.type) {
+            case BackendType.OFFLINE:
+                this.primaryItem.text = "$(close) Hermes: Offline (exited)";
+                this.primaryItem.tooltip = "Retry";
+                this.secondaryItem.text = "Backend Exited";
+                break;
+            case BackendType.LOCAL:
+                this.update({ type: BackendType.OFFLINE });
+                break;
+            case BackendType.REMOTE:
+                this.primaryItem.text = "$(close) Hermes: Remote (exited)";
+                this.primaryItem.tooltip = "Reconnect";
+                this.secondaryItem.text = `$(radio-tower) ${this.state.remote.label}`;
+                this.secondaryItem.command = "hermes.host.changeRemote";
+                this.secondaryItem.show();
+                break;
+        }
+
+        this._onContextRefresh.fire();
+    }
+
+    async invalidate(err: string) {
+        this.cleanup();
+        this.currentApi = await Offline.activate(this.context, this.log);
 
         this.primaryItem.show();
         this.secondaryItem.show();
@@ -205,8 +243,6 @@ export class VscodeApi implements Hermes.Api {
 
         switch (this.state.type) {
             case BackendType.OFFLINE:
-                this.currentApi = new Offline(this.context, this.log);
-
                 this.primaryItem.color = new vscode.ThemeColor("statusBarItem.remoteForeground");
                 this.primaryItem.text = "$(sync~spin) Hermes: Initializing...";
                 this.currentApi = await Offline.activate(this.context, this.log, this.cancelActivate.token);

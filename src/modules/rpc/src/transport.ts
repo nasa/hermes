@@ -100,7 +100,7 @@ function createSSLCredentials(skipTLSVerify: boolean) {
     });
 }
 
-export function createAuthenticationCredentials(options: GrpcClientOptions): grpc.ChannelCredentials {
+function createAuthenticationCredentials(options: GrpcClientOptions): grpc.ChannelCredentials {
     let useSSL: boolean;
     const url = new URL(options.hostAddress.startsWith('http') ?
         options.hostAddress

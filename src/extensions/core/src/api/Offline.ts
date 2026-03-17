@@ -9,7 +9,7 @@ const nullDisposable: vscode.Disposable = { dispose: () => { } };
 export class Offline implements Hermes.Api {
     private dictionaryCache = new Map<string, Proto.IDictionary>();
 
-    constructor(
+    protected constructor(
         readonly context: vscode.ExtensionContext,
         readonly log: Hermes.Log,
     ) { }
