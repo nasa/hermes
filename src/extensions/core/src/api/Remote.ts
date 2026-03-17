@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as grpc from '@grpc/grpc-js';
 
 import * as Rpc from '@gov.nasa.jpl.hermes/rpc';
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
@@ -6,10 +7,46 @@ import { Settings } from '@gov.nasa.jpl.hermes/vscode';
 
 export class Remote extends Rpc.Client implements Hermes.Api {
     grpcClient: Rpc.GrpcClient;
+    private closed: boolean;
 
-    constructor(client: Rpc.GrpcClient, log: Hermes.Log) {
+    protected constructor(
+        client: Rpc.GrpcClient,
+        log: Hermes.Log
+    ) {
         super(log, client);
         this.grpcClient = client;
+        this.closed = false;
+
+        this.waitLoop();
+    }
+
+    async waitLoop() {
+        while (true) {
+            const currentState = this.grpcClient.getChannel().getConnectivityState(false);
+            switch (currentState) {
+                case grpc.connectivityState.IDLE:
+                case grpc.connectivityState.SHUTDOWN:
+                    if (!this.closed) {
+                        vscode.commands.executeCommand("hermes.backend.exit");
+                    }
+                    return;
+                case grpc.connectivityState.TRANSIENT_FAILURE:
+                    if (!this.closed) {
+                        vscode.commands.executeCommand("hermes.backend.exit", "Transient Failure");
+                    }
+                    return;
+
+                case grpc.connectivityState.CONNECTING:
+                case grpc.connectivityState.READY: {
+                    await new Promise((resolve) => this.grpcClient.getChannel().watchConnectivityState(
+                        currentState,
+                        // Re-poll every 30s
+                        Date.now() + (30 * 1000),
+                        resolve
+                    ));
+                }
+            }
+        }
     }
 
     static async activate(remote: Settings.Remote, log: Hermes.Log, token?: vscode.CancellationToken) {
@@ -29,6 +66,7 @@ export class Remote extends Rpc.Client implements Hermes.Api {
     }
 
     dispose(): void {
+        this.closed = true;
         super.dispose();
         this.grpcClient.close();
     }

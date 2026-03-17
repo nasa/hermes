@@ -8,7 +8,7 @@ import { Settings } from '@gov.nasa.jpl.hermes/vscode';
 export class Local extends Rpc.Client {
     grpcClient: Rpc.GrpcClient;
 
-    constructor(
+    protected constructor(
         client: Rpc.GrpcClient,
         readonly task: vscode.TaskExecution,
         readonly transportPipe: string,
