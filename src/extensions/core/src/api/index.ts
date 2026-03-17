@@ -121,7 +121,7 @@ export class VscodeApi implements Hermes.Api {
                 if (err) {
                     this.invalidate(err);
                 } else {
-                    this.exited();
+                    this.update({ type: BackendType.OFFLINE });
                 }
             }),
         ];
@@ -141,46 +141,6 @@ export class VscodeApi implements Hermes.Api {
         }
 
         this.currentApi = undefined;
-    }
-
-    exited() {
-        this.cleanup();
-        this.currentApi = new Offline(this.context, this.log);
-
-        this.primaryItem.show();
-        this.secondaryItem.hide();
-
-        this.primaryItem.color = undefined;
-        this.primaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.background");
-        this.primaryItem.tooltip = "Change Mode or Restart";
-        this.primaryItem.command = "hermes.host.changeMode";
-
-        this.secondaryItem.color = undefined;
-        this.secondaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.background");
-        this.secondaryItem.command = undefined;
-        this.secondaryItem.tooltip = undefined;
-
-        switch (this.state.type) {
-            case BackendType.OFFLINE:
-                this.primaryItem.text = "$(close) Hermes: Offline (exited)";
-                this.primaryItem.tooltip = "Retry";
-                this.secondaryItem.text = "Backend Exited";
-                break;
-            case BackendType.LOCAL:
-                this.primaryItem.text = "$(close) Hermes: Local (exited)";
-                this.primaryItem.tooltip = "Restart";
-                this.secondaryItem.text = "Backend Exited";
-                break;
-            case BackendType.REMOTE:
-                this.primaryItem.text = "$(close) Hermes: Remote (exited)";
-                this.primaryItem.tooltip = "Reconnect";
-                this.secondaryItem.text = `$(radio-tower) ${this.state.remote.label}`;
-                this.secondaryItem.command = "hermes.host.changeRemote";
-                this.secondaryItem.show();
-                break;
-        }
-
-        this._onContextRefresh.fire();
     }
 
     invalidate(err: string) {
