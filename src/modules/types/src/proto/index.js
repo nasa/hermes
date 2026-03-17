@@ -14577,6 +14577,7 @@ $root.Fsw = (function() {
      * @property {string|null} [profileId] Fsw profileId
      * @property {Array.<string>|null} [forwards] Fsw forwards
      * @property {Array.<FswCapability>|null} [capabilities] Fsw capabilities
+     * @property {string|null} [dictionary] Fsw dictionary
      */
 
     /**
@@ -14637,6 +14638,14 @@ $root.Fsw = (function() {
     Fsw.prototype.capabilities = $util.emptyArray;
 
     /**
+     * Fsw dictionary.
+     * @member {string} dictionary
+     * @memberof Fsw
+     * @instance
+     */
+    Fsw.prototype.dictionary = "";
+
+    /**
      * Creates a new Fsw instance using the specified properties.
      * @function create
      * @memberof Fsw
@@ -14675,6 +14684,8 @@ $root.Fsw = (function() {
                 writer.int32(message.capabilities[i]);
             writer.ldelim();
         }
+        if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
+            writer.uint32(/* id 8, wireType 2 =*/66).string(message.dictionary);
         return writer;
     };
 
@@ -14736,6 +14747,10 @@ $root.Fsw = (function() {
                             message.capabilities.push(reader.int32());
                     } else
                         message.capabilities.push(reader.int32());
+                    break;
+                }
+            case 8: {
+                    message.dictionary = reader.string();
                     break;
                 }
             default:
@@ -14805,6 +14820,9 @@ $root.Fsw = (function() {
                     break;
                 }
         }
+        if (message.dictionary != null && message.hasOwnProperty("dictionary"))
+            if (!$util.isString(message.dictionary))
+                return "dictionary: string expected";
         return null;
     };
 
@@ -14870,6 +14888,8 @@ $root.Fsw = (function() {
                     break;
                 }
         }
+        if (object.dictionary != null)
+            message.dictionary = String(object.dictionary);
         return message;
     };
 
@@ -14894,6 +14914,7 @@ $root.Fsw = (function() {
             object.id = "";
             object.type = "";
             object.profileId = "";
+            object.dictionary = "";
         }
         if (message.id != null && message.hasOwnProperty("id"))
             object.id = message.id;
@@ -14911,6 +14932,8 @@ $root.Fsw = (function() {
             for (var j = 0; j < message.capabilities.length; ++j)
                 object.capabilities[j] = options.enums === String ? $root.FswCapability[message.capabilities[j]] === undefined ? message.capabilities[j] : $root.FswCapability[message.capabilities[j]] : message.capabilities[j];
         }
+        if (message.dictionary != null && message.hasOwnProperty("dictionary"))
+            object.dictionary = message.dictionary;
         return object;
     };
 

@@ -7,11 +7,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/nasa/hermes/pkg/fprime"
 	"github.com/nasa/hermes/pkg/host"
 	"github.com/nasa/hermes/pkg/log"
 	"github.com/nasa/hermes/pkg/pb"
+	"github.com/stretchr/testify/assert"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -82,7 +82,7 @@ func TestFPrimeTCP(t *testing.T) {
 
 	logger := log.GetLogger(t.Context())
 
-	fsw := fprime.NewFprimeFsw(logger, "tcp", dictHost.Namespace(""))
+	fsw := fprime.NewFprimeFsw(logger, "tcp", "", dictHost.Namespace(""))
 
 	wg := sync.WaitGroup{}
 	fprime.ConnectPipeline(

@@ -67,12 +67,14 @@ type Fsw struct {
 func NewFprimeFsw(
 	logger log.Logger,
 	name string,
+	dictionaryId string,
 	dictionary *host.DictionaryNamespace,
 ) *Fsw {
 	f := &Fsw{
 		FswInfo: host.FswInfo{
-			Id:   name,
-			Type: "fprime",
+			Id:         name,
+			Type:       "fprime",
+			Dictionary: dictionaryId,
 		},
 
 		Up:         stream.NewPort[*Packet](),

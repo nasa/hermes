@@ -21,6 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Functionality implemented by this connection
 type FswCapability int32
 
 const (
@@ -86,6 +87,8 @@ func (FswCapability) EnumDescriptor() ([]byte, []int) {
 	return file_fsw_proto_rawDescGZIP(), []int{0}
 }
 
+// A representation of a connection to 'flight-software'.
+// Doesn't necessarily need to be _flight-software_.
 type Fsw struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Unique identifier, name of the FSW.
@@ -102,7 +105,10 @@ type Fsw struct {
 	Forwards []string `protobuf:"bytes,4,rep,name=forwards,proto3" json:"forwards,omitempty"`
 	// The set of uplink capabilities this FSW connection implements
 	// If other requests are routed to it, they will be rejected.
-	Capabilities  []FswCapability `protobuf:"varint,7,rep,packed,name=capabilities,proto3,enum=FswCapability" json:"capabilities,omitempty"`
+	Capabilities []FswCapability `protobuf:"varint,7,rep,packed,name=capabilities,proto3,enum=FswCapability" json:"capabilities,omitempty"`
+	// Optional ID of the dictionary to use when commanding this
+	// This will notify the frontend to swap to this dictionary.
+	Dictionary    string `protobuf:"bytes,8,opt,name=dictionary,proto3" json:"dictionary,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -170,6 +176,13 @@ func (x *Fsw) GetCapabilities() []FswCapability {
 		return x.Capabilities
 	}
 	return nil
+}
+
+func (x *Fsw) GetDictionary() string {
+	if x != nil {
+		return x.Dictionary
+	}
+	return ""
 }
 
 type CommandOptions struct {
@@ -601,14 +614,17 @@ var File_fsw_proto protoreflect.FileDescriptor
 const file_fsw_proto_rawDesc = "" +
 	"\n" +
 	"\tfsw.proto\x1a\n" +
-	"type.proto\x1a\x10dictionary.proto\"\xa4\x01\n" +
+	"type.proto\x1a\x10dictionary.proto\"\xc4\x01\n" +
 	"\x03Fsw\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x1d\n" +
 	"\n" +
 	"profile_id\x18\x03 \x01(\tR\tprofileId\x12\x1a\n" +
 	"\bforwards\x18\x04 \x03(\tR\bforwards\x122\n" +
-	"\fcapabilities\x18\a \x03(\x0e2\x0e.FswCapabilityR\fcapabilitiesJ\x04\b\x05\x10\x06J\x04\b\x06\x10\a\")\n" +
+	"\fcapabilities\x18\a \x03(\x0e2\x0e.FswCapabilityR\fcapabilities\x12\x1e\n" +
+	"\n" +
+	"dictionary\x18\b \x01(\tR\n" +
+	"dictionaryJ\x04\b\x05\x10\x06J\x04\b\x06\x10\a\")\n" +
 	"\x0eCommandOptions\x12\x17\n" +
 	"\ano_wait\x18\x01 \x01(\bR\x06noWait\"\xea\x01\n" +
 	"\fCommandValue\x12\x1d\n" +

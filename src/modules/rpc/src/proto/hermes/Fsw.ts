@@ -8,6 +8,7 @@ export interface Fsw {
   'profileId'?: (string);
   'forwards'?: (string)[];
   'capabilities'?: (_FswCapability)[];
+  'dictionary'?: (string);
 }
 
 export interface Fsw__Output {
@@ -16,4 +17,5 @@ export interface Fsw__Output {
   'profileId'?: (string);
   'forwards'?: (string)[];
   'capabilities'?: (_FswCapability__Output)[];
+  'dictionary'?: (string);
 }

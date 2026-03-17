@@ -5411,6 +5411,9 @@ export interface IFsw {
 
     /** Fsw capabilities */
     capabilities?: (FswCapability[]|null);
+
+    /** Fsw dictionary */
+    dictionary?: (string|null);
 }
 
 /** Represents a Fsw. */
@@ -5436,6 +5439,9 @@ export class Fsw implements IFsw {
 
     /** Fsw capabilities. */
     public capabilities: FswCapability[];
+
+    /** Fsw dictionary. */
+    public dictionary: string;
 
     /**
      * Creates a new Fsw instance using the specified properties.
