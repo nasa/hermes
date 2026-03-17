@@ -60,15 +60,18 @@ export interface Fsw {
     id: string;
 
     // FSW Type
-    type: string
+    type: string;
 
     // Profile that this connection belongs to
-    profileId: string
+    profileId: string;
 
     // Telemetry from these FSW IDs should be treated as though they
     // also came from this FSW. Useful for when you need a custom language
     // context that wraps multiple FSWs
-    forwards?: string[]
+    forwards?: string[];
+
+    // Optional ID of dictionary to use to command FSW
+    dictionary?: string;
 
     /**
      * Execute a set of commands as a sequence

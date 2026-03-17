@@ -40,6 +40,7 @@ export class RpcFsw implements Hermes.Fsw {
     type: string;
     profileId: string;
     forwards?: string[] | undefined;
+    dictionary?: string | undefined;
 
     private metadata: grpc.Metadata;
 
@@ -51,6 +52,7 @@ export class RpcFsw implements Hermes.Fsw {
         this.type = proto?.type ?? "";
         this.profileId = proto?.profileId ?? "";
         this.forwards = proto?.forwards ?? undefined;
+        this.dictionary = proto?.dictionary ?? undefined;
 
         this.metadata = new grpc.Metadata();
         this.metadata.set("id", this.id);

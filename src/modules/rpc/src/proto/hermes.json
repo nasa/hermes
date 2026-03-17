@@ -983,6 +983,10 @@
           "rule": "repeated",
           "type": "FswCapability",
           "id": 7
+        },
+        "dictionary": {
+          "type": "string",
+          "id": 8
         }
       },
       "reserved": [

@@ -2,7 +2,7 @@ import { Command } from '@commander-js/extra-typings';
 import fs from 'fs';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/types';
-import { parseFprimeJsonDictionary } from '../extensions/fprime/src/dictionaryJson';
+import { parseFprimeJsonDictionary } from '../extensions/fprime/src/dictionary/json';
 
 export async function main(argv?: readonly string[]): Promise<number> {
 

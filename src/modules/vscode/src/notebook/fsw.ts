@@ -216,21 +216,23 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
         return await fsw.sequence(seq, token);
     }
 
+    async getFsw(cell: vscode.NotebookCell, token?: vscode.CancellationToken): Promise<Hermes.Fsw | undefined> {
+        const allFsws = await this.validFsws(token);
+
+        const fswName = cell.metadata.hermes?.fsw as string | undefined;
+        if (fswName) {
+            return allFsws.find(v => v.id === fswName);
+        } else {
+            return allFsws[0];
+        }
+    }
+
     async execute(
         cell: vscode.NotebookCell,
         execution: vscode.NotebookCellExecution,
         token: vscode.CancellationToken,
     ): Promise<boolean> {
-        const allFsws = await this.validFsws(token);
-
-        const fswName = cell.metadata.hermes?.fsw as string | undefined;
-        let fsw: Hermes.Fsw | undefined;
-        if (fswName) {
-            fsw = allFsws.find(v => v.id === fswName);
-        } else {
-            fsw = allFsws[0];
-        }
-
+        const fsw = await this.getFsw(cell, token);
         if (!fsw) {
             throw new Error("No target FSW set on this cell (or connected)");
         }
@@ -273,18 +275,8 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
             ]
         };
 
-        const allFsws = await this.validFsws(token);
-
-        let fsw: Hermes.Fsw | undefined;
-        let auto = false;
-
-        const fswName = cell.metadata.hermes?.fsw as string | undefined;
-        if (fswName) {
-            fsw = allFsws.find(v => v.id === fswName);
-        } else {
-            fsw = allFsws[0];
-            auto = true;
-        }
+        const fsw = await this.getFsw(cell, token);
+        const auto = fsw && cell.metadata.hermes?.fsw === fsw?.id;
 
         if (fsw) {
             if (auto) {
@@ -294,9 +286,9 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
             }
 
             item.tooltip = fsw.type;
-        } else if (fswName) {
-            item.text = `$(debug-disconnect) ${fswName}`;
-            item.tooltip = `${fswName} is not connected`;
+        } else if (cell.metadata.hermes?.fsw) {
+            item.text = `$(debug-disconnect) ${cell.metadata.hermes?.fsw}`;
+            item.tooltip = `${cell.metadata.hermes?.fsw} is not connected`;
         } else {
             item.text = '$(circle-large-outline)';
             item.tooltip = 'No fsw set or connected';

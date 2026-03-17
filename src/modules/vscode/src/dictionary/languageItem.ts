@@ -102,7 +102,7 @@ export class DictionaryLanguageItem implements vscode.Disposable {
         ];
     }
 
-    private async set(dictUid: string | undefined) {
+    async set(dictUid: string | undefined) {
         this.activeUid = dictUid;
 
         if (!this.activeUid) {

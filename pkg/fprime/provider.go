@@ -57,6 +57,7 @@ func gdsProvider(
 	ctx context.Context,
 	session host.ConnectSession,
 	conn io.ReadWriteCloser,
+	dictId string,
 	dict *host.Dictionary,
 	fswName string,
 	protocolKind string,
@@ -68,6 +69,7 @@ func gdsProvider(
 	fsw := NewFprimeFsw(
 		session.Log(),
 		fswName,
+		dictId,
 		primaryDict,
 	)
 
@@ -145,6 +147,7 @@ func (s *serverProvider) Start(
 				ctx,
 				session,
 				conn,
+				settings.Dictionary,
 				hostDict,
 				settings.Name,
 				settings.Protocol,
@@ -189,6 +192,7 @@ func (c *clientProvider) Start(
 				ctx,
 				session,
 				conn,
+				settings.Dictionary,
 				hostDict,
 				settings.Name,
 				settings.Protocol,

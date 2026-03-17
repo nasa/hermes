@@ -183,6 +183,7 @@ func (sp *statefulProfile[T]) Connections() []*pb.Fsw {
 			Type:         info.Type,
 			Forwards:     slices.Clone(info.Forwards),
 			Capabilities: capabilities,
+			Dictionary:   info.Dictionary,
 		})
 	}
 

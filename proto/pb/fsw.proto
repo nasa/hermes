@@ -4,6 +4,7 @@ option go_package = "github.com/nasa/hermes/pkg/pb";
 import "type.proto";
 import "dictionary.proto";
 
+// Functionality implemented by this connection
 enum FswCapability {
   // Parsed commands can be uplinked
   // Commands are parsed by the frontend
@@ -25,6 +26,8 @@ enum FswCapability {
   REQUEST = 5;
 }
 
+// A representation of a connection to 'flight-software'.
+// Doesn't necessarily need to be _flight-software_.
 message Fsw {
   // Unique identifier, name of the FSW.
   // This is usually a human readable value rather than a uid.
@@ -47,6 +50,10 @@ message Fsw {
   // The set of uplink capabilities this FSW connection implements
   // If other requests are routed to it, they will be rejected.
   repeated FswCapability capabilities = 7;
+
+  // Optional ID of the dictionary to use when commanding this
+  // This will notify the frontend to swap to this dictionary.
+  string dictionary = 8;
 }
 
 message CommandOptions {
