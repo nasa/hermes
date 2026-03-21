@@ -17,13 +17,9 @@ Hermes F Prime [sub-extension](https://marketplace.visualstudio.com/items?itemNa
 
 ![Full Screenshot](https://github.com/nasa/hermes/raw/HEAD/docs/assets/full-screenshot.png)
 
-## Installation
-
-Install the extension from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes) or search for "Hermes" in the VSCode Extensions view.
-
 ### Requirements
 
-- Visual Studio Code 1.70.0 or higher
+- Visual Studio Code 1.90.0 or higher
 - For local backend mode: The extension includes a bundled backend binary for your platform
 - For remote backend mode: Access to a running Hermes backend server
 
