@@ -9,6 +9,11 @@ Hermes can be installed in multiple ways depending on your use case. For most us
 
 ## Installation Methods
 
+There are various methods to install Hermes. Typically the method will
+depend on the context you are running in. Flight software developers and
+small teams should use [method 1](#method-1-vscode-extension-from-marketplace-recommended) while production environments and mission
+operations will use [method 2](#method-2-standalone-backend-binary)
+
 ### Method 1: VSCode Extension from Marketplace (Recommended)
 
 The easiest way to install Hermes is through the Visual Studio Code [marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes):
@@ -83,7 +88,7 @@ If you need a specific version or want to install manually:
 
 **Note:** Each platform-specific `.vsix` file includes the backend binary compiled for that platform. Make sure to download the correct version for your system.
 
-### Method 4: Build from Source
+### Method 4: Build from Source (for developers)
 
 For development or customization:
 
@@ -138,20 +143,6 @@ Hermes supports three backend modes:
 **Switching modes:**
 - Use command palette: `Hermes: Change Backend Mode`
 - Or click the Hermes status bar item in the bottom-left corner
-
-## Verifying Installation
-
-After installation:
-
-1. Open Visual Studio Code
-2. Open the command palette (`Cmd+Shift+P` or `Ctrl+Shift+P`)
-3. Type "Hermes: About" and press Enter
-4. You should see version information for the extension and backend
-
-For standalone backend:
-```bash
-./backend --version
-```
 
 ## Next Steps
 

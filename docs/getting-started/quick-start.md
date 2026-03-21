@@ -1,9 +1,6 @@
 ---
+description: Set up for your F Prime flight-software development workflow.
 icon: fontawesome/solid/play
----
-
----
-Set up for your F Prime flight-software development workflow.
 ---
 
 # Quick Start

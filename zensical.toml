@@ -9,6 +9,31 @@ copyright = """
 Copyright &copy; 2026 NASA Jet Propulsion Laboratory
 """
 
+nav = [
+    { "Hermes" = "index.md" },
+    { "Getting Started" = [
+        "getting-started/installation.md",
+        "getting-started/quick-start.md",
+        "getting-started/workflow.md",
+    ] },
+    { "Production" = [
+        "ops/index.md",
+        "ops/testbed.md",
+        "ops/mission.md",
+    ] },
+    { "Telemetry Monitoring" = [
+        "tlm/index.md",
+        "tlm/grafana.md",
+        { "Datastore" = [
+            "tlm/db/index.md",
+            "tlm/db/open-telemetry.md",
+            "tlm/db/clickhouse.md",
+            "tlm/db/influxdb.md",
+            "tlm/db/timescaledb.md",
+        ] },
+    ] },
+]
+
 # Zensical supports both implicit navigation and explicitly defined navigation.
 # If you decide not to define a navigation here then Zensical will simply
 # derive the navigation structure from the directory structure of your
@@ -16,14 +41,6 @@ Copyright &copy; 2026 NASA Jet Propulsion Laboratory
 # can be defined using TOML syntax.
 #
 # Read more: https://zensical.org/docs/setup/navigation/
-nav = [
-    { "Home" = "index.md" },
-    { "Getting Started" = [
-        "getting-started/installation.md",
-        "getting-started/quick-start.md",
-        "getting-started/configuration.md",
-    ] },
-]
 
 # With the "extra_css" option you can add your own CSS styling to customize
 # your Zensical project according to your needs. You can add any number of
@@ -59,7 +76,7 @@ nav = [
 # Read more:
 # - https://zensical.org/docs/customization/#extending-the-theme
 #
-#custom_dir = "overrides"
+custom_dir = "docs/overrides"
 
 logo = "assets/hermes.svg"
 favicon = "assets/hermes.svg"

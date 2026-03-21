@@ -15,7 +15,7 @@
     },
     "publisher": "jet-propulsion-laboratory",
     "engines": {
-        "vscode": "^1.76.0"
+        "vscode": "^1.98.0"
     },
     "categories": [
         "Visualization"
