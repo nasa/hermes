@@ -1,4 +1,4 @@
-# Hermes: Spacecraft Command & Telemetry System
+# Hermes
 
 !!! warning
 
@@ -10,6 +10,12 @@
 </figure>
 
 Hermes is a system for spacecraft command and telemetry management, providing a modern interface for ground operators to interact with flight software. It features a [Visual Studio Code](https://code.visualstudio.com/) frontend for commanding and telemetry display, along with a powerful backend for processing and routing data to and from flight software.
+
+## Architecture
+
+Hermes uses a backend process to manage the long-lived connection between the ground and your spacecraft or robot.
+A frontend or database may be attached to this backend to capture data or interact with the system. To learn more about
+the technical design of the Hermes framework, see [here](architecture.md)
 
 ## Key Features
 
@@ -23,8 +29,6 @@ Hermes is a system for spacecraft command and telemetry management, providing a 
 ## System Components
 
 ### Frontend
-
-
 
 - Commanding spacecraft systems
 - Visualizing telemetry data in real-time
