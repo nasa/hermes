@@ -14,7 +14,7 @@ depend on the context you are running in. Flight software developers and
 small teams should use [method 1](#method-1-vscode-extension-from-marketplace-recommended) while production environments and mission
 operations will use [method 2](#method-2-standalone-backend-binary)
 
-### Method 1: VSCode Extension from Marketplace (Recommended)
+### VSCode Marketplace (Recommended)
 
 The easiest way to install Hermes is through the Visual Studio Code [marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes):
 
@@ -42,7 +42,7 @@ The easiest way to install Hermes is through the Visual Studio Code [marketplace
     backend services on Windows. It is recommended to run the Hermes backend
     on a Linux or macOS host for the best support.
 
-### Method 2: Standalone Backend Binary
+### Standalone Backend Binary
 
 For running Hermes backend as a standalone service (testbed environments, CI/CD, mission operations):
 
@@ -58,22 +58,22 @@ For running Hermes backend as a standalone service (testbed environments, CI/CD,
    ```
 
 See more detailed setup and configuration instructions on
-backend configuration and setup [here](./configuration.md)
+backend configuration and setup for production environment [here](../prod/index.md)
 
 **When to use standalone backend:**
+
 - Running backend on a dedicated server or testbed computer
 - Connecting multiple VSCode instances to a shared backend
 - Integrating Hermes into existing ground system infrastructure
 - CI/CD environments for automated testing
 
 **Connecting VSCode to remote backend:**
-1. Install the VSCode extension (Method 1 or 2)
-2. Open VSCode settings (`Cmd+,` or `Ctrl+,`)
-3. Search for "hermes.host.type"
-4. Change from "local" to "remote"
-5. Set "hermes.host.url" to your backend URL (e.g., `http://0.0.0.0:6880`)
 
-### Method 3: VSCode Extension from GitHub Releases
+1. Install the VSCode extension
+2. Change from "local" to "remote"
+3. Set "hermes.host.url" to your backend URL (e.g., `http://0.0.0.0:6880`)
+
+### VSCode Extension from GitHub Releases (for automation or offline environments)
 
 If you need a specific version or want to install manually:
 
@@ -88,16 +88,18 @@ If you need a specific version or want to install manually:
 
 **Note:** Each platform-specific `.vsix` file includes the backend binary compiled for that platform. Make sure to download the correct version for your system.
 
-### Method 4: Build from Source (for developers)
+### Build from Source (for developers)
 
 For development or customization:
 
 **Prerequisites:**
+
 - Go 1.25 or later
 - Node.js 20 or later
 - Yarn package manager
 
 **Build steps:**
+
 ```bash
 # Clone the repository
 git clone https://github.com/nasa/hermes.git

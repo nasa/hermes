@@ -17,9 +17,9 @@ nav = [
         "getting-started/workflow.md",
     ] },
     { "Production" = [
-        "ops/index.md",
-        "ops/testbed.md",
-        "ops/mission.md",
+        "prod/index.md",
+        "prod/testbed.md",
+        "prod/mission.md",
     ] },
     { "Telemetry Monitoring" = [
         "tlm/index.md",

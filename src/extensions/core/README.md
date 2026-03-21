@@ -15,7 +15,7 @@ Hermes F Prime [sub-extension](https://marketplace.visualstudio.com/items?itemNa
 - **Profile Management**: Configure and switch between different spacecraft configurations
 - **Connection Management**: Support for TCP/UDP connections to flight software
 
-![Full Screenshot](img/full-screenshot.png)
+![Full Screenshot](https://github.com/nasa/hermes/raw/HEAD/docs/assets/full-screenshot.png)
 
 ## Installation
 
@@ -34,7 +34,7 @@ Install the extension from the [Visual Studio Marketplace](https://marketplace.v
 3. **Select a backend mode** using the status bar or command palette:
    - `Hermes: Change Backend Mode`
 
-![Select Hermes Backend Mode](img/mode-select.png)
+![Full Screenshot](https://github.com/nasa/hermes/raw/HEAD/docs/assets/mode-select.png)
 
 ### Backend Modes
 
