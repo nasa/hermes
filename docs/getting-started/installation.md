@@ -11,14 +11,16 @@ Hermes can be installed in multiple ways depending on your use case. For most us
 
 There are various methods to install Hermes. Typically the method will
 depend on the context you are running in. Flight software developers and
-small teams should use [method 1](#method-1-vscode-extension-from-marketplace-recommended) while production environments and mission
-operations will use [method 2](#method-2-standalone-backend-binary)
+small teams should use the [VSCode marketplace](#vscode-marketplace-recommended) while production environments and mission
+operations will use a [standalone binary](#standalone-backend-binary)
 
 ### VSCode Marketplace (Recommended)
 
-The easiest way to install Hermes is through the Visual Studio Code [marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes):
+The easiest way to install Hermes is through the [Visual Studio Code](https://code.visualstudio.com/) [marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes)
 
-1. Open Visual Studio Code
+![alt text](../assets/marketplace.png)
+
+1. [Install](https://code.visualstudio.com/) & Open Visual Studio Code
 2. Go to the Extensions view (`Cmd+Shift+X` on macOS, `Ctrl+Shift+X` on Windows/Linux)
 3. Search for "Hermes"
 4. Install the **Hermes** extension (ID: `jet-propulsion-laboratory.hermes`)
@@ -73,7 +75,7 @@ backend configuration and setup for production environment [here](../prod/index.
 2. Change from "local" to "remote"
 3. Set "hermes.host.url" to your backend URL (e.g., `http://0.0.0.0:6880`)
 
-### VSCode Extension from GitHub Releases (for automation or offline environments)
+### GitHub Releases (for automation or offline environments)
 
 If you need a specific version or want to install manually:
 
@@ -149,23 +151,5 @@ Hermes supports three backend modes:
 ## Next Steps
 
 - [Getting Started Guide](./quick-start.md) - Create your first profile and connect to flight software
-- [Configuration](./configuration.md) - Customize backend settings and authentication
-- [Architecture Overview](../architecture.md) - Learn about Hermes components and design
-
-## Troubleshooting
-
-### Extension not appearing in VSCode
-- Ensure you're using VSCode version 1.80 or later
-- Try reloading the window: `Developer: Reload Window` from command palette
-
-### Backend fails to start (Local Mode)
-- Check the backend terminal: `Hermes: Focus Backend Terminal`
-- Verify the backend binary exists: `out/backend` in the extension directory
-- Check file permissions: ensure the binary is executable
-
-### Cannot connect to remote backend
-- Verify the backend is running: `curl http://your-backend:6880/health`
-- Check firewall rules on the backend server
-- Verify the URL in settings: `hermes.host.url`
-- Try disabling TLS verification for self-signed certificates: `hermes.host.skipTLSVerify`
-
+- [Architecture Overview](../arch/index.md) - Learn about Hermes components and design
+- [Telemetry Monitoring](../tlm/index.md) - Setup your monitoring infrastructure

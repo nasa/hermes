@@ -1,5 +1,5 @@
 ---
-icon: products/hermes
+icon: brands/hermes
 hide:
   - tags
   - toc
@@ -22,13 +22,13 @@ Hermes is a system for spacecraft command and telemetry management, providing a 
 
 Hermes uses a backend process to manage the long-lived connection between the ground and your spacecraft or robot.
 A frontend or database may be attached to this backend to capture data or interact with the system. To learn more about
-the technical design of the Hermes framework, see [here](architecture.md)
+the technical design of the Hermes framework, see [here](architecture.md).
 
 ## Key Features
 
-- **Command Management**: Uplink and sequence uplink with verification and validation
+- **Command Dispatch**: Command and sequence uplink with verification and validation
 - **Telemetry Display**: Real-time visualization of spacecraft telemetry data
-- **File Transfer**: Uplink and downlink file capabilities with integrity verification
+- **File Transfer**: File Uplink and downlink capabilities with integrity verification
 - **CCSDS Protocol Support**: Implementation of space communication standards
 - **Modern Web Interface**: Integrates with commercial time series databases (e.g., InfluxDB, Prometheus)
 - **Extensible Architecture**: Plugin system for supporting various spacecraft and communication protocols

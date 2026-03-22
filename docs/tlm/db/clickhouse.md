@@ -1,5 +1,5 @@
 ---
-icon: products/clickhouse
+icon: brands/clickhouse
 ---
 
 # Clickhouse

@@ -1,5 +1,5 @@
 ---
-icon: products/grafana
+icon: brands/grafana
 ---
 
 # Grafana

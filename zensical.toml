@@ -16,10 +16,9 @@ nav = [
         "getting-started/quick-start.md",
         "getting-started/workflow.md",
     ] },
-    { "Production" = [
-        "prod/index.md",
-        "prod/testbed.md",
-        "prod/mission.md",
+    { "Architecture" = [
+        "arch/core-concepts.md",
+        "arch/system-design.md",
     ] },
     { "Telemetry Monitoring" = [
         "tlm/index.md",
@@ -31,6 +30,22 @@ nav = [
             "tlm/db/influxdb.md",
             "tlm/db/timescaledb.md",
         ] },
+    ] },
+    { "Deploying" = [
+        "prod/index.md",
+        "prod/testbed.md",
+        "prod/mission.md",
+        { "Advanced" = [
+            "prod/advanced/gateway.md",
+            "prod/advanced/systemd.md",
+        ] },
+    ] },
+    { "API" = [
+        "api/index.md",
+        "api/go.md",
+        "api/python.md",
+        "api/rust.md",
+        "api/typescript.md",
     ] },
 ]
 
