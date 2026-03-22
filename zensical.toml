@@ -11,11 +11,14 @@ Copyright &copy; 2026 NASA Jet Propulsion Laboratory
 
 nav = [
     { "Hermes" = "index.md" },
-    { "Architecture" = "architecture.md" },
     { "Getting Started" = [
         "getting-started/installation.md",
         "getting-started/quick-start.md",
         "getting-started/workflow.md",
+    ] },
+    { "Architecture" = [
+        "arch/core-concepts.md",
+        "arch/system-design.md",
     ] },
     { "Telemetry Monitoring" = [
         "tlm/index.md",
@@ -28,7 +31,7 @@ nav = [
             "tlm/db/timescaledb.md",
         ] },
     ] },
-    { "Production" = [
+    { "Deploying" = [
         "prod/index.md",
         "prod/testbed.md",
         "prod/mission.md",

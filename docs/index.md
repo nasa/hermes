@@ -26,9 +26,9 @@ the technical design of the Hermes framework, see [here](architecture.md).
 
 ## Key Features
 
-- **Command Management**: Uplink and sequence uplink with verification and validation
+- **Command Dispatch**: Command and sequence uplink with verification and validation
 - **Telemetry Display**: Real-time visualization of spacecraft telemetry data
-- **File Transfer**: Uplink and downlink file capabilities with integrity verification
+- **File Transfer**: File Uplink and downlink capabilities with integrity verification
 - **CCSDS Protocol Support**: Implementation of space communication standards
 - **Modern Web Interface**: Integrates with commercial time series databases (e.g., InfluxDB, Prometheus)
 - **Extensible Architecture**: Plugin system for supporting various spacecraft and communication protocols

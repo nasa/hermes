@@ -75,7 +75,7 @@ backend configuration and setup for production environment [here](../prod/index.
 2. Change from "local" to "remote"
 3. Set "hermes.host.url" to your backend URL (e.g., `http://0.0.0.0:6880`)
 
-### VSCode Extension from GitHub Releases (for automation or offline environments)
+### GitHub Releases (for automation or offline environments)
 
 If you need a specific version or want to install manually:
 
@@ -151,23 +151,5 @@ Hermes supports three backend modes:
 ## Next Steps
 
 - [Getting Started Guide](./quick-start.md) - Create your first profile and connect to flight software
-- [Configuration](./configuration.md) - Customize backend settings and authentication
-- [Architecture Overview](../architecture.md) - Learn about Hermes components and design
-
-## Troubleshooting
-
-### Extension not appearing in VSCode
-- Ensure you're using VSCode version 1.80 or later
-- Try reloading the window: `Developer: Reload Window` from command palette
-
-### Backend fails to start (Local Mode)
-- Check the backend terminal: `Hermes: Focus Backend Terminal`
-- Verify the backend binary exists: `out/backend` in the extension directory
-- Check file permissions: ensure the binary is executable
-
-### Cannot connect to remote backend
-- Verify the backend is running: `curl http://your-backend:6880/health`
-- Check firewall rules on the backend server
-- Verify the URL in settings: `hermes.host.url`
-- Try disabling TLS verification for self-signed certificates: `hermes.host.skipTLSVerify`
-
+- [Architecture Overview](../arch/index.md) - Learn about Hermes components and design
+- [Telemetry Monitoring](../tlm/index.md) - Setup your monitoring infrastructure
