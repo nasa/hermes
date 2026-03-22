@@ -7,6 +7,8 @@
 Hermes is a plugin driven spacecraft telemetry processing and commanding
 framework built around a variety of mature open-source software.
 
+![alt text](docs/assets/full-screenshot.png)
+
 > [!IMPORTANT]  
 > Hermes is currently undergoing migration from our internal deployment
 > to public Github. Documentation is in the works.
