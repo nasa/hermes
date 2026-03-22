@@ -16,7 +16,9 @@ operations will use [method 2](#method-2-standalone-backend-binary)
 
 ### VSCode Marketplace (Recommended)
 
-The easiest way to install Hermes is through the Visual Studio Code [marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes):
+The easiest way to install Hermes is through the Visual Studio Code [marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes)
+
+![alt text](../assets/marketplace.png)
 
 1. Open Visual Studio Code
 2. Go to the Extensions view (`Cmd+Shift+X` on macOS, `Ctrl+Shift+X` on Windows/Linux)
