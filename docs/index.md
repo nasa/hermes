@@ -1,5 +1,5 @@
 ---
-icon: products/hermes
+icon: brands/hermes
 hide:
   - tags
   - toc
@@ -22,7 +22,7 @@ Hermes is a system for spacecraft command and telemetry management, providing a 
 
 Hermes uses a backend process to manage the long-lived connection between the ground and your spacecraft or robot.
 A frontend or database may be attached to this backend to capture data or interact with the system. To learn more about
-the technical design of the Hermes framework, see [here](architecture.md)
+the technical design of the Hermes framework, see [here](architecture.md).
 
 ## Key Features
 

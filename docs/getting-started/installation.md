@@ -11,16 +11,16 @@ Hermes can be installed in multiple ways depending on your use case. For most us
 
 There are various methods to install Hermes. Typically the method will
 depend on the context you are running in. Flight software developers and
-small teams should use [method 1](#method-1-vscode-extension-from-marketplace-recommended) while production environments and mission
-operations will use [method 2](#method-2-standalone-backend-binary)
+small teams should use the [VSCode marketplace](#vscode-marketplace-recommended) while production environments and mission
+operations will use a [standalone binary](#standalone-backend-binary)
 
 ### VSCode Marketplace (Recommended)
 
-The easiest way to install Hermes is through the Visual Studio Code [marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes)
+The easiest way to install Hermes is through the [Visual Studio Code](https://code.visualstudio.com/) [marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes)
 
 ![alt text](../assets/marketplace.png)
 
-1. Open Visual Studio Code
+1. [Install](https://code.visualstudio.com/) & Open Visual Studio Code
 2. Go to the Extensions view (`Cmd+Shift+X` on macOS, `Ctrl+Shift+X` on Windows/Linux)
 3. Search for "Hermes"
 4. Install the **Hermes** extension (ID: `jet-propulsion-laboratory.hermes`)

@@ -1,5 +1,5 @@
 ---
-icon: products/influxdb
+icon: brands/influxdb
 ---
 
 # InfluxDB

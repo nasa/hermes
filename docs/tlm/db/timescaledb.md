@@ -1,5 +1,5 @@
 ---
-icon: products/timescaledb
+icon: brands/timescaledb
 ---
 
 # TimescaleDB

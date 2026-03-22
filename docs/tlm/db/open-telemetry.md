@@ -1,5 +1,5 @@
 ---
-icon: products/opentelemetry
+icon: brands/opentelemetry
 ---
 
 # Open Telemetry
