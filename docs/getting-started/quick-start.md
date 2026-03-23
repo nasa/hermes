@@ -16,6 +16,7 @@ icon: fontawesome/solid/play
 2. [Hermes VSCode Extension](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes)
 3. [Hermes F Prime VSCode Extension](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes-fprime)
 4. A basic understanding of writing and running [F Prime](https://github.com/nasa/fprime) Flight Software
+5. (Optional) Read through the [core concepts](../arch/core-concepts.md) document to get more context about Hermes.
 
 ## Overview
 
@@ -228,3 +229,12 @@ Using the VSCode command pallete again:
 Running this task will launch a terminal that will configure a Hermes profile,
 launch FSW and connect the two together. You should notice a green active profile
 box similar to that in "Option 1".
+
+## Next Steps
+
+Now that you have successfully connected your flight software, you can now
+send commands and monitor realtime telemetry and events streaming from your
+system.
+
+You can read about the [workflow](workflow.md) in VSCode and set up
+[telemetry monitoring](../tlm/index.md) infrastructure.
