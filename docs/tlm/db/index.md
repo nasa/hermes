@@ -7,7 +7,7 @@ icon: fontawesome/solid/database
 Unlike many ground data systems for space missions, Hermes does not
 ship with a builtin data persistence solution. Data storage is not
 a goal of the Hermes project. For this purpose, Hermes relies on
-an external provider to store it's time series data. There are a number
+an external provider to store its time series data. There are a number
 of databases that Hermes supports, each with their own use cases.
 
 This document will attempt to provide guidance to system architects

@@ -205,15 +205,15 @@ logging but with spacecraft-specific context.
 
 **Severity Levels:**
 
-| Level         | Description                                                                                                                                                  |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| DIAGNOSTIC    | A debug or development log/event has occured. Typically these are not streamed to the ground in realtime. These are transmitted during high rate data passes |
-| ACTIVITY_LOW  | A minor system or component event has occured.                                                                                                               |
-| ACTIVITY_HIGH | A major system or component event has occured.                                                                                                               |
-| WARNING_LOW   | A recoverable system fault or error has occured.                                                                                                             |
-| WARNING_HIGH  | A major system fault or error has occured. Typically this halts the system in some way though it is up to the flight software to choose what to do here.     |
-| COMMAND       | A command has been dispatch or has finished.                                                                                                                 |
-| FATAL         | An unrecoverable issue has been detected. The flight software typically reboots into a "Safe" mode.                                                          |
+| Level         | Description                                                                                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DIAGNOSTIC    | A debug or development log/event has occurred. Typically these are not streamed to the ground in realtime. These are transmitted during high rate data passes |
+| ACTIVITY_LOW  | A minor system or component event has occurred.                                                                                                               |
+| ACTIVITY_HIGH | A major system or component event has occurred.                                                                                                               |
+| WARNING_LOW   | A recoverable system fault or error has occurred.                                                                                                             |
+| WARNING_HIGH  | A major system fault or error has occurred. Typically this halts the system in some way though it is up to the flight software to choose what to do here.     |
+| COMMAND       | A command has been dispatch or has finished.                                                                                                                  |
+| FATAL         | An unrecoverable issue has been detected. The flight software typically reboots into a "Safe" mode.                                                           |
 
 Events are lower volume than telemetry but critical for understanding
 spacecraft behavior and troubleshooting.
@@ -311,7 +311,7 @@ The value represents the time elapsed since some "zero time" or **Epoch**.
 JPL uses two major epochs:
 
 - **J2000**: January 1 2000. This is the most common epoch used by our spacecraft
-- **Unix**: January 1 1970. This is thte most common epoch used around the globe by many timekeeping systems.
+- **Unix**: January 1 1970. This is the most common epoch used around the globe by many timekeeping systems.
 
 !!! example
 
