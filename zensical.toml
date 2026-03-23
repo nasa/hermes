@@ -36,6 +36,7 @@ nav = [
         "prod/testbed.md",
         "prod/mission.md",
         { "Advanced" = [
+            "prod/advanced/relay.md",
             "prod/advanced/gateway.md",
             "prod/advanced/systemd.md",
         ] },

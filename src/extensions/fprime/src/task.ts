@@ -7,6 +7,8 @@ import * as Hermes from "@gov.nasa.jpl.hermes/api";
 import { generateShortUid } from '@gov.nasa.jpl.hermes/util';
 import { attachLoggerToPsuedoTerminal, attachProcessToPsuedoTerminal, StandardPseudoTerminal } from '@gov.nasa.jpl.hermes/vscode';
 
+const textDecoder = new TextDecoder();
+
 /**
  * Task definition for F Prime deployment
  * Creates profile and optionally starts FSW
@@ -74,6 +76,7 @@ class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal, StandardP
                 settings,
                 id: generateShortUid(),
             });
+            this.logger.info(`Profile created successfully with ID: ${this.profileId}`);
 
             this.onDidClose(async () => {
                 if (this.profileId) {
@@ -89,10 +92,12 @@ class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal, StandardP
                 }
             });
 
-            this.logger.info(`Profile created successfully with ID: ${this.profileId}`);
-            this.logger.info(`Starting profile...`);
-            await this.api.startProfile(this.profileId);
-            this.logger.info(`Profile started successfully`);
+            // If we are the server, we should host the server immediately
+            if (this.def.profileProvider === "FPrime Server") {
+                this.logger.info(`Starting profile...`);
+                await this.api.startProfile(this.profileId);
+                this.logger.info(`Profile started successfully`);
+            }
         } catch (err) {
             this.logger.error(`Failed to create/start deployment: ${err}`);
             this.didClose.fire(1);
@@ -111,6 +116,22 @@ class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal, StandardP
                     cwd: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
                 }
             );
+
+            // If we are the client, we should attempt to connect to the server hosted by the FSW
+            if (this.def.profileProvider === "FPrime Client") {
+                for (let i = 0; i < 5; i++) {
+                    this.logger.info(`Starting profile...`);
+                    try {
+                        await this.api.startProfile(this.profileId);
+                        this.logger.info(`Profile started successfully`);
+                        break;
+                    } catch (err) {
+                        this.logger.warn(`Failed to connect to FSW: ${err}`);
+                        this.logger.info(`${i + 1} / 5 Retrying in 1s`);
+                        await new Promise((resolve) => setTimeout(resolve, 1000));
+                    }
+                }
+            }
         } else {
             // Profile only, task completes after creation
             this.didClose.fire(0);
@@ -173,32 +194,42 @@ export class FprimeDeploymentProvider implements vscode.TaskProvider {
                     continue; // Can't read toolchain directory
                 }
 
-                for (const [deploymentName, fileType] of deployments) {
+                for (const [deploymentModule, fileType] of deployments) {
                     if (fileType !== vscode.FileType.Directory) continue;
 
                     // Check for dictionary
-                    const dictPath = vscode.Uri.joinPath(builtToolchain, deploymentName, "dict");
-                    let dictionaryFiles: [string, vscode.FileType][];
+                    const dictPath = vscode.Uri.joinPath(builtToolchain, deploymentModule, "dict");
+                    let deploymentName: string;
                     try {
-                        dictionaryFiles = await vscode.workspace.fs.readDirectory(dictPath);
-                    } catch {
-                        continue; // No dict directory, skip
-                    }
+                        const dictionaryFiles = await vscode.workspace.fs.readDirectory(dictPath);
 
-                    const dictionaryFile = dictionaryFiles.find(v => v[0].endsWith(".json"));
-                    if (!dictionaryFile) continue;
+                        const dictionaryFile = dictionaryFiles.find(v => v[0].endsWith(".json"));
+                        if (!dictionaryFile) continue;
+
+                        const dictContent = await vscode.workspace.fs.readFile(
+                            vscode.Uri.joinPath(dictPath, dictionaryFile[0])
+                        );
+
+                        const dict = JSON.parse(textDecoder.decode(dictContent));
+                        deploymentName = dict.metadata.deploymentName;
+                        if (!deploymentName) {
+                            throw new Error(`invalid deployment name: ${deploymentName}`);
+                        }
+                    } catch {
+                        continue; // No dict directory or failed to read dict, skip
+                    }
 
                     const binaryPath = vscode.workspace.asRelativePath(vscode.Uri.joinPath(
                         builtToolchain,
-                        deploymentName,
+                        deploymentModule,
                         "bin",
-                        deploymentName
+                        deploymentModule
                     ));
 
                     // Create F Prime deployment task
                     const taskDef: FprimeDeploymentTaskDefinition = {
                         type: 'hermes-fprime-deployment',
-                        title: deploymentName,
+                        title: deploymentModule,
                         profileProvider: 'FPrime Server',
                         profileSettings: {
                             name: deploymentName,
@@ -206,7 +237,7 @@ export class FprimeDeploymentProvider implements vscode.TaskProvider {
                             dictionary: deploymentName,
                             protocol: 'ccsds',
                         },
-                        fswCommand: `\${workspaceFolder}/${binaryPath} -a 0.0.0.0 -p ${basePort}`,
+                        fswCommand: `${binaryPath} -a 0.0.0.0 -p ${basePort}`,
                     };
 
                     const task = new vscode.Task(

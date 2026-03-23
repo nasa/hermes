@@ -5,7 +5,7 @@ icon: fontawesome/solid/play
 
 # Quick Start
 
-!!! note
+!!! abstract
 
     This quick start guide is tailored for the [F Prime](https://fprime.jpl.nasa.gov)
     software framework though much of this guide can be applied to other software frameworks.
@@ -90,3 +90,141 @@ dictionary in the top of the rover panel.
 ![alt text](../assets/dict-detected.png)
 
 ## Running Your F Prime Deployment
+
+To run the deployment, there are couple of factors to consider:
+
+**Communications Framing Protocol**
+
+There are two options here:
+
+- `ccsds`: The industry standard framing
+    - Uplink follows [TC Frame](https://ccsds.org/Pubs/232x0b4e1c1.pdf)
+    - Downlink follows [TM Frame](https://ccsds.org/Pubs/132x0b3.pdf)
+- `fprime`: A lightweight custom framing protocol for non-flight use.
+
+!!! note
+    As of F Prime version 4.1, the default framing protocol is `ccsds`.
+
+**Transport Method**
+
+The transportation method determines the physical link between the flight software
+and the ground. This might be through a radio via UART, TCP socket, UDP socket.
+The F Prime Hermes backend plugin only supports hosting a TCP server at a specified
+address _or_ connecting to a TCP server at a specified address. Typically this is
+_not_ enough to run a proper spacecraft so you'll need to use a [relay](../prod/advanced/relay.md).
+
+!!! tip
+    When running F Prime flight software locally, a TCP server or client is
+    usually sufficient. You can look for the `comDriver` component in your
+    topology to determine which type to use on the ground.
+
+In our example deployment, the topology's `comDriver` is `TcpServer`. This
+means that the ground must connect via a TCP client to the FSW server.
+
+### Option 1: Hermes Profile
+
+![alt text](../assets/profile-create.png){ width=200 align=right }
+
+The primary way to connect FSW to Hermes is by create a _profile_. A profile
+is the primary entrypoint of a Hermes backend plugin. It defines a service
+to run in order to connect to some external software or hardware.
+
+In our case, we will be using one of the F Prime profiles, there are two:
+
+- **FPrime Server**: Hermes will host a TCP server at a specified address/port and await a TCP connection. It will then communicate over the specified framing protocol with the client connection.
+- **FPrime Client**: Hermes will create a TCP client and attempt to connect at the specified address. Once connected it will communicate with the server over the specified framing protocol.
+
+Because `fprime-sensors-reference` uses a TcpServer for its `comDriver` component,
+we need to use the complimentary `FPrime Client` profile in Hermes.
+
+You'll need to fill in the dictionary and protocol fields to match your deployments
+specifications and click the :fontawesome-solid-check: check mark.
+
+#### Starting the profile
+
+When starting the Hermes profile via the :fontawesome-solid-play: Play button,
+Hermes will attempt to connect to the TCP server at the specified address (`localhost:8000`).
+We'll first need to boot up our flight-software so that the TCP server is active.
+
+```bash
+build-artifacts/Darwin/FprimeSensorsReference_ReferenceDeployment/bin/FprimeSensorsReference_ReferenceDeployment -a 0.0.0.0 -p 8000
+```
+
+Now clicking the :fontawesome-solid-play: Play button should cause the profile
+to turn green:
+
+![alt text](../assets/profile-active.png)
+
+!!! success
+    You have now connected Hermes with F Prime flight software!
+
+### Option 2: VSCode Task
+
+Another way to launch an F Prime deployment is by using the VSCode task provided
+by the Hermes F Prime VSCode extension. This method is ideal though requires
+more upfront configuration.
+
+The VSCode task will:
+
+1. Launch the flight-software
+2. Create a temporary Hermes profile with the proper fields
+3. Start the profile
+4. Handle flight software exists and clean up
+
+To create the VSCode task:
+
+1. Open the command pallete ++ctrl+shift+p++ (++command+shift+p++ on macOS)
+2. Search for `Tasks: Run Task`
+3. Select `hermes-fprime-deployment`
+4. There should be a single task (or one for every deployment in your workspace). Click the gear icon
+
+![Click the gear icon on the deployment task](../assets/task-config.png)
+
+This should open up the JSON file for configuring VSCode tasks. By clicking the
+gear icon, you add this F Prime deployment as a VSCode configured task which
+allows you to change any settings that need changing.
+
+```json title=".vscode/tasks.json" linenums="1" hl_lines="4 5"
+{
+    "type": "hermes-fprime-deployment",
+    "title": "FprimeSensorsReference_ReferenceDeployment",
+--- "profileProvider": "FPrime Server",
++++ "profileProvider": "FPrime Client", // (1)!
+    "profileSettings": {
+        "name": "ReferenceDeployment.ReferenceDeployment",
+        "address": "0.0.0.0:8000",
+        "dictionary": "ReferenceDeployment.ReferenceDeployment",
+        "protocol": "ccsds"
+    },
+    "fswCommand": "build-artifacts/Darwin/FprimeSensorsReference_ReferenceDeployment/bin/FprimeSensorsReference_ReferenceDeployment -a 0.0.0.0 -p 8000",
+    "group": "build",
+    "problemMatcher": [],
+    "label": "fprime: ReferenceDeployment.ReferenceDeployment: Deploy",
+    "detail": "Create profile and optionally start FSW for ReferenceDeployment.ReferenceDeployment"
+}
+```
+
+1.  Replace the default `FPrime Server` with `FPrime Client` to tell Hermes to
+    connect to a TCP server rather than host one.
+
+As previously mentioned, this deployment will run the TCP server in the FSW process
+and expect the ground to connect to it to receive and transmit data. We will need
+to change the `profileProvider` option in this configuration to `FPrime Client` to
+tell Hermes to connect to (rather than serve) a TCP server.
+
+You may need to change some other options in this task. Most notably the
+`fswCommand` which by default attempts to run the flight software build artifact.
+This isn't always a good assumption. This command is simply a shell command which
+should start the flight software in some way.
+
+#### Starting the task
+
+Using the VSCode command pallete again:
+
+1. ++ctrl+shift+p++ (++command+shift+p++ on macOS)
+2. `Tasks: Run Task`
+3. You should now see the new task we configured from the `tasks.json` file
+
+Running this task will launch a terminal that will configure a Hermes profile,
+launch FSW and connect the two together. You should notice a green active profile
+box similar to that in "Option 1".
