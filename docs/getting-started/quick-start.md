@@ -59,8 +59,7 @@ backend.
 Before connecting to your flight software, you need to build your F Prime deployment and generate its dictionary. It is recommended to read the F Prime
 [Hello World Tutorial](https://fprime.jpl.nasa.gov/latest/tutorials-hello-world/docs/hello-world/)
 to learn how to develop and iterate on flight software. In the next section we
-will show a quick set of instructions to get started
-[fprime-sensors-reference](https://github.com/fprime-community/fprime-sensors-reference) using as a guide.
+will show a quick set of instructions to get started using [fprime-sensors-reference](https://github.com/fprime-community/fprime-sensors-reference) as a guide.
 
 ### Set up the development environment
 

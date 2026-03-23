@@ -2,19 +2,16 @@
 icon: fontawesome/solid/box
 ---
 
-
 # Installation
 
 Hermes can be installed in multiple ways depending on your use case. For most users, the VSCode extension from the marketplace is the recommended approach as it includes everything needed to get started.
 
-## Installation Methods
-
-There are various methods to install Hermes. Typically the method will
+Typically the method will
 depend on the context you are running in. Flight software developers and
 small teams should use the [VSCode marketplace](#vscode-marketplace-recommended) while production environments and mission
 operations will use a [standalone binary](#standalone-backend-binary)
 
-### VSCode Marketplace (Recommended)
+## VSCode Marketplace (Recommended)
 
 The easiest way to install Hermes is through the [Visual Studio Code](https://code.visualstudio.com/) [marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes)
 
@@ -44,7 +41,7 @@ The easiest way to install Hermes is through the [Visual Studio Code](https://co
     backend services on Windows. It is recommended to run the Hermes backend
     on a Linux or macOS host for the best support.
 
-### Standalone Backend Binary
+## Standalone Backend Binary
 
 For running Hermes backend as a standalone service (testbed environments, CI/CD, mission operations):
 
@@ -75,7 +72,7 @@ backend configuration and setup for production environment [here](../prod/index.
 2. Change from "local" to "remote"
 3. Set "hermes.host.url" to your backend URL (e.g., `http://0.0.0.0:6880`)
 
-### GitHub Releases (for automation or offline environments)
+## GitHub Releases (for automation or offline environments)
 
 If you need a specific version or want to install manually:
 
@@ -90,7 +87,7 @@ If you need a specific version or want to install manually:
 
 **Note:** Each platform-specific `.vsix` file includes the backend binary compiled for that platform. Make sure to download the correct version for your system.
 
-### Build from Source (for developers)
+## Build from Source (for developers)
 
 For development or customization:
 
@@ -123,30 +120,6 @@ yarn build           # Build VSCode extensions
 - Go binaries: `out/backend`, `out/uplink`, `out/sqlrecord`, etc.
 - NodeJS scripts: `out/*.js`
 - VSCode bundled sources: `src/extensions/out/*.js`
-
-## Backend Modes
-
-Hermes supports three backend modes:
-
-### Offline Mode
-- **Use case:** Writing sequences and procedures without connecting to flight software
-- **Features:** Dictionary loading, notebook creation, sequence editing
-- **Limitations:** No telemetry/command processing, no live connections
-
-### Local Mode (Default)
-- **Use case:** Full-featured ground system with VSCode-managed backend
-- **Features:** All backend capabilities (profiles, connections, telemetry, commanding)
-- **Backend:** Automatically launched and managed by the VSCode extension
-- **Working directory:** `<workspace>/.hermes/`
-
-### Remote Mode
-- **Use case:** Connect to externally-managed backend (testbed, operations)
-- **Features:** All backend capabilities via remote connection
-- **Configuration:** Requires backend URL and optional authentication
-
-**Switching modes:**
-- Use command palette: `Hermes: Change Backend Mode`
-- Or click the Hermes status bar item in the bottom-left corner
 
 ## Next Steps
 

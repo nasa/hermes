@@ -4,7 +4,7 @@ import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { Settings } from '@gov.nasa.jpl.hermes/vscode';
 import { Proto, Sourced, Event, Telemetry } from '@gov.nasa.jpl.hermes/types';
 import { Offline } from './Offline';
-import { Local } from './Local';
+import { Local, LocalBackendExecution } from './Local';
 import { Remote } from './Remote';
 
 /**
@@ -37,6 +37,7 @@ export interface OfflineState {
 
 export interface LocalState {
     type: BackendType.LOCAL;
+    attach?: LocalBackendExecution
 }
 
 export interface RemoteState {
@@ -86,6 +87,8 @@ export class VscodeApi implements Hermes.Api {
     onFileTransfer = this._onFileTransfer.event;
 
     private cancelActivate?: vscode.CancellationTokenSource;
+    private localBackends: Set<LocalBackendExecution>;
+    private localBackendPromise?: [resolve: (_: LocalBackendExecution) => void, reject: (err: any) => void];
 
     private primaryItem: vscode.StatusBarItem;
     private secondaryItem: vscode.StatusBarItem;
@@ -106,6 +109,7 @@ export class VscodeApi implements Hermes.Api {
         );
 
         this.state = { type: BackendType.OFFLINE };
+        this.localBackends = new Set();
 
         this.primaryItem.hide();
         this.secondaryItem.hide();
@@ -113,6 +117,44 @@ export class VscodeApi implements Hermes.Api {
         this.disposables = [
             this.primaryItem,
             this.secondaryItem,
+            vscode.commands.registerCommand("hermes.backend.local.failed", (err: any) => {
+                if (this.localBackendPromise) {
+                    this.localBackendPromise[1](err);
+                    this.localBackendPromise = undefined;
+                }
+            }),
+            vscode.commands.registerCommand("hermes.backend.local.activate", (execution: LocalBackendExecution) => {
+                this.localBackends.add(execution);
+                if (this.localBackendPromise) {
+                    this.localBackendPromise[0](execution);
+                    this.localBackendPromise = undefined;
+                } else {
+                    vscode.window.showInformationMessage(
+                        "A local Hermes backend has been started. Would you like to attach this window to that backend",
+                        "Attach"
+                    ).then((choice) => {
+                        if (choice === "Attach") {
+                            this.update({ type: BackendType.LOCAL, attach: execution });
+                        }
+                    });
+                }
+
+                execution.onDidClose((exitCode) => {
+                    this.localBackends.delete(execution);
+                    if (this.currentApi instanceof Local) {
+                        if (this.currentApi.execution === execution) {
+                            if (exitCode) {
+                                vscode.commands.executeCommand(
+                                    'hermes.backend.exit',
+                                    `Backend exited with code: ${exitCode}`
+                                );
+                            } else {
+                                vscode.commands.executeCommand("hermes.backend.exit");
+                            }
+                        }
+                    }
+                });
+            }),
             vscode.commands.registerCommand("hermes.backend.cancel", () => {
                 this.cancelActivate?.cancel();
             }),
@@ -251,10 +293,31 @@ export class VscodeApi implements Hermes.Api {
                 this.secondaryItem.command = undefined;
 
                 break;
-            case BackendType.LOCAL:
+            case BackendType.LOCAL: {
                 this.primaryItem.color = new vscode.ThemeColor("statusBarItem.remoteForeground");
                 this.primaryItem.text = "$(sync~spin) Hermes: Starting...";
-                this.currentApi = await Local.activate(this.context, this.log, this.cancelActivate.token);
+
+                // Check if we should be attaching directly to a running backend
+                // ...or check if there are any currently local backend tasks
+                // ...or start a local backend
+                if (this.state.attach) {
+                    this.currentApi = await this.state.attach.connect(this.log, this.cancelActivate.token);
+                } else if (this.localBackends.size > 0) {
+                    const backends = Array.from(this.localBackends.values());
+                    this.currentApi = await backends[0].connect(this.log, this.cancelActivate.token);
+                } else {
+                    const execution = await Local.startTask(this.context);
+                    this.cancelActivate.token.onCancellationRequested(() => {
+                        execution.terminate();
+                    });
+
+                    const localBackend = await new Promise<LocalBackendExecution>((resolve, reject) => {
+                        this.localBackendPromise = [resolve, reject];
+                    });
+                    this.localBackendPromise = undefined;
+                    this.currentApi = await localBackend.connect(this.log, this.cancelActivate.token);
+                }
+
                 this.primaryItem.color = undefined;
                 this.primaryItem.text = "$(terminal) Hermes: Local";
 
@@ -263,6 +326,7 @@ export class VscodeApi implements Hermes.Api {
                 this.secondaryItem.tooltip = "Show Hermes Backend Logs";
                 this.secondaryItem.command = "hermes.terminal.focusBackend";
                 break;
+            }
             case BackendType.REMOTE:
                 this.primaryItem.color = new vscode.ThemeColor("statusBarItem.remoteForeground");
                 this.primaryItem.text = "$(sync~spin) Hermes: Connecting...";
@@ -485,8 +549,7 @@ export class VscodeApi implements Hermes.Api {
         this._onUplink.dispose();
         this._onFileTransfer.dispose();
 
-        this.currentApi?.dispose();
-        this.currentApi = undefined;
+        this.cleanup();
 
         this.eventSubscribers.clear();
         this.telemetrySubscribers.clear();

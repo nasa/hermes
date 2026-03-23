@@ -373,7 +373,7 @@ Hermes provides an implementation of SPICE SCLK that is bit-compatible with CSPI
 and supports loading SCLK time kernels. To understand more about SCLK and SPICE
 time kernels see the NAIF [required reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/sclk.html).
 
-### Earth Return TIme
+### Earth Return Time
 
 Earth return time (ERT) simply means the time (usually in UTC) at which a given piece
 of data reaches the ground system. All Hermes timestamped telemetry will include SCLK

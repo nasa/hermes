@@ -2,11 +2,10 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as child_process from 'child_process';
 import winston from "winston";
-import Transport, { TransportStreamOptions } from "winston-transport";
-import { MESSAGE } from 'triple-beam';
 
 import * as Hermes from "@gov.nasa.jpl.hermes/api";
 import { generateShortUid } from '@gov.nasa.jpl.hermes/util';
+import { attachLoggerToPsuedoTerminal, attachProcessToPsuedoTerminal, StandardPseudoTerminal } from '@gov.nasa.jpl.hermes/vscode';
 
 /**
  * Task definition for F Prime deployment
@@ -43,36 +42,15 @@ export interface FprimeDeploymentTaskDefinition {
 }
 
 /**
- * Winston transport that writes to a VSCode EventEmitter
- */
-class EventTransport extends Transport {
-    emitter: vscode.EventEmitter<string>;
-    constructor(options: TransportStreamOptions & { emitter: vscode.EventEmitter<string> }) {
-        super(options);
-        this.emitter = options.emitter;
-    }
-
-    log(info: any, callback: () => void) {
-        setImmediate(() => this.emit('logged', info));
-        if (this.format) {
-            info = this.format.transform(info);
-        }
-
-        this.emitter.fire(`${info[MESSAGE]}\r\n`);
-        callback();
-    }
-}
-
-/**
  * Pseudoterminal for F Prime deployment
  * Creates profile and optionally starts FSW
  */
-class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal {
-    private _onDidWrite = new vscode.EventEmitter<string>();
-    onDidWrite = this._onDidWrite.event;
+class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal, StandardPseudoTerminal {
+    didWrite = new vscode.EventEmitter<string>();
+    onDidWrite = this.didWrite.event;
 
-    private _onDidClose = new vscode.EventEmitter<void | number>();
-    onDidClose = this._onDidClose.event;
+    didClose = new vscode.EventEmitter<void | number>();
+    onDidClose = this.didClose.event;
 
     logger!: winston.Logger;
     private fswProcess?: child_process.ChildProcess;
@@ -81,25 +59,7 @@ class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal {
     constructor(readonly api: Hermes.Api, readonly def: FprimeDeploymentTaskDefinition) { }
 
     async open(_initialDimensions: vscode.TerminalDimensions | undefined): Promise<void> {
-        this.logger = winston.createLogger({
-            transports: [new EventTransport({ emitter: this._onDidWrite })],
-            levels: {
-                error: 0,
-                warn: 1,
-                info: 2,
-                debug: 3,
-            },
-            format: winston.format.combine(
-                winston.format.align(),
-                winston.format(info => ({ ...info, level: info.level.toUpperCase() }))(),
-                winston.format.colorize(),
-                winston.format.simple(),
-                winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-                winston.format.printf(
-                    ({ timestamp, level, message }) => `${timestamp} [${level}] ${message}`
-                )
-            )
-        });
+        attachLoggerToPsuedoTerminal(this);
 
         try {
             // Step 1: Create and start profile
@@ -124,6 +84,7 @@ class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal {
                         await this.api.stopProfile(profileId);
                     } catch (err) {
                         this.logger.error(`failed to stop profile on close: ${err}`);
+                        this.api.removeProfile(profileId);
                     }
                 }
             });
@@ -134,66 +95,25 @@ class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal {
             this.logger.info(`Profile started successfully`);
         } catch (err) {
             this.logger.error(`Failed to create/start deployment: ${err}`);
-            this._onDidClose.fire(1);
+            this.didClose.fire(1);
             return;
         }
 
         // Step 2: Start FSW if requested
         if (this.def.fswCommand) {
             this.logger.info(`Starting FSW: ${this.def.fswCommand}`);
-
-            try {
-                // Spawn FSW process
-                this.fswProcess = child_process.spawn(this.def.fswCommand, [], {
+            this.fswProcess = attachProcessToPsuedoTerminal(
+                this,
+                this.def.fswCommand,
+                [],
+                {
                     shell: true,
                     cwd: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath,
-                });
-
-                // Pipe stdout to terminal
-                this.fswProcess.stdout?.on('data', (data: Buffer) => {
-                    // Normalize line endings: replace \n with \r\n, and standalone \r with \r\n
-                    const normalized = data.toString()
-                        .replace(/\r\n/g, '\n')  // First normalize \r\n to \n
-                        .replace(/\r/g, '\n')     // Then convert standalone \r to \n
-                        .replace(/\n/g, '\r\n');  // Finally convert all \n to \r\n
-                    this._onDidWrite.fire(normalized);
-                });
-
-                // Pipe stderr to terminal
-                this.fswProcess.stderr?.on('data', (data: Buffer) => {
-                    // Normalize line endings: replace \n with \r\n, and standalone \r with \r\n
-                    const normalized = data.toString()
-                        .replace(/\r\n/g, '\n')  // First normalize \r\n to \n
-                        .replace(/\r/g, '\n')     // Then convert standalone \r to \n
-                        .replace(/\n/g, '\r\n');  // Finally convert all \n to \r\n
-                    this._onDidWrite.fire(normalized);
-                });
-
-                // Handle process exit
-                this.fswProcess.on('exit', (code, signal) => {
-                    if (code !== null) {
-                        this.logger.info(`FSW process exited with code ${code}`);
-                    } else if (signal) {
-                        this.logger.info(`FSW process killed with signal ${signal}`);
-                    }
-                    this._onDidClose.fire(code ?? 0);
-                });
-
-                // Handle process errors
-                this.fswProcess.on('error', (err) => {
-                    this.logger.error(`Failed to start FSW process: ${err.message}`);
-                    this._onDidClose.fire(1);
-                });
-
-                this.logger.info(`FSW process started with PID ${this.fswProcess.pid}`);
-                // Keep terminal open - it will close when FSW exits
-            } catch (err) {
-                this.logger.error(`Failed to spawn FSW: ${err}`);
-                this._onDidClose.fire(1);
-            }
+                }
+            );
         } else {
             // Profile only, task completes after creation
-            this._onDidClose.fire(0);
+            this.didClose.fire(0);
         }
     }
 
@@ -202,8 +122,6 @@ class FprimeDeploymentPseudoTerminal implements vscode.Pseudoterminal {
         if (this.fswProcess && !this.fswProcess.killed) {
             this.logger.info("Stopping FSW...");
             this.fswProcess.kill('SIGTERM');
-
-
 
             // Force kill after 5 seconds if still alive
             setTimeout(() => {

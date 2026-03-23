@@ -192,7 +192,7 @@
                     },
                     "fswCommand": {
                         "type": "string",
-                        "description": "FSW binary command (optional, for reference)"
+                        "description": "Shell command to start FSW. Leave blank to not run anything"
                     }
                 }
             }
