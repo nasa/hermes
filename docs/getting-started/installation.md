@@ -124,5 +124,5 @@ yarn build           # Build VSCode extensions
 ## Next Steps
 
 - [Getting Started Guide](./quick-start.md) - Create your first profile and connect to flight software
-- [Architecture Overview](../arch/index.md) - Learn about Hermes components and design
+- [Core Concepts](../arch/core-concepts.md) - Learn about Hermes Core Concepts and Design Patterns
 - [Telemetry Monitoring](../tlm/index.md) - Setup your monitoring infrastructure
