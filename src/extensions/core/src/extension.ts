@@ -11,9 +11,16 @@ import { VscodeHermes } from './context';
 import { BackendType, State, VscodeApi } from './api';
 import { VSCTransport } from './log';
 import { pickBackendModeDialog, pickRemoteDialog } from './dialog';
-import { ProfileTaskProvider } from './tasks';
+import { LocalTaskProvider } from './api/Local';
 
 export async function activate(context: vscode.ExtensionContext): Promise<CoreApi> {
+    context.subscriptions.push(
+        vscode.tasks.registerTaskProvider(
+            'hermes-local',
+            new LocalTaskProvider(context)
+        )
+    );
+
     const vscodeLogger = new VSCTransport({
         name: "Hermes",
         window: vscode.window,
@@ -57,14 +64,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
     const vscodeContext = new VscodeHermes(context.extensionPath, log, api, context);
     await vscodeContext.activate();
 
-    // Register task providers
-    context.subscriptions.push(
-        vscode.tasks.registerTaskProvider(
-            'hermes-create-profile',
-            new ProfileTaskProvider(api)
-        ),
-    );
-
     // Make sure things clean up properly when this extension shuts down
     context.subscriptions.push(
         api,
@@ -98,11 +97,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
             vscode.commands.executeCommand('hermes.host.set', api.state);
         }),
         vscode.commands.registerCommand('hermes.terminal.focusBackend', () => {
-            const terminal = vscode.window.terminals.find((t) => {
-                return t.creationOptions.name === "Hermes";
-            });
-
-            terminal?.show();
+            for (const task of vscode.tasks.taskExecutions) {
+                if (task.task.definition.type === "hermes-local") {
+                    vscode.commands.executeCommand("workbench.action.tasks.showTask", task);
+                }
+            }
         }),
     );
 

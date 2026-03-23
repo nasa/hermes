@@ -473,6 +473,44 @@
                 ],
                 "requiresMessaging": "optional"
             }
+        ],
+        "taskDefinitions": [
+            {
+                "type": "hermes-local",
+                "required": [
+                    "bindType",
+                    "bind"
+                ],
+                "properties": {
+                    "label": {
+                        "type": "string",
+                        "description": "Human readable label of the task"
+                    },
+                    "bindType": {
+                        "type": "string",
+                        "default": "unix",
+                        "description": "Type of bind address to bind backend gRPC endpoint to",
+                        "enum": [
+                            "unix",
+                            "tcp"
+                        ]
+                    },
+                    "bind": {
+                        "type": "string",
+                        "description": "Address or path to bind backend gRPC server to"
+                    },
+                    "configFile": {
+                        "type": "string",
+                        "description": "",
+                        "default": ""
+                    },
+                    "workingDir": {
+                        "type": "string",
+                        "description": "Path to a directory for storing persistant profiles and dictionaries as well as file downlinks",
+                        "default": "${workspaceDir}/.hermes"
+                    }
+                }
+            }
         ]
     },
     "scripts": {

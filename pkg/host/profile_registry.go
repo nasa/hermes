@@ -271,14 +271,30 @@ func (r *profileRegistry) Remove(id string) error {
 		return fmt.Errorf("no profile with id %s", id)
 	}
 
-	if _, ok := profile.(RuntimeProfile); ok {
+	state, err := profile.State()
+	if err != nil {
 		r.logger.Error(
-			"cannot remove profile",
+			"failed to get state of profile",
 			"name", profile.Name(),
 			"provider", profile.Config().Provider,
 			"id", id,
+			"err", err,
 		)
-		return fmt.Errorf("cannot remove profile: '%s' is runtime configured", id)
+
+		return fmt.Errorf("cannot remove profile: '%s' is failed to get state profile: %w", id, err)
+	}
+
+	if state.State != pb.ProfileState_PROFILE_IDLE {
+		r.logger.Error(
+			"cannot remove profile that is not in idle state",
+			"name", profile.Name(),
+			"provider", profile.Config().Provider,
+			"id", id,
+			"state", state.State,
+			"err", err,
+		)
+
+		return fmt.Errorf("cannot remove profile: '%s' is not idle", id)
 	}
 
 	r.logger.Info(
