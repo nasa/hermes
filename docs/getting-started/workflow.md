@@ -70,7 +70,20 @@ as they are received under the code cell:
 
 ### Dictionary Selection
 
+Hermes supports loading multiple dictionaries for different deployments or target FSWs.
+When writing commands in a code cell, Hermes uses _one_ of the dictionaries to validate
+commands and provide insides to the user such as auto-complete or hover information.
 
+To select a dictionary you can use the `{}` language item at the
+bottom of the VSCode window after you have selected the code block with the language
+you are writing commands in:
+
+![alt text](../assets/dict-select.png)
+
+!!! tip
+    By default, when a FSW connects to Hermes, the dictionary associated with that connection
+    will automatically be selected. You may need to change the dictionary depending on which
+    FSW you are commanding.
 
 ## Event Reports
 
@@ -130,6 +143,63 @@ which has two panes:
     This telemetry plot is not meant to be a comprehensive dashboarding solution. It is recommeded to connect
     Hermes to [Grafana](https://grafana.com) for a more complete experience.
 
-## File Uplink & Downlink
+## File Transfer
+
+Hermes supports file uplink and downlink to/from the spacecraft. The general model is
+the _sender_ of the file will initiate the transfer. This means that for file uplink
+Hermes is responsible for initiating the uplink while file downlink is initiated by
+some mechanism of the FSW.
+
+!!! note
+    It is common for FSW to provide a command to initiate a downlink and therefore
+    Hermes can _indirectly_ request a file to be downlinked. FSW might also use an
+    automated mechanism to initiate file downlink according to a radio pass schedule
+    or otherwise.
+
+The Hermes VSCode frontend can _monitor_ downlink and _initiate_ uplink. Hermes
+will handle the progress of file downlink and track missing or invalid pieces of
+the file. This section will discuss how to uplink and downlink files using F Prime
+FSW as an example.
+
+### Uplink
+
+![alt text](../assets/uplink-pane.png){ width=200 align=right }
+
+File uplink is initiated by the Hermes frontend through the `Uplink` pane in the
+rover panel of VSCode. Files can be added to this pane to _stage_ them for uplink
+by click the :fontawesome-solid-plus: Plus icon.
+
+It is important once you select the file to fill in the destination path
+you wish to uplink the file to.
+
+![alt text](../assets/uplink-complete.png){ width=200 align=left }
+
+Once uplinked the file should show a :fontawesome-solid-check: check mark
+next to the listing in the uplink pane.
+
+#### Flow control
+
+It is important to note that by Hermes default, Hermes will uplink files
+as fast as the physical transport allows it to. This may be too fast for the
+flight-software to handle. You may need to slow dowwn the uplink by using a
+man-in-the-middle approach to limit transmission rates to/from the spacecraft.
 
 
+### Downlink
+
+Hermes does not explicitly initiate file downlink. As discussed earlier, Hermes
+assumes all file transmission is handled by some mechanism the FSW defines.
+It is common for flight software to provide a command to downlink a file or define
+an automated downlink schedule. In this example we will utilize the FSW command
+`FileHandling.fileDownlink.SendFile` provided by recommended F Prime FSW topologies.
+
+![alt text](../assets/downlink-complete.png)
+
+Once a file is downlinked, Hermes will put the file into the downlink folder that is
+configured. If you are running Hermes in "Local" mode, this is typically the `.hermes`
+directory in your workspace.
+
+You should now see two new files in that folder:
+
+1. `<fsw-name>-<timestamp>-<filename>.<ext>`: The actual file that was downlinked
+2. `<fsw-name>-<timestamp>-<filename>.<ext>.md.pb`: A metadata file in [protobuf](https://protobuf.dev) format that includes information about the file that was downlinked

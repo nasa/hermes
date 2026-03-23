@@ -9,7 +9,7 @@ hide:
   ![Screenshot](assets/full-screenshot.png)
 </figure>
 
-# Hermes - A Workflow for Spacecraft Software Development
+# Hermes - A Command & Telemetry Framework
 
 !!! warning
 
