@@ -1,5 +1,7 @@
 ---
 icon: fontawesome/solid/database
+hide:
+  - toc
 ---
 
 # Datastores
@@ -9,9 +11,6 @@ ship with a builtin data persistence solution. Data storage is not
 a goal of the Hermes project. For this purpose, Hermes relies on
 an external provider to store its time series data. There are a number
 of databases that Hermes supports, each with their own use cases.
-
-This document will attempt to provide guidance to system architects
-on how to design and deploy a ground system topology.
 
 Before we discuss the Hermes supported datastores, it is important to
 discuss the data model of Hermes. Hermes uses a generic data representation

@@ -21,7 +21,6 @@ nav = [
         "arch/system-design.md",
     ] },
     { "Telemetry Monitoring" = [
-        "tlm/index.md",
         "tlm/grafana.md",
         { "Datastore" = [
             "tlm/db/index.md",
@@ -33,7 +32,7 @@ nav = [
         ] },
     ] },
     { "Deploying" = [
-        "prod/index.md",
+        "prod/dev.md",
         "prod/testbed.md",
         "prod/mission.md",
         { "Advanced" = [
