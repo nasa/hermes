@@ -13,10 +13,13 @@ framework built around a variety of mature open-source software.
 > Hermes is currently undergoing migration from our internal deployment
 > to public Github. Documentation is in the works.
 
+We encourage new users to read out [Quick Start](https://nasa.github.io/hermes/getting-started/quick-start/) guide
+and our [documentation](https://nasa.github.io/hermes/).
+
 ## Hermes Capabilities
 
 - Command completion, validation, & dispatch inside a [Visual Studio Code](https://code.visualstudio.com/) interface.
-- Telemetry database interaction with a variety of [databases](#databases).
+- Telemetry database interaction with a variety of [databases](https://nasa.github.io/hermes/tlm/db/).
 - An extensible and pluggable telemetry processing framework for interacting with flight software downlink
 - Out of the box support for [F Prime](https://github.com/nasa/fprime)
 - Integration with [Grafana](https://grafana.com)
