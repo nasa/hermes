@@ -5,6 +5,7 @@ on:
     paths-ignore:
       - 'docs/**'
       - 'README.md'
+      - 'zensical.toml'
   workflow_dispatch:
 
 jobs:
