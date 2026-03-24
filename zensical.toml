@@ -29,6 +29,7 @@ nav = [
             "tlm/db/clickhouse.md",
             "tlm/db/influxdb.md",
             "tlm/db/timescaledb.md",
+            "tlm/db/sqlite.md",
         ] },
     ] },
     { "Deploying" = [
