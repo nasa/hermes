@@ -3,13 +3,14 @@ import * as grpc from '@grpc/grpc-js';
 
 import * as Rpc from '@gov.nasa.jpl.hermes/rpc';
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
-import { Settings } from '@gov.nasa.jpl.hermes/vscode';
+import { BackendProvider, Settings } from '@gov.nasa.jpl.hermes/vscode';
+import { VscodeApi } from '.';
 
-export class Remote extends Rpc.Client implements Hermes.Api {
+class Remote extends Rpc.Client implements Hermes.Api {
     grpcClient: Rpc.GrpcClient;
     private closed: boolean;
 
-    protected constructor(
+    constructor(
         client: Rpc.GrpcClient,
         log: Hermes.Log
     ) {
@@ -47,22 +48,6 @@ export class Remote extends Rpc.Client implements Hermes.Api {
                 }
             }
         }
-    }
-
-    static async activate(remote: Settings.Remote, log: Hermes.Log, token?: vscode.CancellationToken) {
-        const credPrompter = new CredentialsPrompter();
-        const credentials = await credPrompter.promptCredentials(remote.authenticationMethod);
-        credPrompter.dispose();
-
-        const client = new Rpc.GrpcClient(log, {
-            hostAddress: remote.url,
-            authMethod: remote.authenticationMethod,
-            skipTLSVerify: remote.skipTLSVerify,
-            credentials
-        });
-
-        await client.connect(token);
-        return new Remote(client, log);
     }
 
     dispose(): void {
@@ -178,5 +163,206 @@ class CredentialsPrompter implements vscode.Disposable {
         this.passwordBox.dispose();
         this.tokenBox.dispose();
     }
+}
 
+export class RemoteBackendProvider implements BackendProvider<Settings.Remote> {
+    type = "remote";
+    title = "Remote";
+    description = "For hardware testing and operation";
+    detail = "Connect to Hermes remotely";
+    icon = "radio-tower";
+    priority = 20;
+
+    disposables: readonly vscode.Disposable[];
+
+    constructor(api: VscodeApi) {
+        this.disposables = [
+            vscode.commands.registerCommand('hermes.host.changeRemote', async () => {
+                const newRemote = await pickRemoteDialog(api.currentProvider.type === this.type ? api.currentState : undefined);
+                if (newRemote) {
+                    vscode.commands.executeCommand('hermes.host.set', this.type, newRemote);
+                }
+            }),
+        ];
+    }
+
+    async promptForState(): Promise<Settings.Remote | null> {
+        return await pickRemoteDialog() ?? null;
+    }
+
+    async provideBackendApi(
+        remote: Settings.Remote,
+        _context: vscode.ExtensionContext,
+        log: Hermes.Log,
+        token?: vscode.CancellationToken
+    ): Promise<Hermes.Api> {
+        const credPrompter = new CredentialsPrompter();
+        const credentials = await credPrompter.promptCredentials(remote.authenticationMethod);
+        credPrompter.dispose();
+
+        const client = new Rpc.GrpcClient(log, {
+            hostAddress: remote.url,
+            authMethod: remote.authenticationMethod,
+            skipTLSVerify: remote.skipTLSVerify,
+            credentials
+        });
+
+        await client.connect(token);
+        return new Remote(client, log);
+    }
+
+    activeStatusBarItem(item: vscode.StatusBarItem, state: Settings.Remote): void {
+        item.show();
+        item.color = state.color;
+        item.text = `$(radio-tower) ${state.label}`;
+        item.tooltip = "Change remote host";
+        item.command = "hermes.host.changeRemote";
+    }
+
+    invalidStatusBarItem(item: vscode.StatusBarItem, state: Settings.Remote): void {
+        item.text = `$(radio-tower) ${state.label}`;
+        item.command = "hermes.host.changeRemote";
+        item.tooltip = "Change host URL";
+    }
+
+    exitedStatusBarItem(item: vscode.StatusBarItem, state: Settings.Remote): void {
+        item.text = `$(radio-tower) ${state.label}`;
+        item.command = "hermes.host.changeRemote";
+        item.show();
+    }
+
+    dispose(): void {
+        for (const disp of this.disposables) {
+            disp.dispose();
+        }
+    }
+
+}
+
+interface RemoteQuickPickItem extends vscode.QuickPickItem {
+    createNew?: true;
+    remote?: Settings.Remote;
+    invalid?: boolean;
+}
+
+function remoteToQuickPickItem(key: string, remote: Settings.Remote): RemoteQuickPickItem {
+    const saneRemote = { ...remote, key };
+    const errors = [];
+
+    if (!remote.label || remote.label === "") {
+        saneRemote.label = saneRemote.url ?? "";
+        if (saneRemote.label === "") {
+            saneRemote.label = "<Untitled Remote>";
+        }
+    }
+
+    if (!saneRemote.url || saneRemote.url === "") {
+        saneRemote.url = "<unset url>";
+        errors.push("URL must be set");
+    }
+
+    saneRemote.skipTLSVerify = remote.skipTLSVerify ?? false;
+    saneRemote.authenticationMethod = remote.authenticationMethod ?? Rpc.HostAuthenticationKind.NONE;
+    if (!saneRemote.color || saneRemote.color === "") {
+        saneRemote.color = undefined;
+    } else if (saneRemote.color) {
+        const colorRegex = /^#([a-fA-F0-9]{3})|([a-fA-F0-9]{6})$/;
+        if (!colorRegex.test(saneRemote.color)) {
+            errors.push("Color must be a hex color in the form #RGB or #RRGGBB");
+        }
+    }
+
+    return {
+        label: saneRemote.label,
+        description: saneRemote.url,
+        detail: errors.length > 0 ? ("$(alert) Invalid Remote: " + errors.join(". ")) : undefined,
+        remote: saneRemote,
+        invalid: errors.length > 0
+    };
+}
+
+
+async function pickRemoteDialog(current?: Settings.Remote): Promise<Settings.Remote | undefined> {
+    const remotes = Settings.hostRemotes();
+    const quickPick = vscode.window.createQuickPick<RemoteQuickPickItem>();
+    quickPick.canSelectMany = false;
+
+    const remoteQuickPickItems = Array.from(Object.entries(remotes).map(([key, remote]) => remoteToQuickPickItem(key, remote)));
+    quickPick.title = "Select a Hermes remote host to connect to";
+    quickPick.buttons = [
+        {
+            iconPath: new vscode.ThemeIcon("settings-gear"),
+            location: vscode.QuickInputButtonLocation.Inline,
+            tooltip: "Edit Remote Settings"
+        }
+    ];
+    quickPick.items = [
+        ...remoteQuickPickItems,
+        {
+            label: "",
+            kind: vscode.QuickPickItemKind.Separator,
+        },
+        {
+            iconPath: new vscode.ThemeIcon("plus"),
+            label: "Add new Hermes remote",
+            alwaysShow: true,
+            createNew: true,
+        }
+    ];
+
+    const selected = remoteQuickPickItems.find((v) => {
+        if (v.remote && current) {
+            return current.key === v.remote.key;
+        } else {
+            return false;
+        }
+    });
+
+    quickPick.activeItems = selected ? [selected] : [];
+    quickPick.show();
+
+    const subs: vscode.Disposable[] = [];
+    const pick = await new Promise<RemoteQuickPickItem | undefined>((resolve) => {
+        subs.push(
+            quickPick.onDidHide(() => {
+                resolve(undefined);
+            }),
+            quickPick.onDidAccept(() => {
+                if (quickPick.selectedItems.length > 0) {
+                    if (quickPick.selectedItems[0].invalid) {
+                        quickPick.selectedItems = [];
+                    } else {
+                        resolve(quickPick.selectedItems[0]);
+                    }
+                } else {
+                    resolve(undefined);
+                }
+            }),
+            quickPick.onDidTriggerButton(() => {
+                // There is only one button
+                // [Settings button]
+                vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile', {
+                    revealSetting: {
+                        key: 'hermes.host.remotes',
+                        edit: false
+                    }
+                });
+                // vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile', {});
+                resolve(undefined);
+            })
+        );
+    });
+
+    subs.forEach((d) => d.dispose());
+    quickPick.dispose();
+
+    if (pick?.remote) {
+        return pick.remote;
+    } else if (pick?.createNew) {
+        return await createNewRemoteDialog();
+    }
+}
+
+async function createNewRemoteDialog(): Promise<Settings.Remote | undefined> {
+    return undefined;
 }

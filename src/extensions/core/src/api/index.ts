@@ -1,55 +1,9 @@
 import * as vscode from 'vscode';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
-import { Settings } from '@gov.nasa.jpl.hermes/vscode';
+import { BackendProvider } from '@gov.nasa.jpl.hermes/vscode';
 import { Proto, Sourced, Event, Telemetry } from '@gov.nasa.jpl.hermes/types';
 import { Offline } from './Offline';
-import { Local, LocalBackendExecution } from './Local';
-import { Remote } from './Remote';
-
-/**
- * Controls what backend to use
- */
-export enum BackendType {
-    /**
-     * Offline only allows loading dictionaries and writing notebooks/sequences
-     * You cannot connect to anything and send command/receive telemetry
-     */
-    OFFLINE = 'offline',
-
-    /**
-     * Connect to a Hermes backend that is managed by this VSCode extension to allow
-     * configuring/running profiles Telemetry can be subscribed to show up in the
-     * frontend.
-     */
-    LOCAL = 'local',
-
-    /**
-     * Connect to a Hermes backend to allow configuring/running profiles
-     * Telemetry can be subscribed to show up in the frontend
-     */
-    REMOTE = 'remote',
-}
-
-export interface OfflineState {
-    type: BackendType.OFFLINE;
-}
-
-export interface LocalState {
-    type: BackendType.LOCAL;
-    attach?: LocalBackendExecution
-}
-
-export interface RemoteState {
-    type: BackendType.REMOTE;
-    remote: Settings.Remote;
-}
-
-export type State = (
-    | OfflineState
-    | LocalState
-    | RemoteState
-);
 
 /**
  * VscodeApi wraps the actual API implementation and maintains stable
@@ -61,7 +15,7 @@ export class VscodeApi implements Hermes.Api {
     private _onContextRefresh = new vscode.EventEmitter<void>();
     onContextRefresh = this._onContextRefresh.event;
 
-    private currentApi?: Hermes.Api;
+    private providers: Map<string, BackendProvider<any>>;
 
     private _onFswChange = new vscode.EventEmitter<Hermes.Fsw[]>();
     private _onProvidersChange = new vscode.EventEmitter<Proto.IProfileProvider[]>();
@@ -87,15 +41,15 @@ export class VscodeApi implements Hermes.Api {
     onFileTransfer = this._onFileTransfer.event;
 
     private cancelActivate?: vscode.CancellationTokenSource;
-    private localBackends: Set<LocalBackendExecution>;
-    private localBackendPromise?: [resolve: (_: LocalBackendExecution) => void, reject: (err: any) => void];
 
     private primaryItem: vscode.StatusBarItem;
     private secondaryItem: vscode.StatusBarItem;
 
     private readonly disposables: vscode.Disposable[];
 
-    state: State;
+    currentApi?: Hermes.Api;
+    currentProvider: BackendProvider<any>;
+    currentState: any;
 
     constructor(
         readonly context: vscode.ExtensionContext,
@@ -108,53 +62,15 @@ export class VscodeApi implements Hermes.Api {
             'hermes.secondaryStatus', vscode.StatusBarAlignment.Left, 999
         );
 
-        this.state = { type: BackendType.OFFLINE };
-        this.localBackends = new Set();
-
         this.primaryItem.hide();
         this.secondaryItem.hide();
+
+        this.providers = new Map();
 
         this.disposables = [
             this.primaryItem,
             this.secondaryItem,
-            vscode.commands.registerCommand("hermes.backend.local.failed", (err: any) => {
-                if (this.localBackendPromise) {
-                    this.localBackendPromise[1](err);
-                    this.localBackendPromise = undefined;
-                }
-            }),
-            vscode.commands.registerCommand("hermes.backend.local.activate", (execution: LocalBackendExecution) => {
-                this.localBackends.add(execution);
-                if (this.localBackendPromise) {
-                    this.localBackendPromise[0](execution);
-                    this.localBackendPromise = undefined;
-                } else {
-                    vscode.window.showInformationMessage(
-                        "A local Hermes backend has been started. Would you like to attach this window to that backend",
-                        "Attach"
-                    ).then((choice) => {
-                        if (choice === "Attach") {
-                            this.update({ type: BackendType.LOCAL, attach: execution });
-                        }
-                    });
-                }
 
-                execution.onDidClose((exitCode) => {
-                    this.localBackends.delete(execution);
-                    if (this.currentApi instanceof Local) {
-                        if (this.currentApi.execution === execution) {
-                            if (exitCode) {
-                                vscode.commands.executeCommand(
-                                    'hermes.backend.exit',
-                                    `Backend exited with code: ${exitCode}`
-                                );
-                            } else {
-                                vscode.commands.executeCommand("hermes.backend.exit");
-                            }
-                        }
-                    }
-                });
-            }),
             vscode.commands.registerCommand("hermes.backend.cancel", () => {
                 this.cancelActivate?.cancel();
             }),
@@ -166,7 +82,42 @@ export class VscodeApi implements Hermes.Api {
                     this.exited();
                 }
             }),
+            this.registerBackendProvider({
+                type: "offline",
+                title: "Offline",
+                description: "Sequence authoring with no live interactions",
+                detail: "Load dictionaries. Write sequences, procedures, and notebooks",
+                icon: "debug-disconnect",
+                priority: 0,
+                async promptForState() {
+                    // Return something that is not null
+                    return true;
+                },
+                async provideBackendApi(_, context, log, token) {
+                    return await Offline.activate(context, log, token);
+                }
+            }),
         ];
+        this.currentProvider = this.providers.get("offline")!;
+    }
+
+    registerBackendProvider<T>(provider: BackendProvider<T>): vscode.Disposable {
+        const old = this.providers.get(provider.type);
+        if (old) {
+            this.log.warn(`Cannot register backend provider with duplicate type name: ${provider.type}`);
+            return { dispose: () => { } };
+        }
+
+        this.log.info(`Registering backend provider: ${provider.type}`);
+        this.providers.set(provider.type, provider);
+
+        return {
+            dispose: () => {
+                this.log.info(`Disposing backend provider: ${provider.type}`);
+                this.providers.delete(provider.type);
+                provider.dispose?.();
+            }
+        };
     }
 
     private cleanup() {
@@ -193,6 +144,7 @@ export class VscodeApi implements Hermes.Api {
         this.secondaryItem.hide();
 
         this.primaryItem.color = undefined;
+        this.primaryItem.text = `$(${this.currentProvider.icon}) Hermes: ${this.currentProvider.title}`;
         this.primaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.background");
         this.primaryItem.tooltip = "Change Mode or Restart";
         this.primaryItem.command = "hermes.host.changeMode";
@@ -202,22 +154,12 @@ export class VscodeApi implements Hermes.Api {
         this.secondaryItem.command = undefined;
         this.secondaryItem.tooltip = undefined;
 
-        switch (this.state.type) {
-            case BackendType.OFFLINE:
-                this.primaryItem.text = "$(close) Hermes: Offline (exited)";
-                this.primaryItem.tooltip = "Retry";
-                this.secondaryItem.text = "Backend Exited";
-                break;
-            case BackendType.LOCAL:
-                this.update({ type: BackendType.OFFLINE });
-                break;
-            case BackendType.REMOTE:
-                this.primaryItem.text = "$(close) Hermes: Remote (exited)";
-                this.primaryItem.tooltip = "Reconnect";
-                this.secondaryItem.text = `$(radio-tower) ${this.state.remote.label}`;
-                this.secondaryItem.command = "hermes.host.changeRemote";
-                this.secondaryItem.show();
-                break;
+        if (this.currentProvider.exitedStatusBarItem) {
+            // This provider holds onto the exited state
+            this.currentProvider.exitedStatusBarItem(this.secondaryItem, this.currentState);
+        } else {
+            // Fallback to offline mode
+            await this.update("offline", undefined);
         }
 
         this._onContextRefresh.fire();
@@ -228,9 +170,10 @@ export class VscodeApi implements Hermes.Api {
         this.currentApi = await Offline.activate(this.context, this.log);
 
         this.primaryItem.show();
-        this.secondaryItem.show();
+        this.secondaryItem.hide();
 
         this.primaryItem.color = undefined;
+        this.primaryItem.text = `$(${this.currentProvider.icon}) Hermes: ${this.currentProvider.title}`;
         this.primaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.errorBackground");
         this.primaryItem.command = "hermes.host.changeMode";
 
@@ -239,32 +182,25 @@ export class VscodeApi implements Hermes.Api {
         this.secondaryItem.command = undefined;
         this.secondaryItem.tooltip = err;
 
-        switch (this.state.type) {
-            case BackendType.OFFLINE:
-                this.primaryItem.text = "$(alert) Hermes: Offline";
-                this.primaryItem.tooltip = "Retry";
-                this.secondaryItem.text = "Initialization Failed";
-                break;
-            case BackendType.LOCAL:
-                this.primaryItem.text = "$(alert) Hermes: Local";
-                this.primaryItem.tooltip = "Restart";
-                this.secondaryItem.text = "Execution Failed";
-                this.secondaryItem.command = "hermes.terminal.focusBackend";
-                this.secondaryItem.tooltip = "Show logs";
-                break;
-            case BackendType.REMOTE:
-                this.primaryItem.text = "$(alert) Hermes: Remote";
-                this.primaryItem.tooltip = "Reconnect";
-                this.secondaryItem.text = `$(radio-tower) ${this.state.remote.label}`;
-                this.secondaryItem.command = "hermes.host.changeRemote";
-                this.secondaryItem.tooltip = "Change host URL";
-                break;
-        }
+        this.currentProvider.invalidStatusBarItem?.(this.secondaryItem, this.currentState);
 
         this._onContextRefresh.fire();
     }
 
-    async update(newState: State): Promise<void> {
+    async update<T>(newType: string, newState: T | null): Promise<void> {
+        const provider = this.providers.get(newType);
+        if (!provider) {
+            this.log.warn(`Cannot switch to unregistered API: ${newType}`);
+            return;
+        }
+
+        if (newState === null || newState === undefined) {
+            newState = await provider.promptForState(this.context, this.log);
+            if (newState === null) {
+                return;
+            }
+        }
+
         this.cleanup();
         this.cancelActivate = new vscode.CancellationTokenSource();
 
@@ -281,65 +217,23 @@ export class VscodeApi implements Hermes.Api {
         this.secondaryItem.command = undefined;
         this.secondaryItem.tooltip = undefined;
 
-        this.state = newState;
+        this.log.info(`Activating API from provider: ${newType}`);
+        this.currentProvider = provider;
+        this.currentState = newState;
 
-        switch (this.state.type) {
-            case BackendType.OFFLINE:
-                this.primaryItem.color = new vscode.ThemeColor("statusBarItem.remoteForeground");
-                this.primaryItem.text = "$(sync~spin) Hermes: Initializing...";
-                this.currentApi = await Offline.activate(this.context, this.log, this.cancelActivate.token);
-                this.primaryItem.color = undefined;
-                this.primaryItem.text = "$(debug-disconnect) Hermes: Offline";
-                this.secondaryItem.command = undefined;
+        this.primaryItem.text = "$(sync~spin) Hermes: Connecting...";
 
-                break;
-            case BackendType.LOCAL: {
-                this.primaryItem.color = new vscode.ThemeColor("statusBarItem.remoteForeground");
-                this.primaryItem.text = "$(sync~spin) Hermes: Starting...";
+        this.currentApi = await provider.provideBackendApi(
+            newState,
+            this.context,
+            this.log,
+            this.cancelActivate.token
+        );
 
-                // Check if we should be attaching directly to a running backend
-                // ...or check if there are any currently local backend tasks
-                // ...or start a local backend
-                if (this.state.attach) {
-                    this.currentApi = await this.state.attach.connect(this.log, this.cancelActivate.token);
-                } else if (this.localBackends.size > 0) {
-                    const backends = Array.from(this.localBackends.values());
-                    this.currentApi = await backends[0].connect(this.log, this.cancelActivate.token);
-                } else {
-                    const execution = await Local.startTask(this.context);
-                    this.cancelActivate.token.onCancellationRequested(() => {
-                        execution.terminate();
-                    });
+        this.primaryItem.color = undefined;
+        this.primaryItem.text = `$(${provider.icon}) Hermes: ${provider.title}`;
 
-                    const localBackend = await new Promise<LocalBackendExecution>((resolve, reject) => {
-                        this.localBackendPromise = [resolve, reject];
-                    });
-                    this.localBackendPromise = undefined;
-                    this.currentApi = await localBackend.connect(this.log, this.cancelActivate.token);
-                }
-
-                this.primaryItem.color = undefined;
-                this.primaryItem.text = "$(terminal) Hermes: Local";
-
-                this.secondaryItem.show();
-                this.secondaryItem.text = "$(terminal)";
-                this.secondaryItem.tooltip = "Show Hermes Backend Logs";
-                this.secondaryItem.command = "hermes.terminal.focusBackend";
-                break;
-            }
-            case BackendType.REMOTE:
-                this.primaryItem.color = new vscode.ThemeColor("statusBarItem.remoteForeground");
-                this.primaryItem.text = "$(sync~spin) Hermes: Connecting...";
-                this.currentApi = await Remote.activate(this.state.remote, this.log, this.cancelActivate.token);
-                this.primaryItem.text = "$(radio-tower) Hermes: Remote";
-
-                this.secondaryItem.show();
-                this.secondaryItem.color = this.state.remote.color;
-                this.secondaryItem.text = `$(radio-tower) ${this.state.remote.label}`;
-                this.secondaryItem.tooltip = "Change remote host";
-                this.secondaryItem.command = "hermes.host.changeRemote";
-                break;
-        }
+        provider.activeStatusBarItem?.(this.secondaryItem, this.currentState);
 
         this.primaryItem.tooltip = "Change Mode or Restart";
         this.primaryItem.command = "hermes.host.changeMode";
@@ -376,6 +270,45 @@ export class VscodeApi implements Hermes.Api {
         }
 
         this._onContextRefresh.fire();
+    }
+
+    async pickBackendModeDialog(): Promise<void> {
+        const providersSorted = Array.from(this.providers.values()).sort(
+            (a, b) => (a.priority ?? 100) - (b.priority ?? 100)
+        );
+
+        const pick = await vscode.window.showQuickPick<vscode.QuickPickItem & {
+            type?: string;
+            reconnect?: true;
+        }>([
+            ...providersSorted.map((provider) => ({
+                iconPath: new vscode.ThemeIcon(provider.icon),
+                label: ((provider.type === this.currentProvider.type) ? "$(check) " : "") + provider.title,
+                description: provider.description,
+                detail: provider.detail,
+                type: provider.type,
+            })),
+            {
+                label: "",
+                kind: vscode.QuickPickItemKind.Separator,
+            },
+            {
+                iconPath: new vscode.ThemeIcon("sync"),
+                label: "Reconnect",
+                description: "Reconnect/Rerun the current backend",
+                reconnect: true,
+            }
+        ], {
+            title: 'Hermes Backend Mode',
+        });
+
+        if (pick) {
+            if (pick.reconnect) {
+                vscode.commands.executeCommand("hermes.host.reconnect");
+            } else if (pick.type !== undefined) {
+                vscode.commands.executeCommand("hermes.host.set", pick.type);
+            }
+        }
     }
 
     // Method-based subscription handlers that track subscribers

@@ -5,7 +5,8 @@ import winston from "winston";
 
 import * as Rpc from '@gov.nasa.jpl.hermes/rpc';
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
-import { attachLoggerToPsuedoTerminal, attachProcessToPsuedoTerminal, Settings, StandardPseudoTerminal } from '@gov.nasa.jpl.hermes/vscode';
+import { attachLoggerToPsuedoTerminal, attachProcessToPsuedoTerminal, BackendProvider, Settings, StandardPseudoTerminal } from '@gov.nasa.jpl.hermes/vscode';
+import { VscodeApi } from '.';
 
 interface LocalTaskDefinition extends vscode.TaskDefinition {
     type: "hermes-local";
@@ -68,7 +69,7 @@ export class LocalTaskProvider implements vscode.TaskProvider {
     }
 }
 
-export class LocalBackendExecution implements vscode.Pseudoterminal, StandardPseudoTerminal {
+class LocalBackendExecution implements vscode.Pseudoterminal, StandardPseudoTerminal {
     process?: child_process.ChildProcess;
 
     didWrite = new vscode.EventEmitter<string>();
@@ -190,7 +191,7 @@ export class LocalBackendExecution implements vscode.Pseudoterminal, StandardPse
     }
 }
 
-export class Local extends Rpc.Client {
+class Local extends Rpc.Client {
     grpcClient: Rpc.GrpcClient;
 
     constructor(
@@ -242,5 +243,119 @@ export class Local extends Rpc.Client {
 
         this.grpcClient.close();
         this.execution.close();
+    }
+}
+
+export class LocalBackendProvider implements BackendProvider<LocalBackendExecution | undefined> {
+    type = "local";
+    title = "Local";
+    description = "For local development";
+    detail = "Start Hermes locally in a VSCode terminal and connect to it";
+    icon = "terminal";
+    priority = 10;
+
+    private localBackends: Set<LocalBackendExecution>;
+    private localBackendPromise?: [resolve: (_: LocalBackendExecution) => void, reject: (err: any) => void];
+    private readonly disposables: vscode.Disposable[];
+
+    constructor(api: VscodeApi) {
+        this.localBackends = new Set();
+        this.disposables = [
+            vscode.commands.registerCommand("hermes.backend.local.failed", (err: any) => {
+                if (this.localBackendPromise) {
+                    this.localBackendPromise[1](err);
+                    this.localBackendPromise = undefined;
+                }
+            }),
+            vscode.commands.registerCommand("hermes.backend.local.activate", (execution: LocalBackendExecution) => {
+                this.localBackends.add(execution);
+                if (this.localBackendPromise) {
+                    this.localBackendPromise[0](execution);
+                    this.localBackendPromise = undefined;
+                } else {
+                    vscode.window.showInformationMessage(
+                        "A local Hermes backend has been started. Would you like to attach this window to that backend",
+                        "Attach"
+                    ).then((choice) => {
+                        if (choice === "Attach") {
+                            vscode.commands.executeCommand("hermes.host.set", this.type, execution);
+                        }
+                    });
+                }
+
+                execution.onDidClose((exitCode) => {
+                    this.localBackends.delete(execution);
+                    if (api.currentApi instanceof Local) {
+                        if (api.currentApi.execution === execution) {
+                            if (exitCode) {
+                                vscode.commands.executeCommand(
+                                    'hermes.backend.exit',
+                                    `Backend exited with code: ${exitCode}`
+                                );
+                            } else {
+                                vscode.commands.executeCommand("hermes.backend.exit");
+                            }
+                        }
+                    }
+                });
+            }),
+        ];
+    }
+
+    async promptForState(): Promise<LocalBackendExecution | undefined> {
+        return undefined;
+    }
+
+    async provideBackendApi(
+        state: LocalBackendExecution | undefined,
+        context: vscode.ExtensionContext,
+        log: Hermes.Log,
+        token?: vscode.CancellationToken
+    ): Promise<Hermes.Api> {
+        // Check if we should be attaching directly to a running backend
+        // ...or check if there are any currently local backend tasks
+        // ...or start a local backend
+        if (state) {
+            if (!(state instanceof LocalBackendExecution)) {
+                throw new Error("LocalBackendProvider State must be a LocalBackendExecution");
+            }
+
+            return await state.connect(log, token);
+        } else if (this.localBackends.size > 0) {
+            const backends = Array.from(this.localBackends.values());
+            return await backends[0].connect(log, token);
+        } else {
+            const execution = await Local.startTask(context);
+            token?.onCancellationRequested(() => {
+                execution.terminate();
+            });
+
+            const localBackend = await new Promise<LocalBackendExecution>((resolve, reject) => {
+                this.localBackendPromise = [resolve, reject];
+            });
+            this.localBackendPromise = undefined;
+            return await localBackend.connect(log, token);
+        }
+    }
+
+    activeStatusBarItem(
+        secondaryItem: vscode.StatusBarItem
+    ): void {
+        secondaryItem.show();
+        secondaryItem.text = "$(terminal)";
+        secondaryItem.tooltip = "Show Hermes Backend Logs";
+        secondaryItem.command = "hermes.terminal.focusBackend";
+    }
+
+    invalidStatusBarItem(item: vscode.StatusBarItem): void {
+        item.text = "Execution Failed";
+        item.command = "hermes.terminal.focusBackend";
+        item.tooltip = "Show logs";
+    }
+
+    dispose(): void {
+        for (const disp of this.disposables) {
+            disp.dispose();
+        }
     }
 }

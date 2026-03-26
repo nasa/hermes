@@ -3,6 +3,7 @@ import * as path from 'path';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import {
+    BackendProvider,
     CoreApi,
     DictionaryLanguageItem,
     DictionaryProvider,
@@ -24,6 +25,7 @@ import { PythonLanguageProvider } from './kernels/python';
 import { UplinkLanguageProvider } from './kernels/uplink';
 import { DownlinkProvider } from './components/DownlinkViewer';
 import { UplinkProvider } from './components/UplinkViewer';
+import { VscodeApi } from './api';
 
 export class VscodeHermes implements CoreApi {
     private subscriptions: vscode.Disposable[] = [];
@@ -49,7 +51,7 @@ export class VscodeHermes implements CoreApi {
     constructor(
         readonly extensionPath: string,
         readonly log: Hermes.Log,
-        readonly api: Hermes.Api,
+        readonly api: VscodeApi,
         readonly extensionContext: vscode.ExtensionContext
     ) {
         this.log.info(`Initializing VscodeHermes with extensionPath: ${extensionPath}`);
@@ -67,7 +69,7 @@ export class VscodeHermes implements CoreApi {
         this.eventPanel = new EventPanel(this.api, this.extensionPath);
         this.telemetryDb = new TelemetryDatabase(this.api);
         this.telemetryTablePanel = new TelemetryTablePanel(this.telemetryDb, this.extensionPath);
-        this.telemetryTablePanel = new TelemetryPlotPanel(this.telemetryDb, this.extensionPath);
+        this.telemetryPlotPanel = new TelemetryPlotPanel(this.telemetryDb, this.extensionPath);
 
         this.subscriptions.push(
             this.registerShellscriptBinPath(path.join(this.extensionPath, 'out', 'bin')),
@@ -88,7 +90,7 @@ export class VscodeHermes implements CoreApi {
             this.eventPanel,
             this.telemetryDb,
             this.telemetryTablePanel,
-            this.telemetryTablePanel,
+            this.telemetryPlotPanel,
             this.connectionViewer,
 
             this.registerNotebookType("hermes.notebook"),
@@ -133,6 +135,10 @@ export class VscodeHermes implements CoreApi {
         }
 
         this.log.info('Refresh complete');
+    }
+
+    registerBackendProvider<T>(provider: BackendProvider<T>): vscode.Disposable {
+        return this.api.registerBackendProvider(provider);
     }
 
     registerDictionaryProvider(
