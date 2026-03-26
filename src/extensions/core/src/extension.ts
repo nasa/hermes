@@ -8,10 +8,10 @@ import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { CoreApi } from '@gov.nasa.jpl.hermes/vscode';
 
 import { VscodeHermes } from './context';
-import { BackendType, State, VscodeApi } from './api';
+import { VscodeApi } from './api';
 import { VSCTransport } from './log';
-import { pickBackendModeDialog, pickRemoteDialog } from './dialog';
-import { LocalTaskProvider } from './api/Local';
+import { LocalBackendProvider, LocalTaskProvider } from './api/Local';
+import { RemoteBackendProvider } from './api/Remote';
 
 export async function activate(context: vscode.ExtensionContext): Promise<CoreApi> {
     context.subscriptions.push(
@@ -73,28 +73,21 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
         api.onContextRefresh(() => {
             vscodeContext.refresh();
         }),
-        vscode.commands.registerCommand('hermes.host.set', async (state: State) => {
+        api.registerBackendProvider(new LocalBackendProvider(api)),
+        api.registerBackendProvider(new RemoteBackendProvider(api)),
+        vscode.commands.registerCommand('hermes.host.set', async <T>(type: string, state: T | null) => {
             try {
-                await api.update(state);
+                await api.update(type, state);
             } catch (err) {
                 vscode.window.showErrorMessage(`Failed to update Hermes host: ${err}`);
                 api.invalidate(`${err}`);
             }
         }),
         vscode.commands.registerCommand('hermes.host.changeMode', async () => {
-            const nextState = await pickBackendModeDialog(api.state);
-            if (nextState) {
-                vscode.commands.executeCommand('hermes.host.set', nextState);
-            }
-        }),
-        vscode.commands.registerCommand('hermes.host.changeRemote', async () => {
-            const newRemote = await pickRemoteDialog(api.state.type === BackendType.REMOTE ? api.state.remote : undefined);
-            if (newRemote) {
-                vscode.commands.executeCommand('hermes.host.set', { type: BackendType.REMOTE, remote: newRemote });
-            }
+            api.pickBackendModeDialog();
         }),
         vscode.commands.registerCommand('hermes.host.reconnect', () => {
-            vscode.commands.executeCommand('hermes.host.set', api.state);
+            vscode.commands.executeCommand('hermes.host.set', api.currentProvider.type, api.currentState);
         }),
         vscode.commands.registerCommand('hermes.terminal.focusBackend', () => {
             for (const task of vscode.tasks.taskExecutions) {
