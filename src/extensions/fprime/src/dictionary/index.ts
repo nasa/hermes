@@ -1,17 +1,11 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import * as fs from 'fs';
 
 import { Dictionary } from '@gov.nasa.jpl.hermes/types';
 import { FileDictionaryProvider, } from "@gov.nasa.jpl.hermes/vscode";
-import { Proto } from '@gov.nasa.jpl.hermes/types';
 
 import { parseFprimeXmlDictionary } from './xml';
 import { parseFprimeJsonDictionary } from './json';
-
-const execAsync = promisify(exec);
 
 const textDecoder = new TextDecoder();
 
@@ -60,61 +54,7 @@ export class FprimeJsonDictionaryProvider extends FileDictionaryProvider {
         });
     }
 
-    /**
-     * Find the Rust dictionary parser binary
-     * Checks: 1) extension resources, 2) workspace out/, 3) PATH
-     */
-    private async findRustBinary(): Promise<string | null> {
-        const binaryName = process.platform === 'win32'
-            ? 'hermes-fprime-dictionary.exe'
-            : 'hermes-fprime-dictionary';
-
-        // Check workspace out/ directory
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (workspaceFolders) {
-            const workspacePath = workspaceFolders[0].uri.fsPath;
-            const workspaceBinary = path.join(workspacePath, 'out', binaryName);
-            if (fs.existsSync(workspaceBinary)) {
-                return workspaceBinary;
-            }
-        }
-
-        // Check if it's in PATH (for development)
-        try {
-            const which = process.platform === 'win32' ? 'where' : 'which';
-            await execAsync(`${which} ${binaryName}`);
-            return binaryName; // Available in PATH
-        } catch {
-            // Not in PATH
-        }
-
-        return null;
-    }
-
     async parse(file: vscode.Uri): Promise<Dictionary> {
-        // Try to use Rust binary first
-        const rustBinary = await this.findRustBinary();
-
-        if (rustBinary) {
-            try {
-                // Call Rust binary to parse dictionary
-                const { stdout } = await execAsync(`"${rustBinary}" "${file.fsPath}"`, {
-                    encoding: 'buffer' as any,
-                    maxBuffer: 10 * 1024 * 1024 // 10MB buffer for large dictionaries
-                });
-
-                // Parse protobuf output
-                const protoDictionary = Proto.Dictionary.decode(stdout as any);
-
-                // Convert to TypeScript Dictionary object
-                return Dictionary.fromProto(protoDictionary);
-            } catch (err) {
-                console.warn('Failed to parse dictionary with Rust binary, falling back to TypeScript parser:', err);
-                // Fall through to TypeScript parser
-            }
-        }
-
-        // Fallback to TypeScript parser
         const content = await vscode.workspace.fs.readFile(file);
         return parseFprimeJsonDictionary(textDecoder.decode(content));
     }

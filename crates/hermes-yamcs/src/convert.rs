@@ -289,3 +289,18 @@ fn parse_yamcs_time(time_str: &str) -> Result<Time, Status> {
         sclk: 0.0,
     })
 }
+
+/// Convert YAMCS Instance to Hermes Fsw
+pub fn yamcs_instance_to_fsw(instance: &yamcs_http::types::system::Instance) -> Fsw {
+    // YAMCS instances support commanding
+    let capabilities = vec![FswCapability::Command as i32];
+
+    Fsw {
+        id: instance.name.clone(),
+        r#type: "yamcs".to_string(),
+        profile_id: String::new(), // YAMCS instances aren't managed profiles
+        forwards: vec![],
+        capabilities,
+        dictionary: String::new(), // Could be set based on instance metadata
+    }
+}

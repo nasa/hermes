@@ -27,14 +27,13 @@ This crate provides a gRPC server that implements the Hermes API (`hermes.Api` s
 ### Command Line Arguments
 
 ```bash
-hermes-yamcs [YAMCS_URL] [INSTANCE] [PROCESSOR] [BIND_ADDR]
+hermes-yamcs [OPTIONS]
 ```
 
-**Arguments:**
-- `YAMCS_URL` - YAMCS server URL (default: `http://localhost:8090`)
-- `INSTANCE` - YAMCS instance name (default: `myproject`)
-- `PROCESSOR` - YAMCS processor name (default: `realtime`)
-- `BIND_ADDR` - gRPC server bind address (default: `[::1]:6880`)
+**Options:**
+- `--yamcs-url <URL>` - YAMCS server URL (default: `http://localhost:8090`)
+- `--yamcs-processor <NAME>` - YAMCS processor name used for all instances (default: `realtime`)
+- `--bind-addr <ADDR>` - gRPC server bind address (default: `[::1]:6880`)
 
 ### Examples
 
@@ -45,13 +44,34 @@ cargo run --package hermes-yamcs
 
 **Connect to custom YAMCS server:**
 ```bash
-cargo run --package hermes-yamcs -- http://yamcs-server:8090 spacecraft realtime 0.0.0.0:6880
+cargo run --package hermes-yamcs -- --yamcs-url http://yamcs-server:8090 --bind-addr 0.0.0.0:6880
 ```
 
-**With specific instance:**
+**Use different processor:**
 ```bash
-cargo run --package hermes-yamcs -- http://localhost:8090 mysat realtime [::1]:6880
+cargo run --package hermes-yamcs -- --yamcs-processor simulation
 ```
+
+## Multi-Instance Support
+
+The bridge automatically discovers all YAMCS instances on the connected server. Each instance is exposed as a separate **FSW** (Flight Software connection):
+
+- **Single Profile**: The bridge presents one profile representing the YAMCS connection
+- **Multiple FSW Connections**: Each YAMCS instance appears as a separate FSW connection with `id` = instance name
+- **Dynamic Routing**: Commands and subscriptions are routed to instances based on metadata
+
+### How Routing Works
+
+**Commands**: Specify the target instance via gRPC metadata `"id"` field:
+```
+metadata["id"] = "spacecraft-1"  // Routes to YAMCS instance "spacecraft-1"
+```
+
+**Telemetry/Event Subscriptions**: Use `BusFilter.source` field:
+- **Single instance**: Set `source` = instance name (e.g., `"spacecraft-1"`)
+- **All instances**: Leave `source` empty (`""`) to receive data from all instances merged into one stream
+
+Each telemetry/event item includes its `source` field set to the originating instance name.
 
 ## Architecture
 
@@ -67,7 +87,7 @@ cargo run --package hermes-yamcs -- http://localhost:8090 mysat realtime [::1]:6
                                         ┌────────▼────────┐
                                         │                 │
                                         │  YAMCS Server   │
-                                        │                 │
+                                        │  (multi-instance)│
                                         └─────────────────┘
 ```
 
@@ -103,7 +123,7 @@ To use this bridge with the Hermes VSCode extension:
 
 1. Start the bridge:
    ```bash
-   cargo run --package hermes-yamcs -- http://yamcs-server:8090 myinstance realtime [::1]:6880
+   cargo run --package hermes-yamcs -- --yamcs-url http://yamcs-server:8090
    ```
 
 2. Configure VSCode settings:
@@ -114,7 +134,8 @@ To use this bridge with the Hermes VSCode extension:
    }
    ```
 
-3. The extension will connect to the bridge, which forwards to YAMCS
+3. The extension will connect to the bridge, which discovers all YAMCS instances
+4. Each YAMCS instance appears as a separate FSW connection that can be commanded independently
 
 ## Dependencies
 

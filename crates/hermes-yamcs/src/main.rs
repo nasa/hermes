@@ -18,11 +18,7 @@ struct Args {
     #[arg(long, default_value = "http://localhost:8090")]
     yamcs_url: String,
 
-    /// YAMCS instance name
-    #[arg(value_name = "YAMCS_INSTANCE")]
-    yamcs_instance: String,
-
-    /// YAMCS processor name
+    /// YAMCS processor name (used for all instances)
     #[arg(long, default_value = "realtime")]
     yamcs_processor: String,
 
@@ -45,7 +41,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Starting Hermes-YAMCS bridge");
     info!(yamcs_url = %args.yamcs_url, "YAMCS URL configured");
-    info!(yamcs_instance = %args.yamcs_instance, "YAMCS Instance configured");
     info!(yamcs_processor = %args.yamcs_processor, "YAMCS Processor configured");
     info!(bind_addr = %args.bind_addr, "Binding address configured");
 
@@ -55,17 +50,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         e
     })?;
 
-    // Test connection
-    let info = yamcs_client.get_general_info().await.map_err(|e| {
+    // Test connection and list instances
+    let server_info = yamcs_client.get_general_info().await.map_err(|e| {
         error!(error = %e, "Failed to connect to YAMCS");
         e
     })?;
-    info!(yamcs_version = %info.yamcs_version, "Connected to YAMCS");
+    info!(yamcs_version = %server_info.yamcs_version, "Connected to YAMCS");
+
+    // List available instances
+    let instances = yamcs_client.get_instances().await.map_err(|e| {
+        error!(error = %e, "Failed to list YAMCS instances");
+        e
+    })?;
+    info!(count = instances.len(), "Discovered YAMCS instances");
+    for instance in &instances {
+        info!(instance = %instance.name, "Available instance");
+    }
 
     // Create the service
     let service = YamcsApiService::new(
         yamcs_client,
-        args.yamcs_instance.clone(),
         args.yamcs_processor.clone(),
     );
 
