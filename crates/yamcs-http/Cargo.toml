@@ -1,0 +1,26 @@
+[package]
+name = "yamcs-http"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_urlencoded = "0.7"
+thiserror = "2.0"
+url = "2.5"
+urlencoding = "2.1"
+async-trait = "0.1"
+tracing = "0.1"
+tokio-tungstenite = { version = "0.24", optional = true }
+futures-util = { version = "0.3", optional = true }
+
+[dev-dependencies]
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
+[features]
+default = []
+websocket = ["tokio-tungstenite", "futures-util"]
