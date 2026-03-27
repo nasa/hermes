@@ -12,19 +12,19 @@ use tonic::transport::Server;
 #[command(name = "hermes-yamcs")]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// YAMCS server URL
+    /// YAMCS HTTP server URL
     #[arg(long, default_value = "http://localhost:8090")]
     yamcs_url: String,
 
     /// YAMCS instance name
-    #[arg(long, default_value = "myproject")]
+    #[arg(value_name = "YAMCS_INSTANCE")]
     yamcs_instance: String,
 
     /// YAMCS processor name
     #[arg(long, default_value = "realtime")]
     yamcs_processor: String,
 
-    /// Address to bind the gRPC server to
+    /// Address to bind the Hermes gRPC server to
     #[arg(long, default_value = "[::1]:6880")]
     bind_addr: String,
 }
