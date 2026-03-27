@@ -55,15 +55,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         instance: instance.clone(),
         filter: None,
     };
-    let events_handle = client
-        .subscribe_events(&events_request, |event| {
+    let mut events_rx = client.subscribe_events(&events_request).await?;
+    tracing::info!("Events subscription active\n");
+
+    // Spawn task to process events
+    tokio::spawn(async move {
+        while let Some(event) = events_rx.recv().await {
             tracing::info!(
                 "[EVENT {:?}] {}: {}",
                 event.severity, event.source, event.message
             );
-        })
-        .await?;
-    tracing::info!("Events subscription active\n");
+        }
+    });
 
     // Subscribe to global alarm status
     tracing::info!("Subscribing to global alarm status...");
@@ -71,8 +74,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         instance: instance.clone(),
         processor: processor.clone(),
     };
-    let alarm_status_handle = client
-        .subscribe_global_alarm_status(&alarm_status_request, |status| {
+    let mut alarm_status_rx = client
+        .subscribe_global_alarm_status(&alarm_status_request)
+        .await?;
+    tracing::info!("Alarm status subscription active\n");
+
+    // Spawn task to process alarm status
+    tokio::spawn(async move {
+        while let Some(status) = alarm_status_rx.recv().await {
             tracing::info!(
                 "[ALARM STATUS] Unack: {} (active: {}), Ack: {} (active: {}), Shelved: {}",
                 status.unacknowledged_count,
@@ -81,9 +90,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 status.acknowledged_active,
                 status.shelved_count
             );
-        })
-        .await?;
-    tracing::info!("Alarm status subscription active\n");
+        }
+    });
 
     // Subscribe to alarms
     tracing::info!("Subscribing to alarms...");
@@ -92,15 +100,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         processor: processor.clone(),
         include_pending: true,
     };
-    let alarms_handle = client
-        .subscribe_alarms(&alarms_request, |alarm| {
+    let mut alarms_rx = client.subscribe_alarms(&alarms_request).await?;
+    tracing::info!("Alarms subscription active\n");
+
+    // Spawn task to process alarms
+    tokio::spawn(async move {
+        while let Some(alarm) = alarms_rx.recv().await {
             tracing::info!(
                 "[ALARM {:?}] {} - seq: {}, violations: {}",
                 alarm.severity, alarm.id.name, alarm.seq_num, alarm.violations
             );
-        })
-        .await?;
-    tracing::info!("Alarms subscription active\n");
+        }
+    });
 
     // Subscribe to parameters (if any are specified)
     if let Ok(params) = std::env::var("YAMCS_PARAMETERS") {
@@ -124,8 +135,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 max_bytes: None,
                 action: SubscribeParametersAction::Replace,
             };
-            let params_handle = client
-                .subscribe_parameters(&params_request, |data| {
+            let mut params_rx = client.subscribe_parameters(&params_request).await?;
+            tracing::info!("Parameter subscription active\n");
+
+            // Spawn task to process parameters
+            tokio::spawn(async move {
+                while let Some(data) = params_rx.recv().await {
                     // Show mapping info on first update
                     if !data.mapping.is_empty() {
                         tracing::info!(
@@ -144,9 +159,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             param.id.name, param.eng_value, param.generation_time
                         );
                     }
-                })
-                .await?;
-            tracing::info!("Parameter subscription active\n");
+                }
+            });
 
             tracing::info!("Listening for updates... (press Ctrl+C to stop)");
             tracing::info!(
@@ -156,9 +170,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             // Keep running until interrupted
             tokio::signal::ctrl_c().await?;
-
-            tracing::info!("\nCancelling subscriptions...");
-            client.cancel_subscription(params_handle).await?;
         } else {
             tracing::info!("No parameters specified. Listening to events and alarms only...\n");
             tracing::info!("Tip: Set YAMCS_PARAMETERS env var to subscribe to parameters");
@@ -174,14 +185,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // Keep running until interrupted
         tokio::signal::ctrl_c().await?;
-
-        tracing::info!("\nCancelling subscriptions...");
     }
 
-    // Cancel subscriptions
-    client.cancel_subscription(events_handle).await?;
-    client.cancel_subscription(alarm_status_handle).await?;
-    client.cancel_subscription(alarms_handle).await?;
+    tracing::info!("\nShutting down...");
+    tracing::info!("Note: Subscriptions are automatically cancelled when the client closes");
 
     // Close WebSocket
     client.close_websocket().await;

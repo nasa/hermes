@@ -84,17 +84,13 @@ pub mod error;
 pub mod http;
 pub mod types;
 
+pub use auth::*;
+pub use client::*;
+pub use error::*;
+pub use http::*;
+pub use types::*;
+
 #[cfg(feature = "websocket")]
 pub mod websocket;
-
-// Re-export main types for convenient access
-pub use auth::{AuthInfo, AuthMethod};
-pub use client::YamcsClient;
-pub use error::{Result, YamcsError};
-
-// Re-export common types
-pub use types::common::{AggregateValue, MonitoringResult, NamedObjectId, Value};
-pub use types::system::{
-    GeneralInfo, GroupInfo, Instance, InstanceState, PluginInfo, Processor, ServiceState,
-    SystemInfo, UserInfo,
-};
+#[cfg(feature = "websocket")]
+pub use websocket::*;

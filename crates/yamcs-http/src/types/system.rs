@@ -14,6 +14,7 @@ pub struct GeneralInfo {
     /// Installed plugins
     pub plugins: Vec<PluginInfo>,
     /// Available command options
+    #[serde(default)]
     pub command_options: Vec<CommandOption>,
 }
 

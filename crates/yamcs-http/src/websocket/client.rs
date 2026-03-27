@@ -1,11 +1,13 @@
 use crate::error::{Result, YamcsError};
-use crate::websocket::subscription::{Subscription, SubscriptionHandle};
+use crate::websocket::subscription::Subscription;
 use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::sync::Arc;
-use tokio::sync::{Mutex, RwLock, mpsc};
+use tokio::sync::{mpsc, Mutex, RwLock};
 use tokio_tungstenite::{connect_async, tungstenite::Message};
+use tracing::{debug, trace};
 use url::Url;
 
 /// Client message sent to YAMCS WebSocket
@@ -18,8 +20,6 @@ pub struct ClientMessage {
     pub id: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub call: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub low_priority: Option<bool>,
     pub options: serde_json::Value,
 }
 
@@ -29,9 +29,34 @@ pub struct ClientMessage {
 pub struct ServerMessage {
     #[serde(rename = "type")]
     pub message_type: String,
-    pub call: u32,
-    pub seq: u32,
+    pub call: Option<u32>,
+    pub seq: Option<u32>,
     pub data: serde_json::Value,
+}
+
+/// Internal structure to track pending requests awaiting replies
+struct PendingRequest {
+    tx: tokio::sync::oneshot::Sender<Result<(u32, serde_json::Value)>>,
+}
+
+// Builtin client and server messages to pass into options/data
+pub(crate) mod builtin {
+    use serde::Deserialize;
+
+    /// This message is sent by the server in response to a topic request.
+    /// Yamcs guarantees that this reply message is sent before any other
+    /// topic messages. The field reply_to contains a reference to the id
+    /// from the original client message. If there was an error in handling
+    /// the request, the reply will provide exception details. This is an
+    /// object that follows the same structure as exceptions on the regular
+    /// HTTP API.
+    #[derive(Debug, Clone, Deserialize)]
+    pub struct ServerReply {
+        #[serde(rename="replyTo")]
+        pub reply_to: u32,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub exception: Option<serde_json::Value>,
+    }
 }
 
 /// WebSocket connection state
@@ -48,6 +73,7 @@ pub struct WebSocketClient {
     base_url: String,
     state: Arc<RwLock<ConnectionState>>,
     subscriptions: Arc<Mutex<HashMap<u32, Subscription>>>,
+    pending_requests: Arc<Mutex<HashMap<u32, PendingRequest>>>,
     request_sequence: Arc<Mutex<u32>>,
     tx: Arc<Mutex<Option<mpsc::UnboundedSender<ClientMessage>>>>,
     frame_loss_callback: Arc<Mutex<Option<Box<dyn Fn() + Send + Sync>>>>,
@@ -63,6 +89,7 @@ impl WebSocketClient {
             base_url: base_url.into(),
             state: Arc::new(RwLock::new(ConnectionState::Disconnected)),
             subscriptions: Arc::new(Mutex::new(HashMap::new())),
+            pending_requests: Arc::new(Mutex::new(HashMap::new())),
             request_sequence: Arc::new(Mutex::new(0)),
             tx: Arc::new(Mutex::new(None)),
             frame_loss_callback: Arc::new(Mutex::new(None)),
@@ -139,6 +166,7 @@ impl WebSocketClient {
 
         // Spawn read task
         let subscriptions = Arc::clone(&self.subscriptions);
+        let pending_requests = Arc::clone(&self.pending_requests);
         let state = Arc::clone(&self.state);
         let frame_loss_cb = Arc::clone(&self.frame_loss_callback);
 
@@ -149,14 +177,40 @@ impl WebSocketClient {
                     Ok(Message::Text(text)) => {
                         match serde_json::from_str::<ServerMessage>(&text) {
                             Ok(msg) => {
-                                // Route message to appropriate subscription
-                                let subs = subscriptions.lock().await;
-                                if let Some(sub) = subs.get(&msg.call) {
-                                    let frame_loss = sub.consume(msg).await;
-                                    if frame_loss {
-                                        let cb = frame_loss_cb.lock().await;
-                                        if let Some(callback) = cb.as_ref() {
-                                            callback();
+                                trace!(msg = ?msg, "server message");
+
+                                // Check if this is a reply message
+                                if msg.message_type == "reply" {
+                                    // Parse reply data to get reply_to field
+                                    if let Ok(reply) = serde_json::from_value::<builtin::ServerReply>(
+                                        msg.data.clone(),
+                                    ) {
+                                        let mut pending = pending_requests.lock().await;
+                                        if let Some(request) = pending.remove(&reply.reply_to) {
+                                            let result = if let Some(exception) = reply.exception {
+                                                Err(YamcsError::WebSocket(format!(
+                                                    "Request failed: {:?}",
+                                                    exception
+                                                )))
+                                            } else {
+                                                // Extract call ID from the message
+                                                let call_id = msg.call.unwrap_or(0);
+                                                Ok((call_id, msg.data))
+                                            };
+
+                                            let _ = request.tx.send(result);
+                                        }
+                                    }
+                                } else if let Some(call_id) = msg.call {
+                                    // Route message to appropriate subscription
+                                    let subs = subscriptions.lock().await;
+                                    if let Some(sub) = subs.get(&call_id) {
+                                        let frame_loss = sub.consume(msg).await;
+                                        if frame_loss {
+                                            let cb = frame_loss_cb.lock().await;
+                                            if let Some(callback) = cb.as_ref() {
+                                                callback();
+                                            }
                                         }
                                     }
                                 }
@@ -192,59 +246,153 @@ impl WebSocketClient {
 
     /// Create a subscription
     ///
+    /// Subscriptions are managed via tokio channels. The returned `UnboundedReceiver` yields
+    /// deserialized subscription data. The subscription is automatically cancelled when the
+    /// receiver is dropped.
+    ///
     /// # Arguments
     /// * `subscription_type` - Type of subscription (e.g., "parameters", "events")
     /// * `options` - Subscription options
-    /// * `callback` - Function to call when data is received
-    pub async fn subscribe<O, D, F>(
+    ///
+    /// # Returns
+    /// An `UnboundedReceiver` that yields deserialized subscription data
+    ///
+    /// # Cancellation
+    /// The subscription is automatically cancelled when the receiver is dropped. A cancel
+    /// message is sent to the server and the subscription is removed from the internal
+    /// subscription map.
+    pub async fn subscribe<O, D>(
         &self,
         subscription_type: impl Into<String>,
         options: O,
-        callback: F,
-    ) -> Result<SubscriptionHandle>
+    ) -> Result<mpsc::UnboundedReceiver<D>>
     where
         O: Serialize,
         D: for<'de> Deserialize<'de> + Send + 'static,
-        F: Fn(D) + Send + Sync + 'static,
     {
-        self.create_subscription(subscription_type, false, options, callback)
-            .await
+        self.create_subscription(subscription_type, options).await
     }
 
-    /// Create a low-priority subscription
+    async fn create_subscription<O, D>(
+        &self,
+        subscription_type: impl Into<String>,
+        options: O,
+    ) -> Result<mpsc::UnboundedReceiver<D>>
+    where
+        O: Serialize,
+        D: for<'de> Deserialize<'de> + Send + 'static,
+    {
+        // Ensure we're connected
+        if self.state().await != ConnectionState::Connected {
+            return Err(YamcsError::WebSocket(
+                "Not connected to WebSocket".to_string(),
+            ));
+        }
+
+        let subscription_type = subscription_type.into();
+
+        // Create channel for passing between contexts
+        let (tx, rx) = mpsc::unbounded_channel::<D>();
+
+        // Create subscription with deserialization/send closure
+        let sender_tx = tx.clone();
+        let subscription =
+            Subscription::new(
+                subscription_type.clone(),
+                move |value| match serde_json::from_value::<D>(value) {
+                    Ok(data) => {
+                        let _ = sender_tx.send(data);
+                    }
+                    Err(e) => {
+                        tracing::error!("Failed to deserialize subscription data: {}", e);
+                    }
+                },
+            );
+
+        let (call_id, _) = self.request(subscription_type, options).await?;
+
+        // Store subscription with call ID
+        {
+            let mut subs = self.subscriptions.lock().await;
+            subs.insert(call_id, subscription);
+        }
+
+        // Spawn a task to monitor for cancellation (when handle is dropped)
+        let subscriptions = Arc::clone(&self.subscriptions);
+        let ws_tx = self.tx.clone();
+        tokio::spawn(async move {
+            // Wait for the rx pipe to be dropped
+            let _ = tx.closed().await;
+
+            // Remove from subscriptions
+            {
+                let mut subs = subscriptions.lock().await;
+                subs.remove(&call_id);
+            }
+
+            // Send cancel message to server
+            let msg = ClientMessage {
+                message_type: "cancel".to_string(),
+                id: None,
+                call: None,
+                options: serde_json::json!({ "call": call_id }),
+            };
+
+            let tx_guard = ws_tx.lock().await;
+            if let Some(sender) = tx_guard.as_ref() {
+                let _ = sender.send(msg);
+            }
+        });
+
+        Ok(rx)
+    }
+
+    /// Send a request and wait for a reply
     ///
-    /// Low-priority subscriptions may have frames dropped if the client cannot keep up.
+    /// This is a general-purpose method for sending WebSocket requests that expect a reply.
+    /// The request will be assigned a unique ID, and the method will wait for the server's
+    /// reply message before returning.
     ///
     /// # Arguments
-    /// * `subscription_type` - Type of subscription
-    /// * `options` - Subscription options
-    /// * `callback` - Function to call when data is received
-    pub async fn subscribe_low_priority<O, D, F>(
+    /// * `request_type` - The type of request (e.g., "management", "stream")
+    /// * `options` - Request options/data to send
+    ///
+    /// # Returns
+    /// A tuple of `(call_id, data)` where:
+    /// - `call_id` is the server-assigned call ID for this request
+    /// - `data` is the reply data from the server
+    ///
+    /// # Errors
+    /// Returns an error if:
+    /// - Not connected to WebSocket
+    /// - Failed to send the request
+    /// - Server returns an exception
+    /// - Reply timeout (not implemented yet)
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use yamcs_http::websocket::WebSocketClient;
+    /// # use serde_json::json;
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = WebSocketClient::new("http://localhost:8090");
+    /// client.connect().await?;
+    ///
+    /// let (call_id, reply) = client.request("management", json!({
+    ///     "action": "getInfo"
+    /// })).await?;
+    ///
+    /// println!("Call ID: {}, Reply: {:?}", call_id, reply);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn request<O>(
         &self,
-        subscription_type: impl Into<String>,
+        request_type: impl Into<String>,
         options: O,
-        callback: F,
-    ) -> Result<SubscriptionHandle>
+    ) -> Result<(u32, serde_json::Value)>
     where
         O: Serialize,
-        D: for<'de> Deserialize<'de> + Send + 'static,
-        F: Fn(D) + Send + Sync + 'static,
-    {
-        self.create_subscription(subscription_type, true, options, callback)
-            .await
-    }
-
-    async fn create_subscription<O, D, F>(
-        &self,
-        subscription_type: impl Into<String>,
-        low_priority: bool,
-        options: O,
-        callback: F,
-    ) -> Result<SubscriptionHandle>
-    where
-        O: Serialize,
-        D: for<'de> Deserialize<'de> + Send + 'static,
-        F: Fn(D) + Send + Sync + 'static,
     {
         // Ensure we're connected
         if self.state().await != ConnectionState::Connected {
@@ -260,61 +408,102 @@ impl WebSocketClient {
             *seq
         };
 
-        let subscription_type = subscription_type.into();
+        // Create oneshot channel for reply
+        let (tx, rx) = tokio::sync::oneshot::channel();
 
-        // Create subscription
-        let subscription = Subscription::new(request_id, subscription_type.clone(), callback);
-        let handle = subscription.handle();
+        // Register pending request
+        {
+            let mut pending = self.pending_requests.lock().await;
+            pending.insert(request_id, PendingRequest { tx });
+        }
 
-        // Send subscription message
+        // Send request message
         let msg = ClientMessage {
-            message_type: subscription_type,
+            message_type: request_type.into(),
             id: Some(request_id),
             call: None,
-            low_priority: if low_priority { Some(true) } else { None },
             options: serde_json::to_value(options).map_err(|e| YamcsError::JsonSerialization(e))?,
         };
 
+        debug!(
+            id = %request_id,
+            request_type = %msg.message_type,
+            options = ?msg.options,
+            "sending websocket request"
+        );
         self.send_message(msg).await?;
 
-        // Wait for reply to get the call ID
-        let call_id = subscription.wait_for_reply().await?;
-
-        // Store subscription with call ID
-        {
-            let mut subs = self.subscriptions.lock().await;
-            subs.insert(call_id, subscription);
+        // Wait for reply
+        match rx.await {
+            Ok(Ok((call_id, data))) => {
+                debug!(
+                    id = %request_id,
+                    call_id = %call_id,
+                    data = ?data,
+                    "websocket request succeeded"
+                );
+                Ok((call_id, data))
+            }
+            Ok(Err(err)) => Err(YamcsError::WebSocket(format!("Request failed: {}", err))),
+            Err(err) => Err(YamcsError::WebSocket(format!(
+                "Failed to receive request reply: {}",
+                err
+            ))),
         }
-
-        Ok(handle)
     }
 
-    /// Cancel a subscription
-    pub async fn cancel_subscription(&self, handle: SubscriptionHandle) -> Result<()> {
-        let call_id = handle.call_id();
-        if call_id == 0 {
-            // Not yet replied to, can't cancel
-            return Ok(());
-        }
-
-        // Remove from subscriptions
-        {
-            let mut subs = self.subscriptions.lock().await;
-            subs.remove(&call_id);
-        }
-
-        // Send cancel message
-        let msg = ClientMessage {
-            message_type: "cancel".to_string(),
-            id: None,
-            call: None,
-            low_priority: None,
-            options: serde_json::json!({ "call": call_id }),
-        };
-
-        self.send_message(msg).await?;
-
-        Ok(())
+    /// Send a typed request and wait for a typed reply
+    ///
+    /// This is a convenience wrapper around `request` that deserializes the reply
+    /// into the specified type.
+    ///
+    /// # Type Parameters
+    /// * `O` - Request options type (must be serializable)
+    /// * `R` - Reply type (must be deserializable)
+    ///
+    /// # Arguments
+    /// * `request_type` - The type of request
+    /// * `options` - Request options/data to send
+    ///
+    /// # Returns
+    /// A tuple of `(call_id, data)` where:
+    /// - `call_id` is the server-assigned call ID for this request
+    /// - `data` is the deserialized reply data
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use yamcs_http::websocket::WebSocketClient;
+    /// # use serde::{Deserialize, Serialize};
+    /// # #[derive(Serialize)]
+    /// # struct MyRequest { action: String }
+    /// # #[derive(Deserialize)]
+    /// # struct MyReply { result: String }
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let client = WebSocketClient::new("http://localhost:8090");
+    /// client.connect().await?;
+    ///
+    /// let (call_id, reply): (u32, MyReply) = client.request_typed(
+    ///     "management",
+    ///     MyRequest { action: "getInfo".to_string() }
+    /// ).await?;
+    ///
+    /// println!("Call ID: {}, Result: {}", call_id, reply.result);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn request_typed<O, R>(
+        &self,
+        request_type: impl Into<String>,
+        options: O,
+    ) -> Result<(u32, R)>
+    where
+        O: Serialize,
+        R: for<'de> Deserialize<'de>,
+    {
+        let (call_id, value) = self.request(request_type, options).await?;
+        let data = serde_json::from_value(value).map_err(|e| YamcsError::JsonSerialization(e))?;
+        Ok((call_id, data))
     }
 
     async fn send_message(&self, msg: ClientMessage) -> Result<()> {

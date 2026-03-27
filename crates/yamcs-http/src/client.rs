@@ -209,18 +209,35 @@ impl YamcsClient {
     // ========================================================================
 
     /// Get the mission database for an instance
-    pub async fn get_mission_database(&self, instance: &str) -> Result<crate::types::mdb::MissionDatabase> {
+    pub async fn get_mission_database(
+        &self,
+        instance: &str,
+    ) -> Result<crate::types::mdb::MissionDatabase> {
         self.http.get(&format!("/api/mdb/{}", instance)).await
     }
 
     /// Get space systems for an instance
-    pub async fn get_space_systems(&self, instance: &str) -> Result<crate::types::mdb::SpaceSystemsPage> {
-        self.http.get(&format!("/api/mdb/{}/space-systems", instance)).await
+    pub async fn get_space_systems(
+        &self,
+        instance: &str,
+    ) -> Result<crate::types::mdb::SpaceSystemsPage> {
+        self.http
+            .get(&format!("/api/mdb/{}/space-systems", instance))
+            .await
     }
 
     /// Get a specific space system
-    pub async fn get_space_system(&self, instance: &str, qualified_name: &str) -> Result<crate::types::mdb::SpaceSystem> {
-        self.http.get(&format!("/api/mdb/{}/space-systems{}", instance, qualified_name)).await
+    pub async fn get_space_system(
+        &self,
+        instance: &str,
+        qualified_name: &str,
+    ) -> Result<crate::types::mdb::SpaceSystem> {
+        self.http
+            .get(&format!(
+                "/api/mdb/{}/space-systems{}",
+                instance, qualified_name
+            ))
+            .await
     }
 
     /// Get parameters with optional filtering
@@ -230,12 +247,23 @@ impl YamcsClient {
         options: &crate::types::mdb::GetParametersOptions,
     ) -> Result<crate::types::mdb::ParametersPage> {
         let query = serde_urlencoded::to_string(options)?;
-        self.http.get(&format!("/api/mdb/{}/parameters?{}", instance, query)).await
+        self.http
+            .get(&format!("/api/mdb/{}/parameters?{}", instance, query))
+            .await
     }
 
     /// Get a specific parameter by qualified name
-    pub async fn get_parameter(&self, instance: &str, qualified_name: &str) -> Result<crate::types::mdb::Parameter> {
-        self.http.get(&format!("/api/mdb/{}/parameters{}", instance, qualified_name)).await
+    pub async fn get_parameter(
+        &self,
+        instance: &str,
+        qualified_name: &str,
+    ) -> Result<crate::types::mdb::Parameter> {
+        self.http
+            .get(&format!(
+                "/api/mdb/{}/parameters{}",
+                instance, qualified_name
+            ))
+            .await
     }
 
     /// Get parameter types with optional filtering
@@ -245,12 +273,23 @@ impl YamcsClient {
         options: &crate::types::mdb::GetParameterTypesOptions,
     ) -> Result<crate::types::mdb::ParameterTypesPage> {
         let query = serde_urlencoded::to_string(options)?;
-        self.http.get(&format!("/api/mdb/{}/parameter-types?{}", instance, query)).await
+        self.http
+            .get(&format!("/api/mdb/{}/parameter-types?{}", instance, query))
+            .await
     }
 
     /// Get a specific parameter type
-    pub async fn get_parameter_type(&self, instance: &str, qualified_name: &str) -> Result<crate::types::mdb::ParameterType> {
-        self.http.get(&format!("/api/mdb/{}/parameter-types{}", instance, qualified_name)).await
+    pub async fn get_parameter_type(
+        &self,
+        instance: &str,
+        qualified_name: &str,
+    ) -> Result<crate::types::mdb::ParameterType> {
+        self.http
+            .get(&format!(
+                "/api/mdb/{}/parameter-types{}",
+                instance, qualified_name
+            ))
+            .await
     }
 
     /// Get commands with optional filtering
@@ -260,12 +299,20 @@ impl YamcsClient {
         options: &crate::types::mdb::GetCommandsOptions,
     ) -> Result<crate::types::mdb::CommandsPage> {
         let query = serde_urlencoded::to_string(options)?;
-        self.http.get(&format!("/api/mdb/{}/commands?{}", instance, query)).await
+        self.http
+            .get(&format!("/api/mdb/{}/commands?{}", instance, query))
+            .await
     }
 
     /// Get a specific command by qualified name
-    pub async fn get_command(&self, instance: &str, qualified_name: &str) -> Result<crate::types::mdb::Command> {
-        self.http.get(&format!("/api/mdb/{}/commands{}", instance, qualified_name)).await
+    pub async fn get_command(
+        &self,
+        instance: &str,
+        qualified_name: &str,
+    ) -> Result<crate::types::mdb::Command> {
+        self.http
+            .get(&format!("/api/mdb/{}/commands{}", instance, qualified_name))
+            .await
     }
 
     /// Get containers with optional filtering
@@ -275,12 +322,23 @@ impl YamcsClient {
         options: &crate::types::mdb::GetContainersOptions,
     ) -> Result<crate::types::mdb::ContainersPage> {
         let query = serde_urlencoded::to_string(options)?;
-        self.http.get(&format!("/api/mdb/{}/containers?{}", instance, query)).await
+        self.http
+            .get(&format!("/api/mdb/{}/containers?{}", instance, query))
+            .await
     }
 
     /// Get a specific container by qualified name
-    pub async fn get_container(&self, instance: &str, qualified_name: &str) -> Result<crate::types::mdb::Container> {
-        self.http.get(&format!("/api/mdb/{}/containers{}", instance, qualified_name)).await
+    pub async fn get_container(
+        &self,
+        instance: &str,
+        qualified_name: &str,
+    ) -> Result<crate::types::mdb::Container> {
+        self.http
+            .get(&format!(
+                "/api/mdb/{}/containers{}",
+                instance, qualified_name
+            ))
+            .await
     }
 
     /// Get algorithms with optional filtering
@@ -290,12 +348,23 @@ impl YamcsClient {
         options: &crate::types::mdb::GetAlgorithmsOptions,
     ) -> Result<crate::types::mdb::AlgorithmsPage> {
         let query = serde_urlencoded::to_string(options)?;
-        self.http.get(&format!("/api/mdb/{}/algorithms?{}", instance, query)).await
+        self.http
+            .get(&format!("/api/mdb/{}/algorithms?{}", instance, query))
+            .await
     }
 
     /// Get a specific algorithm by qualified name
-    pub async fn get_algorithm(&self, instance: &str, qualified_name: &str) -> Result<crate::types::mdb::Algorithm> {
-        self.http.get(&format!("/api/mdb/{}/algorithms{}", instance, qualified_name)).await
+    pub async fn get_algorithm(
+        &self,
+        instance: &str,
+        qualified_name: &str,
+    ) -> Result<crate::types::mdb::Algorithm> {
+        self.http
+            .get(&format!(
+                "/api/mdb/{}/algorithms{}",
+                instance, qualified_name
+            ))
+            .await
     }
 
     /// Get algorithm status
@@ -305,10 +374,12 @@ impl YamcsClient {
         processor: &str,
         qualified_name: &str,
     ) -> Result<crate::types::mdb::AlgorithmStatus> {
-        self.http.get(&format!(
-            "/api/processors/{}/{}/algorithms{}/status",
-            instance, processor, qualified_name
-        )).await
+        self.http
+            .get(&format!(
+                "/api/processors/{}/{}/algorithms{}/status",
+                instance, processor, qualified_name
+            ))
+            .await
     }
 
     /// Get algorithm trace
@@ -318,10 +389,12 @@ impl YamcsClient {
         processor: &str,
         qualified_name: &str,
     ) -> Result<crate::types::mdb::AlgorithmTrace> {
-        self.http.get(&format!(
-            "/api/processors/{}/{}/algorithms{}/trace",
-            instance, processor, qualified_name
-        )).await
+        self.http
+            .get(&format!(
+                "/api/processors/{}/{}/algorithms{}/trace",
+                instance, processor, qualified_name
+            ))
+            .await
     }
 
     // ========================================================================
@@ -337,10 +410,15 @@ impl YamcsClient {
         options: &crate::types::monitoring::IssueCommandOptions,
     ) -> Result<crate::types::monitoring::IssueCommandResponse> {
         let encoded_command = urlencoding::encode(command);
-        self.http.post(
-            &format!("/api/processors/{}/{}/commands/{}", instance, processor, encoded_command),
-            options,
-        ).await
+        self.http
+            .post(
+                &format!(
+                    "/api/processors/{}/{}/commands/{}",
+                    instance, processor, encoded_command
+                ),
+                options,
+            )
+            .await
     }
 
     /// Get command history entries
@@ -350,10 +428,9 @@ impl YamcsClient {
         options: &crate::types::monitoring::GetCommandHistoryOptions,
     ) -> Result<crate::types::monitoring::CommandHistoryPage> {
         let query = serde_urlencoded::to_string(options)?;
-        self.http.get(&format!(
-            "/api/archive/{}/commands?{}",
-            instance, query
-        )).await
+        self.http
+            .get(&format!("/api/archive/{}/commands?{}", instance, query))
+            .await
     }
 
     /// Get a specific command history entry
@@ -362,10 +439,12 @@ impl YamcsClient {
         instance: &str,
         command_id: &str,
     ) -> Result<crate::types::monitoring::CommandHistoryEntry> {
-        self.http.get(&format!(
-            "/api/archive/{}/commands/{}",
-            instance, command_id
-        )).await
+        self.http
+            .get(&format!(
+                "/api/archive/{}/commands/{}",
+                instance, command_id
+            ))
+            .await
     }
 
     /// Get parameter values from archive
@@ -380,10 +459,13 @@ impl YamcsClient {
         struct ParameterData {
             parameter: Option<Vec<crate::types::monitoring::ParameterValue>>,
         }
-        let response: ParameterData = self.http.get(&format!(
-            "/api/archive/{}/parameters{}?{}",
-            instance, qualified_name, query
-        )).await?;
+        let response: ParameterData = self
+            .http
+            .get(&format!(
+                "/api/archive/{}/parameters{}?{}",
+                instance, qualified_name, query
+            ))
+            .await?;
         Ok(response.parameter.unwrap_or_default())
     }
 
@@ -399,10 +481,13 @@ impl YamcsClient {
         struct SamplesWrapper {
             sample: Option<Vec<crate::types::monitoring::Sample>>,
         }
-        let response: SamplesWrapper = self.http.get(&format!(
-            "/api/archive/{}/parameters{}/samples?{}",
-            instance, qualified_name, query
-        )).await?;
+        let response: SamplesWrapper = self
+            .http
+            .get(&format!(
+                "/api/archive/{}/parameters{}/samples?{}",
+                instance, qualified_name, query
+            ))
+            .await?;
         Ok(response.sample.unwrap_or_default())
     }
 
@@ -418,10 +503,13 @@ impl YamcsClient {
         struct RangesWrapper {
             range: Option<Vec<crate::types::monitoring::Range>>,
         }
-        let response: RangesWrapper = self.http.get(&format!(
-            "/api/archive/{}/parameters{}/ranges?{}",
-            instance, qualified_name, query
-        )).await?;
+        let response: RangesWrapper = self
+            .http
+            .get(&format!(
+                "/api/archive/{}/parameters{}/ranges?{}",
+                instance, qualified_name, query
+            ))
+            .await?;
         Ok(response.range.unwrap_or_default())
     }
 
@@ -431,7 +519,9 @@ impl YamcsClient {
         instance: &str,
         options: &crate::types::monitoring::GetPacketsOptions,
     ) -> Result<crate::types::monitoring::ListPacketsResponse> {
-        self.http.post(&format!("/api/archive/{}/packets:list", instance), options).await
+        self.http
+            .post(&format!("/api/archive/{}/packets:list", instance), options)
+            .await
     }
 
     /// Create a processor
@@ -443,18 +533,30 @@ impl YamcsClient {
     }
 
     /// Get processors for an instance
-    pub async fn get_processors(&self, instance: &str) -> Result<Vec<crate::types::system::Processor>> {
+    pub async fn get_processors(
+        &self,
+        instance: &str,
+    ) -> Result<Vec<crate::types::system::Processor>> {
         #[derive(serde::Deserialize)]
         struct ProcessorsWrapper {
             processors: Option<Vec<crate::types::system::Processor>>,
         }
-        let response: ProcessorsWrapper = self.http.get(&format!("/api/processors/{}", instance)).await?;
+        let response: ProcessorsWrapper = self
+            .http
+            .get(&format!("/api/processors/{}", instance))
+            .await?;
         Ok(response.processors.unwrap_or_default())
     }
 
     /// Get a specific processor
-    pub async fn get_processor(&self, instance: &str, name: &str) -> Result<crate::types::system::Processor> {
-        self.http.get(&format!("/api/processors/{}/{}", instance, name)).await
+    pub async fn get_processor(
+        &self,
+        instance: &str,
+        name: &str,
+    ) -> Result<crate::types::system::Processor> {
+        self.http
+            .get(&format!("/api/processors/{}/{}", instance, name))
+            .await
     }
 
     /// Edit a replay processor
@@ -464,10 +566,13 @@ impl YamcsClient {
         processor: &str,
         options: &crate::types::monitoring::EditReplayProcessorRequest,
     ) -> Result<()> {
-        let _: serde_json::Value = self.http.patch(
-            &format!("/api/processors/{}/{}", instance, processor),
-            options,
-        ).await?;
+        let _: serde_json::Value = self
+            .http
+            .patch(
+                &format!("/api/processors/{}/{}", instance, processor),
+                options,
+            )
+            .await?;
         Ok(())
     }
 
@@ -485,7 +590,10 @@ impl YamcsClient {
         struct EventsWrapper {
             event: Option<Vec<crate::types::events::Event>>,
         }
-        let response: EventsWrapper = self.http.post(&format!("/api/archive/{}/events:list", instance), options).await?;
+        let response: EventsWrapper = self
+            .http
+            .post(&format!("/api/archive/{}/events:list", instance), options)
+            .await?;
         Ok(response.event.unwrap_or_default())
     }
 
@@ -495,7 +603,10 @@ impl YamcsClient {
         instance: &str,
         options: &crate::types::events::CreateEventRequest,
     ) -> Result<()> {
-        let _: serde_json::Value = self.http.post(&format!("/api/archive/{}/events", instance), options).await?;
+        let _: serde_json::Value = self
+            .http
+            .post(&format!("/api/archive/{}/events", instance), options)
+            .await?;
         Ok(())
     }
 
@@ -505,7 +616,10 @@ impl YamcsClient {
         struct SourcesResponse {
             sources: Option<Vec<String>>,
         }
-        let response: SourcesResponse = self.http.get(&format!("/api/archive/{}/events/sources", instance)).await?;
+        let response: SourcesResponse = self
+            .http
+            .get(&format!("/api/archive/{}/events/sources", instance))
+            .await?;
         Ok(response.sources.unwrap_or_default())
     }
 
@@ -525,10 +639,13 @@ impl YamcsClient {
             alarms: Option<Vec<crate::types::alarms::Alarm>>,
         }
         let query = serde_urlencoded::to_string(options)?;
-        let response: AlarmsResponse = self.http.get(&format!(
-            "/api/processors/{}/{}/alarms?{}",
-            instance, processor, query
-        )).await?;
+        let response: AlarmsResponse = self
+            .http
+            .get(&format!(
+                "/api/processors/{}/{}/alarms?{}",
+                instance, processor, query
+            ))
+            .await?;
         Ok(response.alarms.unwrap_or_default())
     }
 
@@ -543,7 +660,10 @@ impl YamcsClient {
             alarms: Option<Vec<crate::types::alarms::Alarm>>,
         }
         let query = serde_urlencoded::to_string(options)?;
-        let response: AlarmsWrapper = self.http.get(&format!("/api/archive/{}/alarms?{}", instance, query)).await?;
+        let response: AlarmsWrapper = self
+            .http
+            .get(&format!("/api/archive/{}/alarms?{}", instance, query))
+            .await?;
         Ok(response.alarms.unwrap_or_default())
     }
 
@@ -556,13 +676,16 @@ impl YamcsClient {
         seq_num: u64,
         options: &crate::types::alarms::AcknowledgeAlarmOptions,
     ) -> Result<()> {
-        let _: serde_json::Value = self.http.post(
-            &format!(
-                "/api/processors/{}/{}/alarms{}/{}:acknowledge",
-                instance, processor, alarm_name, seq_num
-            ),
-            options,
-        ).await?;
+        let _: serde_json::Value = self
+            .http
+            .post(
+                &format!(
+                    "/api/processors/{}/{}/alarms{}/{}:acknowledge",
+                    instance, processor, alarm_name, seq_num
+                ),
+                options,
+            )
+            .await?;
         Ok(())
     }
 
@@ -575,13 +698,16 @@ impl YamcsClient {
         seq_num: u64,
         options: &crate::types::alarms::ShelveAlarmOptions,
     ) -> Result<()> {
-        let _: serde_json::Value = self.http.post(
-            &format!(
-                "/api/processors/{}/{}/alarms{}/{}:shelve",
-                instance, processor, alarm_name, seq_num
-            ),
-            options,
-        ).await?;
+        let _: serde_json::Value = self
+            .http
+            .post(
+                &format!(
+                    "/api/processors/{}/{}/alarms{}/{}:shelve",
+                    instance, processor, alarm_name, seq_num
+                ),
+                options,
+            )
+            .await?;
         Ok(())
     }
 
@@ -593,13 +719,16 @@ impl YamcsClient {
         alarm_name: &str,
         seq_num: u64,
     ) -> Result<()> {
-        let _: serde_json::Value = self.http.post(
-            &format!(
-                "/api/processors/{}/{}/alarms{}/{}:unshelve",
-                instance, processor, alarm_name, seq_num
-            ),
-            &serde_json::json!({}),
-        ).await?;
+        let _: serde_json::Value = self
+            .http
+            .post(
+                &format!(
+                    "/api/processors/{}/{}/alarms{}/{}:unshelve",
+                    instance, processor, alarm_name, seq_num
+                ),
+                &serde_json::json!({}),
+            )
+            .await?;
         Ok(())
     }
 
@@ -612,13 +741,16 @@ impl YamcsClient {
         seq_num: u64,
         options: &crate::types::alarms::ClearAlarmOptions,
     ) -> Result<()> {
-        let _: serde_json::Value = self.http.post(
-            &format!(
-                "/api/processors/{}/{}/alarms{}/{}:clear",
-                instance, processor, alarm_name, seq_num
-            ),
-            options,
-        ).await?;
+        let _: serde_json::Value = self
+            .http
+            .post(
+                &format!(
+                    "/api/processors/{}/{}/alarms{}/{}:clear",
+                    instance, processor, alarm_name, seq_num
+                ),
+                options,
+            )
+            .await?;
         Ok(())
     }
 
@@ -628,10 +760,12 @@ impl YamcsClient {
         instance: &str,
         processor: &str,
     ) -> Result<crate::types::alarms::GlobalAlarmStatus> {
-        self.http.get(&format!(
-            "/api/processors/{}/{}/alarms/global-status",
-            instance, processor
-        )).await
+        self.http
+            .get(&format!(
+                "/api/processors/{}/{}/alarms/global-status",
+                instance, processor
+            ))
+            .await
     }
 
     // ========================================================================
@@ -708,6 +842,9 @@ impl YamcsClient {
     #[cfg(feature = "websocket")]
     /// Subscribe to parameter updates
     ///
+    /// Returns a channel receiver that yields parameter updates. The subscription is
+    /// automatically cancelled when the receiver is dropped.
+    ///
     /// # Example
     ///
     /// ```no_run
@@ -723,24 +860,23 @@ impl YamcsClient {
     ///     max_bytes: None,
     ///     action: SubscribeParametersAction::Replace,
     /// };
-    /// let handle = client.subscribe_parameters(&request, |data: SubscribeParametersData| {
+    /// let mut rx = client.subscribe_parameters(&request).await?;
+    /// while let Some(data) = rx.recv().await {
     ///     println!("Parameter update: {:?}", data);
-    /// }).await?;
+    /// }
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn subscribe_parameters<F>(
+    pub async fn subscribe_parameters(
         &self,
         request: &crate::types::monitoring::SubscribeParametersRequest,
-        callback: F,
-    ) -> Result<crate::websocket::SubscriptionHandle>
-    where
-        F: Fn(crate::types::monitoring::SubscribeParametersData) + Send + Sync + 'static,
-    {
+    ) -> Result<
+        tokio::sync::mpsc::UnboundedReceiver<crate::types::monitoring::SubscribeParametersData>,
+    > {
         let ws = self.ws_client.lock().await;
         if let Some(client) = ws.as_ref() {
             client
-                .subscribe("parameters", serde_json::to_value(request)?, callback)
+                .subscribe("parameters", serde_json::to_value(request)?)
                 .await
         } else {
             Err(crate::error::YamcsError::WebSocket(
@@ -752,6 +888,9 @@ impl YamcsClient {
     #[cfg(feature = "websocket")]
     /// Subscribe to events
     ///
+    /// Returns a channel receiver that yields events. The subscription is
+    /// automatically cancelled when the receiver is dropped.
+    ///
     /// # Example
     ///
     /// ```no_run
@@ -761,23 +900,22 @@ impl YamcsClient {
     ///     instance: "myinstance".to_string(),
     ///     filter: None,
     /// };
-    /// let handle = client.subscribe_events(&request, |event: Event| {
+    /// let mut rx = client.subscribe_events(&request).await?;
+    /// while let Some(event) = rx.recv().await {
     ///     println!("Event: {:?}", event);
-    /// }).await?;
+    /// }
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn subscribe_events<F>(
+    pub async fn subscribe_events(
         &self,
         request: &crate::types::events::SubscribeEventsRequest,
-        callback: F,
-    ) -> Result<crate::websocket::SubscriptionHandle>
-    where
-        F: Fn(crate::types::events::Event) + Send + Sync + 'static,
-    {
+    ) -> Result<tokio::sync::mpsc::UnboundedReceiver<crate::types::events::Event>> {
         let ws = self.ws_client.lock().await;
         if let Some(client) = ws.as_ref() {
-            client.subscribe("events", serde_json::to_value(request)?, callback).await
+            client
+                .subscribe("events", serde_json::to_value(request)?)
+                .await
         } else {
             Err(crate::error::YamcsError::WebSocket(
                 "WebSocket client not initialized".to_string(),
@@ -787,6 +925,9 @@ impl YamcsClient {
 
     #[cfg(feature = "websocket")]
     /// Subscribe to alarms
+    ///
+    /// Returns a channel receiver that yields alarms. The subscription is
+    /// automatically cancelled when the receiver is dropped.
     ///
     /// # Example
     ///
@@ -798,23 +939,22 @@ impl YamcsClient {
     ///     processor: "realtime".to_string(),
     ///     include_pending: true,
     /// };
-    /// let handle = client.subscribe_alarms(&request, |alarm: Alarm| {
+    /// let mut rx = client.subscribe_alarms(&request).await?;
+    /// while let Some(alarm) = rx.recv().await {
     ///     println!("Alarm: {:?}", alarm);
-    /// }).await?;
+    /// }
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn subscribe_alarms<F>(
+    pub async fn subscribe_alarms(
         &self,
         request: &crate::types::alarms::SubscribeAlarmsRequest,
-        callback: F,
-    ) -> Result<crate::websocket::SubscriptionHandle>
-    where
-        F: Fn(crate::types::alarms::Alarm) + Send + Sync + 'static,
-    {
+    ) -> Result<tokio::sync::mpsc::UnboundedReceiver<crate::types::alarms::Alarm>> {
         let ws = self.ws_client.lock().await;
         if let Some(client) = ws.as_ref() {
-            client.subscribe("alarms", serde_json::to_value(request)?, callback).await
+            client
+                .subscribe("alarms", serde_json::to_value(request)?)
+                .await
         } else {
             Err(crate::error::YamcsError::WebSocket(
                 "WebSocket client not initialized".to_string(),
@@ -825,6 +965,9 @@ impl YamcsClient {
     #[cfg(feature = "websocket")]
     /// Subscribe to global alarm status
     ///
+    /// Returns a channel receiver that yields global alarm status updates. The subscription
+    /// is automatically cancelled when the receiver is dropped.
+    ///
     /// # Example
     ///
     /// ```no_run
@@ -834,54 +977,26 @@ impl YamcsClient {
     ///     instance: "myinstance".to_string(),
     ///     processor: "realtime".to_string(),
     /// };
-    /// let handle = client.subscribe_global_alarm_status(&request, |status: GlobalAlarmStatus| {
+    /// let mut rx = client.subscribe_global_alarm_status(&request).await?;
+    /// while let Some(status) = rx.recv().await {
     ///     println!("Alarm status: {:?}", status);
-    /// }).await?;
+    /// }
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn subscribe_global_alarm_status<F>(
+    pub async fn subscribe_global_alarm_status(
         &self,
         request: &crate::types::alarms::SubscribeGlobalAlarmStatusRequest,
-        callback: F,
-    ) -> Result<crate::websocket::SubscriptionHandle>
-    where
-        F: Fn(crate::types::alarms::GlobalAlarmStatus) + Send + Sync + 'static,
-    {
+    ) -> Result<tokio::sync::mpsc::UnboundedReceiver<crate::types::alarms::GlobalAlarmStatus>> {
         let ws = self.ws_client.lock().await;
         if let Some(client) = ws.as_ref() {
             client
-                .subscribe("global-alarm-status", serde_json::to_value(request)?, callback)
+                .subscribe("global-alarm-status", serde_json::to_value(request)?)
                 .await
         } else {
             Err(crate::error::YamcsError::WebSocket(
                 "WebSocket client not initialized".to_string(),
             ))
-        }
-    }
-
-    #[cfg(feature = "websocket")]
-    /// Cancel a WebSocket subscription
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// # use yamcs_http::YamcsClient;
-    /// # use yamcs_http::websocket::SubscriptionHandle;
-    /// # async fn example(client: &YamcsClient, handle: SubscriptionHandle) -> Result<(), Box<dyn std::error::Error>> {
-    /// client.cancel_subscription(handle).await?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn cancel_subscription(
-        &self,
-        handle: crate::websocket::SubscriptionHandle,
-    ) -> Result<()> {
-        let ws = self.ws_client.lock().await;
-        if let Some(client) = ws.as_ref() {
-            client.cancel_subscription(handle).await
-        } else {
-            Ok(())
         }
     }
 

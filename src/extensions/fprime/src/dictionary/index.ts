@@ -6,7 +6,7 @@ import * as fs from 'fs';
 
 import { Dictionary } from '@gov.nasa.jpl.hermes/types';
 import { FileDictionaryProvider, } from "@gov.nasa.jpl.hermes/vscode";
-import * as Proto from '@gov.nasa.jpl.hermes/types/src/proto';
+import { Proto } from '@gov.nasa.jpl.hermes/types';
 
 import { parseFprimeXmlDictionary } from './xml';
 import { parseFprimeJsonDictionary } from './json';

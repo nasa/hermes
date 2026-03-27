@@ -1,6 +1,6 @@
 import * as Def from './def';
 import { DualKeyMap } from './DualKeyMap';
-import * as Proto from './proto';
+import { hermes as Proto } from './proto';
 import { DisplayEvent, Event, EvrSeverity } from './telemetry';
 import { TypedArray, Value } from './types';
 import Long from 'long';

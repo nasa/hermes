@@ -5,11 +5,17 @@
 //!
 //! **Note:** This module is only available when the `websocket` feature is enabled.
 //!
+//! # Architecture
+//!
+//! Subscriptions use tokio channels instead of callbacks. When you subscribe, you receive
+//! an `UnboundedReceiver` that yields deserialized subscription data. The subscription is
+//! automatically cancelled when the receiver is dropped.
+//!
 //! # Example
 //!
 //! ```no_run
-//! use yamcs_http::websocket::{WebSocketClient, ConnectionState};
-//! use yamcs_http::types::monitoring::ParameterData;
+//! use yamcs_http::websocket::WebSocketClient;
+//! use yamcs_http::types::monitoring::SubscribeParametersData;
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -18,25 +24,22 @@
 //!     // Connect to WebSocket
 //!     ws_client.connect().await?;
 //!
-//!     // Subscribe to parameters
-//!     let handle = ws_client.subscribe(
+//!     // Subscribe to parameters - returns a channel receiver
+//!     let mut rx = ws_client.subscribe::<_, SubscribeParametersData>(
 //!         "parameters",
 //!         serde_json::json!({
 //!             "instance": "myproject",
 //!             "processor": "realtime",
 //!             "id": [{"name": "/MySystem/MyParameter"}]
-//!         }),
-//!         |data: ParameterData| {
-//!             println!("Received parameter update: {:?}", data);
-//!         }
+//!         })
 //!     ).await?;
 //!
-//!     // Keep subscription active...
-//!     tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+//!     // Receive updates from the channel
+//!     while let Some(data) = rx.recv().await {
+//!         println!("Received parameter update: {:?}", data);
+//!     }
 //!
-//!     // Cancel subscription
-//!     ws_client.cancel_subscription(handle).await?;
-//!
+//!     // Subscription is automatically cancelled when rx is dropped
 //!     Ok(())
 //! }
 //! ```
@@ -45,4 +48,3 @@ pub mod client;
 pub mod subscription;
 
 pub use client::{ClientMessage, ConnectionState, ServerMessage, WebSocketClient};
-pub use subscription::SubscriptionHandle;

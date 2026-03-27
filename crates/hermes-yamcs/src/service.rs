@@ -1,10 +1,9 @@
 use hermes_pb::*;
-use tonic::{Request, Response, Status};
-use yamcs_http::YamcsClient;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use tokio_stream::wrappers::ReceiverStream;
-use tracing::{info, error, debug};
+use tonic::{Request, Response, Status};
+use tracing::{debug, error, info, warn};
+use yamcs_http::YamcsClient;
 
 use crate::convert;
 
@@ -15,8 +14,6 @@ pub struct YamcsApiService {
     yamcs_client: Arc<YamcsClient>,
     instance: String,
     processor: String,
-    // WebSocket client for subscriptions
-    ws_client: Arc<RwLock<Option<Arc<yamcs_http::websocket::WebSocketClient>>>>,
 }
 
 impl YamcsApiService {
@@ -25,32 +22,23 @@ impl YamcsApiService {
             yamcs_client: Arc::new(yamcs_client),
             instance,
             processor,
-            ws_client: Arc::new(RwLock::new(None)),
         }
     }
 
-    async fn ensure_ws_connected(&self) -> Result<Arc<yamcs_http::websocket::WebSocketClient>, Status> {
-        let mut ws_guard = self.ws_client.write().await;
+    /// Ensure WebSocket is connected, connecting if necessary
+    async fn ensure_ws_connected(&self) -> Result<(), Status> {
+        use yamcs_http::websocket::ConnectionState;
 
-        if let Some(ref client) = *ws_guard {
-            debug!("Reusing existing WebSocket connection");
-            return Ok(Arc::clone(client));
+        match self.yamcs_client.websocket_state().await {
+            Some(ConnectionState::Connected) => Ok(()),
+            _ => {
+                debug!("Connecting to YAMCS WebSocket");
+                self.yamcs_client.connect_websocket().await.map_err(|e| {
+                    error!(error = %e, "Failed to connect to WebSocket");
+                    Status::unavailable(format!("Failed to connect to WebSocket: {}", e))
+                })
+            }
         }
-
-        // Create new WebSocket client
-        let ws_url = self.yamcs_client.http_client().base_url().to_string();
-        debug!(ws_url = %ws_url, "Creating new WebSocket client");
-        let client = Arc::new(yamcs_http::websocket::WebSocketClient::new(ws_url));
-
-        client.connect().await
-            .map_err(|e| {
-                error!(error = %e, "Failed to connect WebSocket");
-                Status::unavailable(format!("Failed to connect WebSocket: {}", e))
-            })?;
-
-        info!("WebSocket connection established");
-        *ws_guard = Some(Arc::clone(&client));
-        Ok(client)
     }
 }
 
@@ -70,16 +58,14 @@ impl Api for YamcsApiService {
         Err(Status::unimplemented("RawSequence not implemented yet"))
     }
 
-    async fn command(
-        &self,
-        request: Request<CommandValue>,
-    ) -> Result<Response<Reply>, Status> {
+    async fn command(&self, request: Request<CommandValue>) -> Result<Response<Reply>, Status> {
         let cmd_value = request.into_inner();
 
         // Extract command definition
-        let cmd_def = cmd_value.def.as_ref().ok_or_else(|| {
-            Status::invalid_argument("Command definition is required")
-        })?;
+        let cmd_def = cmd_value
+            .def
+            .as_ref()
+            .ok_or_else(|| Status::invalid_argument("Command definition is required"))?;
 
         // Build command name from component and mnemonic
         let command_name = if cmd_def.component.is_empty() {
@@ -92,8 +78,14 @@ impl Api for YamcsApiService {
         let yamcs_options = convert::command_value_to_yamcs(&cmd_value, cmd_def)?;
 
         // Issue command to YAMCS
-        let result = self.yamcs_client
-            .issue_command(&self.instance, &self.processor, &command_name, &yamcs_options)
+        let result = self
+            .yamcs_client
+            .issue_command(
+                &self.instance,
+                &self.processor,
+                &command_name,
+                &yamcs_options,
+            )
             .await
             .map_err(|e| {
                 error!(error = %e, command = %command_name, "Failed to issue command");
@@ -130,17 +122,11 @@ impl Api for YamcsApiService {
         Err(Status::unimplemented("Uplink not implemented"))
     }
 
-    async fn get_fsw(
-        &self,
-        _request: Request<Id>,
-    ) -> Result<Response<Fsw>, Status> {
+    async fn get_fsw(&self, _request: Request<Id>) -> Result<Response<Fsw>, Status> {
         Err(Status::unimplemented("GetFsw not implemented"))
     }
 
-    async fn all_fsw(
-        &self,
-        _request: Request<()>,
-    ) -> Result<Response<FswList>, Status> {
+    async fn all_fsw(&self, _request: Request<()>) -> Result<Response<FswList>, Status> {
         Err(Status::unimplemented("AllFsw not implemented"))
     }
 
@@ -153,17 +139,11 @@ impl Api for YamcsApiService {
         Err(Status::unimplemented("SubscribeFsw not implemented"))
     }
 
-    async fn start_profile(
-        &self,
-        _request: Request<Id>,
-    ) -> Result<Response<()>, Status> {
+    async fn start_profile(&self, _request: Request<Id>) -> Result<Response<()>, Status> {
         Err(Status::unimplemented("Profiles not implemented"))
     }
 
-    async fn stop_profile(
-        &self,
-        _request: Request<Id>,
-    ) -> Result<Response<()>, Status> {
+    async fn stop_profile(&self, _request: Request<Id>) -> Result<Response<()>, Status> {
         Err(Status::unimplemented("Profiles not implemented"))
     }
 
@@ -174,24 +154,15 @@ impl Api for YamcsApiService {
         Err(Status::unimplemented("Profiles not implemented"))
     }
 
-    async fn add_profile(
-        &self,
-        _request: Request<Profile>,
-    ) -> Result<Response<Id>, Status> {
+    async fn add_profile(&self, _request: Request<Profile>) -> Result<Response<Id>, Status> {
         Err(Status::unimplemented("Profiles not implemented"))
     }
 
-    async fn remove_profile(
-        &self,
-        _request: Request<Id>,
-    ) -> Result<Response<()>, Status> {
+    async fn remove_profile(&self, _request: Request<Id>) -> Result<Response<()>, Status> {
         Err(Status::unimplemented("Profiles not implemented"))
     }
 
-    async fn all_profiles(
-        &self,
-        _request: Request<()>,
-    ) -> Result<Response<ProfileList>, Status> {
+    async fn all_profiles(&self, _request: Request<()>) -> Result<Response<ProfileList>, Status> {
         Err(Status::unimplemented("Profiles not implemented"))
     }
 
@@ -241,24 +212,15 @@ impl Api for YamcsApiService {
         Err(Status::unimplemented("Profiles not implemented"))
     }
 
-    async fn get_dictionary(
-        &self,
-        _request: Request<Id>,
-    ) -> Result<Response<Dictionary>, Status> {
+    async fn get_dictionary(&self, _request: Request<Id>) -> Result<Response<Dictionary>, Status> {
         Err(Status::unimplemented("Dictionary not implemented"))
     }
 
-    async fn add_dictionary(
-        &self,
-        _request: Request<Dictionary>,
-    ) -> Result<Response<Id>, Status> {
+    async fn add_dictionary(&self, _request: Request<Dictionary>) -> Result<Response<Id>, Status> {
         Err(Status::unimplemented("Dictionary not implemented"))
     }
 
-    async fn remove_dictionary(
-        &self,
-        _request: Request<Id>,
-    ) -> Result<Response<()>, Status> {
+    async fn remove_dictionary(&self, _request: Request<Id>) -> Result<Response<()>, Status> {
         Err(Status::unimplemented("Dictionary not implemented"))
     }
 
@@ -291,48 +253,62 @@ impl Api for YamcsApiService {
             "Event subscription requested"
         );
 
-        let ws_client = self.ensure_ws_connected().await?;
+        // Ensure WebSocket is connected
+        self.ensure_ws_connected().await?;
 
         // Create channel for streaming events
         let (tx, rx) = tokio::sync::mpsc::channel(100);
 
         // Subscribe to YAMCS events
         let instance = self.instance.clone();
-        let filter_clone = filter.clone();
 
-        let _handle = ws_client.subscribe(
-            "events",
-            serde_json::json!({
-                "instance": instance,
-            }),
-            move |event: yamcs_http::types::events::Event| {
-                let tx = tx.clone();
-                let filter = filter_clone.clone();
-                tokio::spawn(async move {
-                    match convert::yamcs_event_to_hermes(&event, &filter) {
-                        Ok(Some(hermes_event)) => {
-                            if tx.send(Ok(hermes_event)).await.is_err() {
-                                debug!("Event stream closed by client");
+        let mut events = self
+            .yamcs_client
+            .subscribe_events(&yamcs_http::SubscribeEventsRequest {
+                instance: instance.clone(),
+                filter: None,
+            })
+            .await
+            .map_err(|e| {
+                error!(error = %e, instance = %instance, "Failed to subscribe to events");
+                Status::internal(format!("Failed to subscribe to telemetry: {}", e))
+            })?;
+
+        tokio::spawn(async move {
+            loop {
+                tokio::select! {
+                    event = events.recv() => {
+                        if let Some(event) = event {
+                            match convert::yamcs_event_to_hermes(&event, &filter) {
+                                Ok(Some(hermes_event)) => {
+                                    debug!(event = ?hermes_event, "passing event to hermes subscriber");
+                                    if tx.send(Ok(hermes_event)).await.is_err() {
+                                        debug!("Event stream closed by client");
+                                        break;
+                                    }
+                                }
+                                Ok(None) => {
+                                    // Filtered out
+                                    debug!(event_type = %event.event_type, "Event filtered out");
+                                }
+                                Err(e) => {
+                                    error!(error = %e, event_type = %event.event_type, "Failed to convert event");
+                                }
                             }
-                        }
-                        Ok(None) => {
-                            // Filtered out
-                            debug!(event_type = %event.event_type, "Event filtered out");
-                        }
-                        Err(e) => {
-                            error!(error = %e, event_type = %event.event_type, "Failed to convert event");
-                            let _ = tx.send(Err(Status::internal(
-                                format!("Failed to convert event: {}", e)
-                            ))).await;
+                        } else {
+                            warn!("event subscription closed unexpectedly");
+                            break;
                         }
                     }
-                });
+                    _ = tx.closed() => {
+                        debug!("Event stream closed by client");
+                        break;
+                    }
+                }
             }
-        ).await
-        .map_err(|e| {
-            error!(error = %e, instance = %instance, "Failed to subscribe to events");
-            Status::internal(format!("Failed to subscribe to events: {}", e))
-        })?;
+
+            debug!("closing event subscription");
+        });
 
         info!(instance = %instance, "Event subscription established");
         Ok(Response::new(ReceiverStream::new(rx)))
@@ -351,7 +327,8 @@ impl Api for YamcsApiService {
             "Telemetry subscription requested"
         );
 
-        let ws_client = self.ensure_ws_connected().await?;
+        // Ensure WebSocket is connected
+        self.ensure_ws_connected().await?;
 
         // Create channel for streaming telemetry
         let (tx, rx) = tokio::sync::mpsc::channel(100);
@@ -361,58 +338,76 @@ impl Api for YamcsApiService {
         let processor = self.processor.clone();
 
         // Build parameter ID list from filter
-        let param_ids: Vec<_> = if filter.names.is_empty() {
-            vec![serde_json::json!({"name": "*"})]
+        let param_ids: Vec<yamcs_http::types::common::NamedObjectId> = if filter.names.is_empty() {
+            vec![]
         } else {
-            filter.names.iter().map(|name| {
-                serde_json::json!({"name": name})
-            }).collect()
+            filter
+                .names
+                .iter()
+                .map(|name| yamcs_http::types::common::NamedObjectId {
+                    name: name.clone(),
+                    namespace: None,
+                })
+                .collect()
         };
 
-        let filter_clone = filter.clone();
+        let subscribe_request = yamcs_http::types::monitoring::SubscribeParametersRequest {
+            instance: instance.clone(),
+            processor: processor.clone(),
+            id: param_ids.clone(),
+            abort_on_invalid: false,
+            update_on_expiration: false,
+            send_from_cache: false,
+            max_bytes: None,
+            action: yamcs_http::types::monitoring::SubscribeParametersAction::Replace,
+        };
 
-        let _handle = ws_client.subscribe(
-            "parameters",
-            serde_json::json!({
-                "instance": instance,
-                "processor": processor,
-                "id": param_ids,
-                "sendFromCache": false,
-                "updateOnExpiration": false,
-            }),
-            move |data: yamcs_http::types::monitoring::ParameterData| {
-                let tx = tx.clone();
-                let filter = filter_clone.clone();
-                tokio::spawn(async move {
-                    // Convert each parameter value to Hermes telemetry
-                    for param_value in data.parameter {
-                        match convert::yamcs_param_to_hermes(&param_value, &filter) {
-                            Ok(Some(hermes_telem)) => {
-                                if tx.send(Ok(hermes_telem)).await.is_err() {
-                                    debug!("Telemetry stream closed by client");
-                                    return;
+        let mut params = self
+            .yamcs_client
+            .subscribe_parameters(&subscribe_request)
+            .await
+            .map_err(|e| {
+                error!(error = %e, instance = %instance, processor = %processor, "Failed to subscribe to telemetry");
+                Status::internal(format!("Failed to subscribe to telemetry: {}", e))
+            })?;
+
+        tokio::spawn(async move {
+            'outer: loop {
+                tokio::select! {
+                    data = params.recv() => {
+                        if let Some(data) = data {
+                            // Convert each parameter value to Hermes telemetry
+                            for param_value in data.values {
+                                match convert::yamcs_param_to_hermes(&param_value, &filter) {
+                                    Ok(Some(hermes_telem)) => {
+                                        if tx.send(Ok(hermes_telem)).await.is_err() {
+                                            debug!("Telemetry stream closed by client");
+                                            break 'outer;
+                                        }
+                                    }
+                                    Ok(None) => {
+                                        // Filtered out
+                                        debug!(param_name = %param_value.id.name, "Parameter filtered out");
+                                    }
+                                    Err(e) => {
+                                        error!(error = %e, param_name = %param_value.id.name, "Failed to convert telemetry");
+                                    }
                                 }
                             }
-                            Ok(None) => {
-                                // Filtered out
-                                debug!(param_name = %param_value.id.name, "Parameter filtered out");
-                            }
-                            Err(e) => {
-                                error!(error = %e, param_name = %param_value.id.name, "Failed to convert telemetry");
-                                let _ = tx.send(Err(Status::internal(
-                                    format!("Failed to convert telemetry: {}", e)
-                                ))).await;
-                                return;
-                            }
+                        } else {
+                            warn!("telemetry subscription closed unexpectedly");
+                            break;
                         }
                     }
-                });
+                    _ = tx.closed() => {
+                        debug!("Telemetry stream closed by client");
+                        break;
+                    }
+                }
             }
-        ).await
-        .map_err(|e| {
-            error!(error = %e, instance = %instance, processor = %processor, "Failed to subscribe to telemetry");
-            Status::internal(format!("Failed to subscribe to telemetry: {}", e))
-        })?;
+
+            debug!("closing telemetry subscription");
+        });
 
         info!(instance = %instance, processor = %processor, param_count = param_ids.len(), "Telemetry subscription established");
         Ok(Response::new(ReceiverStream::new(rx)))
@@ -424,7 +419,9 @@ impl Api for YamcsApiService {
         &self,
         _request: Request<BusFilter>,
     ) -> Result<Response<Self::SubFileDownlinkStream>, Status> {
-        Err(Status::unimplemented("File downlink subscription not implemented"))
+        Err(Status::unimplemented(
+            "File downlink subscription not implemented",
+        ))
     }
 
     type SubFileUplinkStream = ReceiverStream<Result<FileUplink, Status>>;
@@ -433,7 +430,9 @@ impl Api for YamcsApiService {
         &self,
         _request: Request<BusFilter>,
     ) -> Result<Response<Self::SubFileUplinkStream>, Status> {
-        Err(Status::unimplemented("File uplink subscription not implemented"))
+        Err(Status::unimplemented(
+            "File uplink subscription not implemented",
+        ))
     }
 
     type SubFileTransferStream = ReceiverStream<Result<FileTransferState, Status>>;
@@ -442,6 +441,8 @@ impl Api for YamcsApiService {
         &self,
         _request: Request<()>,
     ) -> Result<Response<Self::SubFileTransferStream>, Status> {
-        Err(Status::unimplemented("File transfer subscription not implemented"))
+        Err(Status::unimplemented(
+            "File transfer subscription not implemented",
+        ))
     }
 }
