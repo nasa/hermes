@@ -1,11 +1,13 @@
-mod service;
 mod convert;
+mod service;
 
 use clap::Parser;
 use hermes_server::api_server::ApiServer;
 use service::YamcsApiService;
 use std::net::SocketAddr;
 use tonic::transport::Server;
+use tracing::{error, info};
+use tracing_subscriber::{EnvFilter, fmt};
 
 /// Hermes-YAMCS bridge: connects Hermes telemetry clients to YAMCS mission control system
 #[derive(Parser, Debug)]
@@ -31,20 +33,32 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize tracing subscriber with stderr output
+    fmt()
+        .with_env_filter(EnvFilter::from_default_env().add_directive(tracing::Level::INFO.into()))
+        .with_writer(std::io::stderr)
+        .init();
+
     let args = Args::parse();
 
-    println!("Starting Hermes-YAMCS bridge:");
-    println!("  YAMCS URL: {}", args.yamcs_url);
-    println!("  YAMCS Instance: {}", args.yamcs_instance);
-    println!("  YAMCS Processor: {}", args.yamcs_processor);
-    println!("  Binding to: {}", args.bind_addr);
+    info!("Starting Hermes-YAMCS bridge");
+    info!(yamcs_url = %args.yamcs_url, "YAMCS URL configured");
+    info!(yamcs_instance = %args.yamcs_instance, "YAMCS Instance configured");
+    info!(yamcs_processor = %args.yamcs_processor, "YAMCS Processor configured");
+    info!(bind_addr = %args.bind_addr, "Binding address configured");
 
     // Create YAMCS client
-    let yamcs_client = yamcs_http::YamcsClient::new(&args.yamcs_url)?;
+    let yamcs_client = yamcs_http::YamcsClient::new(&args.yamcs_url).map_err(|e| {
+        error!(error = %e, "Failed to create YAMCS client");
+        e
+    })?;
 
     // Test connection
-    let info = yamcs_client.get_general_info().await?;
-    println!("Connected to YAMCS version: {}", info.yamcs_version);
+    let info = yamcs_client.get_general_info().await.map_err(|e| {
+        error!(error = %e, "Failed to connect to YAMCS");
+        e
+    })?;
+    info!(yamcs_version = %info.yamcs_version, "Connected to YAMCS");
 
     // Create the service
     let service = YamcsApiService::new(
@@ -54,15 +68,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // Parse bind address
-    let addr: SocketAddr = args.bind_addr.parse()?;
+    let addr: SocketAddr = args.bind_addr.parse().map_err(|e| {
+        error!(error = %e, bind_addr = %args.bind_addr, "Failed to parse bind address");
+        e
+    })?;
 
-    println!("Hermes gRPC server listening on {}", addr);
+    info!(addr = %addr, "Starting Hermes gRPC server");
 
     // Start the gRPC server
     Server::builder()
         .add_service(ApiServer::new(service))
         .serve(addr)
-        .await?;
+        .await
+        .map_err(|e| {
+            error!(error = %e, "gRPC server failed");
+            e
+        })?;
 
     Ok(())
 }

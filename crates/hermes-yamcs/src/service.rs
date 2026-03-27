@@ -4,6 +4,7 @@ use yamcs_http::YamcsClient;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio_stream::wrappers::ReceiverStream;
+use tracing::{info, error, debug};
 
 use crate::convert;
 
@@ -32,16 +33,22 @@ impl YamcsApiService {
         let mut ws_guard = self.ws_client.write().await;
 
         if let Some(ref client) = *ws_guard {
+            debug!("Reusing existing WebSocket connection");
             return Ok(Arc::clone(client));
         }
 
         // Create new WebSocket client
         let ws_url = self.yamcs_client.http_client().base_url().to_string();
+        debug!(ws_url = %ws_url, "Creating new WebSocket client");
         let client = Arc::new(yamcs_http::websocket::WebSocketClient::new(ws_url));
 
         client.connect().await
-            .map_err(|e| Status::unavailable(format!("Failed to connect WebSocket: {}", e)))?;
+            .map_err(|e| {
+                error!(error = %e, "Failed to connect WebSocket");
+                Status::unavailable(format!("Failed to connect WebSocket: {}", e))
+            })?;
 
+        info!("WebSocket connection established");
         *ws_guard = Some(Arc::clone(&client));
         Ok(client)
     }
@@ -88,9 +95,16 @@ impl Api for YamcsApiService {
         let result = self.yamcs_client
             .issue_command(&self.instance, &self.processor, &command_name, &yamcs_options)
             .await
-            .map_err(|e| Status::internal(format!("Failed to issue command: {}", e)))?;
+            .map_err(|e| {
+                error!(error = %e, command = %command_name, "Failed to issue command");
+                Status::internal(format!("Failed to issue command: {}", e))
+            })?;
 
-        println!("Command issued: {} (id: {})", result.command_name, result.id);
+        info!(
+            command_name = %result.command_name,
+            command_id = %result.id,
+            "Command issued successfully"
+        );
 
         Ok(Response::new(Reply { success: true }))
     }
@@ -271,6 +285,12 @@ impl Api for YamcsApiService {
         request: Request<BusFilter>,
     ) -> Result<Response<Self::SubEventStream>, Status> {
         let filter = request.into_inner();
+        debug!(
+            source = ?filter.source,
+            names = ?filter.names,
+            "Event subscription requested"
+        );
+
         let ws_client = self.ensure_ws_connected().await?;
 
         // Create channel for streaming events
@@ -291,12 +311,16 @@ impl Api for YamcsApiService {
                 tokio::spawn(async move {
                     match convert::yamcs_event_to_hermes(&event, &filter) {
                         Ok(Some(hermes_event)) => {
-                            let _ = tx.send(Ok(hermes_event)).await;
+                            if tx.send(Ok(hermes_event)).await.is_err() {
+                                debug!("Event stream closed by client");
+                            }
                         }
                         Ok(None) => {
                             // Filtered out
+                            debug!(event_type = %event.event_type, "Event filtered out");
                         }
                         Err(e) => {
+                            error!(error = %e, event_type = %event.event_type, "Failed to convert event");
                             let _ = tx.send(Err(Status::internal(
                                 format!("Failed to convert event: {}", e)
                             ))).await;
@@ -305,8 +329,12 @@ impl Api for YamcsApiService {
                 });
             }
         ).await
-        .map_err(|e| Status::internal(format!("Failed to subscribe to events: {}", e)))?;
+        .map_err(|e| {
+            error!(error = %e, instance = %instance, "Failed to subscribe to events");
+            Status::internal(format!("Failed to subscribe to events: {}", e))
+        })?;
 
+        info!(instance = %instance, "Event subscription established");
         Ok(Response::new(ReceiverStream::new(rx)))
     }
 
@@ -317,6 +345,12 @@ impl Api for YamcsApiService {
         request: Request<BusFilter>,
     ) -> Result<Response<Self::SubTelemetryStream>, Status> {
         let filter = request.into_inner();
+        debug!(
+            source = ?filter.source,
+            names = ?filter.names,
+            "Telemetry subscription requested"
+        );
+
         let ws_client = self.ensure_ws_connected().await?;
 
         // Create channel for streaming telemetry
@@ -355,13 +389,16 @@ impl Api for YamcsApiService {
                         match convert::yamcs_param_to_hermes(&param_value, &filter) {
                             Ok(Some(hermes_telem)) => {
                                 if tx.send(Ok(hermes_telem)).await.is_err() {
+                                    debug!("Telemetry stream closed by client");
                                     return;
                                 }
                             }
                             Ok(None) => {
                                 // Filtered out
+                                debug!(param_name = %param_value.id.name, "Parameter filtered out");
                             }
                             Err(e) => {
+                                error!(error = %e, param_name = %param_value.id.name, "Failed to convert telemetry");
                                 let _ = tx.send(Err(Status::internal(
                                     format!("Failed to convert telemetry: {}", e)
                                 ))).await;
@@ -372,8 +409,12 @@ impl Api for YamcsApiService {
                 });
             }
         ).await
-        .map_err(|e| Status::internal(format!("Failed to subscribe to telemetry: {}", e)))?;
+        .map_err(|e| {
+            error!(error = %e, instance = %instance, processor = %processor, "Failed to subscribe to telemetry");
+            Status::internal(format!("Failed to subscribe to telemetry: {}", e))
+        })?;
 
+        info!(instance = %instance, processor = %processor, param_count = param_ids.len(), "Telemetry subscription established");
         Ok(Response::new(ReceiverStream::new(rx)))
     }
 

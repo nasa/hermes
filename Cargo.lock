@@ -758,6 +758,8 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "tonic",
+ "tracing",
+ "tracing-subscriber",
  "yamcs-http",
  "ygw",
 ]
