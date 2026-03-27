@@ -212,17 +212,18 @@ export class RemoteBackendProvider implements BackendProvider<Settings.Remote> {
     }
 
     activeStatusBarItem(item: vscode.StatusBarItem, state: Settings.Remote): void {
-        item.show();
         item.color = state.color;
         item.text = `$(radio-tower) ${state.label}`;
         item.tooltip = "Change remote host";
         item.command = "hermes.host.changeRemote";
+        item.show();
     }
 
     invalidStatusBarItem(item: vscode.StatusBarItem, state: Settings.Remote): void {
         item.text = `$(radio-tower) ${state.label}`;
         item.command = "hermes.host.changeRemote";
         item.tooltip = "Change host URL";
+        item.show();
     }
 
     exitedStatusBarItem(item: vscode.StatusBarItem, state: Settings.Remote): void {

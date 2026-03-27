@@ -97,7 +97,7 @@ var File_time_proto protoreflect.FileDescriptor
 const file_time_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"time.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"J\n" +
+	"time.proto\x12\x06hermes\x1a\x1fgoogle/protobuf/timestamp.proto\"J\n" +
 	"\x04Time\x12.\n" +
 	"\x04unix\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x04unix\x12\x12\n" +
 	"\x04sclk\x18\x02 \x01(\x01R\x04sclkB\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3"
@@ -116,11 +116,11 @@ func file_time_proto_rawDescGZIP() []byte {
 
 var file_time_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_time_proto_goTypes = []any{
-	(*Time)(nil),                  // 0: Time
+	(*Time)(nil),                  // 0: hermes.Time
 	(*timestamppb.Timestamp)(nil), // 1: google.protobuf.Timestamp
 }
 var file_time_proto_depIdxs = []int32{
-	1, // 0: Time.unix:type_name -> google.protobuf.Timestamp
+	1, // 0: hermes.Time.unix:type_name -> google.protobuf.Timestamp
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

@@ -209,7 +209,7 @@ func (x *SequenceReply) GetCommandIndex() int32 {
 type StatefulProfile struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Value         *Profile               `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
-	State         ProfileState           `protobuf:"varint,2,opt,name=state,proto3,enum=ProfileState" json:"state,omitempty"`
+	State         ProfileState           `protobuf:"varint,2,opt,name=state,proto3,enum=hermes.ProfileState" json:"state,omitempty"`
 	RuntimeOnly   bool                   `protobuf:"varint,3,opt,name=runtime_only,json=runtimeOnly,proto3" json:"runtime_only,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -873,44 +873,44 @@ var File_msg_proto protoreflect.FileDescriptor
 
 const file_msg_proto_rawDesc = "" +
 	"\n" +
-	"\tmsg.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x10dictionary.proto\x1a\tfsw.proto\x1a\rprofile.proto\x1a\n" +
+	"\tmsg.proto\x12\x06hermes\x1a\x1bgoogle/protobuf/empty.proto\x1a\x10dictionary.proto\x1a\tfsw.proto\x1a\rprofile.proto\x1a\n" +
 	"file.proto\"\x14\n" +
 	"\x02Id\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"!\n" +
-	"\aFswList\x12\x16\n" +
-	"\x03all\x18\x01 \x03(\v2\x04.FswR\x03all\"!\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"(\n" +
+	"\aFswList\x12\x1d\n" +
+	"\x03all\x18\x01 \x03(\v2\v.hermes.FswR\x03all\"!\n" +
 	"\x05Reply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"N\n" +
 	"\rSequenceReply\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
-	"\rcommand_index\x18\x02 \x01(\x05R\fcommandIndex\"y\n" +
-	"\x0fStatefulProfile\x12\x1e\n" +
-	"\x05value\x18\x01 \x01(\v2\b.ProfileR\x05value\x12#\n" +
-	"\x05state\x18\x02 \x01(\x0e2\r.ProfileStateR\x05state\x12!\n" +
-	"\fruntime_only\x18\x03 \x01(\bR\vruntimeOnly\"\x80\x01\n" +
-	"\vProfileList\x12'\n" +
-	"\x03all\x18\x01 \x03(\v2\x15.ProfileList.AllEntryR\x03all\x1aH\n" +
+	"\rcommand_index\x18\x02 \x01(\x05R\fcommandIndex\"\x87\x01\n" +
+	"\x0fStatefulProfile\x12%\n" +
+	"\x05value\x18\x01 \x01(\v2\x0f.hermes.ProfileR\x05value\x12*\n" +
+	"\x05state\x18\x02 \x01(\x0e2\x14.hermes.ProfileStateR\x05state\x12!\n" +
+	"\fruntime_only\x18\x03 \x01(\bR\vruntimeOnly\"\x8e\x01\n" +
+	"\vProfileList\x12.\n" +
+	"\x03all\x18\x01 \x03(\v2\x1c.hermes.ProfileList.AllEntryR\x03all\x1aO\n" +
 	"\bAllEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12&\n" +
-	"\x05value\x18\x02 \x01(\v2\x10.StatefulProfileR\x05value:\x028\x01\"9\n" +
-	"\x13ProfileProviderList\x12\"\n" +
-	"\x03all\x18\x01 \x03(\v2\x10.ProfileProviderR\x03all\";\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12-\n" +
+	"\x05value\x18\x02 \x01(\v2\x17.hermes.StatefulProfileR\x05value:\x028\x01\"@\n" +
+	"\x13ProfileProviderList\x12)\n" +
+	"\x03all\x18\x01 \x03(\v2\x17.hermes.ProfileProviderR\x03all\";\n" +
 	"\rProfileUpdate\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
-	"\bsettings\x18\x02 \x01(\tR\bsettings\"\x85\x01\n" +
-	"\x0eDictionaryList\x12*\n" +
-	"\x03all\x18\x01 \x03(\v2\x18.DictionaryList.AllEntryR\x03all\x1aG\n" +
+	"\bsettings\x18\x02 \x01(\tR\bsettings\"\x93\x01\n" +
+	"\x0eDictionaryList\x121\n" +
+	"\x03all\x18\x01 \x03(\v2\x1f.hermes.DictionaryList.AllEntryR\x03all\x1aN\n" +
 	"\bAllEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12%\n" +
-	"\x05value\x18\x02 \x01(\v2\x0f.DictionaryHeadR\x05value:\x028\x01\"\x84\x03\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12,\n" +
+	"\x05value\x18\x02 \x01(\v2\x16.hermes.DictionaryHeadR\x05value:\x028\x01\"\xae\x03\n" +
 	"\x06Uplink\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
-	"\x03cmd\x18\x02 \x01(\v2\r.CommandValueH\x00R\x03cmd\x12/\n" +
-	"\tparse_cmd\x18\x03 \x01(\v2\x10.RawCommandValueH\x00R\bparseCmd\x12$\n" +
-	"\x03seq\x18\x04 \x01(\v2\x10.CommandSequenceH\x00R\x03seq\x122\n" +
-	"\tparse_seq\x18\x05 \x01(\v2\x13.RawCommandSequenceH\x00R\bparseSeq\x12&\n" +
-	"\x04file\x18\x06 \x01(\v2\x10.UplinkFileChunkH\x00R\x04file\x12)\n" +
-	"\arequest\x18\a \x01(\v2\r.RequestValueH\x00R\arequest\x120\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12(\n" +
+	"\x03cmd\x18\x02 \x01(\v2\x14.hermes.CommandValueH\x00R\x03cmd\x126\n" +
+	"\tparse_cmd\x18\x03 \x01(\v2\x17.hermes.RawCommandValueH\x00R\bparseCmd\x12+\n" +
+	"\x03seq\x18\x04 \x01(\v2\x17.hermes.CommandSequenceH\x00R\x03seq\x129\n" +
+	"\tparse_seq\x18\x05 \x01(\v2\x1a.hermes.RawCommandSequenceH\x00R\bparseSeq\x12-\n" +
+	"\x04file\x18\x06 \x01(\v2\x17.hermes.UplinkFileChunkH\x00R\x04file\x120\n" +
+	"\arequest\x18\a \x01(\v2\x14.hermes.RequestValueH\x00R\arequest\x120\n" +
 	"\x06cancel\x18c \x01(\v2\x16.google.protobuf.EmptyH\x00R\x06cancel\x12.\n" +
 	"\x05final\x18d \x01(\v2\x16.google.protobuf.EmptyH\x00R\x05finalB\a\n" +
 	"\x05value\"W\n" +
@@ -918,13 +918,13 @@ const file_msg_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
 	"\x05reply\x18\x02 \x01(\fH\x00R\x05reply\x12\x16\n" +
 	"\x05error\x18\x03 \x01(\tH\x00R\x05errorB\b\n" +
-	"\x06status\"F\n" +
-	"\x10FswInitialPacket\x12\x18\n" +
-	"\x04info\x18\x01 \x01(\v2\x04.FswR\x04info\x12\x18\n" +
-	"\aprofile\x18\x02 \x01(\tR\aprofile\"m\n" +
-	"\x13FswConnectionPacket\x12'\n" +
-	"\x04info\x18\x01 \x01(\v2\x11.FswInitialPacketH\x00R\x04info\x12$\n" +
-	"\x05reply\x18\x02 \x01(\v2\f.UplinkReplyH\x00R\x05replyB\a\n" +
+	"\x06status\"M\n" +
+	"\x10FswInitialPacket\x12\x1f\n" +
+	"\x04info\x18\x01 \x01(\v2\v.hermes.FswR\x04info\x12\x18\n" +
+	"\aprofile\x18\x02 \x01(\tR\aprofile\"{\n" +
+	"\x13FswConnectionPacket\x12.\n" +
+	"\x04info\x18\x01 \x01(\v2\x18.hermes.FswInitialPacketH\x00R\x04info\x12+\n" +
+	"\x05reply\x18\x02 \x01(\v2\x13.hermes.UplinkReplyH\x00R\x05replyB\a\n" +
 	"\x05valueB\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3"
 
 var (
@@ -941,54 +941,54 @@ func file_msg_proto_rawDescGZIP() []byte {
 
 var file_msg_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_msg_proto_goTypes = []any{
-	(*Id)(nil),                  // 0: Id
-	(*FswList)(nil),             // 1: FswList
-	(*Reply)(nil),               // 2: Reply
-	(*SequenceReply)(nil),       // 3: SequenceReply
-	(*StatefulProfile)(nil),     // 4: StatefulProfile
-	(*ProfileList)(nil),         // 5: ProfileList
-	(*ProfileProviderList)(nil), // 6: ProfileProviderList
-	(*ProfileUpdate)(nil),       // 7: ProfileUpdate
-	(*DictionaryList)(nil),      // 8: DictionaryList
-	(*Uplink)(nil),              // 9: Uplink
-	(*UplinkReply)(nil),         // 10: UplinkReply
-	(*FswInitialPacket)(nil),    // 11: FswInitialPacket
-	(*FswConnectionPacket)(nil), // 12: FswConnectionPacket
-	nil,                         // 13: ProfileList.AllEntry
-	nil,                         // 14: DictionaryList.AllEntry
-	(*Fsw)(nil),                 // 15: Fsw
-	(*Profile)(nil),             // 16: Profile
-	(ProfileState)(0),           // 17: ProfileState
-	(*ProfileProvider)(nil),     // 18: ProfileProvider
-	(*CommandValue)(nil),        // 19: CommandValue
-	(*RawCommandValue)(nil),     // 20: RawCommandValue
-	(*CommandSequence)(nil),     // 21: CommandSequence
-	(*RawCommandSequence)(nil),  // 22: RawCommandSequence
-	(*UplinkFileChunk)(nil),     // 23: UplinkFileChunk
-	(*RequestValue)(nil),        // 24: RequestValue
+	(*Id)(nil),                  // 0: hermes.Id
+	(*FswList)(nil),             // 1: hermes.FswList
+	(*Reply)(nil),               // 2: hermes.Reply
+	(*SequenceReply)(nil),       // 3: hermes.SequenceReply
+	(*StatefulProfile)(nil),     // 4: hermes.StatefulProfile
+	(*ProfileList)(nil),         // 5: hermes.ProfileList
+	(*ProfileProviderList)(nil), // 6: hermes.ProfileProviderList
+	(*ProfileUpdate)(nil),       // 7: hermes.ProfileUpdate
+	(*DictionaryList)(nil),      // 8: hermes.DictionaryList
+	(*Uplink)(nil),              // 9: hermes.Uplink
+	(*UplinkReply)(nil),         // 10: hermes.UplinkReply
+	(*FswInitialPacket)(nil),    // 11: hermes.FswInitialPacket
+	(*FswConnectionPacket)(nil), // 12: hermes.FswConnectionPacket
+	nil,                         // 13: hermes.ProfileList.AllEntry
+	nil,                         // 14: hermes.DictionaryList.AllEntry
+	(*Fsw)(nil),                 // 15: hermes.Fsw
+	(*Profile)(nil),             // 16: hermes.Profile
+	(ProfileState)(0),           // 17: hermes.ProfileState
+	(*ProfileProvider)(nil),     // 18: hermes.ProfileProvider
+	(*CommandValue)(nil),        // 19: hermes.CommandValue
+	(*RawCommandValue)(nil),     // 20: hermes.RawCommandValue
+	(*CommandSequence)(nil),     // 21: hermes.CommandSequence
+	(*RawCommandSequence)(nil),  // 22: hermes.RawCommandSequence
+	(*UplinkFileChunk)(nil),     // 23: hermes.UplinkFileChunk
+	(*RequestValue)(nil),        // 24: hermes.RequestValue
 	(*emptypb.Empty)(nil),       // 25: google.protobuf.Empty
-	(*DictionaryHead)(nil),      // 26: DictionaryHead
+	(*DictionaryHead)(nil),      // 26: hermes.DictionaryHead
 }
 var file_msg_proto_depIdxs = []int32{
-	15, // 0: FswList.all:type_name -> Fsw
-	16, // 1: StatefulProfile.value:type_name -> Profile
-	17, // 2: StatefulProfile.state:type_name -> ProfileState
-	13, // 3: ProfileList.all:type_name -> ProfileList.AllEntry
-	18, // 4: ProfileProviderList.all:type_name -> ProfileProvider
-	14, // 5: DictionaryList.all:type_name -> DictionaryList.AllEntry
-	19, // 6: Uplink.cmd:type_name -> CommandValue
-	20, // 7: Uplink.parse_cmd:type_name -> RawCommandValue
-	21, // 8: Uplink.seq:type_name -> CommandSequence
-	22, // 9: Uplink.parse_seq:type_name -> RawCommandSequence
-	23, // 10: Uplink.file:type_name -> UplinkFileChunk
-	24, // 11: Uplink.request:type_name -> RequestValue
-	25, // 12: Uplink.cancel:type_name -> google.protobuf.Empty
-	25, // 13: Uplink.final:type_name -> google.protobuf.Empty
-	15, // 14: FswInitialPacket.info:type_name -> Fsw
-	11, // 15: FswConnectionPacket.info:type_name -> FswInitialPacket
-	10, // 16: FswConnectionPacket.reply:type_name -> UplinkReply
-	4,  // 17: ProfileList.AllEntry.value:type_name -> StatefulProfile
-	26, // 18: DictionaryList.AllEntry.value:type_name -> DictionaryHead
+	15, // 0: hermes.FswList.all:type_name -> hermes.Fsw
+	16, // 1: hermes.StatefulProfile.value:type_name -> hermes.Profile
+	17, // 2: hermes.StatefulProfile.state:type_name -> hermes.ProfileState
+	13, // 3: hermes.ProfileList.all:type_name -> hermes.ProfileList.AllEntry
+	18, // 4: hermes.ProfileProviderList.all:type_name -> hermes.ProfileProvider
+	14, // 5: hermes.DictionaryList.all:type_name -> hermes.DictionaryList.AllEntry
+	19, // 6: hermes.Uplink.cmd:type_name -> hermes.CommandValue
+	20, // 7: hermes.Uplink.parse_cmd:type_name -> hermes.RawCommandValue
+	21, // 8: hermes.Uplink.seq:type_name -> hermes.CommandSequence
+	22, // 9: hermes.Uplink.parse_seq:type_name -> hermes.RawCommandSequence
+	23, // 10: hermes.Uplink.file:type_name -> hermes.UplinkFileChunk
+	24, // 11: hermes.Uplink.request:type_name -> hermes.RequestValue
+	25, // 12: hermes.Uplink.cancel:type_name -> google.protobuf.Empty
+	25, // 13: hermes.Uplink.final:type_name -> google.protobuf.Empty
+	15, // 14: hermes.FswInitialPacket.info:type_name -> hermes.Fsw
+	11, // 15: hermes.FswConnectionPacket.info:type_name -> hermes.FswInitialPacket
+	10, // 16: hermes.FswConnectionPacket.reply:type_name -> hermes.UplinkReply
+	4,  // 17: hermes.ProfileList.AllEntry.value:type_name -> hermes.StatefulProfile
+	26, // 18: hermes.DictionaryList.AllEntry.value:type_name -> hermes.DictionaryHead
 	19, // [19:19] is the sub-list for method output_type
 	19, // [19:19] is the sub-list for method input_type
 	19, // [19:19] is the sub-list for extension type_name

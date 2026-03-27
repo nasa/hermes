@@ -17,6 +17,21 @@ class EvrSeverity(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     EVR_WARNING_HIGH: _ClassVar[EvrSeverity]
     EVR_COMMAND: _ClassVar[EvrSeverity]
     EVR_FATAL: _ClassVar[EvrSeverity]
+
+class FormatSpecifierType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    FMT_DEFAULT: _ClassVar[FormatSpecifierType]
+    FMT_CHAR: _ClassVar[FormatSpecifierType]
+    FMT_DECIMAL: _ClassVar[FormatSpecifierType]
+    FMT_HEX_LOWER: _ClassVar[FormatSpecifierType]
+    FMT_HEX_UPPER: _ClassVar[FormatSpecifierType]
+    FMT_OCTAL: _ClassVar[FormatSpecifierType]
+    FMT_EXP_LOWER: _ClassVar[FormatSpecifierType]
+    FMT_EXP_UPPER: _ClassVar[FormatSpecifierType]
+    FMT_FIXED_LOWER: _ClassVar[FormatSpecifierType]
+    FMT_FIXED_UPPER: _ClassVar[FormatSpecifierType]
+    FMT_GENERAL_LOWER: _ClassVar[FormatSpecifierType]
+    FMT_GENERAL_UPPER: _ClassVar[FormatSpecifierType]
 EVR_DIAGNOSTIC: EvrSeverity
 EVR_ACTIVITY_LOW: EvrSeverity
 EVR_ACTIVITY_HIGH: EvrSeverity
@@ -24,6 +39,18 @@ EVR_WARNING_LOW: EvrSeverity
 EVR_WARNING_HIGH: EvrSeverity
 EVR_COMMAND: EvrSeverity
 EVR_FATAL: EvrSeverity
+FMT_DEFAULT: FormatSpecifierType
+FMT_CHAR: FormatSpecifierType
+FMT_DECIMAL: FormatSpecifierType
+FMT_HEX_LOWER: FormatSpecifierType
+FMT_HEX_UPPER: FormatSpecifierType
+FMT_OCTAL: FormatSpecifierType
+FMT_EXP_LOWER: FormatSpecifierType
+FMT_EXP_UPPER: FormatSpecifierType
+FMT_FIXED_LOWER: FormatSpecifierType
+FMT_FIXED_UPPER: FormatSpecifierType
+FMT_GENERAL_LOWER: FormatSpecifierType
+FMT_GENERAL_UPPER: FormatSpecifierType
 
 class ParameterDef(_message.Message):
     __slots__ = ("id", "component", "name", "type", "metadata")
@@ -53,8 +80,34 @@ class CommandDef(_message.Message):
     metadata: str
     def __init__(self, opcode: _Optional[int] = ..., mnemonic: _Optional[str] = ..., component: _Optional[str] = ..., arguments: _Optional[_Iterable[_Union[_type_pb2.Field, _Mapping]]] = ..., metadata: _Optional[str] = ...) -> None: ...
 
+class FormatSpecifier(_message.Message):
+    __slots__ = ("type", "precision", "argument_index")
+    TYPE_FIELD_NUMBER: _ClassVar[int]
+    PRECISION_FIELD_NUMBER: _ClassVar[int]
+    ARGUMENT_INDEX_FIELD_NUMBER: _ClassVar[int]
+    type: FormatSpecifierType
+    precision: int
+    argument_index: int
+    def __init__(self, type: _Optional[_Union[FormatSpecifierType, str]] = ..., precision: _Optional[int] = ..., argument_index: _Optional[int] = ...) -> None: ...
+
+class FormatFragment(_message.Message):
+    __slots__ = ("text", "specifier")
+    TEXT_FIELD_NUMBER: _ClassVar[int]
+    SPECIFIER_FIELD_NUMBER: _ClassVar[int]
+    text: str
+    specifier: FormatSpecifier
+    def __init__(self, text: _Optional[str] = ..., specifier: _Optional[_Union[FormatSpecifier, _Mapping]] = ...) -> None: ...
+
+class FormatString(_message.Message):
+    __slots__ = ("fragments", "original")
+    FRAGMENTS_FIELD_NUMBER: _ClassVar[int]
+    ORIGINAL_FIELD_NUMBER: _ClassVar[int]
+    fragments: _containers.RepeatedCompositeFieldContainer[FormatFragment]
+    original: str
+    def __init__(self, fragments: _Optional[_Iterable[_Union[FormatFragment, _Mapping]]] = ..., original: _Optional[str] = ...) -> None: ...
+
 class EventDef(_message.Message):
-    __slots__ = ("id", "component", "name", "severity", "format_string", "arguments", "metadata")
+    __slots__ = ("id", "component", "name", "severity", "format_string", "arguments", "metadata", "format")
     ID_FIELD_NUMBER: _ClassVar[int]
     COMPONENT_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
@@ -62,6 +115,7 @@ class EventDef(_message.Message):
     FORMAT_STRING_FIELD_NUMBER: _ClassVar[int]
     ARGUMENTS_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    FORMAT_FIELD_NUMBER: _ClassVar[int]
     id: int
     component: str
     name: str
@@ -69,7 +123,8 @@ class EventDef(_message.Message):
     format_string: str
     arguments: _containers.RepeatedCompositeFieldContainer[_type_pb2.Field]
     metadata: str
-    def __init__(self, id: _Optional[int] = ..., component: _Optional[str] = ..., name: _Optional[str] = ..., severity: _Optional[_Union[EvrSeverity, str]] = ..., format_string: _Optional[str] = ..., arguments: _Optional[_Iterable[_Union[_type_pb2.Field, _Mapping]]] = ..., metadata: _Optional[str] = ...) -> None: ...
+    format: FormatString
+    def __init__(self, id: _Optional[int] = ..., component: _Optional[str] = ..., name: _Optional[str] = ..., severity: _Optional[_Union[EvrSeverity, str]] = ..., format_string: _Optional[str] = ..., arguments: _Optional[_Iterable[_Union[_type_pb2.Field, _Mapping]]] = ..., metadata: _Optional[str] = ..., format: _Optional[_Union[FormatString, _Mapping]] = ...) -> None: ...
 
 class EventRef(_message.Message):
     __slots__ = ("id", "name", "component", "severity", "arguments", "dictionary")

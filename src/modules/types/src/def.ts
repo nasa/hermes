@@ -742,6 +742,56 @@ export interface Command extends Item<{
     arguments: Field[];
 }
 
+/**
+ * Format specifier type for FPrime format strings
+ */
+export enum FormatSpecifierType {
+    Default = 0,        // {} -> %v
+    Char = 1,           // {c} -> %c
+    Decimal = 2,        // {d} -> %d
+    HexLower = 3,       // {x} -> %x
+    HexUpper = 4,       // {X} -> %X
+    Octal = 5,          // {o} -> %o
+    ExpLower = 6,       // {e} -> %e
+    ExpUpper = 7,       // {E} -> %E
+    FixedLower = 8,     // {f} -> %f
+    FixedUpper = 9,     // {F} -> %F
+    GeneralLower = 10,  // {g} -> %g
+    GeneralUpper = 11,  // {G} -> %G
+}
+
+/**
+ * Format specifier with metadata
+ */
+export interface FormatSpecifier {
+    /** Type of format specifier */
+    type: FormatSpecifierType;
+
+    /** Optional precision (digits after decimal point) */
+    precision?: number;
+
+    /** Index into the arguments array (0-based) */
+    argumentIndex: number;
+}
+
+/**
+ * Fragment of a format string - either text or a format specifier
+ */
+export type FormatFragment =
+    | { type: 'text'; text: string }
+    | { type: 'specifier'; specifier: FormatSpecifier };
+
+/**
+ * Structured representation of an FPrime format string
+ */
+export interface FormatString {
+    /** Ordered list of text and format specifier fragments */
+    fragments: FormatFragment[];
+
+    /** Original format string (for debugging and backward compatibility) */
+    original: string;
+}
+
 export interface Event extends Item {
     id: number;
 
@@ -749,6 +799,12 @@ export interface Event extends Item {
      * printf format string that will be formatted via sprintf
      */
     formatString: string;
+
+    /**
+     * Structured representation of the format string with parsed fragments
+     * (new format, preferred over formatString)
+     */
+    format?: FormatString;
 
     /**
      * Component or module

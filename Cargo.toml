@@ -1,0 +1,13 @@
+[workspace]
+members = ["crates/*"]
+
+resolver = "2"
+
+[workspace.package]
+version = "4.1.0-a1"
+edition = "2024"
+authors = ["Andrei Tumbar"]
+
+[profile.release]
+# strip = "debuginfo"
+lto = true

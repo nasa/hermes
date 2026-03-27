@@ -245,6 +245,7 @@ const builds = {
     },
 
     'src/extensions/fprime': extension(),
+    'src/extensions/yamcs': extension(),
 };
 
 class Waiter {

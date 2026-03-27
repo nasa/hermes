@@ -213,7 +213,7 @@ var File_profile_proto protoreflect.FileDescriptor
 
 const file_profile_proto_rawDesc = "" +
 	"\n" +
-	"\rprofile.proto\"Z\n" +
+	"\rprofile.proto\x12\x06hermes\"Z\n" +
 	"\x0fProfileProvider\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
 	"\x06schema\x18\x02 \x01(\tR\x06schema\x12\x1b\n" +
@@ -244,9 +244,9 @@ func file_profile_proto_rawDescGZIP() []byte {
 var file_profile_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_profile_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_profile_proto_goTypes = []any{
-	(ProfileState)(0),       // 0: ProfileState
-	(*ProfileProvider)(nil), // 1: ProfileProvider
-	(*Profile)(nil),         // 2: Profile
+	(ProfileState)(0),       // 0: hermes.ProfileState
+	(*ProfileProvider)(nil), // 1: hermes.ProfileProvider
+	(*Profile)(nil),         // 2: hermes.Profile
 }
 var file_profile_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
