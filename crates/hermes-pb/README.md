@@ -16,8 +16,6 @@ To regenerate the protobuf code:
 
 ```bash
 cargo build -p hermes-pb
-# or
-yarn proto-rust
 ```
 
 ## Usage
