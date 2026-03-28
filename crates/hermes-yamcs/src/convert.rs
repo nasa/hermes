@@ -105,9 +105,10 @@ pub fn yamcs_event_to_hermes(
         yamcs_http::types::events::EventSeverity::Watch => EvrSeverity::EvrActivityHigh,
         yamcs_http::types::events::EventSeverity::Warning => EvrSeverity::EvrWarningLow,
         yamcs_http::types::events::EventSeverity::Distress => EvrSeverity::EvrWarningHigh,
-        yamcs_http::types::events::EventSeverity::Critical => EvrSeverity::EvrCommand,
+        yamcs_http::types::events::EventSeverity::Critical => EvrSeverity::EvrWarningHigh,
         yamcs_http::types::events::EventSeverity::Severe => EvrSeverity::EvrFatal,
-        yamcs_http::types::events::EventSeverity::Error => EvrSeverity::EvrFatal,
+        #[allow(deprecated)]
+        yamcs_http::types::events::EventSeverity::Error => EvrSeverity::EvrWarningLow,
     };
 
     // Build event reference
@@ -298,9 +299,9 @@ pub fn yamcs_instance_to_fsw(instance: &yamcs_http::types::system::Instance) -> 
     Fsw {
         id: instance.name.clone(),
         r#type: "yamcs".to_string(),
-        profile_id: String::new(), // YAMCS instances aren't managed profiles
+        profile_id: "yamcs".to_string(),
         forwards: vec![],
         capabilities,
-        dictionary: String::new(), // Could be set based on instance metadata
+        dictionary: instance.name.clone(),
     }
 }

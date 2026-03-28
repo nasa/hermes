@@ -301,6 +301,7 @@ export class Client implements Hermes.Api {
                 disp?.dispose();
 
                 if (err) {
+                    console.error("Failed to get all fsw", err);
                     reject(err);
                 } else {
                     resolve(value?.all?.map((fsw) => new RpcFsw(this.client, fsw)) ?? []);

@@ -27,6 +27,7 @@ pub struct AuthInfo {
     /// Whether authentication is required
     pub require_authentication: bool,
     /// Whether SPNEGO authentication is supported
+    #[serde(default)]
     pub spnego: bool,
     /// OpenID Connect configuration if available
     #[serde(skip_serializing_if = "Option::is_none")]

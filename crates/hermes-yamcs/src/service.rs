@@ -180,7 +180,44 @@ impl Api for YamcsApiService {
         &self,
         _request: Request<()>,
     ) -> Result<Response<Self::SubscribeFswStream>, Status> {
-        Err(Status::unimplemented("SubscribeFsw not implemented"))
+        // Create channel for streaming FSW list
+        let (tx, rx) = tokio::sync::mpsc::channel(1);
+
+        let yamcs_client = self.yamcs_client.clone();
+
+        tokio::spawn(async move {
+            // Fetch all YAMCS instances and send initial FSW list
+            match yamcs_client.get_instances().await {
+                Ok(instances) => {
+                    let fsw_list: Vec<Fsw> = instances
+                        .iter()
+                        .map(convert::yamcs_instance_to_fsw)
+                        .collect();
+
+                    if tx.send(Ok(FswList { all: fsw_list })).await.is_err() {
+                        debug!("FSW subscription closed before initial send");
+                        return;
+                    }
+                }
+                Err(e) => {
+                    error!(error = %e, "Failed to get YAMCS instances for FSW subscription");
+                    let _ = tx
+                        .send(Err(Status::internal(format!(
+                            "Failed to get YAMCS instances: {}",
+                            e
+                        ))))
+                        .await;
+                    return;
+                }
+            }
+
+            // Keep channel open until receiver is dropped
+            tx.closed().await;
+            debug!("FSW subscription closed by client");
+        });
+
+        info!("FSW subscription established");
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 
     async fn start_profile(&self, _request: Request<Id>) -> Result<Response<()>, Status> {
@@ -252,21 +289,32 @@ impl Api for YamcsApiService {
         &self,
         _request: Request<()>,
     ) -> Result<Response<FileTransferState>, Status> {
-        Err(Status::unimplemented("File transfer not implemented"))
+        // Return empty file transfer state (stub)
+        debug!("File transfer state requested (stub - returning empty state)");
+        Ok(Response::new(FileTransferState {
+            downlink_completed: vec![],
+            uplink_completed: vec![],
+            downlink_in_progress: vec![],
+            uplink_in_progress: vec![],
+        }))
     }
 
     async fn clear_downlink_transfer_state(
         &self,
         _request: Request<()>,
     ) -> Result<Response<()>, Status> {
-        Err(Status::unimplemented("File transfer not implemented"))
+        // No-op for stub implementation
+        debug!("Clear downlink transfer state requested (stub - no-op)");
+        Ok(Response::new(()))
     }
 
     async fn clear_uplink_transfer_state(
         &self,
         _request: Request<()>,
     ) -> Result<Response<()>, Status> {
-        Err(Status::unimplemented("File transfer not implemented"))
+        // No-op for stub implementation
+        debug!("Clear uplink transfer state requested (stub - no-op)");
+        Ok(Response::new(()))
     }
 
     type SubscribeProvidersStream = ReceiverStream<Result<ProfileProviderList, Status>>;
@@ -613,22 +661,7 @@ impl Api for YamcsApiService {
         let processor = self.processor.clone();
         let filter_clone = filter.clone();
 
-        // Build parameter ID list from filter
-        let param_ids: Vec<yamcs_http::types::common::NamedObjectId> = if filter.names.is_empty() {
-            vec![]
-        } else {
-            filter
-                .names
-                .iter()
-                .map(|name| yamcs_http::types::common::NamedObjectId {
-                    name: name.clone(),
-                    namespace: None,
-                })
-                .collect()
-        };
-
         let instance_count = instances.len();
-        let param_count = param_ids.len();
         let processor_name = processor.clone();
 
         tokio::spawn(async move {
@@ -636,10 +669,57 @@ impl Api for YamcsApiService {
             let mut subscriptions = Vec::new();
 
             for instance in instances {
+                // Build parameter ID list per instance
+                let param_ids: Vec<yamcs_http::types::common::NamedObjectId> = if filter_clone
+                    .names
+                    .is_empty()
+                {
+                    // No specific names requested - subscribe to ALL parameters in this instance
+                    match yamcs_client
+                        .get_parameters(
+                            &instance,
+                            &yamcs_http::types::mdb::GetParametersOptions::default(),
+                        )
+                        .await
+                    {
+                        Ok(params_page) => {
+                            if let Some(parameters) = params_page.parameters {
+                                parameters
+                                    .iter()
+                                    .map(|p| yamcs_http::types::common::NamedObjectId {
+                                        name: p.qualified_name.clone(),
+                                        namespace: None,
+                                    })
+                                    .collect()
+                            } else {
+                                warn!(instance = %instance, "No parameters found");
+                                vec![]
+                            }
+                        }
+                        Err(e) => {
+                            error!(error = %e, instance = %instance, "Failed to fetch parameters");
+                            vec![]
+                        }
+                    }
+                } else {
+                    // Use specific parameter names from filter
+                    filter_clone
+                        .names
+                        .iter()
+                        .map(|name| yamcs_http::types::common::NamedObjectId {
+                            name: name.clone(),
+                            namespace: None,
+                        })
+                        .collect()
+                };
+
+                let param_count = param_ids.len();
+                debug!(instance = %instance, param_count = param_count, "Subscribing to parameters");
+
                 let subscribe_request = yamcs_http::types::monitoring::SubscribeParametersRequest {
                     instance: instance.clone(),
                     processor: processor.clone(),
-                    id: param_ids.clone(),
+                    id: param_ids,
                     abort_on_invalid: false,
                     update_on_expiration: false,
                     send_from_cache: false,
@@ -705,7 +785,7 @@ impl Api for YamcsApiService {
             debug!("All telemetry subscriptions closed");
         });
 
-        info!(instance_count = instance_count, processor = %processor_name, param_count = param_count, "Telemetry subscription established");
+        info!(instance_count = instance_count, processor = %processor_name, "Telemetry subscription established");
         Ok(Response::new(ReceiverStream::new(rx)))
     }
 
@@ -715,9 +795,17 @@ impl Api for YamcsApiService {
         &self,
         _request: Request<BusFilter>,
     ) -> Result<Response<Self::SubFileDownlinkStream>, Status> {
-        Err(Status::unimplemented(
-            "File downlink subscription not implemented",
-        ))
+        // Create channel for file downlink stream (stub - no data sent)
+        let (tx, rx) = tokio::sync::mpsc::channel(1);
+
+        tokio::spawn(async move {
+            // Keep channel open until receiver is dropped
+            tx.closed().await;
+            debug!("File downlink subscription closed by client");
+        });
+
+        debug!("File downlink subscription established (stub)");
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 
     type SubFileUplinkStream = ReceiverStream<Result<FileUplink, Status>>;
@@ -726,9 +814,17 @@ impl Api for YamcsApiService {
         &self,
         _request: Request<BusFilter>,
     ) -> Result<Response<Self::SubFileUplinkStream>, Status> {
-        Err(Status::unimplemented(
-            "File uplink subscription not implemented",
-        ))
+        // Create channel for file uplink stream (stub - no data sent)
+        let (tx, rx) = tokio::sync::mpsc::channel(1);
+
+        tokio::spawn(async move {
+            // Keep channel open until receiver is dropped
+            tx.closed().await;
+            debug!("File uplink subscription closed by client");
+        });
+
+        debug!("File uplink subscription established (stub)");
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 
     type SubFileTransferStream = ReceiverStream<Result<FileTransferState, Status>>;
@@ -737,8 +833,16 @@ impl Api for YamcsApiService {
         &self,
         _request: Request<()>,
     ) -> Result<Response<Self::SubFileTransferStream>, Status> {
-        Err(Status::unimplemented(
-            "File transfer subscription not implemented",
-        ))
+        // Create channel for file transfer stream (stub - no data sent)
+        let (tx, rx) = tokio::sync::mpsc::channel(1);
+
+        tokio::spawn(async move {
+            // Keep channel open until receiver is dropped
+            tx.closed().await;
+            debug!("File transfer subscription closed by client");
+        });
+
+        debug!("File transfer subscription established (stub)");
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
 }

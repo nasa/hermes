@@ -4,7 +4,7 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum YamcsError {
     /// HTTP request failed
-    #[error("HTTP request failed: {0}")]
+    #[error("HTTP request failed: {0:?}")]
     Http(#[from] reqwest::Error),
 
     /// HTTP error response from server
@@ -23,9 +23,13 @@ pub enum YamcsError {
     #[error("WebSocket error: {0}")]
     WebSocket(String),
 
-    /// JSON serialization/deserialization error
+    /// JSON serialization error
     #[error("Serialization error: {0}")]
     JsonSerialization(#[from] serde_json::Error),
+
+    /// JSON deserialization error
+    #[error("Deserialization error: {0}")]
+    JsonDeserialization(#[from] serde_path_to_error::Error<serde_json::Error>),
 
     /// URL encoding error
     #[error("URL encoding error: {0}")]

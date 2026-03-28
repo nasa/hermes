@@ -1,6 +1,7 @@
 use crate::types::common::{NamedObjectId, Value};
 use crate::types::mdb::AlarmRange;
 use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 use std::collections::HashMap;
 
 /// Parameter data from subscription (deprecated - use SubscribeParametersData)
@@ -12,6 +13,7 @@ pub struct ParameterData {
 }
 
 /// Request to subscribe to parameter updates
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SubscribeParametersRequest {
@@ -21,7 +23,6 @@ pub struct SubscribeParametersRequest {
     pub abort_on_invalid: bool,
     pub update_on_expiration: bool,
     pub send_from_cache: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub max_bytes: Option<u64>,
     pub action: SubscribeParametersAction,
 }
@@ -50,20 +51,19 @@ pub struct SubscribeParametersData {
 }
 
 /// Information about a subscribed parameter
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SubscribedParameterInfo {
     pub parameter: String,
     pub data_source: crate::types::mdb::DataSource,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub units: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub enum_values: Option<Vec<crate::types::mdb::EnumValue>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub enum_ranges: Option<Vec<crate::types::mdb::EnumRange>>,
 }
 
 /// Parameter value with metadata
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ParameterValue {
@@ -76,7 +76,6 @@ pub struct ParameterValue {
     pub acquisition_status: AcquisitionStatus,
     pub monitoring_result: crate::types::common::MonitoringResult,
     pub alarm_range: Vec<AlarmRange>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub range_condition: Option<RangeCondition>,
     pub expire_millis: i64,
 }
@@ -100,58 +99,54 @@ pub enum RangeCondition {
 }
 
 /// Statistical sample of parameter values
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sample {
-    pub time: String,
-    pub avg: f64,
-    pub min: f64,
-    pub min_time: String,
-    pub max: f64,
-    pub max_time: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time: Option<String>,
+    pub avg: Option<f64>,
+    pub min: Option<f64>,
+    pub min_time: Option<String>,
+    pub max: Option<f64>,
+    pub max_time: Option<String>,
     pub first_time: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub last_time: Option<String>,
-    pub n: u64,
+    pub n: Option<u64>,
 }
 
 /// Range of parameter values
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Range {
-    pub start: String,
-    pub stop: String,
+    pub start: Option<String>,
+    pub stop: Option<String>,
+    pub count: Option<u32>,
+    #[serde(default)]
     pub eng_values: Vec<Value>,
-    pub counts: Vec<u64>,
-    pub other_count: u64,
+    #[serde(default)]
+    pub counts: Vec<u32>,
+    pub other_count: Option<u32>,
 }
 
 /// Options for issuing a command
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IssueCommandOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub args: Option<HashMap<String, serde_json::Value>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub origin: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub sequence_number: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub dry_run: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub comment: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub disable_transmission_constraints: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub disable_verifiers: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stream: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub extra: Option<HashMap<String, Value>>,
 }
 
 /// Response from issuing a command
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IssueCommandResponse {
@@ -160,19 +155,17 @@ pub struct IssueCommandResponse {
     pub origin: String,
     pub sequence_number: u32,
     pub command_name: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub aliases: Option<HashMap<String, String>>,
     pub binary: String,
     pub username: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub queue: Option<String>,
 }
 
 /// Options for starting a procedure
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StartProcedureOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub arguments: Option<HashMap<String, String>>,
 }
 
@@ -201,47 +194,43 @@ pub struct CommandAssignment {
 }
 
 /// Command history entry
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommandHistoryEntry {
     pub id: String,
     pub command_name: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub aliases: Option<HashMap<String, String>>,
     pub origin: String,
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub sequence_number: u32,
     pub generation_time: String,
+    #[serde(default)]
     pub attr: Vec<CommandHistoryAttribute>,
+    #[serde(default)]
     pub assignments: Vec<CommandAssignment>,
 }
 
 /// Paginated command history response
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommandHistoryPage {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub commands: Option<Vec<CommandHistoryEntry>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub continuation_token: Option<String>,
 }
 
 /// Options for querying command history
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetCommandHistoryOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub next: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub q: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub queue: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub order: Option<SortOrder>,
 }
 
@@ -254,6 +243,7 @@ pub enum SortOrder {
 }
 
 /// Request to create a processor
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateProcessorRequest {
@@ -261,27 +251,20 @@ pub struct CreateProcessorRequest {
     pub name: String,
     #[serde(rename = "type")]
     pub processor_type: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub persistent: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub config: Option<String>,
 }
 
 /// Request to edit a replay processor
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EditReplayProcessorRequest {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub state: Option<ReplayState>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub seek: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub speed: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub loop_replay: Option<bool>,
 }
 
@@ -294,36 +277,28 @@ pub enum ReplayState {
 }
 
 /// Options for querying packets
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetPacketsOptions {
     /// Inclusive lower bound
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
     /// Exclusive upper bound
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub filter: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub link: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub next: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub order: Option<SortOrder>,
 }
 
 /// Paginated packets response
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ListPacketsResponse {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub packets: Option<Vec<Packet>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub continuation_token: Option<String>,
 }
 
@@ -342,24 +317,17 @@ pub struct Packet {
 }
 
 /// Options for querying parameter values
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetParameterValuesOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub pos: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub norepeat: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub format: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub source: Option<ParameterSource>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub order: Option<SortOrder>,
 }
 
@@ -372,26 +340,18 @@ pub enum ParameterSource {
 }
 
 /// Options for downloading parameter values
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DownloadParameterValuesOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub parameters: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub list: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub norepeat: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub delimiter: Option<Delimiter>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub header: Option<HeaderStyle>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub interval: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub filename: Option<String>,
 }
 
@@ -414,143 +374,108 @@ pub enum HeaderStyle {
 }
 
 /// Options for exporting parameter values
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportParameterValuesOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub parameters: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub list: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub namespace: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub delimiter: Option<Delimiter>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub preserve_last_value: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub interval: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub order: Option<SortOrder>,
 }
 
 /// Options for getting parameter samples
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetParameterSamplesOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub count: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub gap_time: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub source: Option<ParameterSource>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub order: Option<SortOrder>,
 }
 
 /// Options for getting parameter ranges
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetParameterRangesOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub min_gap: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub max_gap: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub min_range: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub max_values: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub source: Option<ParameterSource>,
 }
 
 /// Options for getting packet index
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetPacketIndexOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub merge_time: Option<i64>,
 }
 
 /// Options for streaming packet index
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StreamPacketIndexOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub merge_time: Option<i64>,
 }
 
 /// Options for getting parameter index
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetParameterIndexOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub merge_time: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
 }
 
 /// Options for streaming parameter index
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StreamParameterIndexOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub merge_time: Option<i64>,
 }
 
 /// Options for getting command index
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetCommandIndexOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub merge_time: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
 }
 
 /// Options for streaming command index
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StreamCommandIndexOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub merge_time: Option<i64>,
 }

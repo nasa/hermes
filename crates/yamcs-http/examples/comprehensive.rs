@@ -65,7 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match client.get_mission_database(&instance).await {
         Ok(mdb) => {
             tracing::info!("   Name: {}", mdb.name);
-            tracing::info!("   Version: {}", mdb.version);
+            tracing::info!("   Version: {}", mdb.version.unwrap_or_default());
             tracing::info!("   Parameters: {}", mdb.parameter_count);
             tracing::info!("   Commands: {}", mdb.command_count);
             tracing::info!("   Containers: {}", mdb.container_count);

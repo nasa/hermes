@@ -59,22 +59,11 @@ export class DictionaryLanguageItem implements vscode.Disposable {
 
                 // We didn't have the dictionary before
                 // We have it now
-                if (this.activeUid) {
-                    if (!this.active && dicts[this.activeUid]) {
-                        this.set(this.activeUid);
-                    } else if (this.active && !dicts[this.activeUid]) {
-                        // Dictionary was removed
-                        // Select a different dictionary
-                        this.set(filteredDictionaries[0][0]);
-                    } else {
-                        // Select the first valid dictionary
-                        this.set(filteredDictionaries[0][0]);
-                    }
-                } else if (!this.activeUid) {
-                    if (filteredDictionaries.length > 0) {
-                        // Automatically select a dictionary
-                        this.set(filteredDictionaries[0][0]);
-                    }
+                if (this.activeUid && !this.active && dicts[this.activeUid]) {
+                    this.set(this.activeUid);
+                } else if (!this.activeUid && filteredDictionaries.length > 0) {
+                    // Automatically select a dictionary
+                    this.set(filteredDictionaries[0][0]);
                 }
             }),
             vscode.commands.registerCommand(

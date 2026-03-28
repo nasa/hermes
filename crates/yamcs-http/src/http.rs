@@ -3,6 +3,7 @@ use crate::error::{Result, YamcsError};
 use async_trait::async_trait;
 use reqwest::{Client, Method, Request, RequestBuilder, Response};
 use std::sync::Arc;
+use serde::de::DeserializeOwned;
 use url::Url;
 
 /// HTTP interceptor trait for modifying requests before they are sent
@@ -146,11 +147,17 @@ impl HttpClient {
         Ok(response)
     }
 
+    async fn json<T: DeserializeOwned>(response: Response) -> Result<T> {
+        let full = response.bytes().await?;
+        let mut deserializer = serde_json::Deserializer::from_slice(&full);
+        serde_path_to_error::deserialize(&mut deserializer).map_err(YamcsError::JsonDeserialization)
+    }
+
     /// Make a GET request and parse JSON response
     pub async fn get<T: serde::de::DeserializeOwned>(&self, path: &str) -> Result<T> {
         let builder = self.request(Method::GET, path)?;
         let response = self.execute(builder).await?;
-        let data = response.json().await.map_err(YamcsError::Http)?;
+        let data = Self::json(response).await?;
         Ok(data)
     }
 
@@ -162,7 +169,7 @@ impl HttpClient {
     ) -> Result<T> {
         let builder = self.request(Method::POST, path)?.json(body);
         let response = self.execute(builder).await?;
-        let data = response.json().await.map_err(YamcsError::Http)?;
+        let data = Self::json(response).await?;
         Ok(data)
     }
 
@@ -174,7 +181,7 @@ impl HttpClient {
     ) -> Result<T> {
         let builder = self.request(Method::PUT, path)?.json(body);
         let response = self.execute(builder).await?;
-        let data = response.json().await.map_err(YamcsError::Http)?;
+        let data = Self::json(response).await?;
         Ok(data)
     }
 
@@ -186,7 +193,7 @@ impl HttpClient {
     ) -> Result<T> {
         let builder = self.request(Method::PATCH, path)?.json(body);
         let response = self.execute(builder).await?;
-        let data = response.json().await.map_err(YamcsError::Http)?;
+        let data = Self::json(response).await?;
         Ok(data)
     }
 
@@ -204,7 +211,7 @@ impl HttpClient {
     ) -> Result<T> {
         let builder = self.request(Method::DELETE, path)?;
         let response = self.execute(builder).await?;
-        let data = response.json().await.map_err(YamcsError::Http)?;
+        let data = Self::json(response).await?;
         Ok(data)
     }
 

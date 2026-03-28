@@ -4,8 +4,9 @@ use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt::Debug;
+use std::marker::PhantomData;
 use std::sync::Arc;
-use tokio::sync::{mpsc, Mutex, RwLock};
+use tokio::sync::{Mutex, RwLock, mpsc};
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tracing::{debug, trace};
 use url::Url;
@@ -52,7 +53,7 @@ pub(crate) mod builtin {
     /// HTTP API.
     #[derive(Debug, Clone, Deserialize)]
     pub struct ServerReply {
-        #[serde(rename="replyTo")]
+        #[serde(rename = "replyTo")]
         pub reply_to: u32,
         #[serde(skip_serializing_if = "Option::is_none")]
         pub exception: Option<serde_json::Value>,
@@ -296,18 +297,20 @@ impl WebSocketClient {
 
         // Create subscription with deserialization/send closure
         let sender_tx = tx.clone();
-        let subscription =
-            Subscription::new(
-                subscription_type.clone(),
-                move |value| match serde_json::from_value::<D>(value) {
-                    Ok(data) => {
-                        let _ = sender_tx.send(data);
-                    }
-                    Err(e) => {
-                        tracing::error!("Failed to deserialize subscription data: {}", e);
-                    }
-                },
-            );
+        let subscription = Subscription::new(subscription_type.clone(), move |value| {
+            match serde_path_to_error::deserialize(value) {
+                Ok(data) => {
+                    let _ = sender_tx.send(data);
+                }
+                Err(e) => {
+                    tracing::error!(
+                        "Failed to deserialize data {}: {}",
+                        get_type_name::<D>(Default::default()),
+                        e
+                    );
+                }
+            }
+        });
 
         let (call_id, _) = self.request(subscription_type, options).await?;
 
@@ -557,6 +560,10 @@ impl WebSocketClient {
             *state = ConnectionState::Disconnected;
         }
     }
+}
+
+fn get_type_name<T>(_: PhantomData<T>) -> &'static str {
+    std::any::type_name::<T>()
 }
 
 #[cfg(test)]

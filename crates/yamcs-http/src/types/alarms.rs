@@ -3,22 +3,21 @@ use crate::types::events::Event;
 use crate::types::mdb::Parameter;
 use crate::types::monitoring::ParameterValue;
 use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 
 /// Global alarm status summary
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GlobalAlarmStatus {
     pub unacknowledged_count: u32,
     pub unacknowledged_active: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub unacknowledged_severity: Option<String>,
     pub acknowledged_count: u32,
     pub acknowledged_active: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub acknowledged_severity: Option<String>,
     pub shelved_count: u32,
     pub shelved_active: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub shelved_severity: Option<String>,
 }
 
@@ -83,6 +82,7 @@ pub enum AlarmType {
 }
 
 /// Alarm information
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Alarm {
@@ -95,9 +95,9 @@ pub struct Alarm {
     pub trigger_time: String,
     pub violations: u32,
     pub count: u32,
-    pub acknowledge_info: AlarmAcknowledgeInfo,
-    pub shelve_info: ShelveInfo,
-    pub clear_info: ClearInfo,
+    pub acknowledge_info: Option<AlarmAcknowledgeInfo>,
+    pub shelve_info: Option<ShelveInfo>,
+    pub clear_info: Option<ClearInfo>,
     pub severity: AlarmSeverity,
     #[serde(rename = "readonly")]
     pub read_only: bool,
@@ -105,11 +105,8 @@ pub struct Alarm {
     pub process_ok: bool,
     pub triggered: bool,
     pub acknowledged: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub pending: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub parameter_detail: Option<ParameterAlarmData>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub event_detail: Option<EventAlarmData>,
 }
 
@@ -133,73 +130,70 @@ pub struct EventAlarmData {
 }
 
 /// Alarm acknowledge information
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AlarmAcknowledgeInfo {
-    pub acknowledged_by: String,
-    pub acknowledge_message: String,
-    pub acknowledge_time: String,
+    pub acknowledged_by: Option<String>,
+    pub acknowledge_message: Option<String>,
+    pub acknowledge_time: Option<String>,
 }
 
 /// Alarm shelve information
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ShelveInfo {
-    pub shelved_by: String,
-    pub shelve_message: String,
-    pub shelve_time: String,
-    pub shelve_expiration: String,
+    pub shelved_by: Option<String>,
+    pub shelve_message: Option<String>,
+    pub shelve_time: Option<String>,
+    pub shelve_expiration: Option<String>,
 }
 
 /// Alarm clear information
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClearInfo {
-    pub cleared_by: String,
-    pub clear_time: String,
-    pub clear_message: String,
+    pub cleared_by: Option<String>,
+    pub clear_time: Option<String>,
+    pub clear_message: Option<String>,
 }
 
 /// Options for querying alarms
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetAlarmsOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub detail: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub pos: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub order: Option<crate::types::monitoring::SortOrder>,
 }
 
 /// Options for acknowledging an alarm
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AcknowledgeAlarmOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub comment: Option<String>,
 }
 
 /// Options for shelving an alarm
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ShelveAlarmOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub comment: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub shelve_duration: Option<i64>,
 }
 
 /// Options for clearing an alarm
+#[skip_serializing_none]
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClearAlarmOptions {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub comment: Option<String>,
 }

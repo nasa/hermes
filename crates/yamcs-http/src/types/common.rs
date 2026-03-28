@@ -1,10 +1,12 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
+use serde_with::skip_serializing_none;
+use std::str::FromStr;
 
 /// A qualified name with optional namespace
+#[skip_serializing_none]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NamedObjectId {
     /// Optional namespace
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub namespace: Option<String>,
     /// Object name
     pub name: String,
@@ -77,6 +79,7 @@ pub enum Value {
     /// Signed 64-bit integer
     #[serde(rename_all = "camelCase")]
     Sint64 {
+        #[serde(deserialize_with = "deserialize_string_or_number")]
         sint64_value: i64,
     },
     /// String value
@@ -87,6 +90,7 @@ pub enum Value {
     /// Timestamp (microseconds since Unix epoch)
     #[serde(rename_all = "camelCase")]
     Timestamp {
+        #[serde(deserialize_with = "deserialize_string_or_number")]
         timestamp_value: i64,
     },
     /// Unsigned 32-bit integer
@@ -112,14 +116,20 @@ pub struct AggregateValue {
 
 /// Monitoring result/alarm level for a parameter
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MonitoringResult {
+    #[serde(rename = "DISABLED")]
     Disabled,
+    #[serde(rename = "IN_LIMITS")]
     InLimits,
+    #[serde(rename = "WATCH")]
     Watch,
+    #[serde(rename = "WARNING")]
     Warning,
+    #[serde(rename = "DISTRESS")]
     Distress,
+    #[serde(rename = "CRITICAL")]
     Critical,
+    #[serde(rename = "SEVERE")]
     Severe,
 }
 
@@ -181,5 +191,50 @@ impl Value {
     /// Create an array value
     pub fn array(values: Vec<Value>) -> Self {
         Value::Array { array_value: values }
+    }
+}
+
+/// Deserialize a value that can be either a string or a number into T
+pub fn deserialize_string_or_number<'de, D, T>(deserializer: D) -> Result<T, D::Error>
+where
+    D: Deserializer<'de>,
+    T: FromStr + Deserialize<'de>,
+    T::Err: std::fmt::Display,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum StringOrNumber<T> {
+        String(String),
+        Number(T),
+    }
+
+    match StringOrNumber::<T>::deserialize(deserializer)? {
+        StringOrNumber::String(s) => T::from_str(&s).map_err(serde::de::Error::custom),
+        StringOrNumber::Number(n) => Ok(n),
+    }
+}
+
+/// Deserialize an optional value that can be either a string or a number into Option<T>
+pub fn deserialize_optional_string_or_number<'de, D, T>(
+    deserializer: D,
+) -> Result<Option<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: FromStr + Deserialize<'de>,
+    T::Err: std::fmt::Display,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum StringOrNumber<T> {
+        String(String),
+        Number(T),
+    }
+
+    match Option::<StringOrNumber<T>>::deserialize(deserializer)? {
+        Some(StringOrNumber::String(s)) => {
+            T::from_str(&s).map(Some).map_err(serde::de::Error::custom)
+        }
+        Some(StringOrNumber::Number(n)) => Ok(Some(n)),
+        None => Ok(None),
     }
 }

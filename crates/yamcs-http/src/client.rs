@@ -376,7 +376,7 @@ impl YamcsClient {
     ) -> Result<crate::types::mdb::AlgorithmStatus> {
         self.http
             .get(&format!(
-                "/api/processors/{}/{}/algorithms{}/status",
+                "/api/instances/{}/processors/{}/algorithms{}/status",
                 instance, processor, qualified_name
             ))
             .await
@@ -391,7 +391,7 @@ impl YamcsClient {
     ) -> Result<crate::types::mdb::AlgorithmTrace> {
         self.http
             .get(&format!(
-                "/api/processors/{}/{}/algorithms{}/trace",
+                "/api/instances/{}/processors/{}/algorithms{}/trace",
                 instance, processor, qualified_name
             ))
             .await
@@ -413,7 +413,7 @@ impl YamcsClient {
         self.http
             .post(
                 &format!(
-                    "/api/processors/{}/{}/commands/{}",
+                    "/api/instances/{}/processors/{}/commands/{}",
                     instance, processor, encoded_command
                 ),
                 options,
@@ -543,7 +543,7 @@ impl YamcsClient {
         }
         let response: ProcessorsWrapper = self
             .http
-            .get(&format!("/api/processors/{}", instance))
+            .get(&format!("/api/instances/{}/processors", instance))
             .await?;
         Ok(response.processors.unwrap_or_default())
     }
@@ -555,7 +555,7 @@ impl YamcsClient {
         name: &str,
     ) -> Result<crate::types::system::Processor> {
         self.http
-            .get(&format!("/api/processors/{}/{}", instance, name))
+            .get(&format!("/api/instances/{}/processors/{}", instance, name))
             .await
     }
 
@@ -569,7 +569,7 @@ impl YamcsClient {
         let _: serde_json::Value = self
             .http
             .patch(
-                &format!("/api/processors/{}/{}", instance, processor),
+                &format!("/api/instances/{}/processors/{}", instance, processor),
                 options,
             )
             .await?;
@@ -642,7 +642,7 @@ impl YamcsClient {
         let response: AlarmsResponse = self
             .http
             .get(&format!(
-                "/api/processors/{}/{}/alarms?{}",
+                "/api/instances/{}/processors/{}/alarms?{}",
                 instance, processor, query
             ))
             .await?;
@@ -680,7 +680,7 @@ impl YamcsClient {
             .http
             .post(
                 &format!(
-                    "/api/processors/{}/{}/alarms{}/{}:acknowledge",
+                    "/api/instances/{}/processors/{}/alarms{}/{}:acknowledge",
                     instance, processor, alarm_name, seq_num
                 ),
                 options,
@@ -702,7 +702,7 @@ impl YamcsClient {
             .http
             .post(
                 &format!(
-                    "/api/processors/{}/{}/alarms{}/{}:shelve",
+                    "/api/instances/{}/processors/{}/alarms{}/{}:shelve",
                     instance, processor, alarm_name, seq_num
                 ),
                 options,
@@ -723,7 +723,7 @@ impl YamcsClient {
             .http
             .post(
                 &format!(
-                    "/api/processors/{}/{}/alarms{}/{}:unshelve",
+                    "/api/instances/{}/processors/{}/alarms{}/{}:unshelve",
                     instance, processor, alarm_name, seq_num
                 ),
                 &serde_json::json!({}),
@@ -745,7 +745,7 @@ impl YamcsClient {
             .http
             .post(
                 &format!(
-                    "/api/processors/{}/{}/alarms{}/{}:clear",
+                    "/api/instances/{}/processors/{}/alarms{}/{}:clear",
                     instance, processor, alarm_name, seq_num
                 ),
                 options,
@@ -762,7 +762,7 @@ impl YamcsClient {
     ) -> Result<crate::types::alarms::GlobalAlarmStatus> {
         self.http
             .get(&format!(
-                "/api/processors/{}/{}/alarms/global-status",
+                "/api/instances/{}/processors/{}/alarms/global-status",
                 instance, processor
             ))
             .await

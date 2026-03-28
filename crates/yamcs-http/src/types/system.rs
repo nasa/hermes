@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 use std::collections::HashMap;
 
 /// General information about the YAMCS server
@@ -69,6 +70,32 @@ pub enum ServiceState {
     Failed,
 }
 
+/// Service information
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceInfo {
+    /// Instance name
+    pub instance: Option<String>,
+    /// Service name
+    pub name: String,
+    /// Service state
+    pub state: ServiceState,
+    /// Service time
+    pub time: Option<String>,
+}
+
+/// Acknowledgment configuration information
+#[skip_serializing_none]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AcknowledgmentInfo {
+    /// Acknowledgment name
+    pub name: String,
+    /// Acknowledgment description
+    pub description: Option<String>,
+}
+
 /// Instance state
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -83,6 +110,7 @@ pub enum InstanceState {
 }
 
 /// YAMCS instance information
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Instance {
@@ -94,7 +122,6 @@ pub struct Instance {
     #[serde(default)]
     pub processors: Vec<Processor>,
     /// Instance labels
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub labels: Option<HashMap<String, String>>,
     /// Mission time
     pub mission_time: String,
@@ -102,10 +129,8 @@ pub struct Instance {
     #[serde(default)]
     pub capabilities: Vec<String>,
     /// Template name if instance was created from template
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub template: Option<String>,
     /// Template arguments
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub template_args: Option<HashMap<String, String>>,
     /// Whether template is available
     #[serde(default)]
@@ -116,6 +141,7 @@ pub struct Instance {
 }
 
 /// Processor information
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Processor {
@@ -126,31 +152,50 @@ pub struct Processor {
     /// Processor type
     #[serde(rename = "type")]
     pub processor_type: String,
+    /// Processor specification
+    pub spec: Option<String>,
     /// Creator username
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub creator: Option<String>,
+    /// Whether processor has alarms
+    #[serde(default)]
+    pub has_alarms: bool,
     /// Whether processor has commanding enabled
     #[serde(default)]
     pub has_commanding: bool,
     /// Processor state
     pub state: ServiceState,
     /// Replay request if this is a replay processor
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub replay_request: Option<ReplayRequest>,
     /// Replay state if this is a replay processor
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub replay_state: Option<ReplayState>,
+    /// Services running in this processor
+    pub services: Option<Vec<ServiceInfo>>,
+    /// Whether processor is persistent
+    #[serde(default)]
+    pub persistent: bool,
+    /// Processor time
+    pub time: Option<String>,
+    /// Whether this is a replay processor
+    #[serde(default)]
+    pub replay: bool,
+    /// Whether command clearance checking is enabled
+    #[serde(default)]
+    pub check_command_clearance: bool,
+    /// Whether processor is protected
+    #[serde(default)]
+    pub protected: bool,
+    /// Acknowledgment configurations
+    pub acknowledgments: Option<Vec<AcknowledgmentInfo>>,
 }
 
 /// Replay request parameters
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReplayRequest {
     /// Start time
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<String>,
     /// Stop time
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub stop: Option<String>,
 }
 
@@ -165,6 +210,7 @@ pub struct ReplayState {
 }
 
 /// User information
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserInfo {
@@ -179,32 +225,24 @@ pub struct UserInfo {
     /// Whether user is superuser
     pub superuser: bool,
     /// User who created this user
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub created_by: Option<Box<UserInfo>>,
     /// Creation time
     pub creation_time: String,
     /// Confirmation time
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub confirmation_time: Option<String>,
     /// Last login time
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub last_login_time: Option<String>,
     /// User groups
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub groups: Option<Vec<GroupInfo>>,
     /// User roles
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub roles: Option<Vec<RoleInfo>>,
     /// External identities
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub identities: Option<Vec<ExternalIdentity>>,
     /// Security clearance level
     pub clearance: String,
     /// System-level privileges
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub system_privileges: Option<Vec<String>>,
     /// Object-level privileges
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub object_privileges: Option<Vec<ObjectPrivilege>>,
 }
 
@@ -219,6 +257,7 @@ pub struct ExternalIdentity {
 }
 
 /// Group information
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GroupInfo {
@@ -227,10 +266,8 @@ pub struct GroupInfo {
     /// Group description
     pub description: String,
     /// Group members (users)
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub users: Option<Vec<UserInfo>>,
     /// Service accounts in group
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub service_accounts: Option<Vec<ServiceAccount>>,
 }
 
@@ -245,6 +282,7 @@ pub struct ServiceAccount {
 }
 
 /// Role information
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RoleInfo {
@@ -256,10 +294,8 @@ pub struct RoleInfo {
     #[serde(default)]
     pub default: bool,
     /// System-level privileges
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub system_privileges: Option<Vec<String>>,
     /// Object-level privileges
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub object_privileges: Option<Vec<ObjectPrivilege>>,
 }
 
@@ -275,6 +311,7 @@ pub struct ObjectPrivilege {
 }
 
 /// System information
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SystemInfo {
@@ -285,9 +322,14 @@ pub struct SystemInfo {
     /// Server ID
     pub server_id: String,
     /// Server uptime in milliseconds
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub uptime: u64,
     /// CPU time in milliseconds
-    pub cpu_time: u64,
+    #[serde(
+        default,
+        deserialize_with = "crate::types::common::deserialize_optional_string_or_number"
+    )]
+    pub cpu_time: Option<u64>,
     /// JVM version
     pub jvm: String,
     /// Working directory
@@ -303,37 +345,69 @@ pub struct SystemInfo {
     /// Architecture
     pub arch: String,
     /// Number of available processors
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub available_processors: u32,
     /// System load average
     pub load_average: f64,
     /// Total heap memory
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub heap_memory: u64,
     /// Used heap memory
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub used_heap_memory: u64,
     /// Maximum heap memory
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub max_heap_memory: u64,
     /// Total non-heap memory
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub non_heap_memory: u64,
     /// Used non-heap memory
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub used_non_heap_memory: u64,
     /// Used/max heap memory ratio
-    pub used_max_heap_memory: u64,
+    #[serde(
+        default,
+        deserialize_with = "crate::types::common::deserialize_optional_string_or_number"
+    )]
+    pub used_max_heap_memory: Option<u64>,
     /// Maximum non-heap memory
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::types::common::deserialize_optional_string_or_number"
+    )]
     pub max_non_heap_memory: Option<u64>,
     /// JVM thread count
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub jvm_thread_count: u32,
     /// CPU load percentage
+    #[serde(default)]
     pub cpu_load: f64,
     /// Process CPU load percentage
+    #[serde(default)]
     pub process_cpu_load: f64,
     /// Free system memory
+    #[serde(
+        default,
+        deserialize_with = "crate::types::common::deserialize_string_or_number"
+    )]
     pub free_memory: u64,
     /// Total system memory
+    #[serde(
+        default,
+        deserialize_with = "crate::types::common::deserialize_string_or_number"
+    )]
     pub total_memory: u64,
     /// Free swap space
+    #[serde(
+        default,
+        deserialize_with = "crate::types::common::deserialize_string_or_number"
+    )]
     pub free_swap_space: u64,
     /// Total swap space
+    #[serde(
+        default,
+        deserialize_with = "crate::types::common::deserialize_string_or_number"
+    )]
     pub total_swap_space: u64,
     /// Root directories
     pub root_directories: Vec<RootDirectory>,
@@ -351,31 +425,35 @@ pub struct RootDirectory {
     #[serde(rename = "type")]
     pub fs_type: String,
     /// Total space in bytes
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub total_space: u64,
     /// Unallocated space in bytes
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub unallocated_space: u64,
     /// Usable space in bytes
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub usable_space: u64,
 }
 
 /// Process information
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProcessInfo {
     /// Process ID
+    #[serde(deserialize_with = "crate::types::common::deserialize_string_or_number")]
     pub pid: u32,
     /// User running the process
     pub user: String,
     /// Command
     pub command: String,
     /// Command arguments
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub arguments: Option<Vec<String>>,
     /// Process start time
     pub start_time: String,
     /// Total CPU duration
+    #[serde(default)]
     pub total_cpu_duration: String,
     /// Child processes
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub children: Option<Vec<ProcessInfo>>,
 }
