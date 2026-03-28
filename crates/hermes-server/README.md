@@ -16,8 +16,6 @@ To regenerate the gRPC code:
 
 ```bash
 cargo build -p hermes-grpc
-# or
-yarn proto-rust
 ```
 
 ## Usage
