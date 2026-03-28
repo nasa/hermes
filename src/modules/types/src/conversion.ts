@@ -1,6 +1,6 @@
 import * as Def from './def';
 import { DualKeyMap } from './DualKeyMap';
-import * as Proto from './proto';
+import { hermes as Proto } from './proto';
 import { DisplayEvent, Event, EvrSeverity } from './telemetry';
 import { TypedArray, Value } from './types';
 import Long from 'long';
@@ -398,6 +398,60 @@ export function evrSeverityFromProto(proto: Proto.EvrSeverity): EvrSeverity {
     }
 }
 
+export function formatSpecifierTypeFromProto(proto: Proto.FormatSpecifierType): Def.FormatSpecifierType {
+    switch (proto) {
+        default:
+        case Proto.FormatSpecifierType.FMT_DEFAULT:
+            return Def.FormatSpecifierType.Default;
+        case Proto.FormatSpecifierType.FMT_CHAR:
+            return Def.FormatSpecifierType.Char;
+        case Proto.FormatSpecifierType.FMT_DECIMAL:
+            return Def.FormatSpecifierType.Decimal;
+        case Proto.FormatSpecifierType.FMT_HEX_LOWER:
+            return Def.FormatSpecifierType.HexLower;
+        case Proto.FormatSpecifierType.FMT_HEX_UPPER:
+            return Def.FormatSpecifierType.HexUpper;
+        case Proto.FormatSpecifierType.FMT_OCTAL:
+            return Def.FormatSpecifierType.Octal;
+        case Proto.FormatSpecifierType.FMT_EXP_LOWER:
+            return Def.FormatSpecifierType.ExpLower;
+        case Proto.FormatSpecifierType.FMT_EXP_UPPER:
+            return Def.FormatSpecifierType.ExpUpper;
+        case Proto.FormatSpecifierType.FMT_FIXED_LOWER:
+            return Def.FormatSpecifierType.FixedLower;
+        case Proto.FormatSpecifierType.FMT_FIXED_UPPER:
+            return Def.FormatSpecifierType.FixedUpper;
+        case Proto.FormatSpecifierType.FMT_GENERAL_LOWER:
+            return Def.FormatSpecifierType.GeneralLower;
+        case Proto.FormatSpecifierType.FMT_GENERAL_UPPER:
+            return Def.FormatSpecifierType.GeneralUpper;
+    }
+}
+
+export function formatSpecifierFromProto(proto: Proto.IFormatSpecifier): Def.FormatSpecifier {
+    return {
+        type: formatSpecifierTypeFromProto(proto.type ?? Proto.FormatSpecifierType.FMT_DEFAULT),
+        precision: proto.precision ?? undefined,
+        argumentIndex: proto.argumentIndex ?? 0,
+    };
+}
+
+export function formatFragmentFromProto(proto: Proto.IFormatFragment): Def.FormatFragment {
+    if (proto.text !== undefined && proto.text !== null) {
+        return { type: 'text', text: proto.text };
+    } else if (proto.specifier) {
+        return { type: 'specifier', specifier: formatSpecifierFromProto(proto.specifier) };
+    }
+    throw new Error('Invalid format fragment: must have either text or specifier');
+}
+
+export function formatStringFromProto(proto: Proto.IFormatString): Def.FormatString {
+    return {
+        fragments: proto.fragments?.map(formatFragmentFromProto) ?? [],
+        original: proto.original ?? '',
+    };
+}
+
 export function eventFromProto(
     proto: Proto.IEventDef,
     ctx: ConversionContext
@@ -405,6 +459,7 @@ export function eventFromProto(
     return {
         id: proto.id ?? 0,
         formatString: proto.formatString ?? "",
+        format: proto.format ? formatStringFromProto(proto.format) : undefined,
         component: proto.component ?? "",
         name: proto.name ?? "",
         severity: evrSeverityFromProto(proto.severity ?? Proto.EvrSeverity.EVR_DIAGNOSTIC),
@@ -884,6 +939,58 @@ export function evrSeverityToProto(sev: EvrSeverity): Proto.EvrSeverity {
     }
 }
 
+export function formatSpecifierTypeToProto(type: Def.FormatSpecifierType): Proto.FormatSpecifierType {
+    switch (type) {
+        case Def.FormatSpecifierType.Default:
+            return Proto.FormatSpecifierType.FMT_DEFAULT;
+        case Def.FormatSpecifierType.Char:
+            return Proto.FormatSpecifierType.FMT_CHAR;
+        case Def.FormatSpecifierType.Decimal:
+            return Proto.FormatSpecifierType.FMT_DECIMAL;
+        case Def.FormatSpecifierType.HexLower:
+            return Proto.FormatSpecifierType.FMT_HEX_LOWER;
+        case Def.FormatSpecifierType.HexUpper:
+            return Proto.FormatSpecifierType.FMT_HEX_UPPER;
+        case Def.FormatSpecifierType.Octal:
+            return Proto.FormatSpecifierType.FMT_OCTAL;
+        case Def.FormatSpecifierType.ExpLower:
+            return Proto.FormatSpecifierType.FMT_EXP_LOWER;
+        case Def.FormatSpecifierType.ExpUpper:
+            return Proto.FormatSpecifierType.FMT_EXP_UPPER;
+        case Def.FormatSpecifierType.FixedLower:
+            return Proto.FormatSpecifierType.FMT_FIXED_LOWER;
+        case Def.FormatSpecifierType.FixedUpper:
+            return Proto.FormatSpecifierType.FMT_FIXED_UPPER;
+        case Def.FormatSpecifierType.GeneralLower:
+            return Proto.FormatSpecifierType.FMT_GENERAL_LOWER;
+        case Def.FormatSpecifierType.GeneralUpper:
+            return Proto.FormatSpecifierType.FMT_GENERAL_UPPER;
+    }
+}
+
+export function formatSpecifierToProto(spec: Def.FormatSpecifier): Proto.IFormatSpecifier {
+    return {
+        type: formatSpecifierTypeToProto(spec.type),
+        precision: spec.precision,
+        argumentIndex: spec.argumentIndex,
+    };
+}
+
+export function formatFragmentToProto(fragment: Def.FormatFragment): Proto.IFormatFragment {
+    if (fragment.type === 'text') {
+        return { text: fragment.text };
+    } else {
+        return { specifier: formatSpecifierToProto(fragment.specifier) };
+    }
+}
+
+export function formatStringToProto(format: Def.FormatString): Proto.IFormatString {
+    return {
+        fragments: format.fragments.map(formatFragmentToProto),
+        original: format.original,
+    };
+}
+
 export function eventToProto(evr: Def.Event): Proto.IEventDef {
     return {
         id: evr.id,
@@ -891,6 +998,7 @@ export function eventToProto(evr: Def.Event): Proto.IEventDef {
         name: evr.name,
         severity: evrSeverityToProto(evr.severity),
         formatString: evr.formatString,
+        format: evr.format ? formatStringToProto(evr.format) : undefined,
         arguments: evr.arguments.map(fieldToProto),
         metadata: JSON.stringify(evr.metadata)
     };

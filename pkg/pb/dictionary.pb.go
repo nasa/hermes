@@ -82,6 +82,86 @@ func (EvrSeverity) EnumDescriptor() ([]byte, []int) {
 	return file_dictionary_proto_rawDescGZIP(), []int{0}
 }
 
+// Format specifier types following FPP specification
+type FormatSpecifierType int32
+
+const (
+	// Default/generic conversion
+	FormatSpecifierType_FMT_DEFAULT FormatSpecifierType = 0 // {} -> %v
+	// Integer conversions
+	FormatSpecifierType_FMT_CHAR      FormatSpecifierType = 1 // {c} -> %c
+	FormatSpecifierType_FMT_DECIMAL   FormatSpecifierType = 2 // {d} -> %d
+	FormatSpecifierType_FMT_HEX_LOWER FormatSpecifierType = 3 // {x} -> %x
+	FormatSpecifierType_FMT_HEX_UPPER FormatSpecifierType = 4 // {X} -> %X
+	FormatSpecifierType_FMT_OCTAL     FormatSpecifierType = 5 // {o} -> %o
+	// Floating-point conversions
+	FormatSpecifierType_FMT_EXP_LOWER     FormatSpecifierType = 6  // {e} -> %e
+	FormatSpecifierType_FMT_EXP_UPPER     FormatSpecifierType = 7  // {E} -> %E
+	FormatSpecifierType_FMT_FIXED_LOWER   FormatSpecifierType = 8  // {f} -> %f
+	FormatSpecifierType_FMT_FIXED_UPPER   FormatSpecifierType = 9  // {F} -> %F
+	FormatSpecifierType_FMT_GENERAL_LOWER FormatSpecifierType = 10 // {g} -> %g
+	FormatSpecifierType_FMT_GENERAL_UPPER FormatSpecifierType = 11 // {G} -> %G
+)
+
+// Enum value maps for FormatSpecifierType.
+var (
+	FormatSpecifierType_name = map[int32]string{
+		0:  "FMT_DEFAULT",
+		1:  "FMT_CHAR",
+		2:  "FMT_DECIMAL",
+		3:  "FMT_HEX_LOWER",
+		4:  "FMT_HEX_UPPER",
+		5:  "FMT_OCTAL",
+		6:  "FMT_EXP_LOWER",
+		7:  "FMT_EXP_UPPER",
+		8:  "FMT_FIXED_LOWER",
+		9:  "FMT_FIXED_UPPER",
+		10: "FMT_GENERAL_LOWER",
+		11: "FMT_GENERAL_UPPER",
+	}
+	FormatSpecifierType_value = map[string]int32{
+		"FMT_DEFAULT":       0,
+		"FMT_CHAR":          1,
+		"FMT_DECIMAL":       2,
+		"FMT_HEX_LOWER":     3,
+		"FMT_HEX_UPPER":     4,
+		"FMT_OCTAL":         5,
+		"FMT_EXP_LOWER":     6,
+		"FMT_EXP_UPPER":     7,
+		"FMT_FIXED_LOWER":   8,
+		"FMT_FIXED_UPPER":   9,
+		"FMT_GENERAL_LOWER": 10,
+		"FMT_GENERAL_UPPER": 11,
+	}
+)
+
+func (x FormatSpecifierType) Enum() *FormatSpecifierType {
+	p := new(FormatSpecifierType)
+	*p = x
+	return p
+}
+
+func (x FormatSpecifierType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FormatSpecifierType) Descriptor() protoreflect.EnumDescriptor {
+	return file_dictionary_proto_enumTypes[1].Descriptor()
+}
+
+func (FormatSpecifierType) Type() protoreflect.EnumType {
+	return &file_dictionary_proto_enumTypes[1]
+}
+
+func (x FormatSpecifierType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FormatSpecifierType.Descriptor instead.
+func (FormatSpecifierType) EnumDescriptor() ([]byte, []int) {
+	return file_dictionary_proto_rawDescGZIP(), []int{1}
+}
+
 type ParameterDef struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -249,6 +329,209 @@ func (x *CommandDef) GetMetadata() string {
 	return ""
 }
 
+type FormatSpecifier struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Type of format specifier (d, f, x, etc.)
+	Type FormatSpecifierType `protobuf:"varint,1,opt,name=type,proto3,enum=hermes.FormatSpecifierType" json:"type,omitempty"`
+	// Optional precision (digits after decimal point)
+	// For {.3f} this would be 3
+	Precision *uint32 `protobuf:"varint,2,opt,name=precision,proto3,oneof" json:"precision,omitempty"`
+	// Index into the arguments array (0-based)
+	// This connects the specifier to its corresponding argument
+	ArgumentIndex uint32 `protobuf:"varint,3,opt,name=argument_index,json=argumentIndex,proto3" json:"argument_index,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FormatSpecifier) Reset() {
+	*x = FormatSpecifier{}
+	mi := &file_dictionary_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FormatSpecifier) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FormatSpecifier) ProtoMessage() {}
+
+func (x *FormatSpecifier) ProtoReflect() protoreflect.Message {
+	mi := &file_dictionary_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FormatSpecifier.ProtoReflect.Descriptor instead.
+func (*FormatSpecifier) Descriptor() ([]byte, []int) {
+	return file_dictionary_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *FormatSpecifier) GetType() FormatSpecifierType {
+	if x != nil {
+		return x.Type
+	}
+	return FormatSpecifierType_FMT_DEFAULT
+}
+
+func (x *FormatSpecifier) GetPrecision() uint32 {
+	if x != nil && x.Precision != nil {
+		return *x.Precision
+	}
+	return 0
+}
+
+func (x *FormatSpecifier) GetArgumentIndex() uint32 {
+	if x != nil {
+		return x.ArgumentIndex
+	}
+	return 0
+}
+
+type FormatFragment struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Fragment:
+	//
+	//	*FormatFragment_Text
+	//	*FormatFragment_Specifier
+	Fragment      isFormatFragment_Fragment `protobuf_oneof:"fragment"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FormatFragment) Reset() {
+	*x = FormatFragment{}
+	mi := &file_dictionary_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FormatFragment) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FormatFragment) ProtoMessage() {}
+
+func (x *FormatFragment) ProtoReflect() protoreflect.Message {
+	mi := &file_dictionary_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FormatFragment.ProtoReflect.Descriptor instead.
+func (*FormatFragment) Descriptor() ([]byte, []int) {
+	return file_dictionary_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *FormatFragment) GetFragment() isFormatFragment_Fragment {
+	if x != nil {
+		return x.Fragment
+	}
+	return nil
+}
+
+func (x *FormatFragment) GetText() string {
+	if x != nil {
+		if x, ok := x.Fragment.(*FormatFragment_Text); ok {
+			return x.Text
+		}
+	}
+	return ""
+}
+
+func (x *FormatFragment) GetSpecifier() *FormatSpecifier {
+	if x != nil {
+		if x, ok := x.Fragment.(*FormatFragment_Specifier); ok {
+			return x.Specifier
+		}
+	}
+	return nil
+}
+
+type isFormatFragment_Fragment interface {
+	isFormatFragment_Fragment()
+}
+
+type FormatFragment_Text struct {
+	// Plain text segment
+	Text string `protobuf:"bytes,1,opt,name=text,proto3,oneof"`
+}
+
+type FormatFragment_Specifier struct {
+	// Format specifier with metadata
+	Specifier *FormatSpecifier `protobuf:"bytes,2,opt,name=specifier,proto3,oneof"`
+}
+
+func (*FormatFragment_Text) isFormatFragment_Fragment() {}
+
+func (*FormatFragment_Specifier) isFormatFragment_Fragment() {}
+
+type FormatString struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Ordered list of text and format specifier fragments
+	Fragments []*FormatFragment `protobuf:"bytes,1,rep,name=fragments,proto3" json:"fragments,omitempty"`
+	// Original format string (for debugging and backward compatibility)
+	Original      string `protobuf:"bytes,2,opt,name=original,proto3" json:"original,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FormatString) Reset() {
+	*x = FormatString{}
+	mi := &file_dictionary_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FormatString) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FormatString) ProtoMessage() {}
+
+func (x *FormatString) ProtoReflect() protoreflect.Message {
+	mi := &file_dictionary_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FormatString.ProtoReflect.Descriptor instead.
+func (*FormatString) Descriptor() ([]byte, []int) {
+	return file_dictionary_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *FormatString) GetFragments() []*FormatFragment {
+	if x != nil {
+		return x.Fragments
+	}
+	return nil
+}
+
+func (x *FormatString) GetOriginal() string {
+	if x != nil {
+		return x.Original
+	}
+	return ""
+}
+
 type EventDef struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -263,21 +546,27 @@ type EventDef struct {
 	// Log severity usually stored in the FSW event dictionary
 	// For the most part this information is not held in the
 	// EVR packet since its redundant for ground software.
-	Severity EvrSeverity `protobuf:"varint,4,opt,name=severity,proto3,enum=EvrSeverity" json:"severity,omitempty"`
+	Severity EvrSeverity `protobuf:"varint,4,opt,name=severity,proto3,enum=hermes.EvrSeverity" json:"severity,omitempty"`
 	// *
+	// DEPRECATED: Use format instead
 	// printf format string that will be formatted via sprintf
+	//
+	// Deprecated: Marked as deprecated in dictionary.proto.
 	FormatString string `protobuf:"bytes,5,opt,name=format_string,json=formatString,proto3" json:"format_string,omitempty"`
 	// *
 	// Arguments used inside the format string
-	Arguments     []*Field `protobuf:"bytes,6,rep,name=arguments,proto3" json:"arguments,omitempty"`
-	Metadata      string   `protobuf:"bytes,7,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	Arguments []*Field `protobuf:"bytes,6,rep,name=arguments,proto3" json:"arguments,omitempty"`
+	Metadata  string   `protobuf:"bytes,7,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	// *
+	// Structured format string with parsed fragments
+	Format        *FormatString `protobuf:"bytes,8,opt,name=format,proto3" json:"format,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *EventDef) Reset() {
 	*x = EventDef{}
-	mi := &file_dictionary_proto_msgTypes[2]
+	mi := &file_dictionary_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -289,7 +578,7 @@ func (x *EventDef) String() string {
 func (*EventDef) ProtoMessage() {}
 
 func (x *EventDef) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[2]
+	mi := &file_dictionary_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -302,7 +591,7 @@ func (x *EventDef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventDef.ProtoReflect.Descriptor instead.
 func (*EventDef) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{2}
+	return file_dictionary_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *EventDef) GetId() int32 {
@@ -333,6 +622,7 @@ func (x *EventDef) GetSeverity() EvrSeverity {
 	return EvrSeverity_EVR_DIAGNOSTIC
 }
 
+// Deprecated: Marked as deprecated in dictionary.proto.
 func (x *EventDef) GetFormatString() string {
 	if x != nil {
 		return x.FormatString
@@ -354,12 +644,19 @@ func (x *EventDef) GetMetadata() string {
 	return ""
 }
 
+func (x *EventDef) GetFormat() *FormatString {
+	if x != nil {
+		return x.Format
+	}
+	return nil
+}
+
 type EventRef struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	Id        int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name      string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Component string                 `protobuf:"bytes,3,opt,name=component,proto3" json:"component,omitempty"`
-	Severity  EvrSeverity            `protobuf:"varint,4,opt,name=severity,proto3,enum=EvrSeverity" json:"severity,omitempty"`
+	Severity  EvrSeverity            `protobuf:"varint,4,opt,name=severity,proto3,enum=hermes.EvrSeverity" json:"severity,omitempty"`
 	Arguments []string               `protobuf:"bytes,5,rep,name=arguments,proto3" json:"arguments,omitempty"`
 	// (optional) dictionary ID this comes from
 	Dictionary    string `protobuf:"bytes,10,opt,name=dictionary,proto3" json:"dictionary,omitempty"`
@@ -369,7 +666,7 @@ type EventRef struct {
 
 func (x *EventRef) Reset() {
 	*x = EventRef{}
-	mi := &file_dictionary_proto_msgTypes[3]
+	mi := &file_dictionary_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -381,7 +678,7 @@ func (x *EventRef) String() string {
 func (*EventRef) ProtoMessage() {}
 
 func (x *EventRef) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[3]
+	mi := &file_dictionary_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -394,7 +691,7 @@ func (x *EventRef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventRef.ProtoReflect.Descriptor instead.
 func (*EventRef) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{3}
+	return file_dictionary_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *EventRef) GetId() int32 {
@@ -460,7 +757,7 @@ type TelemetryDef struct {
 
 func (x *TelemetryDef) Reset() {
 	*x = TelemetryDef{}
-	mi := &file_dictionary_proto_msgTypes[4]
+	mi := &file_dictionary_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -472,7 +769,7 @@ func (x *TelemetryDef) String() string {
 func (*TelemetryDef) ProtoMessage() {}
 
 func (x *TelemetryDef) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[4]
+	mi := &file_dictionary_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -485,7 +782,7 @@ func (x *TelemetryDef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TelemetryDef.ProtoReflect.Descriptor instead.
 func (*TelemetryDef) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{4}
+	return file_dictionary_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *TelemetryDef) GetId() int32 {
@@ -537,7 +834,7 @@ type TelemetryRef struct {
 
 func (x *TelemetryRef) Reset() {
 	*x = TelemetryRef{}
-	mi := &file_dictionary_proto_msgTypes[5]
+	mi := &file_dictionary_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -549,7 +846,7 @@ func (x *TelemetryRef) String() string {
 func (*TelemetryRef) ProtoMessage() {}
 
 func (x *TelemetryRef) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[5]
+	mi := &file_dictionary_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -562,7 +859,7 @@ func (x *TelemetryRef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TelemetryRef.ProtoReflect.Descriptor instead.
 func (*TelemetryRef) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{5}
+	return file_dictionary_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *TelemetryRef) GetId() int32 {
@@ -612,7 +909,7 @@ type DictionaryHead struct {
 
 func (x *DictionaryHead) Reset() {
 	*x = DictionaryHead{}
-	mi := &file_dictionary_proto_msgTypes[6]
+	mi := &file_dictionary_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -624,7 +921,7 @@ func (x *DictionaryHead) String() string {
 func (*DictionaryHead) ProtoMessage() {}
 
 func (x *DictionaryHead) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[6]
+	mi := &file_dictionary_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -637,7 +934,7 @@ func (x *DictionaryHead) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DictionaryHead.ProtoReflect.Descriptor instead.
 func (*DictionaryHead) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{6}
+	return file_dictionary_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *DictionaryHead) GetType() string {
@@ -678,7 +975,7 @@ type DictionaryNamespace struct {
 
 func (x *DictionaryNamespace) Reset() {
 	*x = DictionaryNamespace{}
-	mi := &file_dictionary_proto_msgTypes[7]
+	mi := &file_dictionary_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -690,7 +987,7 @@ func (x *DictionaryNamespace) String() string {
 func (*DictionaryNamespace) ProtoMessage() {}
 
 func (x *DictionaryNamespace) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[7]
+	mi := &file_dictionary_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -703,7 +1000,7 @@ func (x *DictionaryNamespace) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DictionaryNamespace.ProtoReflect.Descriptor instead.
 func (*DictionaryNamespace) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{7}
+	return file_dictionary_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *DictionaryNamespace) GetCommands() map[string]*CommandDef {
@@ -756,7 +1053,7 @@ type Dictionary struct {
 
 func (x *Dictionary) Reset() {
 	*x = Dictionary{}
-	mi := &file_dictionary_proto_msgTypes[8]
+	mi := &file_dictionary_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -768,7 +1065,7 @@ func (x *Dictionary) String() string {
 func (*Dictionary) ProtoMessage() {}
 
 func (x *Dictionary) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[8]
+	mi := &file_dictionary_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -781,7 +1078,7 @@ func (x *Dictionary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Dictionary.ProtoReflect.Descriptor instead.
 func (*Dictionary) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{8}
+	return file_dictionary_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *Dictionary) GetHead() *DictionaryHead {
@@ -816,44 +1113,59 @@ var File_dictionary_proto protoreflect.FileDescriptor
 
 const file_dictionary_proto_rawDesc = "" +
 	"\n" +
-	"\x10dictionary.proto\x1a\n" +
-	"type.proto\"\x87\x01\n" +
+	"\x10dictionary.proto\x12\x06hermes\x1a\n" +
+	"type.proto\"\x8e\x01\n" +
 	"\fParameterDef\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1c\n" +
 	"\tcomponent\x18\x02 \x01(\tR\tcomponent\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12\x19\n" +
-	"\x04type\x18\x04 \x01(\v2\x05.TypeR\x04type\x12\x1a\n" +
-	"\bmetadata\x18\x05 \x01(\tR\bmetadata\"\xa0\x01\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12 \n" +
+	"\x04type\x18\x04 \x01(\v2\f.hermes.TypeR\x04type\x12\x1a\n" +
+	"\bmetadata\x18\x05 \x01(\tR\bmetadata\"\xa7\x01\n" +
 	"\n" +
 	"CommandDef\x12\x16\n" +
 	"\x06opcode\x18\x01 \x01(\x05R\x06opcode\x12\x1a\n" +
 	"\bmnemonic\x18\x02 \x01(\tR\bmnemonic\x12\x1c\n" +
-	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12$\n" +
-	"\targuments\x18\x04 \x03(\v2\x06.FieldR\targuments\x12\x1a\n" +
-	"\bmetadata\x18\x05 \x01(\tR\bmetadata\"\xdd\x01\n" +
+	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12+\n" +
+	"\targuments\x18\x04 \x03(\v2\r.hermes.FieldR\targuments\x12\x1a\n" +
+	"\bmetadata\x18\x05 \x01(\tR\bmetadata\"\x9a\x01\n" +
+	"\x0fFormatSpecifier\x12/\n" +
+	"\x04type\x18\x01 \x01(\x0e2\x1b.hermes.FormatSpecifierTypeR\x04type\x12!\n" +
+	"\tprecision\x18\x02 \x01(\rH\x00R\tprecision\x88\x01\x01\x12%\n" +
+	"\x0eargument_index\x18\x03 \x01(\rR\rargumentIndexB\f\n" +
+	"\n" +
+	"_precision\"k\n" +
+	"\x0eFormatFragment\x12\x14\n" +
+	"\x04text\x18\x01 \x01(\tH\x00R\x04text\x127\n" +
+	"\tspecifier\x18\x02 \x01(\v2\x17.hermes.FormatSpecifierH\x00R\tspecifierB\n" +
+	"\n" +
+	"\bfragment\"`\n" +
+	"\fFormatString\x124\n" +
+	"\tfragments\x18\x01 \x03(\v2\x16.hermes.FormatFragmentR\tfragments\x12\x1a\n" +
+	"\boriginal\x18\x02 \x01(\tR\boriginal\"\x9d\x02\n" +
 	"\bEventDef\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1c\n" +
 	"\tcomponent\x18\x02 \x01(\tR\tcomponent\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12(\n" +
-	"\bseverity\x18\x04 \x01(\x0e2\f.EvrSeverityR\bseverity\x12#\n" +
-	"\rformat_string\x18\x05 \x01(\tR\fformatString\x12$\n" +
-	"\targuments\x18\x06 \x03(\v2\x06.FieldR\targuments\x12\x1a\n" +
-	"\bmetadata\x18\a \x01(\tR\bmetadata\"\xb4\x01\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12/\n" +
+	"\bseverity\x18\x04 \x01(\x0e2\x13.hermes.EvrSeverityR\bseverity\x12'\n" +
+	"\rformat_string\x18\x05 \x01(\tB\x02\x18\x01R\fformatString\x12+\n" +
+	"\targuments\x18\x06 \x03(\v2\r.hermes.FieldR\targuments\x12\x1a\n" +
+	"\bmetadata\x18\a \x01(\tR\bmetadata\x12,\n" +
+	"\x06format\x18\b \x01(\v2\x14.hermes.FormatStringR\x06format\"\xbb\x01\n" +
 	"\bEventRef\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +
-	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12(\n" +
-	"\bseverity\x18\x04 \x01(\x0e2\f.EvrSeverityR\bseverity\x12\x1c\n" +
+	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12/\n" +
+	"\bseverity\x18\x04 \x01(\x0e2\x13.hermes.EvrSeverityR\bseverity\x12\x1c\n" +
 	"\targuments\x18\x05 \x03(\tR\targuments\x12\x1e\n" +
 	"\n" +
 	"dictionary\x18\n" +
 	" \x01(\tR\n" +
-	"dictionary\"\x8d\x01\n" +
+	"dictionary\"\x94\x01\n" +
 	"\fTelemetryDef\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +
-	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12\x19\n" +
-	"\x04type\x18\x04 \x01(\v2\x05.TypeR\x04type\x12\x1a\n" +
+	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12 \n" +
+	"\x04type\x18\x04 \x01(\v2\f.hermes.TypeR\x04type\x12\x1a\n" +
 	"\bmetadata\x18\x06 \x01(\tR\bmetadataJ\x04\b\x05\x10\x06\"p\n" +
 	"\fTelemetryRef\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
@@ -866,40 +1178,40 @@ const file_dictionary_proto_rawDesc = "" +
 	"\x0eDictionaryHead\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\tR\aversion\"\xbb\x05\n" +
-	"\x13DictionaryNamespace\x12>\n" +
-	"\bcommands\x18\x01 \x03(\v2\".DictionaryNamespace.CommandsEntryR\bcommands\x128\n" +
-	"\x06events\x18\x02 \x03(\v2 .DictionaryNamespace.EventsEntryR\x06events\x12A\n" +
-	"\ttelemetry\x18\x03 \x03(\v2#.DictionaryNamespace.TelemetryEntryR\ttelemetry\x12D\n" +
+	"\aversion\x18\x03 \x01(\tR\aversion\"\x81\x06\n" +
+	"\x13DictionaryNamespace\x12E\n" +
+	"\bcommands\x18\x01 \x03(\v2).hermes.DictionaryNamespace.CommandsEntryR\bcommands\x12?\n" +
+	"\x06events\x18\x02 \x03(\v2'.hermes.DictionaryNamespace.EventsEntryR\x06events\x12H\n" +
+	"\ttelemetry\x18\x03 \x03(\v2*.hermes.DictionaryNamespace.TelemetryEntryR\ttelemetry\x12K\n" +
 	"\n" +
-	"parameters\x18\x04 \x03(\v2$.DictionaryNamespace.ParametersEntryR\n" +
-	"parameters\x125\n" +
-	"\x05types\x18\x05 \x03(\v2\x1f.DictionaryNamespace.TypesEntryR\x05types\x1aH\n" +
+	"parameters\x18\x04 \x03(\v2+.hermes.DictionaryNamespace.ParametersEntryR\n" +
+	"parameters\x12<\n" +
+	"\x05types\x18\x05 \x03(\v2&.hermes.DictionaryNamespace.TypesEntryR\x05types\x1aO\n" +
 	"\rCommandsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12!\n" +
-	"\x05value\x18\x02 \x01(\v2\v.CommandDefR\x05value:\x028\x01\x1aD\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12(\n" +
+	"\x05value\x18\x02 \x01(\v2\x12.hermes.CommandDefR\x05value:\x028\x01\x1aK\n" +
 	"\vEventsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x1f\n" +
-	"\x05value\x18\x02 \x01(\v2\t.EventDefR\x05value:\x028\x01\x1aK\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12&\n" +
+	"\x05value\x18\x02 \x01(\v2\x10.hermes.EventDefR\x05value:\x028\x01\x1aR\n" +
 	"\x0eTelemetryEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12#\n" +
-	"\x05value\x18\x02 \x01(\v2\r.TelemetryDefR\x05value:\x028\x01\x1aL\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
+	"\x05value\x18\x02 \x01(\v2\x14.hermes.TelemetryDefR\x05value:\x028\x01\x1aS\n" +
 	"\x0fParametersEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12#\n" +
-	"\x05value\x18\x02 \x01(\v2\r.ParameterDefR\x05value:\x028\x01\x1a?\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
+	"\x05value\x18\x02 \x01(\v2\x14.hermes.ParameterDefR\x05value:\x028\x01\x1aF\n" +
 	"\n" +
 	"TypesEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x1b\n" +
-	"\x05value\x18\x02 \x01(\v2\x05.TypeR\x05value:\x028\x01\"\xbb\x02\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\"\n" +
+	"\x05value\x18\x02 \x01(\v2\f.hermes.TypeR\x05value:\x028\x01\"\xd7\x02\n" +
 	"\n" +
-	"Dictionary\x12#\n" +
-	"\x04head\x18\x01 \x01(\v2\x0f.DictionaryHeadR\x04head\x122\n" +
-	"\acontent\x18\x02 \x03(\v2\x18.Dictionary.ContentEntryR\acontent\x125\n" +
-	"\bmetadata\x18\x03 \x03(\v2\x19.Dictionary.MetadataEntryR\bmetadata\x12\x0e\n" +
-	"\x02id\x18\x04 \x01(\tR\x02id\x1aP\n" +
+	"Dictionary\x12*\n" +
+	"\x04head\x18\x01 \x01(\v2\x16.hermes.DictionaryHeadR\x04head\x129\n" +
+	"\acontent\x18\x02 \x03(\v2\x1f.hermes.Dictionary.ContentEntryR\acontent\x12<\n" +
+	"\bmetadata\x18\x03 \x03(\v2 .hermes.Dictionary.MetadataEntryR\bmetadata\x12\x0e\n" +
+	"\x02id\x18\x04 \x01(\tR\x02id\x1aW\n" +
 	"\fContentEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
-	"\x05value\x18\x02 \x01(\v2\x14.DictionaryNamespaceR\x05value:\x028\x01\x1a;\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x121\n" +
+	"\x05value\x18\x02 \x01(\v2\x1b.hermes.DictionaryNamespaceR\x05value:\x028\x01\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*\x99\x01\n" +
@@ -910,7 +1222,21 @@ const file_dictionary_proto_rawDesc = "" +
 	"\x0fEVR_WARNING_LOW\x10\x03\x12\x14\n" +
 	"\x10EVR_WARNING_HIGH\x10\x04\x12\x0f\n" +
 	"\vEVR_COMMAND\x10\x05\x12\r\n" +
-	"\tEVR_FATAL\x10\x06B\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3"
+	"\tEVR_FATAL\x10\x06*\xf8\x01\n" +
+	"\x13FormatSpecifierType\x12\x0f\n" +
+	"\vFMT_DEFAULT\x10\x00\x12\f\n" +
+	"\bFMT_CHAR\x10\x01\x12\x0f\n" +
+	"\vFMT_DECIMAL\x10\x02\x12\x11\n" +
+	"\rFMT_HEX_LOWER\x10\x03\x12\x11\n" +
+	"\rFMT_HEX_UPPER\x10\x04\x12\r\n" +
+	"\tFMT_OCTAL\x10\x05\x12\x11\n" +
+	"\rFMT_EXP_LOWER\x10\x06\x12\x11\n" +
+	"\rFMT_EXP_UPPER\x10\a\x12\x13\n" +
+	"\x0fFMT_FIXED_LOWER\x10\b\x12\x13\n" +
+	"\x0fFMT_FIXED_UPPER\x10\t\x12\x15\n" +
+	"\x11FMT_GENERAL_LOWER\x10\n" +
+	"\x12\x15\n" +
+	"\x11FMT_GENERAL_UPPER\x10\vB\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3"
 
 var (
 	file_dictionary_proto_rawDescOnce sync.Once
@@ -924,55 +1250,63 @@ func file_dictionary_proto_rawDescGZIP() []byte {
 	return file_dictionary_proto_rawDescData
 }
 
-var file_dictionary_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_dictionary_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_dictionary_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_dictionary_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_dictionary_proto_goTypes = []any{
-	(EvrSeverity)(0),            // 0: EvrSeverity
-	(*ParameterDef)(nil),        // 1: ParameterDef
-	(*CommandDef)(nil),          // 2: CommandDef
-	(*EventDef)(nil),            // 3: EventDef
-	(*EventRef)(nil),            // 4: EventRef
-	(*TelemetryDef)(nil),        // 5: TelemetryDef
-	(*TelemetryRef)(nil),        // 6: TelemetryRef
-	(*DictionaryHead)(nil),      // 7: DictionaryHead
-	(*DictionaryNamespace)(nil), // 8: DictionaryNamespace
-	(*Dictionary)(nil),          // 9: Dictionary
-	nil,                         // 10: DictionaryNamespace.CommandsEntry
-	nil,                         // 11: DictionaryNamespace.EventsEntry
-	nil,                         // 12: DictionaryNamespace.TelemetryEntry
-	nil,                         // 13: DictionaryNamespace.ParametersEntry
-	nil,                         // 14: DictionaryNamespace.TypesEntry
-	nil,                         // 15: Dictionary.ContentEntry
-	nil,                         // 16: Dictionary.MetadataEntry
-	(*Type)(nil),                // 17: Type
-	(*Field)(nil),               // 18: Field
+	(EvrSeverity)(0),            // 0: hermes.EvrSeverity
+	(FormatSpecifierType)(0),    // 1: hermes.FormatSpecifierType
+	(*ParameterDef)(nil),        // 2: hermes.ParameterDef
+	(*CommandDef)(nil),          // 3: hermes.CommandDef
+	(*FormatSpecifier)(nil),     // 4: hermes.FormatSpecifier
+	(*FormatFragment)(nil),      // 5: hermes.FormatFragment
+	(*FormatString)(nil),        // 6: hermes.FormatString
+	(*EventDef)(nil),            // 7: hermes.EventDef
+	(*EventRef)(nil),            // 8: hermes.EventRef
+	(*TelemetryDef)(nil),        // 9: hermes.TelemetryDef
+	(*TelemetryRef)(nil),        // 10: hermes.TelemetryRef
+	(*DictionaryHead)(nil),      // 11: hermes.DictionaryHead
+	(*DictionaryNamespace)(nil), // 12: hermes.DictionaryNamespace
+	(*Dictionary)(nil),          // 13: hermes.Dictionary
+	nil,                         // 14: hermes.DictionaryNamespace.CommandsEntry
+	nil,                         // 15: hermes.DictionaryNamespace.EventsEntry
+	nil,                         // 16: hermes.DictionaryNamespace.TelemetryEntry
+	nil,                         // 17: hermes.DictionaryNamespace.ParametersEntry
+	nil,                         // 18: hermes.DictionaryNamespace.TypesEntry
+	nil,                         // 19: hermes.Dictionary.ContentEntry
+	nil,                         // 20: hermes.Dictionary.MetadataEntry
+	(*Type)(nil),                // 21: hermes.Type
+	(*Field)(nil),               // 22: hermes.Field
 }
 var file_dictionary_proto_depIdxs = []int32{
-	17, // 0: ParameterDef.type:type_name -> Type
-	18, // 1: CommandDef.arguments:type_name -> Field
-	0,  // 2: EventDef.severity:type_name -> EvrSeverity
-	18, // 3: EventDef.arguments:type_name -> Field
-	0,  // 4: EventRef.severity:type_name -> EvrSeverity
-	17, // 5: TelemetryDef.type:type_name -> Type
-	10, // 6: DictionaryNamespace.commands:type_name -> DictionaryNamespace.CommandsEntry
-	11, // 7: DictionaryNamespace.events:type_name -> DictionaryNamespace.EventsEntry
-	12, // 8: DictionaryNamespace.telemetry:type_name -> DictionaryNamespace.TelemetryEntry
-	13, // 9: DictionaryNamespace.parameters:type_name -> DictionaryNamespace.ParametersEntry
-	14, // 10: DictionaryNamespace.types:type_name -> DictionaryNamespace.TypesEntry
-	7,  // 11: Dictionary.head:type_name -> DictionaryHead
-	15, // 12: Dictionary.content:type_name -> Dictionary.ContentEntry
-	16, // 13: Dictionary.metadata:type_name -> Dictionary.MetadataEntry
-	2,  // 14: DictionaryNamespace.CommandsEntry.value:type_name -> CommandDef
-	3,  // 15: DictionaryNamespace.EventsEntry.value:type_name -> EventDef
-	5,  // 16: DictionaryNamespace.TelemetryEntry.value:type_name -> TelemetryDef
-	1,  // 17: DictionaryNamespace.ParametersEntry.value:type_name -> ParameterDef
-	17, // 18: DictionaryNamespace.TypesEntry.value:type_name -> Type
-	8,  // 19: Dictionary.ContentEntry.value:type_name -> DictionaryNamespace
-	20, // [20:20] is the sub-list for method output_type
-	20, // [20:20] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	21, // 0: hermes.ParameterDef.type:type_name -> hermes.Type
+	22, // 1: hermes.CommandDef.arguments:type_name -> hermes.Field
+	1,  // 2: hermes.FormatSpecifier.type:type_name -> hermes.FormatSpecifierType
+	4,  // 3: hermes.FormatFragment.specifier:type_name -> hermes.FormatSpecifier
+	5,  // 4: hermes.FormatString.fragments:type_name -> hermes.FormatFragment
+	0,  // 5: hermes.EventDef.severity:type_name -> hermes.EvrSeverity
+	22, // 6: hermes.EventDef.arguments:type_name -> hermes.Field
+	6,  // 7: hermes.EventDef.format:type_name -> hermes.FormatString
+	0,  // 8: hermes.EventRef.severity:type_name -> hermes.EvrSeverity
+	21, // 9: hermes.TelemetryDef.type:type_name -> hermes.Type
+	14, // 10: hermes.DictionaryNamespace.commands:type_name -> hermes.DictionaryNamespace.CommandsEntry
+	15, // 11: hermes.DictionaryNamespace.events:type_name -> hermes.DictionaryNamespace.EventsEntry
+	16, // 12: hermes.DictionaryNamespace.telemetry:type_name -> hermes.DictionaryNamespace.TelemetryEntry
+	17, // 13: hermes.DictionaryNamespace.parameters:type_name -> hermes.DictionaryNamespace.ParametersEntry
+	18, // 14: hermes.DictionaryNamespace.types:type_name -> hermes.DictionaryNamespace.TypesEntry
+	11, // 15: hermes.Dictionary.head:type_name -> hermes.DictionaryHead
+	19, // 16: hermes.Dictionary.content:type_name -> hermes.Dictionary.ContentEntry
+	20, // 17: hermes.Dictionary.metadata:type_name -> hermes.Dictionary.MetadataEntry
+	3,  // 18: hermes.DictionaryNamespace.CommandsEntry.value:type_name -> hermes.CommandDef
+	7,  // 19: hermes.DictionaryNamespace.EventsEntry.value:type_name -> hermes.EventDef
+	9,  // 20: hermes.DictionaryNamespace.TelemetryEntry.value:type_name -> hermes.TelemetryDef
+	2,  // 21: hermes.DictionaryNamespace.ParametersEntry.value:type_name -> hermes.ParameterDef
+	21, // 22: hermes.DictionaryNamespace.TypesEntry.value:type_name -> hermes.Type
+	12, // 23: hermes.Dictionary.ContentEntry.value:type_name -> hermes.DictionaryNamespace
+	24, // [24:24] is the sub-list for method output_type
+	24, // [24:24] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_dictionary_proto_init() }
@@ -981,13 +1315,18 @@ func file_dictionary_proto_init() {
 		return
 	}
 	file_type_proto_init()
+	file_dictionary_proto_msgTypes[2].OneofWrappers = []any{}
+	file_dictionary_proto_msgTypes[3].OneofWrappers = []any{
+		(*FormatFragment_Text)(nil),
+		(*FormatFragment_Specifier)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_dictionary_proto_rawDesc), len(file_dictionary_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   16,
+			NumEnums:      2,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

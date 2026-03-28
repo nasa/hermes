@@ -1,5 +1,6 @@
 syntax = "proto3";
 option go_package = "github.com/nasa/hermes/pkg/pb";
+package hermes;
 
 message ProfileProvider {
   string name = 1;

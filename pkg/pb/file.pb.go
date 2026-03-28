@@ -455,38 +455,38 @@ var File_file_proto protoreflect.FileDescriptor
 const file_file_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"file.proto\"\xe0\x01\n" +
+	"file.proto\x12\x06hermes\"\xe7\x01\n" +
 	"\n" +
 	"FileHeader\x12\x1f\n" +
 	"\vsource_path\x18\x01 \x01(\tR\n" +
 	"sourcePath\x12)\n" +
 	"\x10destination_path\x18\x02 \x01(\tR\x0fdestinationPath\x12\x12\n" +
-	"\x04size\x18\x03 \x01(\x04R\x04size\x125\n" +
-	"\bmetadata\x18\x04 \x03(\v2\x19.FileHeader.MetadataEntryR\bmetadata\x1a;\n" +
+	"\x04size\x18\x03 \x01(\x04R\x04size\x12<\n" +
+	"\bmetadata\x18\x04 \x03(\v2 .hermes.FileHeader.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"W\n" +
-	"\x0fUplinkFileChunk\x12%\n" +
-	"\x06header\x18\x01 \x01(\v2\v.FileHeaderH\x00R\x06header\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"^\n" +
+	"\x0fUplinkFileChunk\x12,\n" +
+	"\x06header\x18\x01 \x01(\v2\x12.hermes.FileHeaderH\x00R\x06header\x12\x14\n" +
 	"\x04data\x18\x02 \x01(\fH\x00R\x04dataB\a\n" +
-	"\x05value\"\xa0\x01\n" +
+	"\x05value\"\xa7\x01\n" +
 	"\x10DownlinkFileData\x12\x16\n" +
 	"\x06offset\x18\x01 \x01(\x04R\x06offset\x12\x12\n" +
-	"\x04data\x18\x02 \x01(\fR\x04data\x12)\n" +
-	"\x02md\x18\x03 \x03(\v2\x19.DownlinkFileData.MdEntryR\x02md\x1a5\n" +
+	"\x04data\x18\x02 \x01(\fR\x04data\x120\n" +
+	"\x02md\x18\x03 \x03(\v2 .hermes.DownlinkFileData.MdEntryR\x02md\x1a5\n" +
 	"\aMdEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"<\n" +
 	"\x14DownlinkFileMetadata\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x12\n" +
 	"\x04data\x18\x02 \x01(\fR\x04data\"\x18\n" +
-	"\x16DownlinkFileValidation\"\xdc\x01\n" +
-	"\x11DownlinkFileChunk\x12%\n" +
-	"\x06header\x18\x01 \x01(\v2\v.FileHeaderH\x00R\x06header\x12'\n" +
-	"\x04data\x18\x02 \x01(\v2\x11.DownlinkFileDataH\x00R\x04data\x123\n" +
-	"\bmetadata\x18\x03 \x01(\v2\x15.DownlinkFileMetadataH\x00R\bmetadata\x129\n" +
+	"\x16DownlinkFileValidation\"\xf8\x01\n" +
+	"\x11DownlinkFileChunk\x12,\n" +
+	"\x06header\x18\x01 \x01(\v2\x12.hermes.FileHeaderH\x00R\x06header\x12.\n" +
+	"\x04data\x18\x02 \x01(\v2\x18.hermes.DownlinkFileDataH\x00R\x04data\x12:\n" +
+	"\bmetadata\x18\x03 \x01(\v2\x1c.hermes.DownlinkFileMetadataH\x00R\bmetadata\x12@\n" +
 	"\n" +
-	"validation\x18\x04 \x01(\v2\x17.DownlinkFileValidationH\x00R\n" +
+	"validation\x18\x04 \x01(\v2\x1e.hermes.DownlinkFileValidationH\x00R\n" +
 	"validationB\a\n" +
 	"\x05valueB\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3"
 
@@ -504,23 +504,23 @@ func file_file_proto_rawDescGZIP() []byte {
 
 var file_file_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_file_proto_goTypes = []any{
-	(*FileHeader)(nil),             // 0: FileHeader
-	(*UplinkFileChunk)(nil),        // 1: UplinkFileChunk
-	(*DownlinkFileData)(nil),       // 2: DownlinkFileData
-	(*DownlinkFileMetadata)(nil),   // 3: DownlinkFileMetadata
-	(*DownlinkFileValidation)(nil), // 4: DownlinkFileValidation
-	(*DownlinkFileChunk)(nil),      // 5: DownlinkFileChunk
-	nil,                            // 6: FileHeader.MetadataEntry
-	nil,                            // 7: DownlinkFileData.MdEntry
+	(*FileHeader)(nil),             // 0: hermes.FileHeader
+	(*UplinkFileChunk)(nil),        // 1: hermes.UplinkFileChunk
+	(*DownlinkFileData)(nil),       // 2: hermes.DownlinkFileData
+	(*DownlinkFileMetadata)(nil),   // 3: hermes.DownlinkFileMetadata
+	(*DownlinkFileValidation)(nil), // 4: hermes.DownlinkFileValidation
+	(*DownlinkFileChunk)(nil),      // 5: hermes.DownlinkFileChunk
+	nil,                            // 6: hermes.FileHeader.MetadataEntry
+	nil,                            // 7: hermes.DownlinkFileData.MdEntry
 }
 var file_file_proto_depIdxs = []int32{
-	6, // 0: FileHeader.metadata:type_name -> FileHeader.MetadataEntry
-	0, // 1: UplinkFileChunk.header:type_name -> FileHeader
-	7, // 2: DownlinkFileData.md:type_name -> DownlinkFileData.MdEntry
-	0, // 3: DownlinkFileChunk.header:type_name -> FileHeader
-	2, // 4: DownlinkFileChunk.data:type_name -> DownlinkFileData
-	3, // 5: DownlinkFileChunk.metadata:type_name -> DownlinkFileMetadata
-	4, // 6: DownlinkFileChunk.validation:type_name -> DownlinkFileValidation
+	6, // 0: hermes.FileHeader.metadata:type_name -> hermes.FileHeader.MetadataEntry
+	0, // 1: hermes.UplinkFileChunk.header:type_name -> hermes.FileHeader
+	7, // 2: hermes.DownlinkFileData.md:type_name -> hermes.DownlinkFileData.MdEntry
+	0, // 3: hermes.DownlinkFileChunk.header:type_name -> hermes.FileHeader
+	2, // 4: hermes.DownlinkFileChunk.data:type_name -> hermes.DownlinkFileData
+	3, // 5: hermes.DownlinkFileChunk.metadata:type_name -> hermes.DownlinkFileMetadata
+	4, // 6: hermes.DownlinkFileChunk.validation:type_name -> hermes.DownlinkFileValidation
 	7, // [7:7] is the sub-list for method output_type
 	7, // [7:7] is the sub-list for method input_type
 	7, // [7:7] is the sub-list for extension type_name

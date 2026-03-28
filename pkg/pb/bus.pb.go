@@ -187,7 +187,7 @@ type BusFilter struct {
 	// (optional) Listen to a subset of ids
 	Names []string `protobuf:"bytes,2,rep,name=names,proto3" json:"names,omitempty"`
 	// Filter whether to get recorded vs realtime data streams
-	Context       SourceContextFilter `protobuf:"varint,3,opt,name=context,proto3,enum=SourceContextFilter" json:"context,omitempty"`
+	Context       SourceContextFilter `protobuf:"varint,3,opt,name=context,proto3,enum=hermes.SourceContextFilter" json:"context,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -402,7 +402,7 @@ type SourcedEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Event         *Event                 `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
 	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
-	Context       SourceContext          `protobuf:"varint,3,opt,name=context,proto3,enum=SourceContext" json:"context,omitempty"`
+	Context       SourceContext          `protobuf:"varint,3,opt,name=context,proto3,enum=hermes.SourceContext" json:"context,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -462,7 +462,7 @@ type SourcedTelemetry struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Telemetry     *Telemetry             `protobuf:"bytes,1,opt,name=telemetry,proto3" json:"telemetry,omitempty"`
 	Source        string                 `protobuf:"bytes,2,opt,name=source,proto3" json:"source,omitempty"`
-	Context       SourceContext          `protobuf:"varint,3,opt,name=context,proto3,enum=SourceContext" json:"context,omitempty"`
+	Context       SourceContext          `protobuf:"varint,3,opt,name=context,proto3,enum=hermes.SourceContext" json:"context,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -580,7 +580,7 @@ type FileDownlink struct {
 	// Time when downlink ended
 	TimeEnd *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=time_end,json=timeEnd,proto3" json:"time_end,omitempty"`
 	// Status of the file downlink
-	Status FileDownlinkCompletionStatus `protobuf:"varint,4,opt,name=status,proto3,enum=FileDownlinkCompletionStatus" json:"status,omitempty"`
+	Status FileDownlinkCompletionStatus `protobuf:"varint,4,opt,name=status,proto3,enum=hermes.FileDownlinkCompletionStatus" json:"status,omitempty"`
 	// FSW source ID
 	Source string `protobuf:"bytes,5,opt,name=source,proto3" json:"source,omitempty"`
 	// Source relative path where this was downlinked from
@@ -997,61 +997,60 @@ var File_bus_proto protoreflect.FileDescriptor
 
 const file_bus_proto_rawDesc = "" +
 	"\n" +
-	"\tbus.proto\x1a\n" +
+	"\tbus.proto\x12\x06hermes\x1a\n" +
 	"type.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x10dictionary.proto\x1a\n" +
-	"time.proto\"i\n" +
+	"time.proto\"p\n" +
 	"\tBusFilter\x12\x16\n" +
 	"\x06source\x18\x01 \x01(\tR\x06source\x12\x14\n" +
-	"\x05names\x18\x02 \x03(\tR\x05names\x12.\n" +
-	"\acontext\x18\x03 \x01(\x0e2\x14.SourceContextFilterR\acontext\"\xdc\x01\n" +
-	"\x05Event\x12\x1b\n" +
-	"\x03ref\x18\x01 \x01(\v2\t.EventRefR\x03ref\x12\x19\n" +
-	"\x04time\x18\x02 \x01(\v2\x05.TimeR\x04time\x12\x18\n" +
-	"\amessage\x18\x03 \x01(\tR\amessage\x12\x1a\n" +
-	"\x04args\x18\x04 \x03(\v2\x06.ValueR\x04args\x12$\n" +
-	"\x04tags\x18\x05 \x03(\v2\x10.Event.TagsEntryR\x04tags\x1a?\n" +
+	"\x05names\x18\x02 \x03(\tR\x05names\x125\n" +
+	"\acontext\x18\x03 \x01(\x0e2\x1b.hermes.SourceContextFilterR\acontext\"\xff\x01\n" +
+	"\x05Event\x12\"\n" +
+	"\x03ref\x18\x01 \x01(\v2\x10.hermes.EventRefR\x03ref\x12 \n" +
+	"\x04time\x18\x02 \x01(\v2\f.hermes.TimeR\x04time\x12\x18\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\x12!\n" +
+	"\x04args\x18\x04 \x03(\v2\r.hermes.ValueR\x04args\x12+\n" +
+	"\x04tags\x18\x05 \x03(\v2\x17.hermes.Event.TagsEntryR\x04tags\x1aF\n" +
 	"\tTagsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x1c\n" +
-	"\x05value\x18\x02 \x01(\v2\x06.ValueR\x05value:\x028\x01\"\xd6\x01\n" +
-	"\tTelemetry\x12\x1f\n" +
-	"\x03ref\x18\x01 \x01(\v2\r.TelemetryRefR\x03ref\x12\x19\n" +
-	"\x04time\x18\x02 \x01(\v2\x05.TimeR\x04time\x12\x1c\n" +
-	"\x05value\x18\x03 \x01(\v2\x06.ValueR\x05value\x12.\n" +
-	"\x06labels\x18\x04 \x03(\v2\x16.Telemetry.LabelsEntryR\x06labels\x1a9\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12#\n" +
+	"\x05value\x18\x02 \x01(\v2\r.hermes.ValueR\x05value:\x028\x01\"\xf2\x01\n" +
+	"\tTelemetry\x12&\n" +
+	"\x03ref\x18\x01 \x01(\v2\x14.hermes.TelemetryRefR\x03ref\x12 \n" +
+	"\x04time\x18\x02 \x01(\v2\f.hermes.TimeR\x04time\x12#\n" +
+	"\x05value\x18\x03 \x01(\v2\r.hermes.ValueR\x05value\x125\n" +
+	"\x06labels\x18\x04 \x03(\v2\x1d.hermes.Telemetry.LabelsEntryR\x06labels\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01J\x04\b\x05\x10\x06\"n\n" +
-	"\fSourcedEvent\x12\x1c\n" +
-	"\x05event\x18\x01 \x01(\v2\x06.EventR\x05event\x12\x16\n" +
-	"\x06source\x18\x02 \x01(\tR\x06source\x12(\n" +
-	"\acontext\x18\x03 \x01(\x0e2\x0e.SourceContextR\acontext\"~\n" +
-	"\x10SourcedTelemetry\x12(\n" +
-	"\ttelemetry\x18\x01 \x01(\v2\n" +
-	".TelemetryR\ttelemetry\x12\x16\n" +
-	"\x06source\x18\x02 \x01(\tR\x06source\x12(\n" +
-	"\acontext\x18\x03 \x01(\x0e2\x0e.SourceContextR\acontext\"?\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01J\x04\b\x05\x10\x06\"|\n" +
+	"\fSourcedEvent\x12#\n" +
+	"\x05event\x18\x01 \x01(\v2\r.hermes.EventR\x05event\x12\x16\n" +
+	"\x06source\x18\x02 \x01(\tR\x06source\x12/\n" +
+	"\acontext\x18\x03 \x01(\x0e2\x15.hermes.SourceContextR\acontext\"\x8c\x01\n" +
+	"\x10SourcedTelemetry\x12/\n" +
+	"\ttelemetry\x18\x01 \x01(\v2\x11.hermes.TelemetryR\ttelemetry\x12\x16\n" +
+	"\x06source\x18\x02 \x01(\tR\x06source\x12/\n" +
+	"\acontext\x18\x03 \x01(\x0e2\x15.hermes.SourceContextR\acontext\"?\n" +
 	"\x11FileDownlinkChunk\x12\x16\n" +
 	"\x06offset\x18\x01 \x01(\x04R\x06offset\x12\x12\n" +
-	"\x04size\x18\x02 \x01(\x04R\x04size\"\xce\x04\n" +
+	"\x04size\x18\x02 \x01(\x04R\x04size\"\xea\x04\n" +
 	"\fFileDownlink\x12\x10\n" +
 	"\x03uid\x18\x01 \x01(\tR\x03uid\x129\n" +
 	"\n" +
 	"time_start\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\ttimeStart\x125\n" +
-	"\btime_end\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\atimeEnd\x125\n" +
-	"\x06status\x18\x04 \x01(\x0e2\x1d.FileDownlinkCompletionStatusR\x06status\x12\x16\n" +
+	"\btime_end\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\atimeEnd\x12<\n" +
+	"\x06status\x18\x04 \x01(\x0e2$.hermes.FileDownlinkCompletionStatusR\x06status\x12\x16\n" +
 	"\x06source\x18\x05 \x01(\tR\x06source\x12\x1f\n" +
 	"\vsource_path\x18\x06 \x01(\tR\n" +
 	"sourcePath\x12)\n" +
 	"\x10destination_path\x18\a \x01(\tR\x0fdestinationPath\x12\x1b\n" +
-	"\tfile_path\x18\b \x01(\tR\bfilePath\x129\n" +
-	"\x0emissing_chunks\x18\t \x03(\v2\x12.FileDownlinkChunkR\rmissingChunks\x12=\n" +
+	"\tfile_path\x18\b \x01(\tR\bfilePath\x12@\n" +
+	"\x0emissing_chunks\x18\t \x03(\v2\x19.hermes.FileDownlinkChunkR\rmissingChunks\x12D\n" +
 	"\x10duplicate_chunks\x18\n" +
-	" \x03(\v2\x12.FileDownlinkChunkR\x0fduplicateChunks\x12\x12\n" +
-	"\x04size\x18\v \x01(\x04R\x04size\x127\n" +
-	"\bmetadata\x18\f \x03(\v2\x1b.FileDownlink.MetadataEntryR\bmetadata\x1a;\n" +
+	" \x03(\v2\x19.hermes.FileDownlinkChunkR\x0fduplicateChunks\x12\x12\n" +
+	"\x04size\x18\v \x01(\x04R\x04size\x12>\n" +
+	"\bmetadata\x18\f \x03(\v2\".hermes.FileDownlink.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x91\x03\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x98\x03\n" +
 	"\n" +
 	"FileUplink\x12\x10\n" +
 	"\x03uid\x18\x01 \x01(\tR\x03uid\x129\n" +
@@ -1063,9 +1062,9 @@ const file_bus_proto_rawDesc = "" +
 	"sourcePath\x12)\n" +
 	"\x10destination_path\x18\a \x01(\tR\x0fdestinationPath\x12\x14\n" +
 	"\x05error\x18\b \x01(\tR\x05error\x12\x12\n" +
-	"\x04size\x18\t \x01(\x04R\x04size\x125\n" +
+	"\x04size\x18\t \x01(\x04R\x04size\x12<\n" +
 	"\bmetadata\x18\n" +
-	" \x03(\v2\x19.FileUplink.MetadataEntryR\bmetadata\x1a;\n" +
+	" \x03(\v2 .hermes.FileUplink.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xa9\x01\n" +
@@ -1077,12 +1076,12 @@ const file_bus_proto_rawDesc = "" +
 	"\vtarget_path\x18\x04 \x01(\tR\n" +
 	"targetPath\x12\x12\n" +
 	"\x04size\x18\x05 \x01(\x04R\x04size\x12\x1a\n" +
-	"\bprogress\x18\x06 \x01(\x04R\bprogress\"\x87\x02\n" +
-	"\x11FileTransferState\x12<\n" +
-	"\x12downlink_completed\x18\x01 \x03(\v2\r.FileDownlinkR\x11downlinkCompleted\x126\n" +
-	"\x10uplink_completed\x18\x02 \x03(\v2\v.FileUplinkR\x0fuplinkCompleted\x12?\n" +
-	"\x14downlink_in_progress\x18\x03 \x03(\v2\r.FileTransferR\x12downlinkInProgress\x12;\n" +
-	"\x12uplink_in_progress\x18\x04 \x03(\v2\r.FileTransferR\x10uplinkInProgress*D\n" +
+	"\bprogress\x18\x06 \x01(\x04R\bprogress\"\xa3\x02\n" +
+	"\x11FileTransferState\x12C\n" +
+	"\x12downlink_completed\x18\x01 \x03(\v2\x14.hermes.FileDownlinkR\x11downlinkCompleted\x12=\n" +
+	"\x10uplink_completed\x18\x02 \x03(\v2\x12.hermes.FileUplinkR\x0fuplinkCompleted\x12F\n" +
+	"\x14downlink_in_progress\x18\x03 \x03(\v2\x14.hermes.FileTransferR\x12downlinkInProgress\x12B\n" +
+	"\x12uplink_in_progress\x18\x04 \x03(\v2\x14.hermes.FileTransferR\x10uplinkInProgress*D\n" +
 	"\x13SourceContextFilter\x12\x11\n" +
 	"\rREALTIME_ONLY\x10\x00\x12\x11\n" +
 	"\rRECORDED_ONLY\x10\x01\x12\a\n" +
@@ -1111,57 +1110,57 @@ func file_bus_proto_rawDescGZIP() []byte {
 var file_bus_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
 var file_bus_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_bus_proto_goTypes = []any{
-	(SourceContextFilter)(0),          // 0: SourceContextFilter
-	(SourceContext)(0),                // 1: SourceContext
-	(FileDownlinkCompletionStatus)(0), // 2: FileDownlinkCompletionStatus
-	(*BusFilter)(nil),                 // 3: BusFilter
-	(*Event)(nil),                     // 4: Event
-	(*Telemetry)(nil),                 // 5: Telemetry
-	(*SourcedEvent)(nil),              // 6: SourcedEvent
-	(*SourcedTelemetry)(nil),          // 7: SourcedTelemetry
-	(*FileDownlinkChunk)(nil),         // 8: FileDownlinkChunk
-	(*FileDownlink)(nil),              // 9: FileDownlink
-	(*FileUplink)(nil),                // 10: FileUplink
-	(*FileTransfer)(nil),              // 11: FileTransfer
-	(*FileTransferState)(nil),         // 12: FileTransferState
-	nil,                               // 13: Event.TagsEntry
-	nil,                               // 14: Telemetry.LabelsEntry
-	nil,                               // 15: FileDownlink.MetadataEntry
-	nil,                               // 16: FileUplink.MetadataEntry
-	(*EventRef)(nil),                  // 17: EventRef
-	(*Time)(nil),                      // 18: Time
-	(*Value)(nil),                     // 19: Value
-	(*TelemetryRef)(nil),              // 20: TelemetryRef
+	(SourceContextFilter)(0),          // 0: hermes.SourceContextFilter
+	(SourceContext)(0),                // 1: hermes.SourceContext
+	(FileDownlinkCompletionStatus)(0), // 2: hermes.FileDownlinkCompletionStatus
+	(*BusFilter)(nil),                 // 3: hermes.BusFilter
+	(*Event)(nil),                     // 4: hermes.Event
+	(*Telemetry)(nil),                 // 5: hermes.Telemetry
+	(*SourcedEvent)(nil),              // 6: hermes.SourcedEvent
+	(*SourcedTelemetry)(nil),          // 7: hermes.SourcedTelemetry
+	(*FileDownlinkChunk)(nil),         // 8: hermes.FileDownlinkChunk
+	(*FileDownlink)(nil),              // 9: hermes.FileDownlink
+	(*FileUplink)(nil),                // 10: hermes.FileUplink
+	(*FileTransfer)(nil),              // 11: hermes.FileTransfer
+	(*FileTransferState)(nil),         // 12: hermes.FileTransferState
+	nil,                               // 13: hermes.Event.TagsEntry
+	nil,                               // 14: hermes.Telemetry.LabelsEntry
+	nil,                               // 15: hermes.FileDownlink.MetadataEntry
+	nil,                               // 16: hermes.FileUplink.MetadataEntry
+	(*EventRef)(nil),                  // 17: hermes.EventRef
+	(*Time)(nil),                      // 18: hermes.Time
+	(*Value)(nil),                     // 19: hermes.Value
+	(*TelemetryRef)(nil),              // 20: hermes.TelemetryRef
 	(*timestamppb.Timestamp)(nil),     // 21: google.protobuf.Timestamp
 }
 var file_bus_proto_depIdxs = []int32{
-	0,  // 0: BusFilter.context:type_name -> SourceContextFilter
-	17, // 1: Event.ref:type_name -> EventRef
-	18, // 2: Event.time:type_name -> Time
-	19, // 3: Event.args:type_name -> Value
-	13, // 4: Event.tags:type_name -> Event.TagsEntry
-	20, // 5: Telemetry.ref:type_name -> TelemetryRef
-	18, // 6: Telemetry.time:type_name -> Time
-	19, // 7: Telemetry.value:type_name -> Value
-	14, // 8: Telemetry.labels:type_name -> Telemetry.LabelsEntry
-	4,  // 9: SourcedEvent.event:type_name -> Event
-	1,  // 10: SourcedEvent.context:type_name -> SourceContext
-	5,  // 11: SourcedTelemetry.telemetry:type_name -> Telemetry
-	1,  // 12: SourcedTelemetry.context:type_name -> SourceContext
-	21, // 13: FileDownlink.time_start:type_name -> google.protobuf.Timestamp
-	21, // 14: FileDownlink.time_end:type_name -> google.protobuf.Timestamp
-	2,  // 15: FileDownlink.status:type_name -> FileDownlinkCompletionStatus
-	8,  // 16: FileDownlink.missing_chunks:type_name -> FileDownlinkChunk
-	8,  // 17: FileDownlink.duplicate_chunks:type_name -> FileDownlinkChunk
-	15, // 18: FileDownlink.metadata:type_name -> FileDownlink.MetadataEntry
-	21, // 19: FileUplink.time_start:type_name -> google.protobuf.Timestamp
-	21, // 20: FileUplink.time_end:type_name -> google.protobuf.Timestamp
-	16, // 21: FileUplink.metadata:type_name -> FileUplink.MetadataEntry
-	9,  // 22: FileTransferState.downlink_completed:type_name -> FileDownlink
-	10, // 23: FileTransferState.uplink_completed:type_name -> FileUplink
-	11, // 24: FileTransferState.downlink_in_progress:type_name -> FileTransfer
-	11, // 25: FileTransferState.uplink_in_progress:type_name -> FileTransfer
-	19, // 26: Event.TagsEntry.value:type_name -> Value
+	0,  // 0: hermes.BusFilter.context:type_name -> hermes.SourceContextFilter
+	17, // 1: hermes.Event.ref:type_name -> hermes.EventRef
+	18, // 2: hermes.Event.time:type_name -> hermes.Time
+	19, // 3: hermes.Event.args:type_name -> hermes.Value
+	13, // 4: hermes.Event.tags:type_name -> hermes.Event.TagsEntry
+	20, // 5: hermes.Telemetry.ref:type_name -> hermes.TelemetryRef
+	18, // 6: hermes.Telemetry.time:type_name -> hermes.Time
+	19, // 7: hermes.Telemetry.value:type_name -> hermes.Value
+	14, // 8: hermes.Telemetry.labels:type_name -> hermes.Telemetry.LabelsEntry
+	4,  // 9: hermes.SourcedEvent.event:type_name -> hermes.Event
+	1,  // 10: hermes.SourcedEvent.context:type_name -> hermes.SourceContext
+	5,  // 11: hermes.SourcedTelemetry.telemetry:type_name -> hermes.Telemetry
+	1,  // 12: hermes.SourcedTelemetry.context:type_name -> hermes.SourceContext
+	21, // 13: hermes.FileDownlink.time_start:type_name -> google.protobuf.Timestamp
+	21, // 14: hermes.FileDownlink.time_end:type_name -> google.protobuf.Timestamp
+	2,  // 15: hermes.FileDownlink.status:type_name -> hermes.FileDownlinkCompletionStatus
+	8,  // 16: hermes.FileDownlink.missing_chunks:type_name -> hermes.FileDownlinkChunk
+	8,  // 17: hermes.FileDownlink.duplicate_chunks:type_name -> hermes.FileDownlinkChunk
+	15, // 18: hermes.FileDownlink.metadata:type_name -> hermes.FileDownlink.MetadataEntry
+	21, // 19: hermes.FileUplink.time_start:type_name -> google.protobuf.Timestamp
+	21, // 20: hermes.FileUplink.time_end:type_name -> google.protobuf.Timestamp
+	16, // 21: hermes.FileUplink.metadata:type_name -> hermes.FileUplink.MetadataEntry
+	9,  // 22: hermes.FileTransferState.downlink_completed:type_name -> hermes.FileDownlink
+	10, // 23: hermes.FileTransferState.uplink_completed:type_name -> hermes.FileUplink
+	11, // 24: hermes.FileTransferState.downlink_in_progress:type_name -> hermes.FileTransfer
+	11, // 25: hermes.FileTransferState.uplink_in_progress:type_name -> hermes.FileTransfer
+	19, // 26: hermes.Event.TagsEntry.value:type_name -> hermes.Value
 	27, // [27:27] is the sub-list for method output_type
 	27, // [27:27] is the sub-list for method input_type
 	27, // [27:27] is the sub-list for extension type_name

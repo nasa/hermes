@@ -9,7 +9,7 @@ export async function main(argv?: readonly string[]): Promise<number> {
     const program = new Command();
     program
         .name('fprime-dictionary')
-        .description(`Load an FPrime (XML) dictionary
+        .description(`Load an FPrime (JSON) dictionary
 
 $ fprime-json-dictionary dict.json > out.pb
 `);

@@ -105,7 +105,7 @@ type Fsw struct {
 	Forwards []string `protobuf:"bytes,4,rep,name=forwards,proto3" json:"forwards,omitempty"`
 	// The set of uplink capabilities this FSW connection implements
 	// If other requests are routed to it, they will be rejected.
-	Capabilities []FswCapability `protobuf:"varint,7,rep,packed,name=capabilities,proto3,enum=FswCapability" json:"capabilities,omitempty"`
+	Capabilities []FswCapability `protobuf:"varint,7,rep,packed,name=capabilities,proto3,enum=hermes.FswCapability" json:"capabilities,omitempty"`
 	// Optional ID of the dictionary to use when commanding this
 	// This will notify the frontend to swap to this dictionary.
 	Dictionary    string `protobuf:"bytes,8,opt,name=dictionary,proto3" json:"dictionary,omitempty"`
@@ -613,46 +613,46 @@ var File_fsw_proto protoreflect.FileDescriptor
 
 const file_fsw_proto_rawDesc = "" +
 	"\n" +
-	"\tfsw.proto\x1a\n" +
-	"type.proto\x1a\x10dictionary.proto\"\xc4\x01\n" +
+	"\tfsw.proto\x12\x06hermes\x1a\n" +
+	"type.proto\x1a\x10dictionary.proto\"\xcb\x01\n" +
 	"\x03Fsw\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x1d\n" +
 	"\n" +
 	"profile_id\x18\x03 \x01(\tR\tprofileId\x12\x1a\n" +
-	"\bforwards\x18\x04 \x03(\tR\bforwards\x122\n" +
-	"\fcapabilities\x18\a \x03(\x0e2\x0e.FswCapabilityR\fcapabilities\x12\x1e\n" +
+	"\bforwards\x18\x04 \x03(\tR\bforwards\x129\n" +
+	"\fcapabilities\x18\a \x03(\x0e2\x15.hermes.FswCapabilityR\fcapabilities\x12\x1e\n" +
 	"\n" +
 	"dictionary\x18\b \x01(\tR\n" +
 	"dictionaryJ\x04\b\x05\x10\x06J\x04\b\x06\x10\a\")\n" +
 	"\x0eCommandOptions\x12\x17\n" +
-	"\ano_wait\x18\x01 \x01(\bR\x06noWait\"\xea\x01\n" +
-	"\fCommandValue\x12\x1d\n" +
-	"\x03def\x18\x01 \x01(\v2\v.CommandDefR\x03def\x12\x1a\n" +
-	"\x04args\x18\x02 \x03(\v2\x06.ValueR\x04args\x12)\n" +
-	"\aoptions\x18\x03 \x01(\v2\x0f.CommandOptionsR\aoptions\x127\n" +
-	"\bmetadata\x18\x04 \x03(\v2\x1b.CommandValue.MetadataEntryR\bmetadata\x1a;\n" +
+	"\ano_wait\x18\x01 \x01(\bR\x06noWait\"\x86\x02\n" +
+	"\fCommandValue\x12$\n" +
+	"\x03def\x18\x01 \x01(\v2\x12.hermes.CommandDefR\x03def\x12!\n" +
+	"\x04args\x18\x02 \x03(\v2\r.hermes.ValueR\x04args\x120\n" +
+	"\aoptions\x18\x03 \x01(\v2\x16.hermes.CommandOptionsR\aoptions\x12>\n" +
+	"\bmetadata\x18\x04 \x03(\v2\".hermes.CommandValue.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xcf\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xdd\x01\n" +
 	"\x0fRawCommandValue\x12\x18\n" +
-	"\acommand\x18\x02 \x01(\tR\acommand\x12)\n" +
-	"\aoptions\x18\x03 \x01(\v2\x0f.CommandOptionsR\aoptions\x12:\n" +
-	"\bmetadata\x18\x04 \x03(\v2\x1e.RawCommandValue.MetadataEntryR\bmetadata\x1a;\n" +
+	"\acommand\x18\x02 \x01(\tR\acommand\x120\n" +
+	"\aoptions\x18\x03 \x01(\v2\x16.hermes.CommandOptionsR\aoptions\x12A\n" +
+	"\bmetadata\x18\x04 \x03(\v2%.hermes.RawCommandValue.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xda\x01\n" +
-	"\x0fCommandSequence\x12)\n" +
-	"\bcommands\x18\x01 \x03(\v2\r.CommandValueR\bcommands\x12#\n" +
-	"\rlanguage_name\x18\x02 \x01(\tR\flanguageName\x12:\n" +
-	"\bmetadata\x18\x03 \x03(\v2\x1e.CommandSequence.MetadataEntryR\bmetadata\x1a;\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xe8\x01\n" +
+	"\x0fCommandSequence\x120\n" +
+	"\bcommands\x18\x01 \x03(\v2\x14.hermes.CommandValueR\bcommands\x12#\n" +
+	"\rlanguage_name\x18\x02 \x01(\tR\flanguageName\x12A\n" +
+	"\bmetadata\x18\x03 \x03(\v2%.hermes.CommandSequence.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x81\x02\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x88\x02\n" +
 	"\x12RawCommandSequence\x12\x1a\n" +
 	"\bsequence\x18\x01 \x01(\tR\bsequence\x12#\n" +
-	"\rlanguage_name\x18\x02 \x01(\tR\flanguageName\x12=\n" +
-	"\bmetadata\x18\x03 \x03(\v2!.RawCommandSequence.MetadataEntryR\bmetadata\x12.\n" +
+	"\rlanguage_name\x18\x02 \x01(\tR\flanguageName\x12D\n" +
+	"\bmetadata\x18\x03 \x03(\v2(.hermes.RawCommandSequence.MetadataEntryR\bmetadata\x12.\n" +
 	"\x13line_comment_prefix\x18\x04 \x01(\tR\x11lineCommentPrefix\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
@@ -685,33 +685,33 @@ func file_fsw_proto_rawDescGZIP() []byte {
 var file_fsw_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_fsw_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_fsw_proto_goTypes = []any{
-	(FswCapability)(0),         // 0: FswCapability
-	(*Fsw)(nil),                // 1: Fsw
-	(*CommandOptions)(nil),     // 2: CommandOptions
-	(*CommandValue)(nil),       // 3: CommandValue
-	(*RawCommandValue)(nil),    // 4: RawCommandValue
-	(*CommandSequence)(nil),    // 5: CommandSequence
-	(*RawCommandSequence)(nil), // 6: RawCommandSequence
-	(*RequestValue)(nil),       // 7: RequestValue
-	(*RequestReply)(nil),       // 8: RequestReply
-	nil,                        // 9: CommandValue.MetadataEntry
-	nil,                        // 10: RawCommandValue.MetadataEntry
-	nil,                        // 11: CommandSequence.MetadataEntry
-	nil,                        // 12: RawCommandSequence.MetadataEntry
-	(*CommandDef)(nil),         // 13: CommandDef
-	(*Value)(nil),              // 14: Value
+	(FswCapability)(0),         // 0: hermes.FswCapability
+	(*Fsw)(nil),                // 1: hermes.Fsw
+	(*CommandOptions)(nil),     // 2: hermes.CommandOptions
+	(*CommandValue)(nil),       // 3: hermes.CommandValue
+	(*RawCommandValue)(nil),    // 4: hermes.RawCommandValue
+	(*CommandSequence)(nil),    // 5: hermes.CommandSequence
+	(*RawCommandSequence)(nil), // 6: hermes.RawCommandSequence
+	(*RequestValue)(nil),       // 7: hermes.RequestValue
+	(*RequestReply)(nil),       // 8: hermes.RequestReply
+	nil,                        // 9: hermes.CommandValue.MetadataEntry
+	nil,                        // 10: hermes.RawCommandValue.MetadataEntry
+	nil,                        // 11: hermes.CommandSequence.MetadataEntry
+	nil,                        // 12: hermes.RawCommandSequence.MetadataEntry
+	(*CommandDef)(nil),         // 13: hermes.CommandDef
+	(*Value)(nil),              // 14: hermes.Value
 }
 var file_fsw_proto_depIdxs = []int32{
-	0,  // 0: Fsw.capabilities:type_name -> FswCapability
-	13, // 1: CommandValue.def:type_name -> CommandDef
-	14, // 2: CommandValue.args:type_name -> Value
-	2,  // 3: CommandValue.options:type_name -> CommandOptions
-	9,  // 4: CommandValue.metadata:type_name -> CommandValue.MetadataEntry
-	2,  // 5: RawCommandValue.options:type_name -> CommandOptions
-	10, // 6: RawCommandValue.metadata:type_name -> RawCommandValue.MetadataEntry
-	3,  // 7: CommandSequence.commands:type_name -> CommandValue
-	11, // 8: CommandSequence.metadata:type_name -> CommandSequence.MetadataEntry
-	12, // 9: RawCommandSequence.metadata:type_name -> RawCommandSequence.MetadataEntry
+	0,  // 0: hermes.Fsw.capabilities:type_name -> hermes.FswCapability
+	13, // 1: hermes.CommandValue.def:type_name -> hermes.CommandDef
+	14, // 2: hermes.CommandValue.args:type_name -> hermes.Value
+	2,  // 3: hermes.CommandValue.options:type_name -> hermes.CommandOptions
+	9,  // 4: hermes.CommandValue.metadata:type_name -> hermes.CommandValue.MetadataEntry
+	2,  // 5: hermes.RawCommandValue.options:type_name -> hermes.CommandOptions
+	10, // 6: hermes.RawCommandValue.metadata:type_name -> hermes.RawCommandValue.MetadataEntry
+	3,  // 7: hermes.CommandSequence.commands:type_name -> hermes.CommandValue
+	11, // 8: hermes.CommandSequence.metadata:type_name -> hermes.CommandSequence.MetadataEntry
+	12, // 9: hermes.RawCommandSequence.metadata:type_name -> hermes.RawCommandSequence.MetadataEntry
 	10, // [10:10] is the sub-list for method output_type
 	10, // [10:10] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name

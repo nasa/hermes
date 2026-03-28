@@ -362,7 +362,7 @@ func (ReferenceKind) EnumDescriptor() ([]byte, []int) {
 
 type BooleanType struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	EncodeType    UIntKind               `protobuf:"varint,1,opt,name=encode_type,json=encodeType,proto3,enum=UIntKind" json:"encode_type,omitempty"`
+	EncodeType    UIntKind               `protobuf:"varint,1,opt,name=encode_type,json=encodeType,proto3,enum=hermes.UIntKind" json:"encode_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -406,7 +406,7 @@ func (x *BooleanType) GetEncodeType() UIntKind {
 
 type IntType struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	Kind  IntKind                `protobuf:"varint,1,opt,name=kind,proto3,enum=IntKind" json:"kind,omitempty"`
+	Kind  IntKind                `protobuf:"varint,1,opt,name=kind,proto3,enum=hermes.IntKind" json:"kind,omitempty"`
 	// *
 	// Lower bound on valid values
 	Min int64 `protobuf:"varint,2,opt,name=min,proto3" json:"min,omitempty"`
@@ -470,7 +470,7 @@ func (x *IntType) GetMax() int64 {
 
 type FloatType struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	Kind  FloatKind              `protobuf:"varint,1,opt,name=kind,proto3,enum=FloatKind" json:"kind,omitempty"`
+	Kind  FloatKind              `protobuf:"varint,1,opt,name=kind,proto3,enum=hermes.FloatKind" json:"kind,omitempty"`
 	// *
 	// Lower bound on valid values
 	Min float64 `protobuf:"fixed64,2,opt,name=min,proto3" json:"min,omitempty"`
@@ -540,7 +540,7 @@ type StringType struct {
 	// When encoding strings, they will be prefixed by their
 	// length using this type. If the length does not fit within
 	// this type's representable size, it will throw an error.
-	LengthType UIntKind `protobuf:"varint,1,opt,name=length_type,json=lengthType,proto3,enum=UIntKind" json:"length_type,omitempty"`
+	LengthType UIntKind `protobuf:"varint,1,opt,name=length_type,json=lengthType,proto3,enum=hermes.UIntKind" json:"length_type,omitempty"`
 	// *
 	// Optional check for maximum length
 	MaxLength     uint32 `protobuf:"varint,2,opt,name=max_length,json=maxLength,proto3" json:"max_length,omitempty"`
@@ -664,7 +664,7 @@ type EnumType struct {
 	//
 	// You can also override this behavior programmatically by overriding
 	// `Serializable.writeEnum`.
-	EncodeType IntKind `protobuf:"varint,2,opt,name=encode_type,json=encodeType,proto3,enum=IntKind" json:"encode_type,omitempty"`
+	EncodeType IntKind `protobuf:"varint,2,opt,name=encode_type,json=encodeType,proto3,enum=hermes.IntKind" json:"encode_type,omitempty"`
 	// *
 	// Members of the enum and their mapping to its
 	// numeric value.
@@ -805,7 +805,7 @@ type ArrayType struct {
 	// > Ignored on statically sized arrays.
 	//
 	// Default: {@link TypeKind.u32}
-	LengthType    UIntKind `protobuf:"varint,5,opt,name=length_type,json=lengthType,proto3,enum=UIntKind" json:"length_type,omitempty"`
+	LengthType    UIntKind `protobuf:"varint,5,opt,name=length_type,json=lengthType,proto3,enum=hermes.UIntKind" json:"length_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -913,7 +913,7 @@ type BytesType struct {
 	// an inline array.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Primtive type of each element in this array
-	Kind NumberKind `protobuf:"varint,2,opt,name=kind,proto3,enum=NumberKind" json:"kind,omitempty"`
+	Kind NumberKind `protobuf:"varint,2,opt,name=kind,proto3,enum=hermes.NumberKind" json:"kind,omitempty"`
 	// *
 	// Serialization type to use for dynamic array's prefixed length.
 	// > Ignored on statically sized arrays.
@@ -930,7 +930,7 @@ type BytesType struct {
 	// > Ignored on statically sized arrays.
 	//
 	// Default: {@link TypeKind.u32}
-	LengthType    UIntKind `protobuf:"varint,5,opt,name=length_type,json=lengthType,proto3,enum=UIntKind" json:"length_type,omitempty"`
+	LengthType    UIntKind `protobuf:"varint,5,opt,name=length_type,json=lengthType,proto3,enum=hermes.UIntKind" json:"length_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1159,7 +1159,7 @@ type ReferenceType struct {
 	// *
 	// Name of the type
 	Name          string        `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Kind          ReferenceKind `protobuf:"varint,2,opt,name=kind,proto3,enum=ReferenceKind" json:"kind,omitempty"`
+	Kind          ReferenceKind `protobuf:"varint,2,opt,name=kind,proto3,enum=hermes.ReferenceKind" json:"kind,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1580,7 +1580,7 @@ func (x *ArrayValue) GetValue() []*Value {
 type BytesValue struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Type of primitive elements
-	Kind NumberKind `protobuf:"varint,1,opt,name=kind,proto3,enum=NumberKind" json:"kind,omitempty"`
+	Kind NumberKind `protobuf:"varint,1,opt,name=kind,proto3,enum=hermes.NumberKind" json:"kind,omitempty"`
 	// Byte order, default = false
 	BigEndian bool `protobuf:"varint,2,opt,name=big_endian,json=bigEndian,proto3" json:"big_endian,omitempty"`
 	// Raw value in given byte order
@@ -1900,113 +1900,108 @@ var File_type_proto protoreflect.FileDescriptor
 const file_type_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"type.proto\"9\n" +
-	"\vBooleanType\x12*\n" +
-	"\vencode_type\x18\x01 \x01(\x0e2\t.UIntKindR\n" +
-	"encodeType\"K\n" +
-	"\aIntType\x12\x1c\n" +
-	"\x04kind\x18\x01 \x01(\x0e2\b.IntKindR\x04kind\x12\x10\n" +
+	"type.proto\x12\x06hermes\"@\n" +
+	"\vBooleanType\x121\n" +
+	"\vencode_type\x18\x01 \x01(\x0e2\x10.hermes.UIntKindR\n" +
+	"encodeType\"R\n" +
+	"\aIntType\x12#\n" +
+	"\x04kind\x18\x01 \x01(\x0e2\x0f.hermes.IntKindR\x04kind\x12\x10\n" +
 	"\x03min\x18\x02 \x01(\x03R\x03min\x12\x10\n" +
-	"\x03max\x18\x03 \x01(\x03R\x03max\"O\n" +
-	"\tFloatType\x12\x1e\n" +
-	"\x04kind\x18\x01 \x01(\x0e2\n" +
-	".FloatKindR\x04kind\x12\x10\n" +
+	"\x03max\x18\x03 \x01(\x03R\x03max\"V\n" +
+	"\tFloatType\x12%\n" +
+	"\x04kind\x18\x01 \x01(\x0e2\x11.hermes.FloatKindR\x04kind\x12\x10\n" +
 	"\x03min\x18\x02 \x01(\x01R\x03min\x12\x10\n" +
-	"\x03max\x18\x03 \x01(\x01R\x03max\"W\n" +
+	"\x03max\x18\x03 \x01(\x01R\x03max\"^\n" +
 	"\n" +
-	"StringType\x12*\n" +
-	"\vlength_type\x18\x01 \x01(\x0e2\t.UIntKindR\n" +
+	"StringType\x121\n" +
+	"\vlength_type\x18\x01 \x01(\x0e2\x10.hermes.UIntKindR\n" +
 	"lengthType\x12\x1d\n" +
 	"\n" +
 	"max_length\x18\x02 \x01(\rR\tmaxLength\"P\n" +
 	"\bEnumItem\x12\x14\n" +
 	"\x05value\x18\x01 \x01(\x05R\x05value\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
-	"\bmetadata\x18\x03 \x01(\tR\bmetadata\"j\n" +
+	"\bmetadata\x18\x03 \x01(\tR\bmetadata\"x\n" +
 	"\bEnumType\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12)\n" +
-	"\vencode_type\x18\x02 \x01(\x0e2\b.IntKindR\n" +
-	"encodeType\x12\x1f\n" +
-	"\x05items\x18\x03 \x03(\v2\t.EnumItemR\x05items\"6\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x120\n" +
+	"\vencode_type\x18\x02 \x01(\x0e2\x0f.hermes.IntKindR\n" +
+	"encodeType\x12&\n" +
+	"\x05items\x18\x03 \x03(\v2\x10.hermes.EnumItemR\x05items\"6\n" +
 	"\x10BoundedArraySize\x12\x10\n" +
 	"\x03min\x18\x01 \x01(\rR\x03min\x12\x10\n" +
-	"\x03max\x18\x02 \x01(\rR\x03max\"\xbc\x01\n" +
+	"\x03max\x18\x02 \x01(\rR\x03max\"\xd1\x01\n" +
 	"\tArrayType\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1e\n" +
-	"\ael_type\x18\x02 \x01(\v2\x05.TypeR\x06elType\x12\x18\n" +
-	"\x06static\x18\x03 \x01(\rH\x00R\x06static\x12-\n" +
-	"\adynamic\x18\x04 \x01(\v2\x11.BoundedArraySizeH\x00R\adynamic\x12*\n" +
-	"\vlength_type\x18\x05 \x01(\x0e2\t.UIntKindR\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12%\n" +
+	"\ael_type\x18\x02 \x01(\v2\f.hermes.TypeR\x06elType\x12\x18\n" +
+	"\x06static\x18\x03 \x01(\rH\x00R\x06static\x124\n" +
+	"\adynamic\x18\x04 \x01(\v2\x18.hermes.BoundedArraySizeH\x00R\adynamic\x121\n" +
+	"\vlength_type\x18\x05 \x01(\x0e2\x10.hermes.UIntKindR\n" +
 	"lengthTypeB\x06\n" +
-	"\x04size\"\xbd\x01\n" +
+	"\x04size\"\xd2\x01\n" +
 	"\tBytesType\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1f\n" +
-	"\x04kind\x18\x02 \x01(\x0e2\v.NumberKindR\x04kind\x12\x18\n" +
-	"\x06static\x18\x03 \x01(\rH\x00R\x06static\x12-\n" +
-	"\adynamic\x18\x04 \x01(\v2\x11.BoundedArraySizeH\x00R\adynamic\x12*\n" +
-	"\vlength_type\x18\x05 \x01(\x0e2\t.UIntKindR\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12&\n" +
+	"\x04kind\x18\x02 \x01(\x0e2\x12.hermes.NumberKindR\x04kind\x12\x18\n" +
+	"\x06static\x18\x03 \x01(\rH\x00R\x06static\x124\n" +
+	"\adynamic\x18\x04 \x01(\v2\x18.hermes.BoundedArraySizeH\x00R\adynamic\x121\n" +
+	"\vlength_type\x18\x05 \x01(\x0e2\x10.hermes.UIntKindR\n" +
 	"lengthTypeB\x06\n" +
-	"\x04size\"p\n" +
+	"\x04size\"~\n" +
 	"\x05Field\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x19\n" +
-	"\x04type\x18\x02 \x01(\v2\x05.TypeR\x04type\x12\x1a\n" +
-	"\bmetadata\x18\x03 \x01(\tR\bmetadata\x12\x1c\n" +
-	"\x05value\x18\x04 \x01(\v2\x06.ValueR\x05value\"@\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
+	"\x04type\x18\x02 \x01(\v2\f.hermes.TypeR\x04type\x12\x1a\n" +
+	"\bmetadata\x18\x03 \x01(\tR\bmetadata\x12#\n" +
+	"\x05value\x18\x04 \x01(\v2\r.hermes.ValueR\x05value\"G\n" +
 	"\n" +
 	"ObjectType\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1e\n" +
-	"\x06fields\x18\x02 \x03(\v2\x06.FieldR\x06fields\"G\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12%\n" +
+	"\x06fields\x18\x02 \x03(\v2\r.hermes.FieldR\x06fields\"N\n" +
 	"\rReferenceType\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\"\n" +
-	"\x04kind\x18\x02 \x01(\x0e2\x0e.ReferenceKindR\x04kind\"\x1e\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12)\n" +
+	"\x04kind\x18\x02 \x01(\x0e2\x15.hermes.ReferenceKindR\x04kind\"\x1e\n" +
 	"\bVoidType\x12\x12\n" +
-	"\x04size\x18\x01 \x01(\rR\x04size\"\xb4\x03\n" +
-	"\x04Type\x12\"\n" +
-	"\x03ref\x18\x01 \x01(\v2\x0e.ReferenceTypeH\x00R\x03ref\x12\"\n" +
-	"\x04bool\x18\x02 \x01(\v2\f.BooleanTypeH\x00R\x04bool\x12\x1c\n" +
-	"\x03int\x18\x03 \x01(\v2\b.IntTypeH\x00R\x03int\x12\"\n" +
-	"\x05float\x18\x04 \x01(\v2\n" +
-	".FloatTypeH\x00R\x05float\x12%\n" +
-	"\x06string\x18\x05 \x01(\v2\v.StringTypeH\x00R\x06string\x12\x1f\n" +
-	"\x04enum\x18\x06 \x01(\v2\t.EnumTypeH\x00R\x04enum\x12%\n" +
-	"\abitmask\x18\a \x01(\v2\t.EnumTypeH\x00R\abitmask\x12%\n" +
-	"\x06object\x18\b \x01(\v2\v.ObjectTypeH\x00R\x06object\x12\"\n" +
-	"\x05array\x18\t \x01(\v2\n" +
-	".ArrayTypeH\x00R\x05array\x12\"\n" +
+	"\x04size\x18\x01 \x01(\rR\x04size\"\x81\x04\n" +
+	"\x04Type\x12)\n" +
+	"\x03ref\x18\x01 \x01(\v2\x15.hermes.ReferenceTypeH\x00R\x03ref\x12)\n" +
+	"\x04bool\x18\x02 \x01(\v2\x13.hermes.BooleanTypeH\x00R\x04bool\x12#\n" +
+	"\x03int\x18\x03 \x01(\v2\x0f.hermes.IntTypeH\x00R\x03int\x12)\n" +
+	"\x05float\x18\x04 \x01(\v2\x11.hermes.FloatTypeH\x00R\x05float\x12,\n" +
+	"\x06string\x18\x05 \x01(\v2\x12.hermes.StringTypeH\x00R\x06string\x12&\n" +
+	"\x04enum\x18\x06 \x01(\v2\x10.hermes.EnumTypeH\x00R\x04enum\x12,\n" +
+	"\abitmask\x18\a \x01(\v2\x10.hermes.EnumTypeH\x00R\abitmask\x12,\n" +
+	"\x06object\x18\b \x01(\v2\x12.hermes.ObjectTypeH\x00R\x06object\x12)\n" +
+	"\x05array\x18\t \x01(\v2\x11.hermes.ArrayTypeH\x00R\x05array\x12)\n" +
 	"\x05bytes\x18\n" +
-	" \x01(\v2\n" +
-	".BytesTypeH\x00R\x05bytes\x12\x1f\n" +
-	"\x04void\x18\v \x01(\v2\t.VoidTypeH\x00R\x04void\x12\x1a\n" +
+	" \x01(\v2\x11.hermes.BytesTypeH\x00R\x05bytes\x12&\n" +
+	"\x04void\x18\v \x01(\v2\x10.hermes.VoidTypeH\x00R\x04void\x12\x1a\n" +
 	"\bmetadata\x18\f \x01(\tR\bmetadataB\a\n" +
-	"\x05value\"n\n" +
-	"\vObjectValue\x12!\n" +
-	"\x01o\x18\x01 \x03(\v2\x13.ObjectValue.OEntryR\x01o\x1a<\n" +
+	"\x05value\"|\n" +
+	"\vObjectValue\x12(\n" +
+	"\x01o\x18\x01 \x03(\v2\x1a.hermes.ObjectValue.OEntryR\x01o\x1aC\n" +
 	"\x06OEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x1c\n" +
-	"\x05value\x18\x02 \x01(\v2\x06.ValueR\x05value:\x028\x01\"*\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12#\n" +
+	"\x05value\x18\x02 \x01(\v2\r.hermes.ValueR\x05value:\x028\x01\"1\n" +
 	"\n" +
-	"ArrayValue\x12\x1c\n" +
-	"\x05value\x18\x01 \x03(\v2\x06.ValueR\x05value\"b\n" +
+	"ArrayValue\x12#\n" +
+	"\x05value\x18\x01 \x03(\v2\r.hermes.ValueR\x05value\"i\n" +
 	"\n" +
-	"BytesValue\x12\x1f\n" +
-	"\x04kind\x18\x01 \x01(\x0e2\v.NumberKindR\x04kind\x12\x1d\n" +
+	"BytesValue\x12&\n" +
+	"\x04kind\x18\x01 \x01(\x0e2\x12.hermes.NumberKindR\x04kind\x12\x1d\n" +
 	"\n" +
 	"big_endian\x18\x02 \x01(\bR\tbigEndian\x12\x14\n" +
 	"\x05value\x18\x03 \x01(\fR\x05value\";\n" +
 	"\tEnumValue\x12\x10\n" +
 	"\x03raw\x18\x01 \x01(\x03R\x03raw\x12\x1c\n" +
-	"\tformatted\x18\x02 \x01(\tR\tformatted\"\xd4\x01\n" +
+	"\tformatted\x18\x02 \x01(\tR\tformatted\"\xf0\x01\n" +
 	"\x05Value\x12\x0e\n" +
 	"\x01i\x18\x01 \x01(\x12H\x00R\x01i\x12\x0e\n" +
 	"\x01u\x18\x02 \x01(\x04H\x00R\x01u\x12\x0e\n" +
 	"\x01f\x18\x03 \x01(\x01H\x00R\x01f\x12\x0e\n" +
 	"\x01b\x18\x04 \x01(\bH\x00R\x01b\x12\x0e\n" +
-	"\x01s\x18\x05 \x01(\tH\x00R\x01s\x12\x1a\n" +
-	"\x01e\x18\x06 \x01(\v2\n" +
-	".EnumValueH\x00R\x01e\x12\x1c\n" +
-	"\x01o\x18\a \x01(\v2\f.ObjectValueH\x00R\x01o\x12\x1b\n" +
-	"\x01a\x18\b \x01(\v2\v.ArrayValueH\x00R\x01a\x12\x1b\n" +
-	"\x01r\x18\t \x01(\v2\v.BytesValueH\x00R\x01rB\a\n" +
+	"\x01s\x18\x05 \x01(\tH\x00R\x01s\x12!\n" +
+	"\x01e\x18\x06 \x01(\v2\x11.hermes.EnumValueH\x00R\x01e\x12#\n" +
+	"\x01o\x18\a \x01(\v2\x13.hermes.ObjectValueH\x00R\x01o\x12\"\n" +
+	"\x01a\x18\b \x01(\v2\x12.hermes.ArrayValueH\x00R\x01a\x12\"\n" +
+	"\x01r\x18\t \x01(\v2\x12.hermes.BytesValueH\x00R\x01rB\a\n" +
 	"\x05value*o\n" +
 	"\aIntKind\x12\n" +
 	"\n" +
@@ -2075,69 +2070,69 @@ func file_type_proto_rawDescGZIP() []byte {
 var file_type_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
 var file_type_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_type_proto_goTypes = []any{
-	(IntKind)(0),             // 0: IntKind
-	(NumberKind)(0),          // 1: NumberKind
-	(UIntKind)(0),            // 2: UIntKind
-	(SIntKind)(0),            // 3: SIntKind
-	(FloatKind)(0),           // 4: FloatKind
-	(ReferenceKind)(0),       // 5: ReferenceKind
-	(*BooleanType)(nil),      // 6: BooleanType
-	(*IntType)(nil),          // 7: IntType
-	(*FloatType)(nil),        // 8: FloatType
-	(*StringType)(nil),       // 9: StringType
-	(*EnumItem)(nil),         // 10: EnumItem
-	(*EnumType)(nil),         // 11: EnumType
-	(*BoundedArraySize)(nil), // 12: BoundedArraySize
-	(*ArrayType)(nil),        // 13: ArrayType
-	(*BytesType)(nil),        // 14: BytesType
-	(*Field)(nil),            // 15: Field
-	(*ObjectType)(nil),       // 16: ObjectType
-	(*ReferenceType)(nil),    // 17: ReferenceType
-	(*VoidType)(nil),         // 18: VoidType
-	(*Type)(nil),             // 19: Type
-	(*ObjectValue)(nil),      // 20: ObjectValue
-	(*ArrayValue)(nil),       // 21: ArrayValue
-	(*BytesValue)(nil),       // 22: BytesValue
-	(*EnumValue)(nil),        // 23: EnumValue
-	(*Value)(nil),            // 24: Value
-	nil,                      // 25: ObjectValue.OEntry
+	(IntKind)(0),             // 0: hermes.IntKind
+	(NumberKind)(0),          // 1: hermes.NumberKind
+	(UIntKind)(0),            // 2: hermes.UIntKind
+	(SIntKind)(0),            // 3: hermes.SIntKind
+	(FloatKind)(0),           // 4: hermes.FloatKind
+	(ReferenceKind)(0),       // 5: hermes.ReferenceKind
+	(*BooleanType)(nil),      // 6: hermes.BooleanType
+	(*IntType)(nil),          // 7: hermes.IntType
+	(*FloatType)(nil),        // 8: hermes.FloatType
+	(*StringType)(nil),       // 9: hermes.StringType
+	(*EnumItem)(nil),         // 10: hermes.EnumItem
+	(*EnumType)(nil),         // 11: hermes.EnumType
+	(*BoundedArraySize)(nil), // 12: hermes.BoundedArraySize
+	(*ArrayType)(nil),        // 13: hermes.ArrayType
+	(*BytesType)(nil),        // 14: hermes.BytesType
+	(*Field)(nil),            // 15: hermes.Field
+	(*ObjectType)(nil),       // 16: hermes.ObjectType
+	(*ReferenceType)(nil),    // 17: hermes.ReferenceType
+	(*VoidType)(nil),         // 18: hermes.VoidType
+	(*Type)(nil),             // 19: hermes.Type
+	(*ObjectValue)(nil),      // 20: hermes.ObjectValue
+	(*ArrayValue)(nil),       // 21: hermes.ArrayValue
+	(*BytesValue)(nil),       // 22: hermes.BytesValue
+	(*EnumValue)(nil),        // 23: hermes.EnumValue
+	(*Value)(nil),            // 24: hermes.Value
+	nil,                      // 25: hermes.ObjectValue.OEntry
 }
 var file_type_proto_depIdxs = []int32{
-	2,  // 0: BooleanType.encode_type:type_name -> UIntKind
-	0,  // 1: IntType.kind:type_name -> IntKind
-	4,  // 2: FloatType.kind:type_name -> FloatKind
-	2,  // 3: StringType.length_type:type_name -> UIntKind
-	0,  // 4: EnumType.encode_type:type_name -> IntKind
-	10, // 5: EnumType.items:type_name -> EnumItem
-	19, // 6: ArrayType.el_type:type_name -> Type
-	12, // 7: ArrayType.dynamic:type_name -> BoundedArraySize
-	2,  // 8: ArrayType.length_type:type_name -> UIntKind
-	1,  // 9: BytesType.kind:type_name -> NumberKind
-	12, // 10: BytesType.dynamic:type_name -> BoundedArraySize
-	2,  // 11: BytesType.length_type:type_name -> UIntKind
-	19, // 12: Field.type:type_name -> Type
-	24, // 13: Field.value:type_name -> Value
-	15, // 14: ObjectType.fields:type_name -> Field
-	5,  // 15: ReferenceType.kind:type_name -> ReferenceKind
-	17, // 16: Type.ref:type_name -> ReferenceType
-	6,  // 17: Type.bool:type_name -> BooleanType
-	7,  // 18: Type.int:type_name -> IntType
-	8,  // 19: Type.float:type_name -> FloatType
-	9,  // 20: Type.string:type_name -> StringType
-	11, // 21: Type.enum:type_name -> EnumType
-	11, // 22: Type.bitmask:type_name -> EnumType
-	16, // 23: Type.object:type_name -> ObjectType
-	13, // 24: Type.array:type_name -> ArrayType
-	14, // 25: Type.bytes:type_name -> BytesType
-	18, // 26: Type.void:type_name -> VoidType
-	25, // 27: ObjectValue.o:type_name -> ObjectValue.OEntry
-	24, // 28: ArrayValue.value:type_name -> Value
-	1,  // 29: BytesValue.kind:type_name -> NumberKind
-	23, // 30: Value.e:type_name -> EnumValue
-	20, // 31: Value.o:type_name -> ObjectValue
-	21, // 32: Value.a:type_name -> ArrayValue
-	22, // 33: Value.r:type_name -> BytesValue
-	24, // 34: ObjectValue.OEntry.value:type_name -> Value
+	2,  // 0: hermes.BooleanType.encode_type:type_name -> hermes.UIntKind
+	0,  // 1: hermes.IntType.kind:type_name -> hermes.IntKind
+	4,  // 2: hermes.FloatType.kind:type_name -> hermes.FloatKind
+	2,  // 3: hermes.StringType.length_type:type_name -> hermes.UIntKind
+	0,  // 4: hermes.EnumType.encode_type:type_name -> hermes.IntKind
+	10, // 5: hermes.EnumType.items:type_name -> hermes.EnumItem
+	19, // 6: hermes.ArrayType.el_type:type_name -> hermes.Type
+	12, // 7: hermes.ArrayType.dynamic:type_name -> hermes.BoundedArraySize
+	2,  // 8: hermes.ArrayType.length_type:type_name -> hermes.UIntKind
+	1,  // 9: hermes.BytesType.kind:type_name -> hermes.NumberKind
+	12, // 10: hermes.BytesType.dynamic:type_name -> hermes.BoundedArraySize
+	2,  // 11: hermes.BytesType.length_type:type_name -> hermes.UIntKind
+	19, // 12: hermes.Field.type:type_name -> hermes.Type
+	24, // 13: hermes.Field.value:type_name -> hermes.Value
+	15, // 14: hermes.ObjectType.fields:type_name -> hermes.Field
+	5,  // 15: hermes.ReferenceType.kind:type_name -> hermes.ReferenceKind
+	17, // 16: hermes.Type.ref:type_name -> hermes.ReferenceType
+	6,  // 17: hermes.Type.bool:type_name -> hermes.BooleanType
+	7,  // 18: hermes.Type.int:type_name -> hermes.IntType
+	8,  // 19: hermes.Type.float:type_name -> hermes.FloatType
+	9,  // 20: hermes.Type.string:type_name -> hermes.StringType
+	11, // 21: hermes.Type.enum:type_name -> hermes.EnumType
+	11, // 22: hermes.Type.bitmask:type_name -> hermes.EnumType
+	16, // 23: hermes.Type.object:type_name -> hermes.ObjectType
+	13, // 24: hermes.Type.array:type_name -> hermes.ArrayType
+	14, // 25: hermes.Type.bytes:type_name -> hermes.BytesType
+	18, // 26: hermes.Type.void:type_name -> hermes.VoidType
+	25, // 27: hermes.ObjectValue.o:type_name -> hermes.ObjectValue.OEntry
+	24, // 28: hermes.ArrayValue.value:type_name -> hermes.Value
+	1,  // 29: hermes.BytesValue.kind:type_name -> hermes.NumberKind
+	23, // 30: hermes.Value.e:type_name -> hermes.EnumValue
+	20, // 31: hermes.Value.o:type_name -> hermes.ObjectValue
+	21, // 32: hermes.Value.a:type_name -> hermes.ArrayValue
+	22, // 33: hermes.Value.r:type_name -> hermes.BytesValue
+	24, // 34: hermes.ObjectValue.OEntry.value:type_name -> hermes.Value
 	35, // [35:35] is the sub-list for method output_type
 	35, // [35:35] is the sub-list for method input_type
 	35, // [35:35] is the sub-list for extension type_name
