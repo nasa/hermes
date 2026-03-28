@@ -3,9 +3,9 @@
 //! These tests require a running YAMCS server at http://localhost:9040
 //! with at least one instance configured.
 
-use yamcs_http::{types::*, *};
 #[cfg(feature = "websocket")]
 use yamcs_http::websocket::WebSocketClient;
+use yamcs_http::{types::*, *};
 
 const YAMCS_URL: &str = "http://localhost:8090";
 
@@ -51,7 +51,10 @@ async fn test_get_auth_info() {
         .await
         .expect("Failed to get auth info");
 
-    println!("Authentication required: {}", auth_info.require_authentication);
+    println!(
+        "Authentication required: {}",
+        auth_info.require_authentication
+    );
 }
 
 #[tokio::test]
@@ -692,7 +695,10 @@ async fn test_get_command_history() {
     if let Some(commands) = &history.commands {
         println!("Found {} command history entries", commands.len());
         if let Some(first) = commands.first() {
-            println!("First command: {} (origin: {})", first.command_name, first.origin);
+            println!(
+                "First command: {} (origin: {})",
+                first.command_name, first.origin
+            );
         }
     } else {
         println!("Found 0 command history entries");
@@ -906,7 +912,7 @@ async fn test_invalid_processor() {
 #[cfg(feature = "websocket")]
 #[tokio::test]
 async fn test_subscribe_parameters() {
-    use tokio::time::{timeout, Duration};
+    use tokio::time::{Duration, timeout};
 
     let ws_client = WebSocketClient::new(YAMCS_URL);
     ws_client.connect().await.expect("Failed to connect");
@@ -954,7 +960,10 @@ async fn test_subscribe_parameters() {
             let result = timeout(Duration::from_secs(5), rx.recv()).await;
             match result {
                 Ok(Some(data)) => {
-                    println!("Received parameter data: mapping count = {}", data.mapping.len());
+                    println!(
+                        "Received parameter data: mapping count = {}",
+                        data.mapping.len()
+                    );
                     assert!(true, "Successfully received parameter subscription data");
                 }
                 Ok(None) => {
@@ -971,7 +980,7 @@ async fn test_subscribe_parameters() {
 #[cfg(feature = "websocket")]
 #[tokio::test]
 async fn test_subscribe_events() {
-    use tokio::time::{timeout, Duration};
+    use tokio::time::{Duration, timeout};
 
     let ws_client = WebSocketClient::new(YAMCS_URL);
     ws_client.connect().await.expect("Failed to connect");
@@ -1022,7 +1031,7 @@ async fn test_subscribe_events() {
 #[cfg(feature = "websocket")]
 #[tokio::test]
 async fn test_subscribe_alarms() {
-    use tokio::time::{timeout, Duration};
+    use tokio::time::{Duration, timeout};
 
     let ws_client = WebSocketClient::new(YAMCS_URL);
     ws_client.connect().await.expect("Failed to connect");
@@ -1060,7 +1069,7 @@ async fn test_subscribe_alarms() {
 #[cfg(feature = "websocket")]
 #[tokio::test]
 async fn test_subscribe_time() {
-    use tokio::time::{timeout, Duration};
+    use tokio::time::{Duration, timeout};
 
     let ws_client = WebSocketClient::new(YAMCS_URL);
     ws_client.connect().await.expect("Failed to connect");
@@ -1097,7 +1106,7 @@ async fn test_subscribe_time() {
 #[tokio::test]
 async fn test_websocket_connection_state() {
     let ws_client = WebSocketClient::new(YAMCS_URL);
-    
+
     // Initially should be disconnected
     println!("Initial connection state: {:?}", ws_client.state().await);
 
@@ -1113,7 +1122,7 @@ async fn test_websocket_connection_state() {
 #[cfg(feature = "websocket")]
 #[tokio::test]
 async fn test_subscribe_multiple_streams() {
-    use tokio::time::{timeout, Duration};
+    use tokio::time::{Duration, timeout};
 
     let ws_client = WebSocketClient::new(YAMCS_URL);
     ws_client.connect().await.expect("Failed to connect");
