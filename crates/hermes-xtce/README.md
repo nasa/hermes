@@ -9,8 +9,7 @@ the type information.
 
 There is a build script shipped as part of the crate however
 it doesn't do anything by default for performance reasons.
-You won't need the build unless you need to regenerate the code in
-`.rs` in case the XTCE schema changed.
+You won't need the build unless you need to regenerate the code in `src/schema/*.rs` in case the XTCE schema changed.
 
 To update the Rust code, manually build this crate with the `codegen`
 feature enabled:
