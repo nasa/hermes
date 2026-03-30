@@ -9,7 +9,16 @@ serde-enum-str = "0.3"
 serde = { version = "1.0.228", features = ["derive"] }
 
 [features]
-codegen = ["dep:prettyplease", "dep:proc-macro2", "dep:xsd-parser", "dep:anyhow", "dep:syn"]
+codegen = [
+    "dep:prettyplease",
+    "dep:proc-macro2",
+    "dep:xsd-parser",
+    "dep:anyhow",
+    "dep:syn",
+]
+
+[dev-dependencies]
+quick-xml = { version = "0.37", features = ["serialize"] }
 
 [build-dependencies]
 prettyplease = { version = "0.2.37", optional = true }

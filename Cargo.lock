@@ -810,6 +810,7 @@ dependencies = [
  "anyhow",
  "prettyplease",
  "proc-macro2",
+ "quick-xml 0.37.5",
  "serde",
  "serde-enum-str",
  "syn 2.0.117",
@@ -1683,6 +1684,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "52c2c1bf36ddb1a1c396b3601a3cec27c2462e45f07c386894ec3ccf5332bd16"
 dependencies = [
  "prost 0.13.5",
+]
+
+[[package]]
+name = "quick-xml"
+version = "0.37.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "331e97a1af0bf59823e6eadffe373d7b27f485be8748f71471c662c1f269b7fb"
+dependencies = [
+ "memchr",
+ "serde",
 ]
 
 [[package]]
@@ -3251,7 +3262,7 @@ dependencies = [
  "indexmap 2.13.0",
  "parking_lot",
  "proc-macro2",
- "quick-xml",
+ "quick-xml 0.38.4",
  "quote",
  "regex",
  "smallvec",
@@ -3270,7 +3281,7 @@ checksum = "982977ebb49137e23fa29c8754c66d191b74c1221ae71bc71059704fc6d62ff5"
 dependencies = [
  "encoding_rs",
  "indexmap 2.13.0",
- "quick-xml",
+ "quick-xml 0.38.4",
  "regex",
  "thiserror 2.0.18",
 ]
