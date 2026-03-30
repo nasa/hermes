@@ -5,6 +5,7 @@ edition.workspace = true
 authors.workspace = true
 
 [dependencies]
+quick-xml = { version = "0.39.2", features = ["serialize"] }
 serde-enum-str = "0.5.0"
 serde = { version = "1.0.228", features = ["derive"] }
 
@@ -16,10 +17,6 @@ codegen = [
     "dep:anyhow",
     "dep:syn",
 ]
-
-[dev-dependencies]
-quick-xml = { version = "0.39.2", features = ["serialize"] }
-serde_path_to_error = "0.1.20"
 
 [build-dependencies]
 prettyplease = { version = "0.2.37", optional = true }

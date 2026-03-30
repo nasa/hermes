@@ -779,7 +779,6 @@ dependencies = [
  "quick-xml 0.39.2",
  "serde",
  "serde-enum-str",
- "serde_path_to_error",
  "syn",
  "xsd-parser",
 ]

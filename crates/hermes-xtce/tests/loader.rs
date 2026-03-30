@@ -6,9 +6,7 @@ fn test_load_fprime_xtce_full() {
     let xml_content = std::fs::read_to_string("tests/data/fprime.xtce.xml")
         .expect("Failed to read fprime.xtce.xml");
 
-    let mut de = quick_xml::de::Deserializer::from_str(&xml_content);
-
-    let space_system: SpaceSystem = match serde_path_to_error::deserialize(&mut de) {
+    let space_system: SpaceSystem = match hermes_xtce::from_str(&xml_content) {
         Ok(system) => system,
         Err(e) => {
             panic!("Deserialization failed: {e}");
