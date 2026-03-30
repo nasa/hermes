@@ -4,10 +4,7 @@ fn main() {
 }
 
 #[cfg(feature = "codegen")]
-use anyhow::Error;
-
-#[cfg(feature = "codegen")]
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), anyhow::Error> {
     // Codegen is enabled, run the code generation
     codegen::main()
 }
@@ -20,22 +17,16 @@ mod codegen {
     use std::path::{Path, PathBuf};
     use xsd_parser::SubModules;
     use xsd_parser::config::{RenderStepConfig, RendererFlags};
-
     use xsd_parser::models::Naming as NamingImpl;
-
     use xsd_parser::models::code::IdentPath;
-
     use xsd_parser::models::data::DataTypeVariant;
-
     use xsd_parser::traits::Naming;
-
     use xsd_parser::{
         Config, DataTypes, exec_generator_with_ident_cache, exec_interpreter_with_ident_cache,
         exec_optimizer, exec_parser, exec_render,
     };
 
     use anyhow::{Context, Error};
-
     use xsd_parser::config::{GeneratorFlags, InterpreterFlags, OptimizerFlags, Schema};
 
     pub(crate) fn main() -> Result<(), Error> {
