@@ -828,7 +828,13 @@ impl ArgumentBooleanDataType {
 }
 ///Identical to BooleanExpressionType but supports argument instance references.
 #[derive(Debug, Deserialize, Serialize)]
-pub enum ArgumentBooleanExpressionType {
+pub struct ArgumentBooleanExpressionType {
+    #[serde(rename = "$value")]
+    pub content: ArgumentBooleanExpressionTypeContent,
+}
+///Identical to BooleanExpressionType but supports argument instance references.
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ArgumentBooleanExpressionTypeContent {
     ///Condition elements describe a test similar to the Comparison element except that the arguments/parameters used have additional flexibility.
     #[serde(rename = "Condition")]
     Condition(ArgumentComparisonCheckType),
@@ -1317,7 +1323,13 @@ impl ArgumentIntegerDataType {
 }
 ///Identical to IntegerValueType but supports argument instance references.
 #[derive(Debug, Deserialize, Serialize)]
-pub enum ArgumentIntegerValueType {
+pub struct ArgumentIntegerValueType {
+    #[serde(rename = "$value")]
+    pub content: ArgumentIntegerValueTypeContent,
+}
+///Identical to IntegerValueType but supports argument instance references.
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ArgumentIntegerValueTypeContent {
     ///Use a fixed integer value.
     #[serde(rename = "FixedValue")]
     FixedValue(super::xs::LongType),
@@ -1367,7 +1379,13 @@ impl ArgumentLocationInContainerInBitsType {
 }
 ///Identical to MatchCriteriaType but supports argument instance references.
 #[derive(Debug, Deserialize, Serialize)]
-pub enum ArgumentMatchCriteriaType {
+pub struct ArgumentMatchCriteriaType {
+    #[serde(rename = "$value")]
+    pub content: ArgumentMatchCriteriaTypeContent,
+}
+///Identical to MatchCriteriaType but supports argument instance references.
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ArgumentMatchCriteriaTypeContent {
     ///A simple comparison check involving a single test of an argument or parameter value.
     #[serde(rename = "Comparison")]
     Comparison(ArgumentComparisonType),
@@ -2611,7 +2629,13 @@ impl BooleanDataType {
 }
 ///Holds an arbitrarily complex boolean expression
 #[derive(Debug, Deserialize, Serialize)]
-pub enum BooleanExpressionType {
+pub struct BooleanExpressionType {
+    #[serde(rename = "$value")]
+    pub content: BooleanExpressionTypeContent,
+}
+///Holds an arbitrarily complex boolean expression
+#[derive(Debug, Deserialize, Serialize)]
+pub enum BooleanExpressionTypeContent {
     ///Condition elements describe a test similar to the Comparison element except that the parameters used have additional flexibility.
     #[serde(rename = "Condition")]
     Condition(ComparisonCheckType),
@@ -3461,7 +3485,13 @@ pub struct ContextCalibratorType {
 }
 ///A MatchCriteriaType used for Context selection.  It is possible that no match evaluates to true, which results in the default element being used.  It is also possible that a match can have an empty context change, in which case the default is replaced with nothing.
 #[derive(Debug, Deserialize, Serialize)]
-pub enum ContextMatchType {
+pub struct ContextMatchType {
+    #[serde(rename = "$value")]
+    pub content: ContextMatchTypeContent,
+}
+///A MatchCriteriaType used for Context selection.  It is possible that no match evaluates to true, which results in the default element being used.  It is also possible that a match can have an empty context change, in which case the default is replaced with nothing.
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ContextMatchTypeContent {
     ///A simple comparison check involving a single test of a parameter value.
     #[serde(rename = "Comparison")]
     Comparison(ComparisonType),
@@ -5238,7 +5268,13 @@ pub struct IntegerRangeType {
 }
 ///Contains an Integer value; value may be provided directly or via the value in a parameter.
 #[derive(Debug, Deserialize, Serialize)]
-pub enum IntegerValueType {
+pub struct IntegerValueType {
+    #[serde(rename = "$value")]
+    pub content: IntegerValueTypeContent,
+}
+///Contains an Integer value; value may be provided directly or via the value in a parameter.
+#[derive(Debug, Deserialize, Serialize)]
+pub enum IntegerValueTypeContent {
     ///Use a fixed integer value.
     #[serde(rename = "FixedValue")]
     FixedValue(super::xs::LongType),
@@ -5346,7 +5382,13 @@ impl LocationInContainerInBitsType {
 pub type LongDescriptionType = ::std::string::String;
 ///Contains either a simple Comparison, a ComparisonList, an arbitrarily complex BooleanExpression or an escape to an externally defined algorithm
 #[derive(Debug, Deserialize, Serialize)]
-pub enum MatchCriteriaType {
+pub struct MatchCriteriaType {
+    #[serde(rename = "$value")]
+    pub content: MatchCriteriaTypeContent,
+}
+///Contains either a simple Comparison, a ComparisonList, an arbitrarily complex BooleanExpression or an escape to an externally defined algorithm
+#[derive(Debug, Deserialize, Serialize)]
+pub enum MatchCriteriaTypeContent {
     ///A simple comparison check involving a single test of a parameter value.
     #[serde(rename = "Comparison")]
     Comparison(ComparisonType),
@@ -6513,7 +6555,13 @@ impl ParityType {
 }
 ///Describe a percentage complete that is fixed from 0 to 100, or as value from a parameter. See ExecutionVerifierType.
 #[derive(Debug, Deserialize, Serialize)]
-pub enum PercentCompleteType {
+pub struct PercentCompleteType {
+    #[serde(rename = "$value")]
+    pub content: PercentCompleteTypeContent,
+}
+///Describe a percentage complete that is fixed from 0 to 100, or as value from a parameter. See ExecutionVerifierType.
+#[derive(Debug, Deserialize, Serialize)]
+pub enum PercentCompleteTypeContent {
     ///0 to 100 percent
     #[serde(rename = "FixedValue")]
     FixedValue(PercentCompleteTypeFixedValue),
@@ -6754,7 +6802,13 @@ pub enum ReferencePointType {
 }
 ///Most time values are relative to another time e.g. seconds are relative to minutes, minutes are relative to hours.  This type is used to describe this relationship starting with the least significant time Parameter to and progressing to the most significant time parameter.
 #[derive(Debug, Deserialize, Serialize)]
-pub enum ReferenceTimeType {
+pub struct ReferenceTimeType {
+    #[serde(rename = "$value")]
+    pub content: ReferenceTimeTypeContent,
+}
+///Most time values are relative to another time e.g. seconds are relative to minutes, minutes are relative to hours.  This type is used to describe this relationship starting with the least significant time Parameter to and progressing to the most significant time parameter.
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ReferenceTimeTypeContent {
     #[serde(rename = "OffsetFrom")]
     OffsetFrom(ParameterInstanceRefType),
     ///Epochs may be specified as an xs date where time is implied to be 00:00:00, xs dateTime, or string enumeration of common epochs.  The enumerations are TAI (used by CCSDS and others), J2000, UNIX (also known as POSIX), and GPS.
@@ -6871,7 +6925,13 @@ pub struct RepeatType {
 }
 ///Define one or more conditions (constraints) for container inheritance. A container is instantiable if its constraints are true.  Constraint conditions may be a comparison, a list of comparisons, a boolean expression, or a graph of containers that are instantiable (if all containers are instantiable the condition is true).  See BaseContainerType, ComparisonType, ComparisonListType, BooleanExpressionType and NextContainerType.
 #[derive(Debug, Deserialize, Serialize)]
-pub enum RestrictionCriteriaType {
+pub struct RestrictionCriteriaType {
+    #[serde(rename = "$value")]
+    pub content: RestrictionCriteriaTypeContent,
+}
+///Define one or more conditions (constraints) for container inheritance. A container is instantiable if its constraints are true.  Constraint conditions may be a comparison, a list of comparisons, a boolean expression, or a graph of containers that are instantiable (if all containers are instantiable the condition is true).  See BaseContainerType, ComparisonType, ComparisonListType, BooleanExpressionType and NextContainerType.
+#[derive(Debug, Deserialize, Serialize)]
+pub enum RestrictionCriteriaTypeContent {
     ///A simple comparison check involving a single test of a parameter value.
     #[serde(rename = "Comparison")]
     Comparison(ComparisonType),

@@ -52,7 +52,7 @@ mod codegen {
             .with_optimizer_flags(OptimizerFlags::SERDE)
             .with_generator_flags(
                 GeneratorFlags::all()
-                    - GeneratorFlags::ADVANCED_ENUMS
+                    - GeneratorFlags::FLATTEN_ENUM_CONTENT
                     - GeneratorFlags::ANY_TYPE_SUPPORT
                     - GeneratorFlags::NILLABLE_TYPE_SUPPORT,
             )
