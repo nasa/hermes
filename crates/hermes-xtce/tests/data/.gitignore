@@ -1,0 +1,2 @@
+# Ignore actual output files generated during test failures
+*.actual.xml
