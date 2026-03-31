@@ -777,6 +777,7 @@ dependencies = [
  "prettyplease",
  "proc-macro2",
  "quick-xml 0.39.2",
+ "quote",
  "serde",
  "serde-enum-str",
  "syn",

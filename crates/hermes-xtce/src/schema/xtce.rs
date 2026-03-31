@@ -7411,6 +7411,7 @@ pub struct SequenceContainerType {
         default = "SequenceContainerType::default_idle_pattern",
         rename = "@idlePattern"
     )]
+    #[serde(skip_serializing_if = "crate::serde_helpers::is_default_idle_pattern")]
     pub idle_pattern: FixedIntegerValueType,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(default, rename = "LongDescription")]

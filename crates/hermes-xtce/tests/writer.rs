@@ -218,9 +218,6 @@ fn test_write_to_file() {
 }
 
 /// Test fprime XTCE deserialization.
-///
-/// Serialization of fprime.xtce.xml is not tested due to quick-xml
-/// limitations with enum types used as attributes.
 #[test]
 fn test_load_fprime_xtce() {
     let xml_content = std::fs::read_to_string("tests/data/fprime.xtce.xml")
@@ -240,6 +237,38 @@ fn test_load_fprime_xtce() {
     );
 
     println!("Load test passed");
+}
+
+/// Test fprime XTCE serialization.
+///
+/// Note: fprime.xtce.xml uses enum newtype variants (RestrictionCriteriaType, etc.)
+/// which quick-xml cannot serialize. This is a known limitation:
+/// https://github.com/tafia/quick-xml/issues/567
+///
+/// This test verifies that the error is expected and provides clear documentation
+/// of the limitation.
+#[test]
+fn test_fprime_xtce_serialization_limitation() {
+    let xml_content = std::fs::read_to_string("tests/data/fprime.xtce.xml")
+        .expect("Failed to read fprime.xtce.xml");
+
+    let space_system: SpaceSystem =
+        hermes_xtce::from_str(&xml_content).expect("Failed to deserialize XTCE");
+
+    match hermes_xtce::to_string_pretty(&space_system) {
+        Ok(_) => {
+            panic!("Expected serialization to fail due to enum newtype variant limitation");
+        }
+        Err(e) => {
+            let err_msg = e.to_string();
+            assert!(
+                err_msg.contains("cannot serialize enum newtype variant"),
+                "Expected enum newtype variant error, got: {}",
+                err_msg
+            );
+            println!("Confirmed expected serialization limitation: {}", err_msg);
+        }
+    }
 }
 
 /// Test that serialization produces consistent output for the same input.

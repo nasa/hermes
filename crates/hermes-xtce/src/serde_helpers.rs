@@ -67,6 +67,11 @@ pub fn is_empty_calibrator(opt: &Option<crate::CalibratorType>) -> bool {
     }
 }
 
+/// Check if FixedIntegerValueType is the default value (0).
+pub fn is_default_idle_pattern(val: &crate::FixedIntegerValueType) -> bool {
+    matches!(val, crate::FixedIntegerValueType::I32(0))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

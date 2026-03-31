@@ -141,19 +141,6 @@ mod codegen {
         }
     }
 
-    /// Fix deserialization of enum content fields.
-    ///
-    /// When FLATTEN_ENUM_CONTENT is enabled, enums are generated without the wrapper
-    /// struct pattern that quick-xml expects. This function adds custom deserialize_with
-    /// attributes to struct fields that contain enum types, using the helpers from
-    /// the serde_helpers module.
-    // Note: This function is no longer used. We post-process the parsed files instead.
-    // Keeping it here for reference.
-    #[allow(dead_code)]
-    fn _fix_enum_content_deserialization(_data_types: &mut DataTypes) {
-        // This approach doesn't work because $value fields are not in the attributes collection
-    }
-
     /// Extract the base type name from a potentially wrapped type like Option<T> or Vec<T>
     fn extract_base_type(type_string: &str) -> &str {
         // Handle patterns like ":: core :: option :: Option < BaseType >"
@@ -233,6 +220,7 @@ mod codegen {
 
                 let mut has_value_rename = false;
                 let mut has_attribute_rename = false;
+                let field_name = field.ident.as_ref().map(|i| i.to_string());
 
                 for attr in &field.attrs {
                     if attr.path().is_ident("serde") {
@@ -245,6 +233,16 @@ mod codegen {
                             }
                         }
                     }
+                }
+
+                // Special case: idle_pattern is an enum attribute that cannot be serialized
+                // Skip serialization when it has the default value
+                if field_name.as_deref() == Some("idle_pattern") && base_type == "FixedIntegerValueType" {
+                    let attr: syn::Attribute = syn::parse_quote! {
+                        #[serde(skip_serializing_if = "crate::serde_helpers::is_default_idle_pattern")]
+                    };
+                    field.attrs.push(attr);
+                    return;
                 }
 
                 if self.enum_names.contains(base_type) && !has_value_rename && !has_attribute_rename {
