@@ -20,15 +20,18 @@ pub enum AnDedConditionsTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AbsoluteTimeArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Extend another absolute or relative time type.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DateTimeType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -51,15 +54,18 @@ pub struct AbsoluteTimeArgumentType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AbsoluteTimeDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Extend another absolute or relative time type.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DateTimeType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -82,15 +88,18 @@ pub struct AbsoluteTimeDataType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AbsoluteTimeParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Extend another absolute or relative time type.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DateTimeType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -113,9 +122,11 @@ pub struct AbsoluteTimeParameterType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AcceptedVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional name of this defined item.  See NameType for restriction information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<NameType>,
     #[serde(rename = "$value")]
@@ -165,12 +176,14 @@ pub enum AcceptedVerifierTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AggregateArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Initial values for the individual members of the aggregate/structure may be provided here at the type definition using JSON style notation (e.g. '{ "member1": 2, "member2": "foo" }').  When Member elements provide initialValue attributes, they take precedence over these since these are at the type definition level and the Member element acts like a Parameter element.  These may also recurse into members that are also aggregates.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -190,12 +203,14 @@ pub struct AggregateArgumentType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AggregateDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Initial values for the individual members of the aggregate/structure may be provided here at the type definition using JSON style notation (e.g. '{ "member1": 2, "member2": "foo" }').  When Member elements provide initialValue attributes, they take precedence over these since these are at the type definition level and the Member element acts like a Parameter element.  These may also recurse into members that are also aggregates.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -215,12 +230,14 @@ pub struct AggregateDataType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AggregateParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Initial values for the individual members of the aggregate/structure may be provided here at the type definition using JSON style notation (e.g. '{ "member1": 2, "member2": "foo" }').  When Member elements provide initialValue attributes, they take precedence over these since these are at the type definition level and the Member element acts like a Parameter element.  These may also recurse into members that are also aggregates.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -259,9 +276,11 @@ pub struct AlarmConditionsType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AlarmMultiRangesType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(default, rename = "AncillaryDataSet")]
@@ -274,9 +293,11 @@ pub struct AlarmMultiRangesType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AlarmRangesType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///A value of outside specifies that the most severe range is outside all the other ranges: -severe -critical -distress -warning -watch normal +watch +warning +distress +critical +severe.  This means each min, max pair are a range: (-inf, min) or (-inf, min], and [max, inf) or (max, inf).  However a value of inside "inverts" these bands: -normal -watch -warning -distress -critical severe +critical +distress +warning +watch, +normal.  This means each min, max pair form a range of (min, max) or [min, max) or (min, max] or [min, max]. The most common form used is "outside" and it is the default.  The set notation used defines parenthesis as exclusive and square brackets as inclusive.
@@ -310,9 +331,11 @@ impl AlarmRangesType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -415,6 +438,7 @@ pub struct AncillaryDataType {
     #[serde(default = "AncillaryDataType::default_mime_type", rename = "@mimeType")]
     pub mime_type: super::xs::StringType,
     ///Optional Uniform Resource Identifier for this characteristic, feature, or data.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@href")]
     pub href: ::core::option::Option<super::xs::AnyUriType>,
     #[serde(default, rename = "$text")]
@@ -446,15 +470,18 @@ pub enum ArgumentAnDedConditionsTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentAbsoluteTimeDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Extend another absolute or relative time type.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DateTimeType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -477,6 +504,7 @@ pub struct ArgumentAbsoluteTimeDataType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentArgumentRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@argumentRef")]
@@ -500,6 +528,7 @@ pub struct ArgumentArgumentRefEntryType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentArrayArgumentRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@argumentRef")]
@@ -543,6 +572,7 @@ impl ArgumentArrayArgumentRefEntryType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentArrayParameterRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@parameterRef")]
@@ -603,12 +633,14 @@ pub struct ArgumentAssignmentType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentBaseDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     #[serde(default, rename = "$value")]
@@ -646,12 +678,14 @@ pub enum ArgumentBaseDataTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentBaseTimeDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Extend another absolute or relative time type.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -716,15 +750,18 @@ impl ArgumentBinaryDataEncodingType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentBinaryDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.  Extra bits are truncated from the MSB (leftmost).
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::HexBinaryType>,
     #[serde(default, rename = "$value")]
@@ -762,15 +799,18 @@ pub enum ArgumentBinaryDataTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentBooleanDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Enumeration string representing the 1 value, with the default being 'True'.
@@ -828,13 +868,7 @@ impl ArgumentBooleanDataType {
 }
 ///Identical to BooleanExpressionType but supports argument instance references.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ArgumentBooleanExpressionType {
-    #[serde(rename = "$value")]
-    pub content: ArgumentBooleanExpressionTypeContent,
-}
-///Identical to BooleanExpressionType but supports argument instance references.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ArgumentBooleanExpressionTypeContent {
+pub enum ArgumentBooleanExpressionType {
     ///Condition elements describe a test similar to the Comparison element except that the arguments/parameters used have additional flexibility.
     #[serde(rename = "Condition")]
     Condition(ArgumentComparisonCheckType),
@@ -909,6 +943,7 @@ impl ArgumentComparisonType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentContainerRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@containerRef")]
@@ -932,10 +967,12 @@ pub struct ArgumentContainerRefEntryType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentContainerSegmentRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@containerRef")]
     pub container_ref: NameReferenceWithPathType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@order")]
     pub order: ::core::option::Option<PositiveLongType>,
     #[serde(rename = "@sizeInBits")]
@@ -1028,15 +1065,18 @@ pub enum ArgumentDynamicValueTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentEnumeratedDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.  Use the label, it must be in the enumeration list to be valid.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     #[serde(rename = "$value")]
@@ -1077,9 +1117,11 @@ pub enum ArgumentEnumeratedDataTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentFixedValueEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///An optional name for the fixed/constant field in the sequence.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///The fixed/constant value that should be encoded into the sequence.  This value provided should have sufficient bit length to accomodate the size in bits.  If the value is larger, the most significant unnecessary bits are dropped.  The value provided should be in network byte order for encoding.
@@ -1107,15 +1149,18 @@ pub struct ArgumentFixedValueEntryType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentFloatDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DoubleType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally.  Generally this can be determined by examination of the space required to capture the full range of the encoding, but it is not always clear when calibrators are in use.  A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible values.
@@ -1168,8 +1213,10 @@ impl ArgumentFloatDataType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentIndirectParameterRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@aliasNameSpace")]
     pub alias_name_space: ::core::option::Option<super::xs::StringType>,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
@@ -1193,6 +1240,7 @@ pub struct ArgumentIndirectParameterRefEntryType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentInputAlgorithmType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -1257,15 +1305,18 @@ impl ArgumentInstanceRefType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentIntegerDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.  Specify the value as a base 10 integer.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::LongType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally.  Generally this can be determined by examination of the space required to capture the full range of the encoding, but it is not always clear when calibrators are in use.  A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible values.
@@ -1323,13 +1374,7 @@ impl ArgumentIntegerDataType {
 }
 ///Identical to IntegerValueType but supports argument instance references.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ArgumentIntegerValueType {
-    #[serde(rename = "$value")]
-    pub content: ArgumentIntegerValueTypeContent,
-}
-///Identical to IntegerValueType but supports argument instance references.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ArgumentIntegerValueTypeContent {
+pub enum ArgumentIntegerValueType {
     ///Use a fixed integer value.
     #[serde(rename = "FixedValue")]
     FixedValue(super::xs::LongType),
@@ -1379,13 +1424,7 @@ impl ArgumentLocationInContainerInBitsType {
 }
 ///Identical to MatchCriteriaType but supports argument instance references.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ArgumentMatchCriteriaType {
-    #[serde(rename = "$value")]
-    pub content: ArgumentMatchCriteriaTypeContent,
-}
-///Identical to MatchCriteriaType but supports argument instance references.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ArgumentMatchCriteriaTypeContent {
+pub enum ArgumentMatchCriteriaType {
     ///A simple comparison check involving a single test of an argument or parameter value.
     #[serde(rename = "Comparison")]
     Comparison(ArgumentComparisonType),
@@ -1444,6 +1483,7 @@ pub enum ArgumentORedConditionsTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentParameterRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@parameterRef")]
@@ -1467,10 +1507,12 @@ pub struct ArgumentParameterRefEntryType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentParameterSegmentRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@order")]
     pub order: ::core::option::Option<PositiveLongType>,
     #[serde(rename = "@sizeInBits")]
@@ -1494,14 +1536,17 @@ pub struct ArgumentParameterSegmentRefEntryType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentRelativeTimeDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Extend another absolute or relative time type.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DurationType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -1540,6 +1585,7 @@ pub struct ArgumentRestrictionListType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentSequenceEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
@@ -1561,10 +1607,12 @@ pub struct ArgumentSequenceEntryType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentStreamSegmentEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@streamRef")]
     pub stream_ref: NameReferenceWithPathType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@order")]
     pub order: ::core::option::Option<PositiveLongType>,
     #[serde(rename = "@sizeInBits")]
@@ -1639,21 +1687,26 @@ impl ArgumentStringDataEncodingType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentStringDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Initial values for string types, may include C language style (\n, \t, \", \\, etc.) escape sequences.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///restriction pattern is a regular expression
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@restrictionPattern")]
     pub restriction_pattern: ::core::option::Option<super::xs::StringType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally. Generally this can be determined by examination of the encoding information for the string, but it is not always clear, so this attribute allows the extra hint when needed. A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible characters.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@characterWidth")]
     pub character_width: ::core::option::Option<CharacterWidthType>,
     #[serde(default, rename = "$value")]
@@ -1693,6 +1746,7 @@ pub enum ArgumentStringDataTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -1702,6 +1756,7 @@ pub struct ArgumentType {
     #[serde(rename = "@argumentTypeRef")]
     pub argument_type_ref: NameReferenceWithPathType,
     ///Specify as: integer data type using xs:integer, float data type using xs:double, string data type using xs:string, boolean data type using xs:boolean, binary data type using xs:hexBinary, enum data type using label name, relative time data type using xs:duration, absolute time data type using xs:dateTime, arrays using JSON syntax (e.g. '[1, 3, 4]', and aggregates using JSON syntax '{"member1": 1, "member2": "foo"}' ). Values must not exceed the characteristics for the data type or this is a validation error. Takes precedence over an initial value given in the data type. Values are calibrated unless there is an option to override it.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -1783,6 +1838,7 @@ pub enum ArgumentVariableStringTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArrayArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -1792,6 +1848,7 @@ pub struct ArrayArgumentType {
     #[serde(rename = "@arrayTypeRef")]
     pub array_type_ref: NameReferenceWithPathType,
     ///Initial values for the individual elements of the array may be provided here at the type definition using JSON style array notation (e.g. [1, 2, 3]).  It may be multi-dimension, in which case the sequence matches the sequence of the Dimension elements in the DimensionList.  When provided here, the initialValue attributes in the type definition specified in attribute arrayTypeRef are ignored.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -1811,6 +1868,7 @@ pub struct ArrayArgumentType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArrayDataTypeType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -1820,6 +1878,7 @@ pub struct ArrayDataTypeType {
     #[serde(rename = "@arrayTypeRef")]
     pub array_type_ref: NameReferenceWithPathType,
     ///Initial values for the individual elements of the array may be provided here at the type definition using JSON style array notation (e.g. [1, 2, 3]).  It may be multi-dimension, in which case the sequence matches the sequence of the Dimension elements in the DimensionList.  When provided here, the initialValue attributes in the type definition specified in attribute arrayTypeRef are ignored.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -1836,6 +1895,7 @@ pub struct ArrayDataTypeType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArrayParameterRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@parameterRef")]
@@ -1871,6 +1931,7 @@ pub struct ArrayParameterRefEntryTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArrayParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -1880,6 +1941,7 @@ pub struct ArrayParameterType {
     #[serde(rename = "@arrayTypeRef")]
     pub array_type_ref: NameReferenceWithPathType,
     ///Initial values for the individual elements of the array may be provided here at the type definition using JSON style array notation (e.g. [1, 2, 3]).  It may be multi-dimension, in which case the sequence matches the sequence of the Dimension elements in the DimensionList.  When provided here, the initialValue attributes in the type definition specified in attribute arrayTypeRef are ignored.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -1925,9 +1987,11 @@ impl AutoInvertType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BaseAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(default, rename = "AncillaryDataSet")]
@@ -1937,9 +2001,11 @@ pub struct BaseAlarmType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BaseCalibratorType {
     ///Optional name for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///Optional description for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional additional ancillary information for this calibrator/algorithm
@@ -1966,12 +2032,14 @@ pub struct BaseContainerType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BaseDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     #[serde(default, rename = "$value")]
@@ -2019,12 +2087,14 @@ pub struct BaseMetaCommandType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BaseTimeDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Extend another absolute or relative time type.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -2058,9 +2128,11 @@ pub enum BasisType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BinaryAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -2111,15 +2183,18 @@ impl BinaryAlarmType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BinaryArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.  Extra bits are truncated from the MSB (leftmost).
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::HexBinaryType>,
     #[serde(default, rename = "$value")]
@@ -2163,9 +2238,11 @@ pub struct BinaryContextAlarmListType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BinaryContextAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -2252,15 +2329,18 @@ impl BinaryDataEncodingType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BinaryDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.  Extra bits are truncated from the MSB (leftmost).
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::HexBinaryType>,
     #[serde(default, rename = "$value")]
@@ -2298,15 +2378,18 @@ pub enum BinaryDataTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BinaryParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.  Extra bits are truncated from the MSB (leftmost).
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::HexBinaryType>,
     #[serde(default, rename = "$value")]
@@ -2360,6 +2443,7 @@ pub enum BitOrderType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BlockMetaCommandType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -2382,9 +2466,11 @@ pub struct BlockMetaCommandType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BooleanAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -2435,15 +2521,18 @@ impl BooleanAlarmType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BooleanArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Enumeration string representing the 1 value, with the default being 'True'.
@@ -2509,9 +2598,11 @@ pub struct BooleanContextAlarmListType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BooleanContextAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -2563,15 +2654,18 @@ impl BooleanContextAlarmType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BooleanDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Enumeration string representing the 1 value, with the default being 'True'.
@@ -2629,13 +2723,7 @@ impl BooleanDataType {
 }
 ///Holds an arbitrarily complex boolean expression
 #[derive(Debug, Deserialize, Serialize)]
-pub struct BooleanExpressionType {
-    #[serde(rename = "$value")]
-    pub content: BooleanExpressionTypeContent,
-}
-///Holds an arbitrarily complex boolean expression
-#[derive(Debug, Deserialize, Serialize)]
-pub enum BooleanExpressionTypeContent {
+pub enum BooleanExpressionType {
     ///Condition elements describe a test similar to the Comparison element except that the parameters used have additional flexibility.
     #[serde(rename = "Condition")]
     Condition(ComparisonCheckType),
@@ -2650,15 +2738,18 @@ pub enum BooleanExpressionTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct BooleanParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Enumeration string representing the 1 value, with the default being 'True'.
@@ -2773,6 +2864,7 @@ pub struct CrcType {
     #[serde(default = "CrcType::default_reference", rename = "@reference")]
     pub reference: ReferencePointType,
     ///Reference to the parameter that contains the value of the CRC based on this container.  This attribute is optional because not all implementations verify (telemetry) or create (telecommand) error control fields using the XTCE definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@parameterRef")]
     pub parameter_ref: ::core::option::Option<ExpandedNameReferenceWithPathType>,
     ///The polynomial that represents the calculation in hexadecimal form (described at CRCType annotation).
@@ -2811,9 +2903,11 @@ impl CrcType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CalibratorType {
     ///Optional name for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///Optional description for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "$value")]
@@ -2839,9 +2933,11 @@ pub enum CalibratorTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ChangeAlarmRangesType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///A value of outside specifies that the most severe range is outside all the other ranges: -severe -critical -distress -warning -watch normal +watch +warning +distress +critical +severe.  This means each min, max pair are a range: (-inf, min) or (-inf, min], and [max, inf) or (max, inf).  However a value of inside "inverts" these bands: -normal -watch -warning -distress -critical severe +critical +distress +warning +watch, +normal.  This means each min, max pair form a range of (min, max) or [min, max) or (min, max] or [min, max]. The most common form used is "outside" and it is the default.  The set notation used defines parenthesis as exclusive and square brackets as inclusive.
@@ -2953,6 +3049,7 @@ pub struct CheckWindowAlgorithmsType {
 ///Used by CommandVerifiers to limit the time allocated to check for the verification.  See CheckWindowAlgorithmsType.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CheckWindowType {
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@timeToStartChecking")]
     pub time_to_start_checking: ::core::option::Option<RelativeTimeType>,
     #[serde(rename = "@timeToStopChecking")]
@@ -2985,9 +3082,11 @@ pub struct ChecksumType {
     #[serde(rename = "@name")]
     pub name: ChecksumTypeNameType,
     ///The hashing algorithm may use a larger internal bucket size than the emitted value size in bits captured by the parameterRef attribute.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@hashSizeInBits")]
     pub hash_size_in_bits: ::core::option::Option<PositiveLongType>,
     ///Reference to the parameter that contains the value of this computed checksum or hash based on this container.  This attribute is optional because not all implementations verify (telemetry) or create (telecommand) error control fields using the XTCE definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@parameterRef")]
     pub parameter_ref: ::core::option::Option<ExpandedNameReferenceWithPathType>,
     ///Provided to account for an algorithm not otherwise listed by enumeration.  Assumed to return the computed checksum.
@@ -3054,6 +3153,7 @@ pub struct CommandContainerSetType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CommandContainerType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -3111,9 +3211,11 @@ pub struct CommandMetaDataType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CommandVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional name of this defined item.  See NameType for restriction information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<NameType>,
     #[serde(rename = "$value")]
@@ -3241,9 +3343,11 @@ impl ComparisonType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CompleteVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional name of this defined item.  See NameType for restriction information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<NameType>,
     #[serde(default, rename = "$value")]
@@ -3365,6 +3469,7 @@ pub struct ContainerBinaryDataEncodingType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ContainerRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@containerRef")]
@@ -3403,10 +3508,12 @@ pub struct ContainerRefType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ContainerSegmentRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@containerRef")]
     pub container_ref: NameReferenceWithPathType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@order")]
     pub order: ::core::option::Option<PositiveLongType>,
     #[serde(rename = "@sizeInBits")]
@@ -3446,6 +3553,7 @@ pub enum ContainerSetTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ContainerType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -3485,13 +3593,7 @@ pub struct ContextCalibratorType {
 }
 ///A MatchCriteriaType used for Context selection.  It is possible that no match evaluates to true, which results in the default element being used.  It is also possible that a match can have an empty context change, in which case the default is replaced with nothing.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ContextMatchType {
-    #[serde(rename = "$value")]
-    pub content: ContextMatchTypeContent,
-}
-///A MatchCriteriaType used for Context selection.  It is possible that no match evaluates to true, which results in the default element being used.  It is also possible that a match can have an empty context change, in which case the default is replaced with nothing.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ContextMatchTypeContent {
+pub enum ContextMatchType {
     ///A simple comparison check involving a single test of a parameter value.
     #[serde(rename = "Comparison")]
     Comparison(ComparisonType),
@@ -3526,9 +3628,11 @@ pub struct ContextSignificanceType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CustomAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(default, rename = "AncillaryDataSet")]
@@ -3541,11 +3645,13 @@ pub struct CustomAlarmType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CustomStreamType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@bitRateInBPS")]
     pub bit_rate_in_bps: ::core::option::Option<super::xs::DoubleType>,
     #[serde(default = "CustomStreamType::default_pcm_type", rename = "@pcmType")]
@@ -3608,6 +3714,7 @@ impl DataEncodingType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct DescriptionType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -3760,15 +3867,18 @@ pub enum EntryListTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct EnumeratedArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.  Use the label, it must be in the enumeration list to be valid.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     #[serde(rename = "$value")]
@@ -3809,15 +3919,18 @@ pub enum EnumeratedArgumentTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct EnumeratedDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.  Use the label, it must be in the enumeration list to be valid.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     #[serde(rename = "$value")]
@@ -3858,15 +3971,18 @@ pub enum EnumeratedDataTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct EnumeratedParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.  Use the label, it must be in the enumeration list to be valid.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     #[serde(rename = "$value")]
@@ -3929,9 +4045,11 @@ pub struct EnumerationAlarmListType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct EnumerationAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -4002,9 +4120,11 @@ pub struct EnumerationContextAlarmListType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct EnumerationContextAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -4127,9 +4247,11 @@ pub enum ErrorDetectCorrectTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ExecutionVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional name of this defined item.  See NameType for restriction information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<NameType>,
     #[serde(default, rename = "$value")]
@@ -4198,9 +4320,11 @@ pub struct ExternalAlgorithmType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FailedVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional name of this defined item.  See NameType for restriction information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<NameType>,
     #[serde(default, rename = "$value")]
@@ -4252,11 +4376,13 @@ pub enum FailedVerifierTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FixedFrameStreamType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@bitRateInBPS")]
     pub bit_rate_in_bps: ::core::option::Option<super::xs::DoubleType>,
     #[serde(default = "FixedFrameStreamType::default_pcm_type", rename = "@pcmType")]
@@ -4385,15 +4511,18 @@ impl FlagType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FloatArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DoubleType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally.  Generally this can be determined by examination of the space required to capture the full range of the encoding, but it is not always clear when calibrators are in use.  A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible values.
@@ -4464,6 +4593,7 @@ pub struct FloatDataEncodingType {
     )]
     pub size_in_bits: FloatEncodingSizeInBitsType,
     ///A changeThreshold may optionally be specified to inform systems of the minimum change in value that is significant.  This is used by some systems to limit the telemetry processing and/or recording requirements. If the value is unspecified or zero, any change is significant.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@changeThreshold")]
     pub change_threshold: ::core::option::Option<super::xs::DoubleType>,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
@@ -4498,15 +4628,18 @@ impl FloatDataEncodingType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FloatDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Initial value is always given in calibrated form
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DoubleType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally.  Generally this can be determined by examination of the space required to capture the full range of the encoding, but it is not always clear when calibrators are in use.  A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible values.
@@ -4598,15 +4731,18 @@ pub enum FloatEncodingType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FloatParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Initial value is always given in calibrated form
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DoubleType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally.  Generally this can be determined by examination of the space required to capture the full range of the encoding, but it is not always clear when calibrators are in use.  A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible values.
@@ -4668,15 +4804,19 @@ impl FloatParameterType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FloatRangeType {
     ///Minimum decimal/real number value including itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@minInclusive")]
     pub min_inclusive: ::core::option::Option<super::xs::DoubleType>,
     ///Minimum decimal/real number value excluding itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@minExclusive")]
     pub min_exclusive: ::core::option::Option<super::xs::DoubleType>,
     ///Maximum decimal/real number value including itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maxInclusive")]
     pub max_inclusive: ::core::option::Option<super::xs::DoubleType>,
     ///Maximum decimal/real number value excluding itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maxExclusive")]
     pub max_exclusive: ::core::option::Option<super::xs::DoubleType>,
 }
@@ -4702,11 +4842,13 @@ pub enum FloatingPointNotationType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FrameStreamType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@bitRateInBPS")]
     pub bit_rate_in_bps: ::core::option::Option<super::xs::DoubleType>,
     #[serde(default = "FrameStreamType::default_pcm_type", rename = "@pcmType")]
@@ -4751,15 +4893,18 @@ impl FrameStreamType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct HeaderType {
     ///This attribute contains an optional version descriptor for this document.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@version")]
     pub version: ::core::option::Option<super::xs::StringType>,
     ///This attribute contains an optional date to be associated with this document.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@date")]
     pub date: ::core::option::Option<super::xs::StringType>,
     ///This attribute contains optional classification status for use by programs for which that is applicable.
     #[serde(default = "HeaderType::default_classification", rename = "@classification")]
     pub classification: super::xs::StringType,
     ///This attribute contains an optional additional instructions attribute to be interpreted by programs that use this attribute.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@classificationInstructions")]
     pub classification_instructions: ::core::option::Option<super::xs::StringType>,
     ///This attribute contains a flag describing the state of this document in the evolution of the project using it.
@@ -4795,8 +4940,10 @@ pub type HistoryType = ::std::string::String;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IndirectParameterRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@aliasNameSpace")]
     pub alias_name_space: ::core::option::Option<super::xs::StringType>,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
@@ -4823,6 +4970,7 @@ pub struct IndirectParameterRefEntryType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct InputAlgorithmType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -4849,6 +4997,7 @@ pub struct InputAlgorithmType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct InputOutputAlgorithmType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -4885,6 +5034,7 @@ impl InputOutputAlgorithmType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct InputOutputTriggerAlgorithmType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -4896,9 +5046,11 @@ pub struct InputOutputTriggerAlgorithmType {
     )]
     pub thread: super::xs::BooleanType,
     ///First telemetry container from which the output parameter should be calculated.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@triggerContainer")]
     pub trigger_container: ::core::option::Option<NameReferenceWithPathType>,
     ///Algorithm processing priority. If more than one algorithm is triggered by the same container, the lowest priority algorithm should be calculated first.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@priority")]
     pub priority: ::core::option::Option<super::xs::IntType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -4943,6 +5095,7 @@ pub struct InputParameterInstanceRefType {
         rename = "@useCalibratedValue"
     )]
     pub use_calibrated_value: super::xs::BooleanType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@inputName")]
     pub input_name: ::core::option::Option<super::xs::StringType>,
 }
@@ -4974,15 +5127,18 @@ pub enum InputSetTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IntegerArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.  Specify the value as a base 10 integer.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::LongType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally.  Generally this can be determined by examination of the space required to capture the full range of the encoding, but it is not always clear when calibrators are in use.  A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible values.
@@ -5066,6 +5222,7 @@ pub struct IntegerDataEncodingType {
     )]
     pub size_in_bits: PositiveLongType,
     ///A changeThreshold may optionally be specified to inform systems of the minimum change in value that is significant.  This is used by some systems to limit the telemetry processing and/or recording requirements, such as for an analog-to-digital converter that dithers in the least significant bit. If the value    is unspecified or zero, any change is significant.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@changeThreshold")]
     pub change_threshold: ::core::option::Option<NonNegativeLongType>,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
@@ -5100,15 +5257,18 @@ impl IntegerDataEncodingType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IntegerDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.  Specify the value as a base 10 integer.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::LongType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally.  Generally this can be determined by examination of the space required to capture the full range of the encoding, but it is not always clear when calibrators are in use.  A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible values.
@@ -5183,15 +5343,18 @@ pub enum IntegerEncodingType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IntegerParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Default/Initial value is always given in calibrated form.  Specify the value as a base 10 integer.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::LongType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally.  Generally this can be determined by examination of the space required to capture the full range of the encoding, but it is not always clear when calibrators are in use.  A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible values.
@@ -5260,21 +5423,17 @@ impl IntegerParameterType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IntegerRangeType {
     ///Minimum integer value including itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@minInclusive")]
     pub min_inclusive: ::core::option::Option<super::xs::LongType>,
     ///Maximum integer value including itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maxInclusive")]
     pub max_inclusive: ::core::option::Option<super::xs::LongType>,
 }
 ///Contains an Integer value; value may be provided directly or via the value in a parameter.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct IntegerValueType {
-    #[serde(rename = "$value")]
-    pub content: IntegerValueTypeContent,
-}
-///Contains an Integer value; value may be provided directly or via the value in a parameter.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum IntegerValueTypeContent {
+pub enum IntegerValueType {
     ///Use a fixed integer value.
     #[serde(rename = "FixedValue")]
     FixedValue(super::xs::LongType),
@@ -5289,6 +5448,7 @@ pub enum IntegerValueTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct InterlockType {
     ///The name of a SpaceSystem this Interlock applies to.  By default, it only applies to the SpaceSystem that contains this MetaCommand.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@scopeToSpaceSystem")]
     pub scope_to_space_system: ::core::option::Option<NameReferenceWithPathType>,
     ///The verification stage of the command that releases the interlock, with the default being complete.
@@ -5298,6 +5458,7 @@ pub struct InterlockType {
     )]
     pub verification_to_wait_for: VerifierEnumerationType,
     ///Only applies when the verificationToWaitFor attribute is 'queued' or 'executing'.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@verificationProgressPercentage")]
     pub verification_progress_percentage: ::core::option::Option<super::xs::DoubleType>,
     ///A flag that indicates that under special circumstances, this Interlock can be suspended.
@@ -5382,13 +5543,7 @@ impl LocationInContainerInBitsType {
 pub type LongDescriptionType = ::std::string::String;
 ///Contains either a simple Comparison, a ComparisonList, an arbitrarily complex BooleanExpression or an escape to an externally defined algorithm
 #[derive(Debug, Deserialize, Serialize)]
-pub struct MatchCriteriaType {
-    #[serde(rename = "$value")]
-    pub content: MatchCriteriaTypeContent,
-}
-///Contains either a simple Comparison, a ComparisonList, an arbitrarily complex BooleanExpression or an escape to an externally defined algorithm
-#[derive(Debug, Deserialize, Serialize)]
-pub enum MatchCriteriaTypeContent {
+pub enum MatchCriteriaType {
     ///A simple comparison check involving a single test of a parameter value.
     #[serde(rename = "Comparison")]
     Comparison(ComparisonType),
@@ -5406,6 +5561,7 @@ pub enum MatchCriteriaTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MathAlgorithmType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -5428,9 +5584,11 @@ pub struct MathAlgorithmType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MathOperationCalibratorType {
     ///Optional name for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///Optional description for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "$value")]
@@ -5459,9 +5617,11 @@ pub enum MathOperationCalibratorTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MathOperationType {
     ///Optional name for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///Optional description for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "$value")]
@@ -5647,6 +5807,7 @@ pub struct MemberListType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MemberType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -5655,6 +5816,7 @@ pub struct MemberType {
     #[serde(rename = "@typeRef")]
     pub type_ref: NameReferenceWithPathType,
     ///Used to set the initial calibrated values of Parameters and Arguments.  Will overwrite an initial value defined for the ParameterType or ArgumentType definition elements.  For integer types it is base 10 form.  Floating point types may be specified in normal (100.0) or scientific (1.0e2) form.  Time types are specified using the ISO 8601 formats described for XTCE time data types.  Initial values for string types, may include C language style (\n, \t, \", \\, etc.) escape sequences.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -5682,9 +5844,11 @@ pub struct MessageRefType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MessageSetType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional name of this defined item.  See NameType for restriction information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<NameType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -5702,6 +5866,7 @@ pub struct MessageSetType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MessageType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -5760,6 +5925,7 @@ pub struct MetaCommandStepType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MetaCommandType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -5825,21 +5991,26 @@ impl MetaCommandType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MultiRangeType {
     ///Minimum decimal/real number value including itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@minInclusive")]
     pub min_inclusive: ::core::option::Option<super::xs::DoubleType>,
     ///Minimum decimal/real number value excluding itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@minExclusive")]
     pub min_exclusive: ::core::option::Option<super::xs::DoubleType>,
     ///Maximum decimal/real number value including itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maxInclusive")]
     pub max_inclusive: ::core::option::Option<super::xs::DoubleType>,
     ///Maximum decimal/real number value excluding itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maxExclusive")]
     pub max_exclusive: ::core::option::Option<super::xs::DoubleType>,
     ///A value of outside specifies that the most severe range is outside all the other ranges: -severe -critical -distress -warning -watch normal +watch +warning +distress +critical +severe.  This means each min, max pair are a range: (-inf, min) or (-inf, min], and [max, inf) or (max, inf).  However a value of inside "inverts" these bands: -normal -watch -warning -distress -critical severe +critical +distress +warning +watch, +normal.  This means each min, max pair form a range of (min, max) or [min, max) or (min, max] or [min, max].  The most common form used is "outside" and it is the default.  The set notation used defines parenthesis as exclusive and square brackets as inclusive.
     #[serde(default = "MultiRangeType::default_range_form", rename = "@rangeForm")]
     pub range_form: RangeFormType,
     ///The level of concern for this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@level")]
     pub level: ::core::option::Option<ConcernLevelsType>,
 }
@@ -5853,6 +6024,7 @@ impl MultiRangeType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct NameDescriptionType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -5897,6 +6069,7 @@ pub struct NumberFormatType {
     )]
     pub minimum_fraction_digits: NonNegativeLongType,
     ///Describes how the engineering/calibrated value of this number should be displayed with respect to the maximum or upper bound of the number of digits.  There is no default.  No value specified should be interpreted as no upper bound such that all requires digits are used to fully characterize the value.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maximumFractionDigits")]
     pub maximum_fraction_digits: ::core::option::Option<NonNegativeLongType>,
     ///Describes how the engineering/calibrated value of this number should be displayed with respect to the minimum number of integer digits.  The default is 1.
@@ -5906,6 +6079,7 @@ pub struct NumberFormatType {
     )]
     pub minimum_integer_digits: NonNegativeLongType,
     ///Describes how the engineering/calibrated value of this number should be displayed with respect to the maximum or upper bound of the integer digits.  There is no default.  No value specified should be interpreted as no upper bound such that all requires digits are used to fully characterize the value.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maximumIntegerDigits")]
     pub maximum_integer_digits: ::core::option::Option<NonNegativeLongType>,
     ///Describes how the engineering/calibrated value of this number should be displayed with respect to negative values.  This attribute specifies the character or characters that should be appended to the numeric value to indicate negative values.  The default is none.
@@ -5984,9 +6158,11 @@ impl NumberFormatType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct NumericAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -6053,9 +6229,11 @@ pub struct NumericContextAlarmListType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct NumericContextAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -6157,9 +6335,11 @@ pub struct OnPeriodicRateTriggerType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OptionalNameDescriptionType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional name of this defined item.  See NameType for restriction information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<NameType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -6177,6 +6357,7 @@ pub struct OptionalNameDescriptionType {
 pub struct OutputParameterRefType {
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@outputName")]
     pub output_name: ::core::option::Option<super::xs::StringType>,
 }
@@ -6189,11 +6370,13 @@ pub struct OutputSetType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PcmStreamType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@bitRateInBPS")]
     pub bit_rate_in_bps: ::core::option::Option<super::xs::DoubleType>,
     #[serde(default = "PcmStreamType::default_pcm_type", rename = "@pcmType")]
@@ -6265,6 +6448,7 @@ impl ParameterInstanceRefType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ParameterPropertiesType {
     ///This attribute describes the nature of the source entity for which this parameter receives a value.  Implementations assign different attributes/properties internally to a parameter based on the anticipated data source.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@dataSource")]
     pub data_source: ::core::option::Option<TelemetryDataSourceType>,
     ///A Parameter marked as 'readOnly' true is non-settable by users and applications/services that do not represent the data source itself.  Note that a slight conceptual overlap exists here between the 'dataSource' attribute and this attribute when the data source is 'constant'.  For a constant data source, then 'readOnly' should be 'true'.  Application implementations may choose to implicitly enforce this.  Some implementations have both concepts of a Parameter that is settable or non-settable and a Constant in different parts of their internal data model.
@@ -6306,6 +6490,7 @@ impl ParameterPropertiesType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ParameterRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@parameterRef")]
@@ -6338,10 +6523,12 @@ pub struct ParameterRefType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ParameterSegmentRefEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@order")]
     pub order: ::core::option::Option<PositiveLongType>,
     #[serde(rename = "@sizeInBits")]
@@ -6439,6 +6626,7 @@ impl ParameterToSuspendAlarmsOnType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -6448,6 +6636,7 @@ pub struct ParameterType {
     #[serde(rename = "@parameterTypeRef")]
     pub parameter_type_ref: NameReferenceWithPathType,
     ///Specify as: integer data type using xs:integer, float data type using xs:double, string data type using xs:string, boolean data type using xs:boolean, binary data type using xs:hexBinary, enum data type using label name, relative time data type using xs:duration, absolute time data type using xs:dateTime, arrays using JSON syntax (e.g. '[1, 3, 4]', and aggregates using JSON syntax '{"member1": 1, "member2": "foo"}' ). Values must not exceed the characteristics for the data type or this is a validation error. Takes precedence over an initial value given in the data type. Values are calibrated unless there is an option to override it.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -6540,6 +6729,7 @@ pub struct ParityType {
     #[serde(default = "ParityType::default_reference", rename = "@reference")]
     pub reference: ReferencePointType,
     ///Reference to the parameter that contains the value of the parity based on this container.  This attribute is optional because not all implementations verify (telemetry) or create (telecommand) error control fields using the XTCE definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@parameterRef")]
     pub parameter_ref: ::core::option::Option<ExpandedNameReferenceWithPathType>,
 }
@@ -6555,13 +6745,7 @@ impl ParityType {
 }
 ///Describe a percentage complete that is fixed from 0 to 100, or as value from a parameter. See ExecutionVerifierType.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct PercentCompleteType {
-    #[serde(rename = "$value")]
-    pub content: PercentCompleteTypeContent,
-}
-///Describe a percentage complete that is fixed from 0 to 100, or as value from a parameter. See ExecutionVerifierType.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum PercentCompleteTypeContent {
+pub enum PercentCompleteType {
     ///0 to 100 percent
     #[serde(rename = "FixedValue")]
     FixedValue(PercentCompleteTypeFixedValue),
@@ -6581,9 +6765,11 @@ pub struct PhysicalAddressSetType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PhysicalAddressType {
     ///A descriptive name for the location, such as a memory type, where this address is located.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@sourceName")]
     pub source_name: ::core::option::Option<super::xs::StringType>,
     ///The address within the memory location.  This specification does not specify program and hardware specific attributes, such as address size and address region starting location.  These are part of the spacecraft hardware properties.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@sourceAddress")]
     pub source_address: ::core::option::Option<super::xs::StringType>,
     ///A sub-address may be used to further specify the location if it fractionally occupies the address.  Additional possibilities exist for separating partitions of memory or other address based storage mechanisms.  This specification does not specify spacecraft specific hardware properties, so usage of addressing information is largely program and platform specific.
@@ -6594,9 +6780,11 @@ pub struct PhysicalAddressType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PolynomialCalibratorType {
     ///Optional name for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///Optional description for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional additional ancillary information for this calibrator/algorithm
@@ -6612,9 +6800,11 @@ pub type PositiveLongType = ::core::primitive::i64;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct QueuedVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional name of this defined item.  See NameType for restriction information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<NameType>,
     #[serde(rename = "$value")]
@@ -6692,9 +6882,11 @@ pub struct RateInStreamType {
     #[serde(default = "RateInStreamType::default_basis", rename = "@basis")]
     pub basis: BasisType,
     ///The minimum rate for the specified basis for which this container should appear in the stream.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@minimumValue")]
     pub minimum_value: ::core::option::Option<super::xs::DoubleType>,
     ///The maximum rate for the specified basis for which this container should appear in the stream.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maximumValue")]
     pub maximum_value: ::core::option::Option<super::xs::DoubleType>,
 }
@@ -6714,9 +6906,11 @@ pub struct RateInStreamWithStreamNameType {
     )]
     pub basis: BasisType,
     ///The minimum rate for the specified basis for which this container should appear in the stream.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@minimumValue")]
     pub minimum_value: ::core::option::Option<super::xs::DoubleType>,
     ///The maximum rate for the specified basis for which this container should appear in the stream.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maximumValue")]
     pub maximum_value: ::core::option::Option<super::xs::DoubleType>,
     ///Reference to a named stream for which this rate specification applies.
@@ -6733,9 +6927,11 @@ impl RateInStreamWithStreamNameType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ReceivedVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional name of this defined item.  See NameType for restriction information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<NameType>,
     #[serde(rename = "$value")]
@@ -6802,13 +6998,7 @@ pub enum ReferencePointType {
 }
 ///Most time values are relative to another time e.g. seconds are relative to minutes, minutes are relative to hours.  This type is used to describe this relationship starting with the least significant time Parameter to and progressing to the most significant time parameter.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ReferenceTimeType {
-    #[serde(rename = "$value")]
-    pub content: ReferenceTimeTypeContent,
-}
-///Most time values are relative to another time e.g. seconds are relative to minutes, minutes are relative to hours.  This type is used to describe this relationship starting with the least significant time Parameter to and progressing to the most significant time parameter.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ReferenceTimeTypeContent {
+pub enum ReferenceTimeType {
     #[serde(rename = "OffsetFrom")]
     OffsetFrom(ParameterInstanceRefType),
     ///Epochs may be specified as an xs date where time is implied to be 00:00:00, xs dateTime, or string enumeration of common epochs.  The enumerations are TAI (used by CCSDS and others), J2000, UNIX (also known as POSIX), and GPS.
@@ -6819,14 +7009,17 @@ pub enum ReferenceTimeTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RelativeTimeArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Extend another absolute or relative time type.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DurationType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -6849,14 +7042,17 @@ pub struct RelativeTimeArgumentType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RelativeTimeDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Extend another absolute or relative time type.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DurationType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -6879,14 +7075,17 @@ pub struct RelativeTimeDataType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RelativeTimeParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Extend another absolute or relative time type.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DurationType>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -6925,13 +7124,7 @@ pub struct RepeatType {
 }
 ///Define one or more conditions (constraints) for container inheritance. A container is instantiable if its constraints are true.  Constraint conditions may be a comparison, a list of comparisons, a boolean expression, or a graph of containers that are instantiable (if all containers are instantiable the condition is true).  See BaseContainerType, ComparisonType, ComparisonListType, BooleanExpressionType and NextContainerType.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct RestrictionCriteriaType {
-    #[serde(rename = "$value")]
-    pub content: RestrictionCriteriaTypeContent,
-}
-///Define one or more conditions (constraints) for container inheritance. A container is instantiable if its constraints are true.  Constraint conditions may be a comparison, a list of comparisons, a boolean expression, or a graph of containers that are instantiable (if all containers are instantiable the condition is true).  See BaseContainerType, ComparisonType, ComparisonListType, BooleanExpressionType and NextContainerType.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum RestrictionCriteriaTypeContent {
+pub enum RestrictionCriteriaType {
     ///A simple comparison check involving a single test of a parameter value.
     #[serde(rename = "Comparison")]
     Comparison(ComparisonType),
@@ -6952,9 +7145,11 @@ pub enum RestrictionCriteriaTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SentFromRangeVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional name of this defined item.  See NameType for restriction information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<NameType>,
     #[serde(rename = "$value")]
@@ -7004,6 +7199,7 @@ pub enum SentFromRangeVerifierTypeContent {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SequenceContainerType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -7055,6 +7251,7 @@ impl SequenceContainerType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SequenceEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
@@ -7091,6 +7288,7 @@ pub struct ServiceSetType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ServiceType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -7122,8 +7320,10 @@ pub type ShortDescriptionType = ::std::string::String;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SignificanceType {
     ///If none is supplied, then the current SpaceSystem is assumed to be the one at risk by the issuance of this command
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@spaceSystemAtRisk")]
     pub space_system_at_risk: ::core::option::Option<NameReferenceWithPathType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@reasonForWarning")]
     pub reason_for_warning: ::core::option::Option<super::xs::StringType>,
     #[serde(
@@ -7142,6 +7342,7 @@ impl SignificanceType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SimpleAlgorithmType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -7180,6 +7381,7 @@ pub type SpaceSystemNotNil = SpaceSystemType;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SpaceSystemType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
@@ -7192,8 +7394,10 @@ pub struct SpaceSystemType {
     #[serde(default = "SpaceSystemType::default_asset_type", rename = "@assetType")]
     pub asset_type: super::xs::StringType,
     ///Optional descriptive attribute for document owner convenience.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@operationalStatus")]
     pub operational_status: ::core::option::Option<super::xs::TokenType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@base")]
     pub base: ::core::option::Option<super::xml::Base>,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
@@ -7234,9 +7438,11 @@ impl SpaceSystemType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct SplineCalibratorType {
     ///Optional name for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///Optional description for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The interpolation order to apply to the overall spline function.  Order 0 is no slope between the points (flat).  Order 1 is linear interpolation.  Order 2 would be quadratic and in this special case, 3 points would be required, etc.
@@ -7295,10 +7501,12 @@ pub struct StreamRefType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct StreamSegmentEntryType {
     ///Optional short description for this entry element.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@streamRef")]
     pub stream_ref: NameReferenceWithPathType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@order")]
     pub order: ::core::option::Option<PositiveLongType>,
     #[serde(rename = "@sizeInBits")]
@@ -7355,9 +7563,11 @@ pub struct StringAlarmListType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct StringAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -7419,21 +7629,26 @@ impl StringAlarmType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct StringArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Initial values for string types, may include C language style (\n, \t, \", \\, etc.) escape sequences.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///restriction pattern is a regular expression
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@restrictionPattern")]
     pub restriction_pattern: ::core::option::Option<super::xs::StringType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally. Generally this can be determined by examination of the encoding information for the string, but it is not always clear, so this attribute allows the extra hint when needed. A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible characters.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@characterWidth")]
     pub character_width: ::core::option::Option<CharacterWidthType>,
     #[serde(default, rename = "$value")]
@@ -7480,9 +7695,11 @@ pub struct StringContextAlarmListType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct StringContextAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -7591,21 +7808,26 @@ impl StringDataEncodingType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct StringDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Initial values for string types, may include C language style (\n, \t, \", \\, etc.) escape sequences.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///restriction pattern is a regular expression
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@restrictionPattern")]
     pub restriction_pattern: ::core::option::Option<super::xs::StringType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally. Generally this can be determined by examination of the encoding information for the string, but it is not always clear, so this attribute allows the extra hint when needed. A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible characters.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@characterWidth")]
     pub character_width: ::core::option::Option<CharacterWidthType>,
     #[serde(default, rename = "$value")]
@@ -7676,21 +7898,26 @@ pub enum StringEncodingType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct StringParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Used to derive one Data Type from another - will inherit all the attributes from the baseType any of which may be redefined in this type definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@baseType")]
     pub base_type: ::core::option::Option<NameReferenceWithPathType>,
     ///Initial values for string types, may include C language style (\n, \t, \", \\, etc.) escape sequences.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::StringType>,
     ///restriction pattern is a regular expression
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@restrictionPattern")]
     pub restriction_pattern: ::core::option::Option<super::xs::StringType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally. Generally this can be determined by examination of the encoding information for the string, but it is not always clear, so this attribute allows the extra hint when needed. A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible characters.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@characterWidth")]
     pub character_width: ::core::option::Option<CharacterWidthType>,
     #[serde(default, rename = "$value")]
@@ -7744,9 +7971,11 @@ pub struct SyncPatternType {
         rename = "@bitLocationFromStartOfContainer"
     )]
     pub bit_location_from_start_of_container: super::xs::LongType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@mask")]
     pub mask: ::core::option::Option<super::xs::HexBinaryType>,
     ///truncate the mask from the left
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maskLengthInBits")]
     pub mask_length_in_bits: ::core::option::Option<PositiveLongType>,
     ///truncate the pattern from the left
@@ -7858,9 +8087,11 @@ pub struct TermType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TimeAlarmRangesType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///A value of outside specifies that the most severe range is outside all the other ranges: -severe -critical -distress -warning -watch normal +watch +warning +distress +critical +severe.  This means each min, max pair are a range: (-inf, min) or (-inf, min], and [max, inf) or (max, inf).  However a value of inside "inverts" these bands: -normal -watch -warning -distress -critical severe +critical +distress +warning +watch, +normal.  This means each min, max pair form a range of (min, max) or [min, max) or (min, max] or [min, max]. The most common form used is "outside" and it is the default.  The set notation used defines parenthesis as exclusive and square brackets as inclusive.
@@ -7901,9 +8132,11 @@ impl TimeAlarmRangesType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TimeAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -7975,6 +8208,7 @@ pub struct TimeAssociationType {
     )]
     pub interpolate_time: super::xs::BooleanType,
     ///The offset is used to supply a relative time offset from the time association and to this parameter
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@offset")]
     pub offset: ::core::option::Option<super::xs::DoubleType>,
     ///Specify the units the offset is in, the default is seconds.
@@ -8034,9 +8268,11 @@ pub struct TimeContextAlarmListType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TimeContextAlarmType {
     ///The alarm definition may be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///An optional brief description of this alarm definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
@@ -8132,9 +8368,11 @@ pub struct ToStringType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TransferredToRangeVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional name of this defined item.  See NameType for restriction information.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<NameType>,
     #[serde(rename = "$value")]
@@ -8191,6 +8429,7 @@ pub struct TransmissionConstraintListType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TransmissionConstraintType {
     ///Pause during timeOut, fail when the timeout passes
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@timeOut")]
     pub time_out: ::core::option::Option<RelativeTimeType>,
     ///Indicates whether the constraints for a Command may be suspended.
@@ -8231,6 +8470,7 @@ impl TransmissionConstraintType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TriggerSetType {
     ///Triggers may optionally be named.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///This attribute is a maximum rate that constrains how quickly this trigger may evaluate the algorithm to avoid flooding the implementation.  The default is once per second.  Setting to 0 results in no maximum.
@@ -8261,9 +8501,11 @@ impl TriggerSetType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TriggeredMathOperationType {
     ///Optional name for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///Optional description for this calibrator/algorithm
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(rename = "@outputParameterRef")]
@@ -8321,6 +8563,7 @@ pub struct UnitType {
     #[serde(default = "UnitType::default_factor", rename = "@factor")]
     pub factor: super::xs::StringType,
     ///A description of the unit, which may be for expanded human readability or for specification of the nature/property of the unit.  For example, meters per second squared is of a nature/property of acceleration.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@description")]
     pub description: ::core::option::Option<ShortDescriptionType>,
     ///The default value "calibrated" is most common practice to specify units at the engineering/calibrated value, it is possible to specify an additional Unit element for the raw/uncalibrated value.
@@ -8405,12 +8648,14 @@ pub struct ValueEnumerationType {
     #[serde(rename = "@value")]
     pub value: super::xs::LongType,
     ///If max value is given, the label maps to a range where value is less than or equal to maxValue. The range is inclusive.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maxValue")]
     pub max_value: ::core::option::Option<super::xs::LongType>,
     ///String enumeration label to apply to this value definition in the enumeration.
     #[serde(rename = "@label")]
     pub label: super::xs::StringType,
     ///An optional additional string description can be specified for this enumeration label to provide extended information if desired.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
 }
@@ -8418,11 +8663,13 @@ pub struct ValueEnumerationType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VariableFrameStreamType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@bitRateInBPS")]
     pub bit_rate_in_bps: ::core::option::Option<super::xs::DoubleType>,
     #[serde(default = "VariableFrameStreamType::default_pcm_type", rename = "@pcmType")]
@@ -8592,6 +8839,7 @@ pub struct XorType {
     #[serde(default = "XorType::default_reference", rename = "@reference")]
     pub reference: ReferencePointType,
     ///Reference to the parameter that contains the value of this computed XOR based on this container.  This attribute is optional because not all implementations verify (telemetry) or create (telecommand) error control fields using the XTCE definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@parameterRef")]
     pub parameter_ref: ::core::option::Option<ExpandedNameReferenceWithPathType>,
 }
@@ -8648,15 +8896,19 @@ pub type SizeInBitsTypeFixed = SizeInBitsTypeFixedElementType;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FloatDataTypeValidRangeElementType {
     ///Minimum decimal/real number value including itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@minInclusive")]
     pub min_inclusive: ::core::option::Option<super::xs::DoubleType>,
     ///Minimum decimal/real number value excluding itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@minExclusive")]
     pub min_exclusive: ::core::option::Option<super::xs::DoubleType>,
     ///Maximum decimal/real number value including itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maxInclusive")]
     pub max_inclusive: ::core::option::Option<super::xs::DoubleType>,
     ///Maximum decimal/real number value excluding itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maxExclusive")]
     pub max_exclusive: ::core::option::Option<super::xs::DoubleType>,
     ///By default and general recommendation, the valid range is specified in engineering/calibrated values, although this can be adjusted.
@@ -8675,9 +8927,11 @@ impl FloatDataTypeValidRangeElementType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IntegerDataTypeValidRangeElementType {
     ///Minimum integer value including itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@minInclusive")]
     pub min_inclusive: ::core::option::Option<super::xs::LongType>,
     ///Maximum integer value including itself.
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@maxInclusive")]
     pub max_inclusive: ::core::option::Option<super::xs::LongType>,
     ///By default and general recommendation, the valid range is specified in engineering/calibrated values, although this can be adjusted.

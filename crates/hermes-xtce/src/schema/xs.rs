@@ -15,6 +15,7 @@ pub type NameType = ::std::string::String;
 pub type QNameType = ::std::string::String;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AnySimpleType {
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "@type")]
     pub type_: ::core::option::Option<::std::string::String>,
     #[serde(default, rename = "$text")]

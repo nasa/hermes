@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" name="MinimalTestSystem">
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <IntegerParameterType name="TestU8" signed="false" sizeInBits="8">
+        <IntegerDataEncoding encoding="unsigned" sizeInBits="8" />
+      </IntegerParameterType>
+    </ParameterTypeSet>
+  </TelemetryMetaData>
+</SpaceSystem>

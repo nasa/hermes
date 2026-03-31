@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" shortDescription="" name="MinimalTestSystem" systemType="unknown" assetType="unknown" operationalStatus="" base="">
+  <LongDescription/>
+  <AliasSet/>
+  <AncillaryDataSet/>
+  <Header/>
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <IntegerParameterType shortDescription="" name="TestU8" baseType="" initialValue="" sizeInBits="8" signed="false">
+        <IntegerDataEncoding bitOrder="mostSignificantBitFirst" byteOrder="mostSignificantByteFirst" encoding="unsigned" sizeInBits="8" changeThreshold="">
+          <ErrorDetectCorrect/>
+          <DefaultCalibrator/>
+          <ContextCalibratorList/>
+        </IntegerDataEncoding>
+      </IntegerParameterType>
+    </ParameterTypeSet>
+    <ParameterSet/>
+    <ContainerSet/>
+    <MessageSet/>
+    <StreamSet/>
+    <AlgorithmSet/>
+  </TelemetryMetaData>
+  <CommandMetaData/>
+  <ServiceSet/>
+</SpaceSystem>

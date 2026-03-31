@@ -13,21 +13,23 @@ fn main() -> Result<(), anyhow::Error> {
 mod codegen {
     use proc_macro2::TokenStream;
     use std::env::var;
-    use std::fs::{create_dir_all, remove_dir_all, write};
+    use std::fs::write;
     use std::path::{Path, PathBuf};
-    use xsd_parser::SubModules;
     use xsd_parser::config::{RenderStepConfig, RendererFlags};
-    use xsd_parser::models::Naming as NamingImpl;
     use xsd_parser::models::code::IdentPath;
-    use xsd_parser::models::data::DataTypeVariant;
+    use xsd_parser::models::data::{ComplexData, DataTypeVariant};
+    use xsd_parser::models::Naming as NamingImpl;
     use xsd_parser::traits::Naming;
+    use xsd_parser::SubModules;
     use xsd_parser::{
-        Config, DataTypes, exec_generator_with_ident_cache, exec_interpreter_with_ident_cache,
-        exec_optimizer, exec_parser, exec_render,
+        exec_generator_with_ident_cache, exec_interpreter_with_ident_cache, exec_optimizer, exec_parser,
+        exec_render, Config, DataTypes,
     };
 
     use anyhow::{Context, Error};
+    use syn::__private::quote::quote;
     use xsd_parser::config::{GeneratorFlags, InterpreterFlags, OptimizerFlags, Schema};
+    use xsd_parser::models::schema::xs::AttributeUseType;
 
     pub(crate) fn main() -> Result<(), Error> {
         let cargo_dir = var("CARGO_MANIFEST_DIR")
@@ -52,7 +54,7 @@ mod codegen {
             .with_optimizer_flags(OptimizerFlags::SERDE)
             .with_generator_flags(
                 GeneratorFlags::all()
-                    - GeneratorFlags::FLATTEN_ENUM_CONTENT
+                    // - GeneratorFlags::FLATTEN_ENUM_CONTENT
                     - GeneratorFlags::ANY_TYPE_SUPPORT
                     - GeneratorFlags::NILLABLE_TYPE_SUPPORT,
             )
@@ -75,13 +77,12 @@ mod codegen {
 
         // Modify the output to work around some issues with the code generation
         fix_other_unit_variant(&mut data_types);
+        fix_non_optional_attributes(&mut data_types);
 
         let modules = exec_render(config.renderer, &data_types)?;
 
         // Write the generated code to the module directory specified by Cargo.
         let target_dir = cargo_dir.join("src/schema");
-        let _ = remove_dir_all(&target_dir);
-        create_dir_all(&target_dir).context("Unable to create `src/schema` directory!")?;
         let directory: &Path = &target_dir.as_ref();
         modules
             .write_to_files_with(|module, path: &Path| -> Result<(), Error> {
@@ -90,20 +91,49 @@ mod codegen {
                 } else {
                     directory.join(path).join("mod.rs")
                 };
-                create_dir_all(filename.parent().unwrap())?;
 
                 let mut code = TokenStream::new();
                 module.to_code(&mut code, SubModules::Files);
+                let unformatted_code = code.to_string();
 
-                let parsed = syn::parse_file(&code.to_string())
-                    .context("failed to parse generate source for formatting")?;
+                match syn::parse_file(&unformatted_code) {
+                    Ok(parsed) => write(filename, prettyplease::unparse(&parsed))?,
+                    Err(_) => write(filename, &unformatted_code)?,
+                }
 
-                write(filename, prettyplease::unparse(&parsed))?;
                 Ok(())
             })
             .context("Error while writing generated code")?;
 
         Ok(())
+    }
+
+    fn fix_non_optional_attributes(data_types: &mut DataTypes) {
+        for (_, type_) in &mut data_types.items {
+            match &mut type_.variant {
+                DataTypeVariant::Complex(ComplexData::Struct {
+                    type_: struct_type, ..
+                }) => {
+                    for attr in &mut struct_type.attributes {
+                        if attr.meta.use_ == AttributeUseType::Required {
+                            attr.is_option = false;
+                        }
+
+                        if attr.is_option {
+                            attr.extra_attributes.push(quote! {
+                                serde(skip_serializing_if = "Option::is_none")
+                            })
+                        }
+                        // if attr.ident == "base_type" {
+                        //
+                        //     eprintln!("{:?}", attr);
+                        //     std::process::exit(1);
+                        // }
+                    }
+                }
+                _ => {}
+            }
+        }
     }
 
     #[derive(Default, Debug, Clone)]
