@@ -16,6 +16,7 @@ codegen = [
     "dep:xsd-parser",
     "dep:anyhow",
     "dep:syn",
+    "dep:quote",
 ]
 
 [build-dependencies]
@@ -23,4 +24,5 @@ prettyplease = { version = "0.2.37", optional = true }
 proc-macro2 = { version = "1.0.106", optional = true }
 xsd-parser = { version = "1.1.0", optional = true }
 anyhow = { version = "1.0.102", optional = true }
-syn = { version = "2.0.117", optional = true }
+syn = { version = "2.0.117", features = ["visit-mut"], optional = true }
+quote = { version = "1.0.45", optional = true }

@@ -54,7 +54,6 @@ mod codegen {
             .with_optimizer_flags(OptimizerFlags::SERDE)
             .with_generator_flags(
                 GeneratorFlags::all()
-                    // - GeneratorFlags::FLATTEN_ENUM_CONTENT
                     - GeneratorFlags::ANY_TYPE_SUPPORT
                     - GeneratorFlags::NILLABLE_TYPE_SUPPORT,
             )
@@ -78,6 +77,8 @@ mod codegen {
         // Modify the output to work around some issues with the code generation
         fix_other_unit_variant(&mut data_types);
         fix_non_optional_attributes(&mut data_types);
+        // Note: fix_enum_content_deserialization is commented out because $value fields
+        // are not in the attributes collection. We'll handle this during file writing instead.
 
         let modules = exec_render(config.renderer, &data_types)?;
 
@@ -97,7 +98,11 @@ mod codegen {
                 let unformatted_code = code.to_string();
 
                 match syn::parse_file(&unformatted_code) {
-                    Ok(parsed) => write(filename, prettyplease::unparse(&parsed))?,
+                    Ok(mut parsed) => {
+                        // Post-process to add deserialize_with for enum content fields
+                        fix_enum_content_in_parsed_file(&mut parsed);
+                        write(filename, prettyplease::unparse(&parsed))?
+                    }
                     Err(_) => write(filename, &unformatted_code)?,
                 }
 
@@ -134,6 +139,168 @@ mod codegen {
                 _ => {}
             }
         }
+    }
+
+    /// Fix deserialization of enum content fields.
+    ///
+    /// When FLATTEN_ENUM_CONTENT is enabled, enums are generated without the wrapper
+    /// struct pattern that quick-xml expects. This function adds custom deserialize_with
+    /// attributes to struct fields that contain enum types, using the helpers from
+    /// the serde_helpers module.
+    // Note: This function is no longer used. We post-process the parsed files instead.
+    // Keeping it here for reference.
+    #[allow(dead_code)]
+    fn _fix_enum_content_deserialization(_data_types: &mut DataTypes) {
+        // This approach doesn't work because $value fields are not in the attributes collection
+    }
+
+    /// Extract the base type name from a potentially wrapped type like Option<T> or Vec<T>
+    fn extract_base_type(type_string: &str) -> &str {
+        // Handle patterns like ":: core :: option :: Option < BaseType >"
+        // or ":: std :: vec :: Vec < BaseType >"
+        let trimmed = type_string.trim();
+
+        // Find the last occurrence of '<' and first occurrence of '>' after it
+        if let Some(start) = trimmed.rfind('<') {
+            if let Some(end) = trimmed[start..].find('>') {
+                return trimmed[start + 1..start + end].trim();
+            }
+        }
+
+        // If no angle brackets, return the whole string
+        trimmed
+    }
+
+    /// Add deserialize_with and skip_serializing_if attributes to generated code.
+    fn fix_enum_content_in_parsed_file(file: &mut syn::File) {
+        use quote::ToTokens;
+        use syn::visit_mut::{self, VisitMut};
+        use syn::{Field, ItemEnum, ItemStruct};
+        use std::collections::HashSet;
+
+        // XSD container types that require children when present
+        const EMPTY_CONTAINER_TYPES: &[&str] = &[
+            "AncillaryDataSetType",
+            "ErrorDetectCorrectType",
+            "CalibratorType",
+            "ContextCalibratorListType",
+            "ParameterSetType",
+            "ContainerSetType",
+            "MessageSetType",
+            "StreamSetType",
+            "AlgorithmSetType",
+            "EnumerationListType",
+            "RangeEnumerationType",
+            "ArgumentAssignmentListType",
+            "ArgumentListType",
+            "MetaCommandStepListType",
+            "ParameterToSetListType",
+            "ParameterToSuspendAlarmsListType",
+        ];
+
+        struct EnumCollector {
+            enum_names: HashSet<String>,
+        }
+
+        impl VisitMut for EnumCollector {
+            fn visit_item_enum_mut(&mut self, node: &mut ItemEnum) {
+                self.enum_names.insert(node.ident.to_string());
+                visit_mut::visit_item_enum_mut(self, node);
+            }
+        }
+
+        struct FieldFixer {
+            enum_names: HashSet<String>,
+        }
+
+        impl VisitMut for FieldFixer {
+            fn visit_item_struct_mut(&mut self, node: &mut ItemStruct) {
+                if let syn::Fields::Named(ref mut fields) = node.fields {
+                    for field in &mut fields.named {
+                        self.fix_field(field);
+                    }
+                }
+                visit_mut::visit_item_struct_mut(self, node);
+            }
+        }
+
+        impl FieldFixer {
+            fn fix_field(&self, field: &mut Field) {
+                let type_string = field.ty.to_token_stream().to_string();
+                let base_type = extract_base_type(&type_string);
+                let is_vec = type_string.contains("Vec");
+                let is_option = type_string.contains("Option");
+
+                let mut has_value_rename = false;
+                let mut has_attribute_rename = false;
+
+                for attr in &field.attrs {
+                    if attr.path().is_ident("serde") {
+                        let tokens = attr.meta.to_token_stream().to_string();
+                        if tokens.contains("rename") {
+                            if tokens.contains("$value") {
+                                has_value_rename = true;
+                            } else if tokens.contains("@") {
+                                has_attribute_rename = true;
+                            }
+                        }
+                    }
+                }
+
+                if self.enum_names.contains(base_type) && !has_value_rename && !has_attribute_rename {
+                    let helper_path = if is_option {
+                        "crate::serde_helpers::deserialize_optional_enum_content"
+                    } else if is_vec {
+                        "crate::serde_helpers::deserialize_vec_enum_content"
+                    } else {
+                        "crate::serde_helpers::deserialize_enum_content"
+                    };
+
+                    let attr: syn::Attribute = syn::parse_quote! {
+                        #[serde(deserialize_with = #helper_path)]
+                    };
+                    field.attrs.push(attr);
+                }
+
+                if EMPTY_CONTAINER_TYPES.contains(&base_type) {
+                    let already_has_skip = field.attrs.iter().any(|attr| {
+                        if attr.path().is_ident("serde") {
+                            let tokens = attr.meta.to_token_stream().to_string();
+                            tokens.contains("skip_serializing_if")
+                        } else {
+                            false
+                        }
+                    });
+
+                    if !already_has_skip {
+                        let skip_condition = if base_type == "CalibratorType" && is_option {
+                            "crate::serde_helpers::is_empty_calibrator"
+                        } else if is_option {
+                            "Option::is_none"
+                        } else if is_vec {
+                            "Vec::is_empty"
+                        } else {
+                            return;
+                        };
+
+                        let attr: syn::Attribute = syn::parse_quote! {
+                            #[serde(skip_serializing_if = #skip_condition)]
+                        };
+                        field.attrs.push(attr);
+                    }
+                }
+            }
+        }
+
+        let mut collector = EnumCollector {
+            enum_names: HashSet::new(),
+        };
+        collector.visit_file_mut(file);
+
+        let mut fixer = FieldFixer {
+            enum_names: collector.enum_names,
+        };
+        fixer.visit_file_mut(file);
     }
 
     #[derive(Default, Debug, Clone)]

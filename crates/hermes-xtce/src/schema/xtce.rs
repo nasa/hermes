@@ -42,12 +42,16 @@ pub struct AbsoluteTimeArgumentType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describes how the raw base counts of the time type are encoded/decoded.
     #[serde(default, rename = "Encoding")]
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///A base schema type for describing an absolute time data type. Contains an absolute (to a known epoch) time.  Use the [ISO 8601] extended format CCYY-MM-DDThh:mm:ss where "CC" represents the century, "YY" the year, "MM" the month and "DD" the day, preceded by an optional leading "-" sign to indicate a negative number. If the sign is omitted, "+" is assumed. The letter "T" is the date/time separator and "hh", "mm", "ss" represent hour, minute and second respectively. Additional digits can be used to increase the precision of fractional seconds if desired i.e. the format ss.ss... with any number of digits after the decimal point is supported. See AbsoluteTimeParameterType and AbsoluteTimeArgumentType.  See AbsouteTimeParameterType, AbsoluteTimeArgumentType and BaseTimeDataType.
@@ -76,12 +80,16 @@ pub struct AbsoluteTimeDataType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describes how the raw base counts of the time type are encoded/decoded.
     #[serde(default, rename = "Encoding")]
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Describe an absolute time parameter type relative to a known epoch (such as TAI).  The string representation of this time should use the [ISO 8601] extended format CCYY-MM-DDThh:mm:ss where "CC" represents the century, "YY" the year, "MM" the month and "DD" the day, preceded by an optional leading "-" sign to indicate a negative number. If the sign is omitted, "+" is assumed. The letter "T" is the date/time separator and "hh", "mm", "ss" represent hour, minute and second respectively. Additional digits can be used to increase the precision of fractional seconds if desired i.e. the format ss.ss... with any number of digits after the decimal point is supported.  See TAIType, IntegerDataEncoding and AbsoluteTimeDataType.
@@ -110,12 +118,16 @@ pub struct AbsoluteTimeParameterType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describes how the raw base counts of the time type are encoded/decoded.
     #[serde(default, rename = "Encoding")]
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///A verifier that means the destination has accepted the command.
@@ -194,6 +206,7 @@ pub struct AggregateArgumentType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Ordered list of the members of the aggregate/structure.  Members are contiguous.
     #[serde(rename = "MemberList")]
@@ -221,6 +234,7 @@ pub struct AggregateDataType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Ordered list of the members of the aggregate/structure.  Members are contiguous.
     #[serde(rename = "MemberList")]
@@ -248,6 +262,7 @@ pub struct AggregateParameterType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Ordered list of the members of the aggregate/structure.  Members are contiguous.
     #[serde(rename = "MemberList")]
@@ -258,18 +273,33 @@ pub struct AggregateParameterType {
 pub struct AlarmConditionsType {
     ///An alarm state of least concern.  Considered to be below the most commonly used Warning level.
     #[serde(default, rename = "WatchAlarm")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub watch_alarm: ::core::option::Option<MatchCriteriaType>,
     ///An alarm state of concern that represents the most commonly used minimum concern level for many software applications.
     #[serde(default, rename = "WarningAlarm")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub warning_alarm: ::core::option::Option<MatchCriteriaType>,
     ///An alarm state of concern in between the most commonly used Warning and Critical levels.
     #[serde(default, rename = "DistressAlarm")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub distress_alarm: ::core::option::Option<MatchCriteriaType>,
     ///An alarm state of concern that represents the most commonly used maximum concern level for many software applications.
     #[serde(default, rename = "CriticalAlarm")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub critical_alarm: ::core::option::Option<MatchCriteriaType>,
     ///An alarm state of highest concern.  Considered to be above the most commonly used Critical level.
     #[serde(default, rename = "SevereAlarm")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub severe_alarm: ::core::option::Option<MatchCriteriaType>,
 }
 ///Describe any number of alarm ranges, each with its own level (normal, warning, watch, distress, critical, severe) and range form (inside -- (min,max), [min,max), (min, max], [min, max], or outside -- (-inf, min) or (-inf,min] and [max, +inf) or (max,+inf). Ranges may overlap, be disjoint and so forth. Ranges within the value spectrum non-specified are non-normal. The most severe range level of value within the ranges is the level of the alarm. Range values are in calibrated engineering units. See FloatRangeType.
@@ -284,6 +314,7 @@ pub struct AlarmMultiRangesType {
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describe any number of alarm ranges, each with its own level (normal, warning, watch, distress, critical, severe) and range form (inside -- (min,max),[min,max), (min, max], [min, max], or outside -- (-inf, min) or (-inf,min] and [max, +inf) or (max,+inf).. Ranges may overlap, be disjoint and so forth. Ranges within the value spectrum non-specified are non-normal. The most severe range level of value within the ranges is the level of the alarm. Range values are in calibrated engineering units. See FloatRangeType.
     #[serde(default, rename = "Range")]
@@ -304,6 +335,7 @@ pub struct AlarmRangesType {
     #[serde(default = "AlarmRangesType::default_range_form", rename = "@rangeForm")]
     pub range_form: RangeFormType,
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///A range of least concern. Considered to be below the most commonly used Warning level.
     #[serde(default, rename = "WatchRange")]
@@ -492,12 +524,16 @@ pub struct ArgumentAbsoluteTimeDataType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describes how the raw base counts of the time type are encoded/decoded.
     #[serde(default, rename = "Encoding")]
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Identical to ArgumentRefEntryType but supports argument instance references.
@@ -519,9 +555,13 @@ pub struct ArgumentArgumentRefEntryType {
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to ArrayParameterRefEntryType but supports argument instance references.
@@ -554,9 +594,13 @@ pub struct ArgumentArrayArgumentRefEntryTypeContent {
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///The dimension here if used for subsetting must be less than the ones in the type.  It's not a subset if its the same size.
     #[serde(rename = "DimensionList")]
@@ -598,9 +642,13 @@ pub struct ArgumentArrayParameterRefEntryTypeContent {
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///The dimension here if used for subsetting must be less than the ones in the type.  It's not a subset if its the same size.
     #[serde(rename = "DimensionList")]
@@ -696,12 +744,16 @@ pub struct ArgumentBaseTimeDataType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describes how the raw base counts of the time type are encoded/decoded.
     #[serde(default, rename = "Encoding")]
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Identical to BinaryDataEncodingType but supports argument instance references.
@@ -721,9 +773,11 @@ pub struct ArgumentBinaryDataEncodingType {
     pub byte_order: ByteOrderType,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(default, rename = "ErrorDetectCorrect")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub error_detect_correct: ::core::option::Option<ErrorDetectCorrectType>,
     ///Number of bits this value occupies on the stream being encoded/decoded.
     #[serde(rename = "SizeInBits")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
     pub size_in_bits: ArgumentIntegerValueType,
     ///Used to convert binary data to an application data type
     #[serde(default, rename = "FromBinaryTransformAlgorithm")]
@@ -958,9 +1012,13 @@ pub struct ArgumentContainerRefEntryType {
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to ContainerSegmentRefEntryType but supports argument instance references.
@@ -987,9 +1045,13 @@ pub struct ArgumentContainerSegmentRefEntryType {
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to DimensionListType but supports argument instance references.
@@ -1003,8 +1065,10 @@ pub struct ArgumentDimensionListType {
 pub struct ArgumentDimensionType {
     ///zero based index
     #[serde(rename = "StartingIndex")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
     pub starting_index: ArgumentIntegerValueType,
     #[serde(rename = "EndingIndex")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
     pub ending_index: ArgumentIntegerValueType,
 }
 ///Identical to DiscreteLookupListType but supports argument instance references.
@@ -1140,9 +1204,13 @@ pub struct ArgumentFixedValueEntryType {
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to FloatDataType but supports argument instance references.
@@ -1229,9 +1297,13 @@ pub struct ArgumentIndirectParameterRefEntryType {
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(rename = "ParameterInstance")]
     pub parameter_instance: ParameterInstanceRefType,
@@ -1254,6 +1326,7 @@ pub struct ArgumentInputAlgorithmType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(default, rename = "AlgorithmText")]
     pub algorithm_text: ::core::option::Option<AlgorithmTextType>,
@@ -1498,9 +1571,13 @@ pub struct ArgumentParameterRefEntryType {
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to ParameterSegmentRefEntryType but supports argument instance references.
@@ -1527,9 +1604,13 @@ pub struct ArgumentParameterSegmentRefEntryType {
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Used to contain a relative time value.  Used to describe a relative time.  Normally used for time offsets.  A Relative time is expressed as PnYn MnDTnH nMnS, where nY represents the number of years, nM the number of months, nD the number of days, 'T' is the date/time separator, nH the number of hours, nM the number of minutes and nS the number of seconds. The number of seconds can include decimal digits to arbitrary precision.  For example, to indicate a duration of 1 year, 2 months, 3 days, 10 hours, and 30 minutes, one would write: P1Y2M3DT10H30M. One could also indicate a duration of minus 120 days as: -P120D.  An extension of Schema duration type.
@@ -1557,12 +1638,16 @@ pub struct ArgumentRelativeTimeDataType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describes how the raw base counts of the time type are encoded/decoded.
     #[serde(default, rename = "Encoding")]
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Identical to RepeatType but supports argument instance references.
@@ -1570,8 +1655,12 @@ pub struct ArgumentRelativeTimeDataType {
 pub struct ArgumentRepeatType {
     ///Value (either fixed or dynamic) that contains the count of repeated structures.
     #[serde(rename = "Count")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
     pub count: ArgumentIntegerValueType,
     #[serde(default, rename = "Offset")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub offset: ::core::option::Option<ArgumentIntegerValueType>,
 }
 ///Defines a list of argument values that restrict a constraint from being realized in the commanding lifecycle.
@@ -1598,9 +1687,13 @@ pub struct ArgumentSequenceEntryType {
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to StreamRefEntryType but supports argument instance references.
@@ -1627,9 +1720,13 @@ pub struct ArgumentStreamSegmentEntryType {
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to StringDataEncodingType but supports argument instance references.
@@ -1767,6 +1864,7 @@ pub struct ArgumentType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Describe an unordered collection of argument type definitions.  These types named for the engineering/calibrated type of the argument.  See BaseDataType and BaseTimeDataType.
@@ -1859,6 +1957,7 @@ pub struct ArrayArgumentType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describe the dimensions of this array.
     #[serde(rename = "DimensionList")]
@@ -1889,6 +1988,7 @@ pub struct ArrayDataTypeType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Describe an entry that is an array parameter. Specify the dimension sizes if you subsetting the array (the number of dimensions shall match the number defined in the parameter's type definition), otherwise the ones in the ParameterType are assumed.  See SequenceEntryType.
@@ -1916,12 +2016,16 @@ pub struct ArrayParameterRefEntryTypeContent {
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
     pub time_association: ::core::option::Option<TimeAssociationType>,
     ///Optional ancillary data associated with this element.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///The dimension here if used for subsetting must be less than the ones in the type.  It's not a subset if its the same size.
     #[serde(rename = "DimensionList")]
@@ -1952,6 +2056,7 @@ pub struct ArrayParameterType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describe the dimensions of this array.
     #[serde(rename = "DimensionList")]
@@ -1995,6 +2100,7 @@ pub struct BaseAlarmType {
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Supplies an optional non-reference-able name and short description for calibrators.  Also includes an optional ancillary data for any special local flags, note that these may not necessarily transfer to another recipient of an instance document.
@@ -2010,6 +2116,7 @@ pub struct BaseCalibratorType {
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional additional ancillary information for this calibrator/algorithm
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///A base type for comparison related elements that improves the mapping produced by data binding tools.
@@ -2026,6 +2133,9 @@ pub struct BaseContainerType {
     pub container_ref: NameReferenceWithPathType,
     ///Contains the conditions that must evaluate to true in order for this container to be an extension of the parent container.
     #[serde(default, rename = "RestrictionCriteria")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub restriction_criteria: ::core::option::Option<RestrictionCriteriaType>,
 }
 ///An abstract schema type used by within the schema to derive the other simple/primitive engineering form data types:  BooleanDataType, BinaryDataType, StringDataType, EnumeratedDataType, FloatDataType and IntegerDataType.  The encoding elements are optional because they describe the raw wire encoded form of the data type.  Encoding is only necessary when the type is telemetered in some form.  Local variables and derived typically do not require encoding.
@@ -2081,6 +2191,7 @@ pub struct BaseMetaCommandType {
     pub meta_command_ref: NameReferenceWithPathType,
     ///Argument Assignments specialize a MetaCommand or BlockMetaCommand when inheriting from another MetaCommand.  General argument values can be restricted to specific values to further specialize the MetaCommand.
     #[serde(default, rename = "ArgumentAssignmentList")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub argument_assignment_list: ::core::option::Option<ArgumentAssignmentListType>,
 }
 ///An abstract schema type used within the schema to derive other time based data types: RelativeTimeDataType and AbsoluteTimeDataType.  An absolute time data type is a telemetered source/destination data type.  A data encoding must be set.  An optional epoch may be set.  Time types are an exception to other primitives because, if the time data type is not telemetered, it still must have a data encoding set.  See DataEncodingType, AbsoluteTimeDataType and RelativeTimeDataType.
@@ -2105,12 +2216,16 @@ pub struct BaseTimeDataType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describes how the raw base counts of the time type are encoded/decoded.
     #[serde(default, rename = "Encoding")]
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///A base type for the various triggers, purely to improve the mappings created by data binding compilers.
@@ -2304,9 +2419,11 @@ pub struct BinaryDataEncodingType {
     pub byte_order: ByteOrderType,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(default, rename = "ErrorDetectCorrect")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub error_detect_correct: ::core::option::Option<ErrorDetectCorrectType>,
     ///Number of bits this value occupies on the stream being encoded/decoded.
     #[serde(rename = "SizeInBits")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
     pub size_in_bits: IntegerValueType,
     ///Used to convert binary data to an application data type
     #[serde(default, rename = "FromBinaryTransformAlgorithm")]
@@ -2457,6 +2574,7 @@ pub struct BlockMetaCommandType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///List of the MetaCommands to include in this BlockMetaCommand.
     #[serde(rename = "MetaCommandStepList")]
@@ -2967,6 +3085,7 @@ pub struct ChangeAlarmRangesType {
     )]
     pub span_of_interest_in_seconds: super::xs::DoubleType,
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///A range of least concern. Considered to be below the most commonly used Warning level.
     #[serde(default, rename = "WatchRange")]
@@ -3167,6 +3286,7 @@ pub struct CommandContainerType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(default, rename = "DefaultRateInStream")]
     pub default_rate_in_stream: ::core::option::Option<RateInStreamType>,
@@ -3190,6 +3310,7 @@ pub struct CommandMetaDataType {
     pub parameter_type_set: ::core::option::Option<ParameterTypeSetType>,
     ///Parameters referenced by MetaCommands.  This Parameter Set is located here so that MetaCommand data can be built independently of TelemetryMetaData.
     #[serde(default, rename = "ParameterSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub parameter_set: ::core::option::Option<ParameterSetType>,
     ///A list of argument types.  MetaCommand definitions can contain arguments and parameters.  Arguments are user provided to the specific command definition.  Parameters are provided/calculated/determined by the software creating the command instance.  As a result, arguments contain separate type information.  In some cases, arguments have different descriptive characteristics.
     #[serde(default, rename = "ArgumentTypeSet")]
@@ -3202,9 +3323,11 @@ pub struct CommandMetaDataType {
     pub command_container_set: ::core::option::Option<CommandContainerSetType>,
     ///Contains an unordered set of Streams.
     #[serde(default, rename = "StreamSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub stream_set: ::core::option::Option<StreamSetType>,
     ///Contains an unordered set of Algorithms.
     #[serde(default, rename = "AlgorithmSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub algorithm_set: ::core::option::Option<AlgorithmSetType>,
 }
 ///A command verifier is used to check that the command has been successfully executed. Command Verifiers may be either a Custom Algorithm or a Boolean Check or the presence of a Container for a relative change in the value of a Parameter.  The CheckWindow is a time period where the verification must test true to pass.
@@ -3454,9 +3577,13 @@ pub struct ConstantType {
 pub struct ContainerBinaryDataEncodingType {
     ///Describes the optional inclusion of an error detection and/or correction algorithm used with this container.
     #[serde(default, rename = "ErrorDetectCorrect")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub error_detect_correct: ::core::option::Option<ErrorDetectCorrectType>,
     ///Number of bits this container occupies on the stream being encoded/decoded.  This is only needed to "force" the bit length of the container to be a fixed value.  In most cases, the entry list would define the size of the container.
     #[serde(default, rename = "SizeInBits")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub size_in_bits: ::core::option::Option<IntegerValueType>,
     ///Used to convert binary data to an application data type.
     #[serde(default, rename = "FromBinaryTransformAlgorithm")]
@@ -3484,12 +3611,16 @@ pub struct ContainerRefEntryType {
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
     pub time_association: ::core::option::Option<TimeAssociationType>,
     ///Optional ancillary data associated with this element.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 #[derive(Debug, Deserialize, Serialize)]
@@ -3528,12 +3659,16 @@ pub struct ContainerSegmentRefEntryType {
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
     pub time_association: ::core::option::Option<TimeAssociationType>,
     ///Optional ancillary data associated with this element.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Unordered Set of Containers
@@ -3567,6 +3702,7 @@ pub struct ContainerType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(default, rename = "DefaultRateInStream")]
     pub default_rate_in_stream: ::core::option::Option<RateInStreamType>,
@@ -3587,6 +3723,7 @@ pub struct ContextCalibratorListType {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ContextCalibratorType {
     #[serde(rename = "ContextMatch")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
     pub context_match: ContextMatchType,
     #[serde(rename = "Calibrator")]
     pub calibrator: CalibratorType,
@@ -3619,6 +3756,7 @@ pub struct ContextSignificanceListType {
 pub struct ContextSignificanceType {
     ///Describe the context matching value and source that will enable the Significance listed in the Significance element.
     #[serde(rename = "ContextMatch")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
     pub context_match: ContextMatchType,
     ///Describe the signficance of this MetaCommand definition.  See SignificanceType.
     #[serde(rename = "Significance")]
@@ -3636,6 +3774,7 @@ pub struct CustomAlarmType {
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Algorithm returns a boolean.
     #[serde(rename = "InputAlgorithm")]
@@ -3670,6 +3809,7 @@ pub struct CustomStreamType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(rename = "EncodingAlgorithm")]
     pub encoding_algorithm: InputAlgorithmType,
@@ -3698,6 +3838,7 @@ pub struct DataEncodingType {
     pub byte_order: ByteOrderType,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(default, rename = "ErrorDetectCorrect")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub error_detect_correct: ::core::option::Option<ErrorDetectCorrectType>,
 }
 impl DataEncodingType {
@@ -3725,6 +3866,7 @@ pub struct DescriptionType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Where the Dimension list is in this form:  Array[1stDim][2ndDim][lastDim].  The last dimension is assumed to be the least significant - that is this dimension will cycle through its combination before the next to last dimension changes.  The order MUST ascend or the array will need to be broken out entry by entry.
@@ -3738,8 +3880,10 @@ pub struct DimensionListType {
 pub struct DimensionType {
     ///zero based index
     #[serde(rename = "StartingIndex")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
     pub starting_index: IntegerValueType,
     #[serde(rename = "EndingIndex")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
     pub ending_index: IntegerValueType,
 }
 ///Describe an ordered table of integer values and associated conditions, forming a lookup table. The list may have duplicates.  The table is evaluated from first to last, the first condition to be true returns the value associated with it.  See DiscreteLookupType.
@@ -4598,12 +4742,15 @@ pub struct FloatDataEncodingType {
     pub change_threshold: ::core::option::Option<super::xs::DoubleType>,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(default, rename = "ErrorDetectCorrect")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub error_detect_correct: ::core::option::Option<ErrorDetectCorrectType>,
     ///Calibrator to be applied to the raw uncalibrated value to arrive at the engineering/calibrated value when no Context Calibrators are provided or evaluate to true, based on their MatchCriteria.
     #[serde(default, rename = "DefaultCalibrator")]
+    #[serde(skip_serializing_if = "crate::serde_helpers::is_empty_calibrator")]
     pub default_calibrator: ::core::option::Option<CalibratorType>,
     ///Calibrator to be applied to the raw uncalibrated value to arrive at the engineering/calibrated value when a MatchCriteria evaluates to true.  The first in the list to match takes precedence.
     #[serde(default, rename = "ContextCalibratorList")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub context_calibrator_list: ::core::option::Option<ContextCalibratorListType>,
 }
 impl FloatDataEncodingType {
@@ -4956,12 +5103,16 @@ pub struct IndirectParameterRefEntryType {
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
     pub time_association: ::core::option::Option<TimeAssociationType>,
     ///Optional ancillary data associated with this element.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(rename = "ParameterInstance")]
     pub parameter_instance: ParameterInstanceRefType,
@@ -4984,6 +5135,7 @@ pub struct InputAlgorithmType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(default, rename = "AlgorithmText")]
     pub algorithm_text: ::core::option::Option<AlgorithmTextType>,
@@ -5013,6 +5165,7 @@ pub struct InputOutputAlgorithmType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(default, rename = "AlgorithmText")]
     pub algorithm_text: ::core::option::Option<AlgorithmTextType>,
@@ -5061,6 +5214,7 @@ pub struct InputOutputTriggerAlgorithmType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(default, rename = "AlgorithmText")]
     pub algorithm_text: ::core::option::Option<AlgorithmTextType>,
@@ -5227,12 +5381,15 @@ pub struct IntegerDataEncodingType {
     pub change_threshold: ::core::option::Option<NonNegativeLongType>,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(default, rename = "ErrorDetectCorrect")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub error_detect_correct: ::core::option::Option<ErrorDetectCorrectType>,
     ///Calibrator to be applied to the raw uncalibrated value to arrive at the engineering/calibrated value when no Context Calibrators are provided or evaluate to true, based on their MatchCriteria.
     #[serde(default, rename = "DefaultCalibrator")]
+    #[serde(skip_serializing_if = "crate::serde_helpers::is_empty_calibrator")]
     pub default_calibrator: ::core::option::Option<CalibratorType>,
     ///Calibrator to be applied to the raw uncalibrated value to arrive at the engineering/calibrated value when a MatchCriteria evaluates to true.  The first in the list to match takes precedence.
     #[serde(default, rename = "ContextCalibratorList")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub context_calibrator_list: ::core::option::Option<ContextCalibratorListType>,
 }
 impl IntegerDataEncodingType {
@@ -5575,6 +5732,7 @@ pub struct MathAlgorithmType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///The contents of the Math Operation as an algorithm definition in RPN.  See TriggeredMathOperationType.
     #[serde(rename = "MathOperation")]
@@ -5827,6 +5985,7 @@ pub struct MemberType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 #[derive(Debug, Deserialize, Serialize)]
@@ -5859,6 +6018,7 @@ pub struct MessageSetType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(default, rename = "Message")]
     pub message: ::std::vec::Vec<MessageType>,
@@ -5880,8 +6040,10 @@ pub struct MessageType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(rename = "MatchCriteria")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
     pub match_criteria: MatchCriteriaType,
     ///The ContainerRef should point to ROOT container that will describe an entire packet/minor frame or chunk of telemetry.
     #[serde(rename = "ContainerRef")]
@@ -5919,6 +6081,7 @@ pub struct MetaCommandStepType {
     #[serde(rename = "@metaCommandRef")]
     pub meta_command_ref: NameReferenceWithPathType,
     #[serde(default, rename = "ArgumentAssignmentList")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub argument_assignment_list: ::core::option::Option<ArgumentAssignmentListType>,
 }
 ///Describe a command which consists of an abstract portion (MetaCommand) and an optional packaging portion (MetaCommand CommandContainer).  An argument list is provided. MetaCommand may extend other MetaCommands and their CommandContainer may extend other CommandContainer or SequenceContainers.  A MetaCommand's CommandContainer is private except as referred to in BaseMetaCommand (they are not visible to other containers and cannot be used in an entry list). MetaCommands may also define various other behavioral aspects of a command such as command verifiers.  See CommandContainerType, ArgumentListType, BaseMetaCommandType and BaseContainerType.
@@ -5942,6 +6105,7 @@ pub struct MetaCommandType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Optional inheritance for this MetaCommand from another named MetaCommand.
     #[serde(default, rename = "BaseMetaCommand")]
@@ -5951,6 +6115,7 @@ pub struct MetaCommandType {
     pub system_name: ::core::option::Option<super::xs::StringType>,
     ///Many commands have one or more options.  These are called command arguments.  Command arguments may be of any of the standard data types.  MetaCommand arguments are local to the MetaCommand, but may be referenced in inherited MetaCommand definitions, generally to apply Argument Assignments to the values.
     #[serde(default, rename = "ArgumentList")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub argument_list: ::core::option::Option<ArgumentListType>,
     ///Tells how to package/encode this command definition in binary form.
     #[serde(default, rename = "CommandContainer")]
@@ -5974,6 +6139,7 @@ pub struct MetaCommandType {
     pub verifier_set: ::core::option::Option<VerifierSetType>,
     ///List of parameters to set new values upon completion of sending this command.
     #[serde(default, rename = "ParameterToSetList")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub parameter_to_set_list: ::core::option::Option<ParameterToSetListType>,
     ///List of parameters to suspend alarm processing/detection upon completion of sending this command.
     #[serde(default, rename = "ParametersToSuspendAlarmsOnSet")]
@@ -6038,6 +6204,7 @@ pub struct NameDescriptionType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///This is identical to NameType above and is used for references that point to named objects for which path is not an option and array/aggregate typing is not an option.  This is not used by the schema.
@@ -6350,6 +6517,7 @@ pub struct OptionalNameDescriptionType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Names an output parameter to the algorithm.  There are two attributes to OutputParm, outputName and parameterName. parameterName is a parameter reference name for a parameter that will be updated by this algorithm.  outputName is an optional "friendly" name for the output parameter.
@@ -6391,6 +6559,7 @@ pub struct PcmStreamType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 impl PcmStreamType {
@@ -6468,6 +6637,9 @@ pub struct ParameterPropertiesType {
     pub system_name: ::core::option::Option<super::xs::StringType>,
     ///Optional condition that must be true for this Parameter to be valid.
     #[serde(default, rename = "ValidityCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub validity_condition: ::core::option::Option<MatchCriteriaType>,
     ///When present, this set of elements describes physical address location(s) of the parameter where it is stored.  Typically this is on the data source, although that is not constrained by this schema.
     #[serde(default, rename = "PhysicalAddressSet")]
@@ -6505,12 +6677,16 @@ pub struct ParameterRefEntryType {
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
     pub time_association: ::core::option::Option<TimeAssociationType>,
     ///Optional ancillary data associated with this element.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///A reference to a Parameter. Uses Unix-like naming across the SpaceSystem Tree (e.g., SimpleSat/Bus/EPDS/BatteryOne/Voltage).  To reference an individual member of an array use the zero based bracket notation commonly used in languages like C, C++, and Java.
@@ -6543,12 +6719,16 @@ pub struct ParameterSegmentRefEntryType {
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
     pub time_association: ::core::option::Option<TimeAssociationType>,
     ///Optional ancillary data associated with this element.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Describe an unordered collection of parameters where duplicates defined by the Parameter name attribute are invalid. The ParameterSet exists in both the TelemetryMetaData and the CommandMetaData element so that each may be built independently but from a single namespace.  See TelemetryMetaDataType and CommandMetaDataType.
@@ -6647,6 +6827,7 @@ pub struct ParameterType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Specify additional properties for this Parameter used by the implementation of tailor the behavior and attributes of the Parameter.  When not specified, the defaults on the ParameterProperties element attributes are assumed.
     #[serde(default, rename = "ParameterProperties")]
@@ -6789,6 +6970,7 @@ pub struct PolynomialCalibratorType {
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///Optional additional ancillary information for this calibrator/algorithm
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///A single term in the polynomial function.
     #[serde(default, rename = "Term")]
@@ -7030,12 +7212,16 @@ pub struct RelativeTimeArgumentType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describes how the raw base counts of the time type are encoded/decoded.
     #[serde(default, rename = "Encoding")]
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Used to contain a relative time value.  Used to describe a relative time.  Normally used for time offsets.  A Relative time is expressed as PnYn MnDTnH nMnS, where nY represents the number of years, nM the number of months, nD the number of days, 'T' is the date/time separator, nH the number of hours, nM the number of minutes and nS the number of seconds. The number of seconds can include decimal digits to arbitrary precision.  For example, to indicate a duration of 1 year, 2 months, 3 days, 10 hours, and 30 minutes, one would write: P1Y2M3DT10H30M. One could also indicate a duration of minus 120 days as: -P120D.  An extension of Schema duration type.
@@ -7063,12 +7249,16 @@ pub struct RelativeTimeDataType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describes how the raw base counts of the time type are encoded/decoded.
     #[serde(default, rename = "Encoding")]
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Describes a relative time parameter type. Relative time parameters are time offsets (e.g. 10 second, 1.24 milliseconds, etc.) See IntegerDataEncodingType, FloatDataEncoding and RelativeTimeDataType.
@@ -7096,12 +7286,16 @@ pub struct RelativeTimeParameterType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describes how the raw base counts of the time type are encoded/decoded.
     #[serde(default, rename = "Encoding")]
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
     ///Default alarm definitions are those which do not adjust definition logic based on the value of other parameters.  Other parameters may participate in the determination of an alarm condition for this parameter, but the definition logic of the alarm on this parameter is constant.  If the alarming logic on this parameter changes based on the value of other parameters, then it is a ContextAlarm and belongs in the ContextAlarmList element.
     #[serde(default, rename = "DefaultAlarm")]
@@ -7117,9 +7311,13 @@ pub type RelativeTimeType = ::std::string::String;
 pub struct RepeatType {
     ///Value (either fixed or dynamic) that contains the count of appearances for an Entry. The value must be positive where 1 is the same as not specifying a RepeatEntry element at all.
     #[serde(rename = "Count")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
     pub count: IntegerValueType,
     ///Value (either fixed or dynamic) that contains an optional offset in bits between repeats of the Entry. The default is 0, which is contiguous. The value must be 0 or positive. Empty offset after the last repeat count is not implicitly reserved, so the parent EntryList should consider if these are occupied bits when placing the next Entry.
     #[serde(default, rename = "Offset")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub offset: ::core::option::Option<IntegerValueType>,
 }
 ///Define one or more conditions (constraints) for container inheritance. A container is instantiable if its constraints are true.  Constraint conditions may be a comparison, a list of comparisons, a boolean expression, or a graph of containers that are instantiable (if all containers are instantiable the condition is true).  See BaseContainerType, ComparisonType, ComparisonListType, BooleanExpressionType and NextContainerType.
@@ -7222,6 +7420,7 @@ pub struct SequenceContainerType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(default, rename = "DefaultRateInStream")]
     pub default_rate_in_stream: ::core::option::Option<RateInStreamType>,
@@ -7264,12 +7463,16 @@ pub struct SequenceEntryType {
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
     pub time_association: ::core::option::Option<TimeAssociationType>,
     ///Optional ancillary data associated with this element.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///A reference to a Service
@@ -7356,6 +7559,7 @@ pub struct SimpleAlgorithmType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     #[serde(default, rename = "AlgorithmText")]
     pub algorithm_text: ::core::option::Option<AlgorithmTextType>,
@@ -7408,6 +7612,7 @@ pub struct SpaceSystemType {
     pub alias_set: ::core::option::Option<AliasSetType>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///The Header element contains optional descriptive information about this SpaceSystem or the document as a whole when specified at the root SpaceSystem.
     #[serde(default, rename = "Header")]
@@ -7456,6 +7661,7 @@ pub struct SplineCalibratorType {
     pub extrapolate: super::xs::BooleanType,
     ///Optional additional ancillary information for this calibrator/algorithm
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///Describes a single point of the spline or piecewise function.
     #[serde(default, rename = "SplinePoint")]
@@ -7521,12 +7727,16 @@ pub struct StreamSegmentEntryType {
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
+    #[serde(
+        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
+    )]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
     pub time_association: ::core::option::Option<TimeAssociationType>,
     ///Optional ancillary data associated with this element.
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Contains an unordered set of Streams.
@@ -8062,16 +8272,21 @@ pub struct TelemetryMetaDataType {
     pub parameter_type_set: ::core::option::Option<ParameterTypeSetType>,
     ///A list of Parameters for this Space System.
     #[serde(default, rename = "ParameterSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub parameter_set: ::core::option::Option<ParameterSetType>,
     ///Holds the list of all potential container definitions for telemetry. Containers may parts of packets or TDM, and then groups of the containers, and then an entire entity -- such as a packet.  In order to maximize re-used for duplication, the pieces may defined once here, and then assembled as needed into larger structures, also here.
     #[serde(default, rename = "ContainerSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub container_set: ::core::option::Option<ContainerSetType>,
     ///Messages are an alternative method of uniquely identifying containers within a Service.  A message provides a test in the form of MatchCriteria to match to a container.  A simple example might be: [When minorframeID=21, the message is the 21st minorframe container.  The collection of messages to search thru will be bound by a Service.
     #[serde(default, rename = "MessageSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub message_set: ::core::option::Option<MessageSetType>,
     #[serde(default, rename = "StreamSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub stream_set: ::core::option::Option<StreamSetType>,
     #[serde(default, rename = "AlgorithmSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub algorithm_set: ::core::option::Option<AlgorithmSetType>,
 }
 ///A term in a polynomial expression.
@@ -8101,6 +8316,7 @@ pub struct TimeAlarmRangesType {
     #[serde(default = "TimeAlarmRangesType::default_time_units", rename = "@timeUnits")]
     pub time_units: TimeUnitsType,
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
     ///A range of least concern. Considered to be below the most commonly used Warning level.
     #[serde(default, rename = "WatchRange")]

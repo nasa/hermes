@@ -2,6 +2,8 @@
 mod schema;
 pub use schema::xtce::*;
 
+pub mod serde_helpers;
+
 use std::io::BufRead;
 
 pub use quick_xml::de::Deserializer;
@@ -77,6 +79,7 @@ struct Root<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub alias_set: &'a ::core::option::Option<AliasSetType>,
     #[serde(default, rename = "AncillaryDataSet")]
+    #[serde(skip_serializing_if = "serde_helpers::is_empty_ancillary_data_set")]
     pub ancillary_data_set: &'a ::core::option::Option<AncillaryDataSetType>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default, rename = "Header")]
@@ -97,9 +100,9 @@ struct Root<'a> {
 impl<'a> Root<'a> {
     pub(crate) fn new(root: &'_ SpaceSystem) -> Root<'_> {
         Root {
-            xmlns: "http://www.omg.org/spec/XTCE/20180204".to_string(),
+            xmlns: "http://www.omg.org/spec/XTCE/20250214".to_string(),
             xmlns_xsi: "http://www.w3.org/2001/XMLSchema-instance".to_string(),
-            xsi_schema_location: "http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd".to_string(),
+            xsi_schema_location: "http://www.omg.org/spec/XTCE/20250214 https://www.omg.org/spec/XTCE/20250214/SpaceSystem.xsd".to_string(),
 
             short_description: &root.short_description,
             name: &root.name,

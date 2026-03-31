@@ -1,4 +1,60 @@
 use hermes_xtce::SpaceSystem;
+use std::process::Command;
+
+/// Validate XML against XTCE XSD schema using xmllint.
+fn validate_against_xsd(xml_content: &str) {
+    let xmllint_check = Command::new("xmllint").arg("--version").output();
+
+    if xmllint_check.is_err() {
+        eprintln!("xmllint not found - skipping XSD validation");
+        eprintln!("Install libxml2 to enable XSD validation");
+        return;
+    }
+
+    let temp_dir = std::env::temp_dir();
+    let xml_path = temp_dir.join("test_xtce_validation.xml");
+    if std::fs::write(&xml_path, xml_content).is_err() {
+        eprintln!("Failed to write temporary XML file");
+        return;
+    }
+
+    let schema_path = std::path::Path::new("schema/xtce-v1.3.xsd");
+    let schema_to_use = if schema_path.exists() {
+        schema_path
+    } else {
+        let alt_path = std::path::Path::new("../../schema/xtce-v1.3.xsd");
+        if !alt_path.exists() {
+            eprintln!("XTCE schema not found - skipping XSD validation");
+            return;
+        }
+        alt_path
+    };
+
+    let output = Command::new("xmllint")
+        .arg("--noout")
+        .arg("--schema")
+        .arg(schema_to_use)
+        .arg(&xml_path)
+        .output();
+
+    std::fs::remove_file(&xml_path).ok();
+
+    match output {
+        Ok(out) if out.status.success() => {
+            println!("XSD validation passed");
+        }
+        Ok(out) => {
+            let stderr = String::from_utf8_lossy(&out.stderr);
+            panic!(
+                "XSD validation failed:\n{}",
+                stderr.lines().take(10).collect::<Vec<_>>().join("\n")
+            );
+        }
+        Err(e) => {
+            eprintln!("Failed to run xmllint: {}", e);
+        }
+    }
+}
 
 /// Helper to read or update a reference file based on UPDATE_REF environment variable.
 ///
@@ -70,7 +126,10 @@ fn test_serialize_minimal_xtce() {
         "Serialized XML should contain the parameter type"
     );
 
-    println!("✓ Serialize test passed");
+    // Validate against XSD schema
+    validate_against_xsd(&serialized);
+
+    println!("Serialize test passed");
 }
 
 /// Test pretty-printing serialization against reference file.
@@ -107,7 +166,10 @@ fn test_pretty_print_minimal_xtce() {
         "Pretty-printed XML should contain the space system name"
     );
 
-    println!("✓ Pretty-print test passed");
+    // Validate against XSD schema
+    validate_against_xsd(&pretty_xml);
+
+    println!("Pretty-print test passed");
 }
 
 /// Test writing to a writer (file) against reference file.
@@ -149,14 +211,16 @@ fn test_write_to_file() {
     // Clean up
     std::fs::remove_file(&temp_file_path).ok();
 
-    println!("✓ Write-to-file test passed");
+    // Validate against XSD schema
+    validate_against_xsd(&written_xml);
+
+    println!("Write-to-file test passed");
 }
 
-/// Test that the fprime XTCE file can be loaded (deserialization already works).
+/// Test fprime XTCE deserialization.
 ///
-/// Note: Full serialization of the fprime.xtce.xml is not tested due to quick-xml
-/// limitations with complex enum structures. For production use, the deserialization
-/// functionality is more important than round-trip serialization.
+/// Serialization of fprime.xtce.xml is not tested due to quick-xml
+/// limitations with enum types used as attributes.
 #[test]
 fn test_load_fprime_xtce() {
     let xml_content = std::fs::read_to_string("tests/data/fprime.xtce.xml")
@@ -165,7 +229,6 @@ fn test_load_fprime_xtce() {
     let space_system: SpaceSystem =
         hermes_xtce::from_str(&xml_content).expect("Failed to deserialize XTCE");
 
-    // Verify key properties
     assert_eq!(
         space_system.name, "FprimeYamcsReference_YamcsDeployment",
         "SpaceSystem name should match"
@@ -176,21 +239,7 @@ fn test_load_fprime_xtce() {
         "TelemetryMetaData should be present"
     );
 
-    // Attempt serialization to verify the API exists (may fail for complex documents)
-    match hermes_xtce::to_string(&space_system) {
-        Ok(_) => {
-            println!("✓ Successfully serialized complex fprime XTCE");
-        }
-        Err(e) => {
-            println!(
-                "⚠ Serialization of complex fprime XTCE failed (expected): {}",
-                e
-            );
-            println!("  This is a known limitation of quick-xml with complex enum structures.");
-        }
-    }
-
-    println!("✓ Load test passed");
+    println!("Load test passed");
 }
 
 /// Test that serialization produces consistent output for the same input.
@@ -228,7 +277,7 @@ fn test_serialization_consistency() {
         "Serialized output should contain parameter type"
     );
 
-    println!("✓ Serialization consistency test passed");
+    println!("Serialization consistency test passed");
 }
 
 /// Test that all serialization API functions are accessible and work.
@@ -254,5 +303,5 @@ fn test_serialization_api_exists() {
     assert!(result.is_ok(), "to_writer should succeed");
     assert!(!buffer.is_empty(), "Writer should produce output");
 
-    println!("✓ All serialization API functions are accessible and working");
+    println!("All serialization API functions are accessible and working");
 }
