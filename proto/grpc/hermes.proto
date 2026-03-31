@@ -1,17 +1,86 @@
 syntax = "proto3";
 option go_package = "github.com/nasa/hermes/pkg/grpc";
+package hermes;
 
 import "google/protobuf/empty.proto";
 
 import "dictionary.proto";
 import "file.proto";
-import "fsw.proto";
-import "bus.proto";
-import "profile.proto";
 import "msg.proto";
+import "query.proto";
 
-// Public service for interacting with the Hermes state
-service Api {
+// Endpoints associated with the global
+service Global {
+  // Get instance metadata given its ID
+  rpc GetInstance(Id) returns (Instance);
+
+  // Get all the current connected FSWs
+  rpc AllInstances(google.protobuf.Empty) returns (InstanceList);
+
+  // Subscribe to any changes to instance state
+  rpc SubscribeInstances(google.protobuf.Empty) returns (stream InstanceList);
+
+  // Get the current file downlink/uplink state
+  rpc GetFileTransferState(google.protobuf.Empty) returns (FileTransferState);
+
+  // Subscribe to the aggregated state of file uplink and downlink
+  rpc SubscribeFileTransfer(google.protobuf.Empty) returns (stream FileTransferState);
+
+  // Clear the cached downlink transfer state
+  rpc ClearDownlinkTransferState(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  // Clear the cached uplink transfer state
+  rpc ClearUplinkTransferState(google.protobuf.Empty) returns (google.protobuf.Empty);
+}
+
+// Global message bus endpoints
+service GlobalBus {
+  // Subscribe to a generic message bus
+  // For instance scoped message buses use `/<instance-id>/<bus-name>`
+  rpc Subscribe(Id) returns (stream BusMessage);
+
+  // Emit a message on an arbitrary bus
+  rpc Emit(EmitBus) returns (google.protobuf.Empty);
+
+  // Subscribe to the file downlink message bus
+  rpc SubscribeFileDownlink(google.protobuf.Empty) returns (stream FileDownlink);
+
+  // Subscribe to the file downlink message bus
+  rpc SubscribeFileUplink(google.protobuf.Empty) returns (stream FileUplink);
+}
+
+// Realtime telemetry message bus endpoints
+service RealtimeBus {
+  // Subscribe to the global event message bus
+  rpc SubscribeEvent(Id) returns (stream Event);
+
+  // Emit a stored event
+  rpc EmitEvent(EmitEvent) returns (google.protobuf.Empty);
+
+  // Subscribe to the global [stored] telemetry message bus
+  rpc SubscribeTelemetry(Id) returns (stream Telemetry);
+
+  // Emit an realtime event
+  rpc EmitTelemetry(EmitTelemetry) returns (google.protobuf.Empty);
+}
+
+// Stored telemetry message bus endpoints
+service StoredBus {
+  // Subscribe to the global event message bus
+  rpc SubscribeEvent(Id) returns (stream Event);
+
+  // Emit a stored event
+  rpc EmitEvent(EmitEvent) returns (google.protobuf.Empty);
+
+  // Subscribe to the global [stored] telemetry message bus
+  rpc SubscribeTelemetry(Id) returns (stream Telemetry);
+
+  // Emit an realtime event
+  rpc EmitTelemetry(EmitTelemetry) returns (google.protobuf.Empty);
+}
+
+// Endpoints related to interacting with a single instance
+service Instance {
   /**
    * Send a command sequence to the FSW to execute.
    *
@@ -20,46 +89,25 @@ service Api {
    * running commands in sequence. This is preferrable to successive
    * calls to 'Command' because commands are grouped together into
    * a single 'Trace' for easily tracking what was sent to the system.
-   *
-   * Metadata:
-   *  "id": [fsw-id]
-   *
-   * TODO(tumbar) We will probably want to expand this to add some identifying
-   * metadata to allow linking back to the code cell in our Notebooks
-   *
-   * Optional Metadata
-   *  Keep executing the sequence even if
-   *  "keepGoingOnFailure": "x"
    */
-  rpc Sequence(hermes.CommandSequence) returns (hermes.SequenceReply);
+  rpc Sequence(SequenceRequest) returns (SequenceReply);
 
   /**
    * A wrapper endpoint around Sequence/RawCommand.
    * This endpoint will parse a sequence and run it through Sequence.
    */
-  rpc RawSequence(hermes.RawCommandSequence) returns (hermes.SequenceReply);
+  rpc RawSequence(RawCommandSequenceRequest) returns (SequenceReply);
 
   /**
    * Send a command to the FSW. Wait for
    * completion or otherwise, up to the
    * plugin to decide when the promise resolves.
-   *
-   * Metadata:
-   *  "id": [fsw-id]
    */
-  rpc Command(hermes.CommandValue) returns (hermes.Reply);
+  rpc Command(CommandRequest) returns (google.protobuf.Empty);
 
-  /**
-   * Send a custom request to the FSW. Requests
-   * are not defined in the dictionary. The request
-   * payload data is defined by an agreement between
-   * the frontend request initiator and the connection
-   * implementation.
-   *
-   * Metadata:
-   *  "id": [fsw-id]
-   */
-  rpc Request(hermes.RequestValue) returns (hermes.RequestReply);
+  // Call a service registered with Hermes
+  // This call will block until a reply is received
+  rpc CallService(ServiceCall) returns (Reply);
 
   /**
    * Send a 'raw' command to the FSW. A raw command
@@ -68,68 +116,18 @@ service Api {
    * to a command value and passing it to the "real" Command() interface.
    * Wait for completion or otherwise, up to the
    * plugin to decide when the promise resolves.
-   *
-   * Metadata:
-   *  "id": [fsw-id]
    */
-  rpc RawCommand(hermes.RawCommandValue) returns (hermes.Reply);
+  rpc RawCommand(RawCommandRequest) returns (Reply);
+
+  // Uplink a file to the instance.
+  rpc FileUplink(stream UplinkFileChunk) returns (Reply);
+
+  // Downlink a file to the ground
+  // This should only be called by a Hermes service
+  rpc FileDownlink(stream DownlinkFileChunk) returns (Reply);
 
   /**
-   * Uplink a file to the FSW.
-   *
-   * Metadata:
-   *  "id": [fsw-id]
-   */
-  rpc Uplink(stream hermes.UplinkFileChunk) returns (hermes.Reply);
-
-  // Get FSW metadata given its ID
-  rpc GetFsw(hermes.Id) returns (hermes.Fsw);
-
-  // Get all the current connected FSWs
-  rpc AllFsw(google.protobuf.Empty) returns (hermes.FswList);
-
-  // Subscribe to any changes to FSW connections state
-  rpc SubscribeFsw(google.protobuf.Empty) returns (stream hermes.FswList);
-
-  // Start a profile and return once it's connected (cancellable)
-  rpc StartProfile(hermes.Id) returns (google.protobuf.Empty);
-
-  // Stop profile given its name/id and reutrn once its stopped (cancellable)
-  rpc StopProfile(hermes.Id) returns (google.protobuf.Empty);
-
-  // Update a profile
-  rpc UpdateProfile(hermes.ProfileUpdate) returns (google.protobuf.Empty);
-
-  // Create a new Profile and return it's ID
-  rpc AddProfile(hermes.Profile) returns (hermes.Id);
-
-  // Delete a profile by its id
-  rpc RemoveProfile(hermes.Id) returns (google.protobuf.Empty);
-
-  // Get all the profiles
-  rpc AllProfiles(google.protobuf.Empty) returns (hermes.ProfileList);
-
-  // Get all the registered profile providers
-  rpc AllProviders(google.protobuf.Empty) returns (hermes.ProfileProviderList);
-
-  // Get the current file downlink/uplink state
-  rpc GetFileTransferState(google.protobuf.Empty) returns (hermes.FileTransferState);
-
-  // Clear the cached downlink transfer state
-  rpc ClearDownlinkTransferState(google.protobuf.Empty) returns (google.protobuf.Empty);
-
-  // Clear the cached uplink transfer state
-  rpc ClearUplinkTransferState(google.protobuf.Empty) returns (google.protobuf.Empty);
-
-  // Get notified when the set of profile providers updates
-  rpc SubscribeProviders(google.protobuf.Empty)
-  returns (stream hermes.ProfileProviderList);
-
-  // Get notified when the set of profile or their internal state updates
-  rpc SubscribeProfiles(google.protobuf.Empty) returns (stream hermes.ProfileList);
-
-  /**
-   * Get a dictionary by its ID
+   * Get a dictionary by its instance ID
    * Metadata (optional)
    *  The dictionary "sections" to include in the reply.
    *  This is a whitelist set of options to include. If this
@@ -145,66 +143,26 @@ service Api {
    *    - "*": The entire namespace
    *  Example: "sections": [".events", "ns-1.*", "ns-2.telemetry"]
    */
-  rpc GetDictionary(hermes.Id) returns (hermes.Dictionary);
-
-  // Add a new dictionary entry, return it's ID.
-  rpc AddDictionary(hermes.Dictionary) returns (hermes.Id);
-
-  // Remove specified dictionary
-  rpc RemoveDictionary(hermes.Id) returns (google.protobuf.Empty);
-
-  // Get all registered dictionaries as a sequential stream
-  rpc AllDictionary(google.protobuf.Empty) returns (hermes.DictionaryList);
-
-  // Subscribe to changes to the dictionary state. streams { id, type }
-  rpc SubscribeDictionary(google.protobuf.Empty) returns (stream hermes.DictionaryList);
-
-  // Subscribe to the event message bus
-  rpc SubEvent(hermes.BusFilter) returns (stream hermes.SourcedEvent);
-
-  // Subscribe to the telemetry message bus
-  rpc SubTelemetry(hermes.BusFilter) returns (stream hermes.SourcedTelemetry);
-
-  // Subscribe to the file downlink message bus
-  rpc SubFileDownlink(hermes.BusFilter) returns (stream hermes.FileDownlink);
-
-  // Subscribe to the file downlink message bus
-  rpc SubFileUplink(hermes.BusFilter) returns (stream hermes.FileUplink);
-
-  // Subscribe to the aggregated state of file uplink and downlink
-  rpc SubFileTransfer(google.protobuf.Empty) returns (stream hermes.FileTransferState);
+  rpc GetDictionary(DictionaryRequest) returns (Dictionary);
 }
 
-// API to provide interfaces with external software
-service Provider {
-  /**
-   * A long lived connection telling the host that a link is active with
-   * some external software (FSW). The server streams in uplink requests which
-   * are handled and replied to over this long lived connection.
-   *
-   * Any downlink comming from this FSW is routed through the other client stream endpoints.
-   */
-  rpc Connection(stream hermes.FswConnectionPacket) returns (stream hermes.Uplink);
+// Query persisted data
+service Query {
+  // Get all files downlinked in a time range
+  rpc QueryFileDownlink(Query) returns (stream FileDownlink);
 
-  /**
-   * Initiate a file downlink session with the host.
-   *
-   * This request is for a single file downlink session.
-   * It should start with a FileHeader and stream byte data
-   *
-   * TODO(tumbar) Figure out a mechanism for file validation
-   */
-  rpc File(stream hermes.DownlinkFileChunk) returns (google.protobuf.Empty);
+  // Get all files uplinked in a time range
+  rpc QueryFileUplink(Query) returns (stream FileUplink);
 
-  /**
-   * Stream events to the host.
-   * The client can open as many of these as needed though they should be long-lived.
-   */
-  rpc Event(stream hermes.SourcedEvent) returns (google.protobuf.Empty);
+  // Queried stored telemetry
+  rpc QueryTelemetry(TelemetryQuery) returns (stream TelemetryTable);
 
-  /**
-   * Stream telemetry to the host.
-   * The client can open as many of these as needed though they should be long-lived.
-   */
-  rpc Telemetry(stream hermes.SourcedTelemetry) returns (google.protobuf.Empty);
+  // Get all events in a time range
+  rpc QueryEvents(Query) returns (stream Event);
+
+  // Get the last value of a channel.
+  rpc QueryLastTelemetry(QueryLast) returns (TelemetrySample);
+
+  // Get the last occurance of an event
+  rpc QueryLastEvent(QueryLast) returns (Event);
 }

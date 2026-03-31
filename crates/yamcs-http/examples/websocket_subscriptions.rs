@@ -63,7 +63,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         while let Some(event) = events_rx.recv().await {
             tracing::info!(
                 "[EVENT {:?}] {}: {}",
-                event.severity, event.source, event.message
+                event.severity,
+                event.source,
+                event.message
             );
         }
     });
@@ -108,7 +110,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         while let Some(alarm) = alarms_rx.recv().await {
             tracing::info!(
                 "[ALARM {:?}] {} - seq: {}, violations: {}",
-                alarm.severity, alarm.id.name, alarm.seq_num, alarm.violations
+                alarm.severity,
+                alarm.id.name,
+                alarm.seq_num,
+                alarm.violations
             );
         }
     });
@@ -156,7 +161,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     for param in &data.values {
                         tracing::info!(
                             "[PARAM] {} = {:?} @ {}",
-                            param.id.name, param.eng_value, param.generation_time
+                            param.id.name,
+                            param.eng_value,
+                            param.generation_time
                         );
                     }
                 }

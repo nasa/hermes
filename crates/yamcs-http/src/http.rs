@@ -2,8 +2,8 @@ use crate::auth::AuthMethod;
 use crate::error::{Result, YamcsError};
 use async_trait::async_trait;
 use reqwest::{Client, Method, Request, RequestBuilder, Response};
-use std::sync::Arc;
 use serde::de::DeserializeOwned;
+use std::sync::Arc;
 use url::Url;
 
 /// HTTP interceptor trait for modifying requests before they are sent
@@ -31,9 +31,7 @@ impl HttpClient {
     /// * `auth` - Authentication method to use
     pub fn new(base_url: impl AsRef<str>, auth: AuthMethod) -> Result<Self> {
         let base_url = Url::parse(base_url.as_ref())?;
-        let client = Client::builder()
-            .build()
-            .map_err(|e| YamcsError::Http(e))?;
+        let client = Client::builder().build().map_err(|e| YamcsError::Http(e))?;
 
         Ok(Self {
             client,
@@ -111,7 +109,11 @@ impl HttpClient {
             request = interceptor.intercept(request).await?;
         }
 
-        let response = self.client.execute(request).await.map_err(YamcsError::Http)?;
+        let response = self
+            .client
+            .execute(request)
+            .await
+            .map_err(YamcsError::Http)?;
 
         // Check for HTTP errors
         let status = response.status();
@@ -232,9 +234,12 @@ mod tests {
 
     #[test]
     fn test_url_construction() {
-        let client =
-            HttpClient::new("http://localhost:8090", AuthMethod::None).expect("Failed to create client");
-        let url = client.base_url.join("/api/user").expect("Failed to join URL");
+        let client = HttpClient::new("http://localhost:8090", AuthMethod::None)
+            .expect("Failed to create client");
+        let url = client
+            .base_url
+            .join("/api/user")
+            .expect("Failed to join URL");
         assert_eq!(url.as_str(), "http://localhost:8090/api/user");
     }
 
@@ -242,7 +247,10 @@ mod tests {
     fn test_url_construction_with_trailing_slash() {
         let client = HttpClient::new("http://localhost:8090/", AuthMethod::None)
             .expect("Failed to create client");
-        let url = client.base_url.join("api/user").expect("Failed to join URL");
+        let url = client
+            .base_url
+            .join("api/user")
+            .expect("Failed to join URL");
         assert_eq!(url.as_str(), "http://localhost:8090/api/user");
     }
 }

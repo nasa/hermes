@@ -8,10 +8,7 @@ pub enum AuthMethod {
     /// JWT/Bearer token authentication
     AccessToken(String),
     /// Client certificate authentication
-    ClientCert {
-        cert_path: String,
-        key_path: String,
-    },
+    ClientCert { cert_path: String, key_path: String },
 }
 
 impl Default for AuthMethod {

@@ -6,7 +6,7 @@
 //! Run with: cargo run --example auto_cancel_subscription --features websocket
 
 #[cfg(feature = "websocket")]
-use yamcs_http::{types::events::SubscribeEventsRequest, AuthMethod, YamcsClient};
+use yamcs_http::{AuthMethod, YamcsClient, types::events::SubscribeEventsRequest};
 
 #[cfg(feature = "websocket")]
 #[tokio::main]
@@ -160,8 +160,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn main() {
     tracing_subscriber::fmt::init();
     tracing::error!("This example requires the 'websocket' feature to be enabled.");
-    tracing::info!(
-        "Run with: cargo run --example auto_cancel_subscription --features websocket"
-    );
+    tracing::info!("Run with: cargo run --example auto_cancel_subscription --features websocket");
     std::process::exit(1);
 }

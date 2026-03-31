@@ -1,0 +1,125 @@
+syntax = "proto3";
+option go_package = "github.com/nasa/hermes/pkg/pb";
+package hermes;
+
+// Specifies what protocol is expected to come into or node or
+// what a node outputs.
+message Protocol {
+  oneof kind {
+    // This node will not _send_ anything
+    // If this is on the 'in' port, this node is a source
+    // If this is on the 'out' port, this node is a sink
+    bool none = 1;
+
+    // Sending a raw binary stream over a schema specified by the string
+    // This is for raw data links. There are no discrete packet frames here.
+    string binary = 2;
+
+    // Binary "packets" where each message is considered a single unit
+    // The packet format is specified by this string
+    string binary_frames = 3;
+
+    // Sending a protocol buffer.
+    // String value should specify the name of the protobuf message
+    string protobuf = 4;
+
+    // Sending JSON
+    // String value should specify the name of the json message
+    string json = 5;
+  }
+
+  // An optional field for some message about this protocol
+  // This is not validated during the ack step
+  string description = 6;
+}
+
+// The initial message passed from child to parent
+message NodeInfo {
+  // The name of this child node
+  string name = 1;
+
+  // The protocol of data coming in
+  Protocol in = 2;
+
+  // The protocol of data going out
+  Protocol out = 3;
+}
+
+// A message bus is a pub-sub concept where any number of
+// senders can transmit data and receivers may subscribe to
+// data to process/handle
+message Bus {
+  // Fully qualfied name of this message bus
+  string name = 1;
+
+  // The messages/data that can be emitted/subscribed to
+  Protocol protocol = 2;
+
+  // An optional set of processing pipelines defined by this message bus
+  // These will intercept message emission and update the message
+  // All pipelines should have the 'protocol' on either end of the
+  // input/output chain
+  repeated Pipeline processors = 3;
+
+  // Address or Unix Domain Socket path to the message bus
+  string location = 4;
+}
+
+// A quality of service option for a Bus subscription
+enum SubscriptionQoS {
+  // (default) The sender (master process) will block and buffer up messages
+  // if the client cannot handle more
+  QOS_RELIABLE = 0;
+
+  // The sender will drop any messages that cannot be handled by the client.
+  // This happens if the client cannot keep up with the rate at which messages
+  // are sent.
+  QOS_LOSSY = 1;
+}
+
+// Messages sent to the 'Bus' to control what the bus connection
+// sends back to the client.
+message BusMsg {
+  oneof kind {
+    // Emit a message on the bus
+    // WARNING: Clients should verify that the protocol is expected
+    bytes emit = 1;
+
+    // Subscribe to a message bus.
+    // Sending this message will cause the master process to start replying with
+    // proto messages for each message emitted on the bus.
+    // Sending this message repeatedly will change the quality of service
+    SubscriptionQoS subscribe = 2;
+
+    // Unsubscribe from the message bus. The master process will stop sending messages.
+    bool unsubscribe = 3;
+  }
+}
+
+// A pipeline is a chain of nodes that
+// process a stream of data or messages
+message Pipeline {
+  // The nodes of the pipeline in order
+  repeated Node nodes = 1;
+
+  // An optional string to describe the purpose of this pipeline
+  string description = 2;
+}
+
+// A node is a single element of a pipeline that will get a stream
+// of data and process it out to another stream of data
+message Node {
+  // Unique ID assigned by the master process
+  string id = 1;
+
+  // Name of the 'client' process
+  string name = 2;
+
+  // The messaging protocol coming into the node via stdin
+  // If 'none', this node is a data _source_
+  Protocol in = 3;
+
+  // The messaging protocol coming out of the node via stdout
+  // If 'none', this node is a data _sink_
+  Protocol out = 4;
+}

@@ -4,6 +4,7 @@ package hermes;
 
 import "type.proto";
 
+// A parameter is a persistent on-board value
 message ParameterDef {
   int32 id = 1;
 
@@ -20,9 +21,11 @@ message ParameterDef {
 
   Type type = 4;
 
-  string metadata = 5;
+  reserved 5;
+  map<string, string> metadata = 6;
 }
 
+// A command is a function signature that can be uplinked
 message CommandDef {
   int32 opcode = 1;
 
@@ -45,36 +48,37 @@ message CommandDef {
    */
   repeated Field arguments = 4;
 
-  string metadata = 5;
+  reserved 5;
+  map<string, string> metadata = 6;
 }
 
-enum EvrSeverity {
-  EVR_DIAGNOSTIC    = 0;
-  EVR_ACTIVITY_LOW  = 1;
-  EVR_ACTIVITY_HIGH = 2;
-  EVR_WARNING_LOW   = 3;
-  EVR_WARNING_HIGH  = 4;
-  EVR_COMMAND       = 5;
-  EVR_FATAL         = 6;
+enum EventSeverity {
+  SEVERITY_DIAGNOSTIC    = 0;
+  SEVERITY_ACTIVITY_LOW  = 1;
+  SEVERITY_ACTIVITY_HIGH = 2;
+  SEVERITY_WARNING_LOW   = 3;
+  SEVERITY_WARNING_HIGH  = 4;
+  SEVERITY_COMMAND       = 5;
+  SEVERITY_FATAL         = 6;
 }
 
 // Format specifier types following FPP specification
 enum FormatSpecifierType {
   // Default/generic conversion
-  FMT_DEFAULT = 0;        // {} -> %v
+  FMT_DEFAULT = 0; // {} -> %v
 
   // Integer conversions
-  FMT_CHAR = 1;           // {c} -> %c
-  FMT_DECIMAL = 2;        // {d} -> %d
-  FMT_HEX_LOWER = 3;      // {x} -> %x
-  FMT_HEX_UPPER = 4;      // {X} -> %X
-  FMT_OCTAL = 5;          // {o} -> %o
+  FMT_CHAR      = 1; // {c} -> %c
+  FMT_DECIMAL   = 2; // {d} -> %d
+  FMT_HEX_LOWER = 3; // {x} -> %x
+  FMT_HEX_UPPER = 4; // {X} -> %X
+  FMT_OCTAL     = 5; // {o} -> %o
 
   // Floating-point conversions
-  FMT_EXP_LOWER = 6;      // {e} -> %e
-  FMT_EXP_UPPER = 7;      // {E} -> %E
-  FMT_FIXED_LOWER = 8;    // {f} -> %f
-  FMT_FIXED_UPPER = 9;    // {F} -> %F
+  FMT_EXP_LOWER     = 6; // {e} -> %e
+  FMT_EXP_UPPER     = 7; // {E} -> %E
+  FMT_FIXED_LOWER   = 8; // {f} -> %f
+  FMT_FIXED_UPPER   = 9; // {F} -> %F
   FMT_GENERAL_LOWER = 10; // {g} -> %g
   FMT_GENERAL_UPPER = 11; // {G} -> %G
 }
@@ -110,6 +114,8 @@ message FormatString {
   string original = 2;
 }
 
+// An event is a discrete log of an on-board event.
+// Generally events get formatted into strings.
 message EventDef {
   int32 id = 1;
 
@@ -129,7 +135,7 @@ message EventDef {
    * For the most part this information is not held in the
    * EVR packet since its redundant for ground software.
    */
-  EvrSeverity severity = 4;
+  EventSeverity severity = 4;
 
   /**
    * DEPRECATED: Use format instead
@@ -142,25 +148,30 @@ message EventDef {
    */
   repeated Field arguments = 6;
 
-  string metadata = 7;
+  reserved 7;
 
   /**
    * Structured format string with parsed fragments
    */
   FormatString format = 8;
+
+  map<string, string> metadata = 9;
 }
 
 message EventRef {
   int32           id        = 1;
   string          name      = 2;
   string          component = 3;
-  EvrSeverity     severity  = 4;
+  EventSeverity   severity  = 4;
   repeated string arguments = 5;
 
-  // (optional) dictionary ID this comes from
-  string dictionary = 10;
+  reserved 6 to 10;
+
+  ElementRef ref = 11;
 }
 
+// Telemetry is a channel or resource on-board that can be sampled and
+// stored or streamed to the ground.
 message TelemetryDef {
   /**
    * Raw ID used for identifying incoming serialized telemetry
@@ -182,38 +193,34 @@ message TelemetryDef {
    */
   Type type = 4;
 
-  reserved 5;
-
-  string metadata = 6;
+  reserved 5, 6;
+  map<string, string> metadata = 7;
 }
 
-// Lightweight reference for passing dictionary items through message busses
 message TelemetryRef {
   int32  id        = 1;
   string name      = 2;
   string component = 3;
 
-  // (optional) dictionary ID this comes from
-  string dictionary = 10;
+  reserved 4 to 10;
+  ElementRef ref = 11;
 }
 
+// Dictionary header metadata
 message DictionaryHead {
   /**
-   * Type associated with the Fsw.type
-   * This will filter the user's selection
-   * of dictionaries that can be tracked.
-   *
-   * This is set by the provider.
+   * An ID attached by the loader
    */
   string type = 1;
 
-  // Name given to dictionary, can be changed by the user
+  // Name of the dictionary given my the loader
   string name = 2;
 
   // (optional) Dictionary/FSW release version
   string version = 3;
 }
 
+// A grouping of dictionary items
 message DictionaryNamespace {
   // Map keys have per-dictionary/mission meaning
   // All items will be constructor into a DualKeyMap with id+key
@@ -225,15 +232,21 @@ message DictionaryNamespace {
   // Types that are externally referenced
   // These are resolved on loading
   map<string, Type> types = 5;
+
+  // Sub-groupings of dictionary items
+  map<string, DictionaryNamespace> children = 6;
 }
 
+// Dictionary that specifies an instance's resources
 message Dictionary {
-  DictionaryHead                   head     = 1;
-  map<string, DictionaryNamespace> content  = 2;
-  map<string, string>              metadata = 3;
+  // Dictionary metadata
+  DictionaryHead head = 1;
 
-  // (optional) This dictionary is externally managed and should be persisted
-  // in the non-volatile Hermes state. If this ID is non-unique with an already
-  // added dictionary, the overlapping dictionary will be removed.
-  string id = 4;
+  // The root namespace of the dictionary
+  DictionaryNamespace content = 4;
+
+  // Additional dictionary metadata, provided by the loader
+  map<string, string> metadata = 3;
+
+  reserved 2;
 }

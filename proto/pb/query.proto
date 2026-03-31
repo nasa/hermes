@@ -1,0 +1,87 @@
+syntax = "proto3";
+import "dictionary.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "type.proto";
+import "msg.proto";
+
+option go_package = "github.com/nasa/hermes/pkg/pb";
+package hermes;
+
+// Operation to reduce samples to a single value
+enum AggregateKind {
+  // Take the last value in this window
+  AGGREGATE_LAST = 0;
+
+  // Take the first value in this window
+  AGGREGATE_FIRST = 1;
+
+  // (Numeric only) Take the average value in the aggregate window range
+  AGGREGATE_AVG = 2;
+
+  // (Numeric only) Take the minimum value in this window
+  AGGREGATE_MIN = 3;
+
+  // (Numeric only) Take the maximum value in this window
+  AGGREGATE_MAX = 4;
+
+  // (Numeric only) Take the difference between the last and first sample in the window
+  AGGREGATE_DELTA = 5;
+}
+
+// Reduce raw sampling using a duration 'window'.
+message QueryAggregate {
+  // Duration of the aggregation window.
+  // The larger the duration, the fewer samples
+  google.protobuf.Duration window = 1;
+
+  // The aggregation operation to perform over samples in the window
+  AggregateKind kind = 2;
+}
+
+// A range of time
+message TimeRange {
+  // Start of the time start
+  google.protobuf.Timestamp start = 1;
+
+  // End of the time range
+  google.protobuf.Timestamp end = 2;
+}
+
+message TelemetryQuery {
+  // Time range to receive telemetry for
+  TimeRange time_range = 1;
+
+  // The instance to query telemetry on
+  string instance = 2;
+
+  // The channels to receive
+  repeated ElementRef channels = 3;
+
+  // (optional) Aggregate raw samples.
+  // Do not provide to receive raw samples.
+  QueryAggregate aggregate = 4;
+}
+
+// A generic query of data in a time range for an instance
+message Query {
+  // Time range to receive events for
+  TimeRange time_range = 1;
+
+  // The instance to query events for
+  string instance = 2;
+}
+
+// A list of telemetry samples for a single channel
+message TelemetryTable {
+  repeated TelemetrySample samples = 1;
+}
+
+// Query for the last occurance some data
+message QueryLast {
+  // The instance to query
+  string instance = 1;
+
+  // The data to search for
+  ElementRef element = 2;
+}

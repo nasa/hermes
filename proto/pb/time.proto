@@ -31,4 +31,9 @@ message Time {
      * or other time formats.
      */
     double sclk = 2;
+
+    /*
+     * An additional timestamp marking the time the ground received this data
+     */
+    google.protobuf.Timestamp receive_time = 3;
 }

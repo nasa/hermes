@@ -1,89 +1,265 @@
 syntax = "proto3";
+import "dictionary.proto";
+import "type.proto";
+import "time.proto";
+import "pipeline.proto";
+import "file.proto";
+
 option go_package = "github.com/nasa/hermes/pkg/pb";
 package hermes;
 
-import "google/protobuf/empty.proto";
-
-import "dictionary.proto";
-import "fsw.proto";
-import "profile.proto";
-import "file.proto";
-
+// A simple string id for various uses
 message Id { string id = 1; }
 
-message FswList { repeated Fsw all = 1; }
+message BusMessage {
+  bytes data = 1;
+}
 
-message Reply { bool success = 1; }
+message EmitBus {
+  Id    id   = 1;
+  bytes data = 2;
+}
+
+/* Event telemetry */
+message Event {
+  /* Dictionary entry definition of event */
+  EventRef ref = 1;
+
+  /* Timestamp of when the event is emitted by its source (FSW or otherwise) */
+  Time time = 2;
+
+  /* final formatted EVR message */
+  string message = 3;
+
+  /* (optional) parsed arguments before message is formatted */
+  repeated Value args = 4;
+
+  /* (optional) tags to attach to the EVR for additional context */
+  map<string, Value> tags = 5;
+}
+
+message EmitEvent {
+  string instance = 1;
+  Event  event    = 2;
+}
+
+// A raw time/value. Typically this linked with a Telemetry[Ref/Def]
+message TelemetrySample {
+  /* Timestamp of when channel is emitted by its source (FSW or otherwise) */
+  Time time = 1;
+
+  /* Packed telemetry value */
+  Value value = 2;
+}
+
+/* Channelized telemetry */
+message Telemetry {
+  // Dictionary entry definition of telemetry
+  TelemetryRef ref = 1;
+
+  // Telemetry value and timestamp
+  TelemetrySample sample = 2;
+}
+
+message EmitTelemetry {
+  string    instance  = 1;
+  Telemetry telemetry = 2;
+}
+
+// A list of instances
+message InstanceList {
+  repeated Instance instances = 1;
+}
+
+// An instance represents a single 'entity' of the mission
+// This is typically used to represent a connection a single FSW
+message Instance {
+  // Instance name/id
+  string name = 1;
+
+  // Message busses this instance defines
+  map<string, Bus> busses = 2;
+
+  // Set of pipelines associated with this instance
+  // These pipelines are sources or sinks that operate in the context of this instance
+  // They cannot be communicated with via the API
+  repeated Pipeline pipelines = 3;
+
+  // Services are one-shot nodes that implement the service protocol.
+  // Protocols must be in the form:
+  //  in: `service:<request-type>`. ServiceRequest with request = <request-type>
+  //  out: `service:<response-type>`. ServiceResponse with `success` = <response-type>
+  map<string, Node> services = 4;
+}
+
+// Message type that describes what can be sent to a service node
+message ServiceRequest {
+  oneof kind {
+    //
+    bytes  request = 1;
+    string cancel  = 2;
+  }
+}
+
+message ServiceResponse {
+  oneof kind {
+    bytes  success = 1;
+    string error   = 2;
+  }
+}
+
+// A generic request routed to an instance or global service
+message ServiceCall {
+  // (optional) The instance this service is associated with
+  // If not provided, the global service call will be used
+  string instance = 1;
+
+  // The service to send this message to
+  string service = 2;
+
+  // Misc request data (JSON recommended).
+  // Defined by the service.
+  bytes data = 3;
+}
+
+// Response to a ServiceCall
+message Reply {
+  bytes data = 1;
+}
+
+// State of file uplink and downlink
+message FileTransferState {
+  /* List of completed file downlinks with downlink metadata */
+  repeated FileDownlink downlink_completed = 1;
+
+  /* List of completed file uplinks */
+  repeated FileUplink uplink_completed = 2;
+
+  /* Mid-transfer file downlinks */
+  repeated FileTransfer downlink_in_progress = 3;
+
+  /* Mid-transfer file uplinks */
+  repeated FileTransfer uplink_in_progress = 4;
+}
+
+message CommandOptions {
+  /**
+   * Don't wait for the command to reply before resolving the command promise
+   * This promise will resolve once the command is sent to the FSW.
+   */
+  bool no_wait = 1;
+}
+
+/**
+ * RawCommand is meant for commanding FSWs from clients that do not parse
+ * the dictionary and command fully. This is useful for thin clients that will
+ * rely on the backend to perform type checks.
+ */
+message RawCommand {
+  // Command arguments
+  string command = 2;
+
+  CommandOptions options = 3;
+
+  // Additional fields associated with this command
+  // This has flight-software specific meaning
+  map<string, string> metadata = 4;
+}
+
+message RawCommandRequest {
+  string     instance = 1;
+  RawCommand command  = 2;
+}
+
+message CommandRequest {
+  string  instance = 1;
+  Command command  = 2;
+}
+
+message Command {
+  ElementRef ref = 1;
+
+  // Command arguments
+  repeated Value args = 2;
+
+  CommandOptions options = 3;
+
+  // Additional fields associated with this command
+  // This has flight-software specific meaning
+  map<string, string> metadata = 4;
+}
+
+message CommandValueRequest {
+  string  instance = 1;
+  Command command  = 2;
+}
+
+message CommandSequence {
+  repeated Command commands = 1;
+
+  // Cell block language to execute this command sequence with
+  // FSWs may support more than one language or controlling different behaviors
+  // of the connection or commanding the FSW directly.
+  string language_name = 2;
+
+  // Additional metadata to attach to sequence
+  // This has flight-software specific meaning
+  map<string, string> metadata = 3;
+}
+
+message SequenceRequest {
+  // Instance ID to dispatch to
+  string instance = 1;
+
+  // Sequence to uplink/dispatch
+  CommandSequence sequence = 2;
+}
+
 message SequenceReply {
-    bool success = 1;
-    int32 command_index = 2;
+  bool  success       = 1;
+  int32 command_index = 2;
 }
 
-message StatefulProfile {
-    Profile value = 1;
-    ProfileState state = 2;
-    bool runtime_only = 3;
+message DictionaryRequest {
+  string instance = 1;
+
+  /**
+   *  The dictionary "sections" to include in the reply.
+   *  This is a whitelist set of options to include. If this
+   *  list is not provided or empty, the entire dictionary will be transmitted
+   *
+   *  A "section" includes two parts [namespace].[definition-id]
+   *  - namespace: Name of the namespace to include
+   *  - section: The portion of the namespace to include, the following sections are valid
+   *    - "commands": All the command definitions in this namespace
+   *    - "events": All event definitions this namespaces
+   *    - "telemetry": All telemetry definitions this namespaces
+   *    - "parameters": All parameter definitions this namespaces
+   *    - "*": The entire namespace
+   *  Example: "sections": ["/events", "/ns-1/**\/telemetry", "/ns-2/telemetry", "/ns/"]
+   */
+  repeated string sections = 2;
 }
 
-message ProfileList { map<string, StatefulProfile> all = 1; }
-message ProfileProviderList { repeated ProfileProvider all = 1; }
+message RawCommandSequence {
+  string sequence = 1;
 
-message ProfileUpdate {
-    string id = 1;
-    string settings = 2;
+  // Cell block language to execute this command sequence with
+  // FSWs may support more than one language or controlling different behaviors
+  // of the connection or commanding the FSW directly.
+  string language_name = 2;
+
+  // Additional metadata to attach to sequence
+  // This has flight-software specific meaning
+  map<string, string> metadata = 3;
+
+  string line_comment_prefix = 4;
 }
 
-message DictionaryList {
-    map<string, DictionaryHead> all = 1;
-}
+message RawCommandSequenceRequest {
+  string             instance = 1;
+  RawCommandSequence sequence = 2;
 
-message Uplink {
-  // Uplink session id
-  // All packets that are part of a single session should be sent with
-  // the same ID. Note that multiple packets are only relevant for file uplink.
-  string id = 1;
-
-  oneof value {
-    CommandValue cmd = 2;
-    RawCommandValue parse_cmd = 3;
-
-    CommandSequence seq = 4;
-    RawCommandSequence parse_seq = 5;
-
-    UplinkFileChunk file = 6;
-
-    RequestValue request = 7;
-
-    // Cancel a previously requested uplink session
-    google.protobuf.Empty cancel = 99;
-
-    // The final packet marking the end of the uplink session
-    // Currently only relevant for file uplink
-    google.protobuf.Empty final = 100;
-  }
-}
-
-message UplinkReply {
-  string id = 1;
-  oneof status {
-    bytes reply = 2;
-    string error = 3;
-  }
-}
-
-message FswInitialPacket {
-    Fsw info = 1;
-
-    // Profile name that this FSW should be grouped with
-    string profile = 2;
-}
-
-message FswConnectionPacket {
-  oneof value {
-    // The initial message to send noting metadata about the FSW connection
-    FswInitialPacket info = 1;
-
-    // After `info` is sent, all other messages should be replies to Uplink messages
-    UplinkReply reply = 2;
-  }
+  // (optional) Keep executing the sequence even if a command fails
+  bool keep_going_on_failure = 3;
 }

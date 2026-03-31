@@ -16,10 +16,7 @@ pub fn parse_severity(severity: &Severity) -> Result<EvrSeverity, DictionaryErro
 }
 
 /// Parse FPP format string into structured FormatString with fragments
-pub fn parse_fpp_format_string(
-    s: &str,
-    num_args: usize,
-) -> Result<FormatString, DictionaryError> {
+pub fn parse_fpp_format_string(s: &str, num_args: usize) -> Result<FormatString, DictionaryError> {
     let mut fragments = Vec::new();
     let mut chars = s.chars().enumerate().peekable();
     let mut current_text = String::new();
@@ -99,9 +96,7 @@ fn parse_format_specifier(
     })
 }
 
-fn parse_specifier_content(
-    s: &str,
-) -> Result<(Option<u32>, FormatSpecifierType), DictionaryError> {
+fn parse_specifier_content(s: &str) -> Result<(Option<u32>, FormatSpecifierType), DictionaryError> {
     if s.is_empty() {
         return Ok((None, FormatSpecifierType::FmtDefault));
     }
