@@ -1,27 +1,33 @@
 use hermes_xtce::{
-    AncillaryDataSetType, BitOrderType, ByteOrderType, FloatEncodingType, IntegerEncodingType
-    , SplinePointType, TermType,
+    BitOrderType, ByteOrderType, FloatEncodingType, IntegerEncodingType, StringEncodingType,
 };
 
 use crate::Calibrator;
 
-/// Common metadata for all named XTCE items
+///A slope and intercept may be applied to scale or shift the value of the parameter in the dynamic value.  The default of slope=1 and intercept=0 results in no change to the value.
 #[derive(Clone, Debug)]
-pub struct NamedItem {
-    /// The local name of this item
-    pub name: String,
-    /// The fully qualified name (e.g., "/SpaceSystem/SubSystem/ItemName")
-    pub qualified_name: String,
-    /// Optional short description
-    pub short_description: Option<String>,
-    /// Optional long description
-    pub long_description: Option<String>,
+pub struct LinearAdjustment {
+    pub slope: f64,
+    pub intercept: f64,
+}
+
+#[derive(Clone, Debug)]
+pub enum IntegerValueKind {
+    FixedValue(i64),
+    DynamicValueParameter(hermes_xtce::ParameterInstanceRefType),
+    DynamicValueArgument(String),
+}
+
+#[derive(Clone, Debug)]
+pub struct IntegerValue {
+    pub value: IntegerValueKind,
+    pub linear_adjustment: Option<LinearAdjustment>,
 }
 
 #[derive(Clone, Debug)]
 pub struct IntegerType {
-    size_in_bits: i64,
-    signed: bool,
+    pub size_in_bits: i64,
+    pub signed: bool,
     ///Describes the bit ordering of the encoded value.
     pub bit_order: BitOrderType,
     ///Describes the endianness of the encoded value.
@@ -33,388 +39,144 @@ pub struct IntegerType {
 
 #[derive(Clone, Debug)]
 pub struct FloatType {
-    size_in_bits: i64,
+    pub size_in_bits: hermes_xtce::FloatSizeInBitsType,
     ///Describes the bit ordering of the encoded value.
     pub bit_order: BitOrderType,
     ///Describes the endianness of the encoded value.
     pub byte_order: ByteOrderType,
     ///Specifies real/decimal numeric value to raw encoding method, with the default being "IEEE754_1985".
     pub encoding: FloatEncodingType,
+    pub calibrator: Calibrator,
 }
 
 #[derive(Clone, Debug)]
 pub struct StringType {
-    size_in_bits: i64,
-    ///Describes the bit ordering of the encoded value.
+    /// Describes the bit ordering of the encoded value.
     pub bit_order: BitOrderType,
-    ///Describes the endianness of the encoded value.
+    /// Describes the endianness of the encoded value.
     pub byte_order: ByteOrderType,
-    ///Specifies real/decimal numeric value to raw encoding method, with the default being "IEEE754_1985".
-    pub encoding: FloatEncodingType,
+    /// Specifies string encoding method, with the default being "UTF-8".
+    pub encoding: StringEncodingType,
+    /// Fixed size in bits, if applicable (None for variable-length strings)
+    pub size_in_bits: Option<i64>,
+}
+
+#[derive(Clone, Debug)]
+pub struct BooleanType {
+    pub size_in_bits: i64,
+    /// Describes the bit ordering of the encoded value.
+    pub bit_order: BitOrderType,
+    /// Describes the endianness of the encoded value.
+    pub byte_order: ByteOrderType,
+    /// Specifies integer numeric value to raw encoding method (typically size_in_bits=1).
+    pub encoding: IntegerEncodingType,
+    /// String representation for true value (default: "True")
+    pub one_string_value: String,
+    /// String representation for false value (default: "False")
+    pub zero_string_value: String,
+}
+
+#[derive(Clone, Debug)]
+pub struct EnumeratedType {
+    pub size_in_bits: i64,
+    /// Describes the bit ordering of the encoded value.
+    pub bit_order: BitOrderType,
+    /// Describes the endianness of the encoded value.
+    pub byte_order: ByteOrderType,
+    /// Specifies integer numeric value to raw encoding method.
+    pub encoding: IntegerEncodingType,
+    /// List of enumeration label/value pairs
+    pub enumeration_list: Vec<EnumerationEntry>,
+}
+
+#[derive(Clone, Debug)]
+pub struct EnumerationEntry {
+    pub label: String,
+    pub value: i64,
+    pub short_description: Option<String>,
+}
+
+#[derive(Clone, Debug)]
+pub struct BinaryType {
+    /// Describes the bit ordering of the encoded value.
+    pub bit_order: BitOrderType,
+    /// Describes the endianness of the encoded value.
+    pub byte_order: ByteOrderType,
+    /// Size in bits (can be fixed or dynamic)
+    pub size_in_bits: IntegerValue,
+}
+
+#[derive(Clone, Debug)]
+pub struct AbsoluteTimeType {
+    /// The time encoding definition
+    pub encoding: TimeEncoding,
+    /// Reference epoch for time calculations
+    pub epoch: Epoch,
+}
+
+#[derive(Clone, Debug)]
+pub struct RelativeTimeType {
+    /// The time encoding definition (typically integer for duration counts)
+    pub encoding: TimeEncoding,
+    /// Reference time scale
+    pub offset: Option<f64>,
+}
+
+#[derive(Clone, Debug)]
+pub enum TimeEncoding {
+    /// Time encoded as integer (counts since epoch)
+    Integer(IntegerType),
+    /// Time encoded as string
+    String(StringType),
+}
+
+#[derive(Clone, Debug)]
+pub enum Epoch {
+    TAI,   // CCSDS standard
+    J2000, // 2000-01-01T12:00:00 TT
+    Unix,  // 1970-01-01T00:00:00 UTC (also POSIX)
+    GPS,   // 1980-01-06T00:00:00 UTC
+    UserDefined { date_time: String },
+    // TODO(tumbar) Define integrations with SPICE
+}
+
+#[derive(Clone, Debug)]
+pub struct ArrayType {
+    /// Reference to the element type name
+    pub element_type: Box<Type>,
+    /// Dimension specifications
+    pub dimensions: Vec<Dimension>,
+}
+
+///For partial entries of an array, the starting and ending index for each dimension, OR the Size must be specified.  Indexes are zero based.
+#[derive(Clone, Debug)]
+pub struct Dimension {
+    pub starting_index: IntegerValue,
+    pub ending_index: IntegerValue,
+}
+
+#[derive(Clone, Debug)]
+pub struct AggregateType {
+    /// List of members (fields) in this aggregate
+    pub members: Vec<Member>,
+}
+
+#[derive(Clone, Debug)]
+pub struct Member {
+    pub name: String,
+    pub type_: Type,
 }
 
 #[derive(Clone, Debug)]
 pub enum Type {
     Integer(IntegerType),
     Float(FloatType),
-    // String(StringParameterType),
-    // Boolean(BooleanParameterType),
-    // Binary(BinaryParameterType),
-    // Enumerated(EnumeratedParameterType),
-    // AbsoluteTime(AbsoluteTimeParameterType),
-    // RelativeTime(RelativeTimeParameterType),
-    // Array(ArrayParameterType),
-    // Aggregate(AggregateParameterType),
-}
-
-#[derive(Clone, Debug)]
-pub struct Parameter {
-    metadata: NamedItem,
-    units: Option<String>,
-}
-
-/// ParameterType is the description of something that can have a value
-#[derive(Clone, Debug)]
-pub enum ParameterType {
-    Integer(IntegerParameterType),
-    Float(FloatParameterType),
-    String(StringParameterType),
-    Boolean(BooleanParameterType),
-    Binary(BinaryParameterType),
-    Enumerated(EnumeratedParameterType),
-    AbsoluteTime(AbsoluteTimeParameterType),
-    RelativeTime(RelativeTimeParameterType),
-    Array(ArrayParameterType),
-    Aggregate(AggregateParameterType),
-}
-
-#[derive(Clone, Debug)]
-pub struct IntegerParameterType {
-    pub base: IntegerType,
-}
-
-#[derive(Clone, Debug)]
-pub struct FloatParameterType {
-    pub metadata: NamedItem,
-    /// Size in bits (inherited/resolved)
-    pub size_in_bits: i64,
-    /// Initial value in calibrated form
-    pub initial_value: Option<f64>,
-    /// Encoding information (inherited/resolved)
-    pub encoding: Option<hermes_xtce::FloatDataEncodingType>,
-    /// Unit of measure
-    pub unit: Option<String>,
-}
-
-#[derive(Clone, Debug)]
-pub struct StringParameterType {
-    pub metadata: NamedItem,
-    /// Initial value
-    pub initial_value: Option<String>,
-    /// Encoding information (inherited/resolved)
-    pub encoding: Option<hermes_xtce::StringDataEncodingType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct BooleanParameterType {
-    pub metadata: NamedItem,
-    /// String representation for "true"
-    pub one_string_value: Option<String>,
-    /// String representation for "false"
-    pub zero_string_value: Option<String>,
-    /// Initial value
-    pub initial_value: Option<bool>,
-    /// Encoding information (inherited/resolved)
-    pub encoding: Option<hermes_xtce::BooleanDataType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct BinaryParameterType {
-    pub metadata: NamedItem,
-    /// Initial value as hex string
-    pub initial_value: Option<String>,
-    /// Encoding information (inherited/resolved)
-    pub encoding: Option<hermes_xtce::BinaryDataEncodingType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct EnumeratedParameterType {
-    pub metadata: NamedItem,
-    /// Initial value (enumeration label)
-    pub initial_value: Option<String>,
-    /// Encoding information (inherited/resolved)
-    pub encoding: Option<hermes_xtce::IntegerDataEncodingType>,
-    /// Enumeration list (inherited/resolved)
-    pub enumeration_list: Option<hermes_xtce::EnumerationListType>,
-    /// Unit of measure
-    pub unit: Option<String>,
-}
-
-#[derive(Clone, Debug)]
-pub struct AbsoluteTimeParameterType {
-    pub metadata: NamedItem,
-    /// Initial value
-    pub initial_value: Option<String>,
-    /// Encoding information (inherited/resolved)
-    pub encoding: Option<hermes_xtce::IntegerDataEncodingType>,
-    /// Reference time/epoch information
-    pub reference_time: Option<hermes_xtce::ReferenceTimeType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct RelativeTimeParameterType {
-    pub metadata: NamedItem,
-    /// Initial value
-    pub initial_value: Option<f64>,
-    /// Encoding information (inherited/resolved)
-    pub encoding: Option<hermes_xtce::IntegerDataEncodingType>,
-    /// Reference time information
-    pub reference_time: Option<hermes_xtce::ReferenceTimeType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ArrayParameterType {
-    pub metadata: NamedItem,
-    /// The element type (fully qualified name)
-    pub element_type_ref: String,
-    /// Number of dimensions
-    pub number_of_dimensions: i32,
-    /// Size of each dimension
-    pub dimension_sizes: Vec<ArrayDimension>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ArrayDimension {
-    /// Starting index
-    pub starting_index: Option<i32>,
-    /// Ending index
-    pub ending_index: Option<i32>,
-}
-
-#[derive(Clone, Debug)]
-pub struct AggregateParameterType {
-    pub metadata: NamedItem,
-    /// List of members with their types
-    pub members: Vec<AggregateMember>,
-}
-
-#[derive(Clone, Debug)]
-pub struct AggregateMember {
-    /// Member name
-    pub name: String,
-    /// Type reference (fully qualified name)
-    pub type_ref: String,
-    /// Optional short description
-    pub short_description: Option<String>,
-}
-
-// ============================================================================
-// Resolved Arguments (similar structure to parameters, for commands)
-// ============================================================================
-
-/// A fully resolved argument type with inheritance flattened
-#[derive(Clone, Debug)]
-pub enum ResolvedArgumentType {
-    Integer(ResolvedIntegerArgumentType),
-    Float(ResolvedFloatArgumentType),
-    String(ResolvedStringArgumentType),
-    Boolean(ResolvedBooleanArgumentType),
-    Binary(ResolvedBinaryArgumentType),
-    Enumerated(ResolvedEnumeratedArgumentType),
-    AbsoluteTime(ResolvedAbsoluteTimeArgumentType),
-    RelativeTime(ResolvedRelativeTimeArgumentType),
-    Array(ResolvedArrayArgumentType),
-    Aggregate(ResolvedAggregateArgumentType),
-}
-
-// Argument types mirror parameter types but are for command arguments
-#[derive(Clone, Debug)]
-pub struct ResolvedIntegerArgumentType {
-    pub metadata: NamedItem,
-    pub size_in_bits: i64,
-    pub signed: bool,
-    pub initial_value: Option<i64>,
-    pub encoding: Option<hermes_xtce::IntegerDataEncodingType>,
-    pub unit: Option<String>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedFloatArgumentType {
-    pub metadata: NamedItem,
-    pub size_in_bits: i64,
-    pub initial_value: Option<f64>,
-    pub encoding: Option<hermes_xtce::FloatDataEncodingType>,
-    pub unit: Option<String>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedStringArgumentType {
-    pub metadata: NamedItem,
-    pub initial_value: Option<String>,
-    pub encoding: Option<hermes_xtce::StringDataEncodingType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedBooleanArgumentType {
-    pub metadata: NamedItem,
-    pub one_string_value: Option<String>,
-    pub zero_string_value: Option<String>,
-    pub initial_value: Option<bool>,
-    pub encoding: Option<hermes_xtce::BooleanDataEncodingType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedBinaryArgumentType {
-    pub metadata: NamedItem,
-    pub initial_value: Option<String>,
-    pub encoding: Option<hermes_xtce::BinaryDataEncodingType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedEnumeratedArgumentType {
-    pub metadata: NamedItem,
-    pub initial_value: Option<String>,
-    pub encoding: Option<IntegerDataEncodingType>,
-    pub enumeration_list: Option<EnumerationListType>,
-    pub unit: Option<String>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedAbsoluteTimeArgumentType {
-    pub metadata: NamedItem,
-    pub initial_value: Option<String>,
-    pub encoding: Option<IntegerDataEncodingType>,
-    pub reference_time: Option<hermes_xtce::ReferenceTimeType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedRelativeTimeArgumentType {
-    pub metadata: NamedItem,
-    pub initial_value: Option<f64>,
-    pub encoding: Option<IntegerDataEncodingType>,
-    pub reference_time: Option<hermes_xtce::ReferenceTimeType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedArrayArgumentType {
-    pub metadata: NamedItem,
-    pub element_type_ref: String,
-    pub number_of_dimensions: i32,
-    pub dimension_sizes: Vec<ArrayDimension>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedAggregateArgumentType {
-    pub metadata: NamedItem,
-    pub members: Vec<AggregateMember>,
-}
-
-// ============================================================================
-// Resolved Parameters and Arguments
-// ============================================================================
-
-/// A fully resolved parameter (instance of a parameter type)
-#[derive(Clone, Debug)]
-pub struct ResolvedParameter {
-    pub metadata: NamedItem,
-    /// Fully qualified name of the parameter type
-    pub parameter_type_ref: String,
-    /// Initial value (if different from type's initial value)
-    pub initial_value: Option<String>,
-}
-
-/// A fully resolved argument (instance of an argument type)
-#[derive(Clone, Debug)]
-pub struct ResolvedArgument {
-    pub metadata: NamedItem,
-    /// Fully qualified name of the argument type
-    pub argument_type_ref: String,
-    /// Initial value (if different from type's initial value)
-    pub initial_value: Option<String>,
-}
-
-// ============================================================================
-// Resolved Containers
-// ============================================================================
-
-/// A fully resolved sequence container with inheritance flattened
-#[derive(Clone, Debug)]
-pub struct ResolvedContainer {
-    pub metadata: NamedItem,
-    /// Whether this is an abstract container
-    pub abstract_: bool,
-    /// Idle pattern for unallocated space
-    pub idle_pattern: Option<String>,
-    /// Flattened list of entries (includes inherited entries from base container)
-    pub entries: Vec<ResolvedContainerEntry>,
-    /// Restriction criteria (if this container was inherited with conditions)
-    pub restriction_criteria: Option<hermes_xtce::RestrictionCriteriaType>,
-}
-
-/// A resolved container entry (parameter reference with location)
-#[derive(Clone, Debug)]
-pub enum ResolvedContainerEntry {
-    ParameterRef(ResolvedParameterRefEntry),
-    ArgumentRef(ResolvedArgumentRefEntry),
-    ContainerRef(ResolvedContainerRefEntry),
-    FixedValue(ResolvedFixedValueEntry),
-    // Add other entry types as needed
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedParameterRefEntry {
-    /// Fully qualified name of the parameter
-    pub parameter_ref: String,
-    /// Optional short description
-    pub short_description: Option<String>,
-    /// Location in container
-    pub location_in_container_in_bits: Option<LocationInContainerInBitsType>,
-    /// Repeat entry information
-    pub repeat: Option<RepeatInfo>,
-    /// Include condition
-    pub include_condition: Option<hermes_xtce::MatchCriteriaType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedArgumentRefEntry {
-    /// Fully qualified name of the argument
-    pub argument_ref: String,
-    /// Optional short description
-    pub short_description: Option<String>,
-    /// Location in container
-    pub location_in_container_in_bits: Option<LocationInContainerInBitsType>,
-    /// Repeat entry information
-    pub repeat: Option<RepeatInfo>,
-    /// Include condition
-    pub include_condition: Option<hermes_xtce::MatchCriteriaType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedContainerRefEntry {
-    /// Fully qualified name of the container
-    pub container_ref: String,
-    /// Optional short description
-    pub short_description: Option<String>,
-    /// Location in container
-    pub location_in_container_in_bits: Option<LocationInContainerInBitsType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct ResolvedFixedValueEntry {
-    /// Entry name
-    pub name: String,
-    /// Binary value (hex string)
-    pub binary_value: String,
-    /// Size in bits
-    pub size_in_bits: i64,
-    /// Location in container
-    pub location_in_container_in_bits: Option<LocationInContainerInBitsType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct RepeatInfo {
-    /// Number of times to repeat
-    pub count: Option<i64>,
-    /// Offset between repetitions (in bits)
-    pub offset_size_in_bits: Option<i64>,
+    String(StringType),
+    Boolean(BooleanType),
+    Binary(BinaryType),
+    Enumerated(EnumeratedType),
+    AbsoluteTime(AbsoluteTimeType),
+    RelativeTime(RelativeTimeType),
+    Array(ArrayType),
+    Aggregate(AggregateType),
 }

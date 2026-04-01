@@ -1,6 +1,8 @@
 mod calibrator;
 mod error;
 mod types;
+mod parameter;
+mod container;
 
 pub use calibrator::*;
 pub use error::*;
@@ -9,20 +11,6 @@ pub use types::*;
 use hermes_xtce::{LocationInContainerInBitsType, MetaCommandSetType, MetaCommandType};
 use std::collections::HashMap;
 use std::rc::Rc;
-
-
-
-trait IntegerValue {
-    fn value(&self) -> i64;
-}
-
-struct FixedValue(i64);
-impl IntegerValue for FixedValue {
-    fn value(&self) -> i64 {
-        self.0
-    }
-}
-
 
 
 struct SequenceEntry {
