@@ -1,0 +1,10 @@
+[package]
+name = "hermes-data"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+hermes-xtce = { path = "../hermes-xtce" }
+thiserror = "2.0"
+tracing = "0.1.44"
