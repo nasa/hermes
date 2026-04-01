@@ -24,16 +24,14 @@ fn test_load_fprime_xtce_full() {
 
     println!("Successfully loaded XTCE document: {}", space_system.name);
     if let Some(ref tm) = space_system.telemetry_meta_data {
-        if let Some(ref param_types) = tm.parameter_type_set {
-            println!(
-                "  - Found {} parameter types in the type set",
-                param_types.content.len(),
-            );
-        }
+        println!(
+            "  - Found {} parameter types in the type set",
+            tm.parameter_type_set.len(),
+        );
 
         println!(
             "  - Found {} containers",
-            tm.container_set.as_ref().unwrap().content.len()
+            tm.container_set.len()
         )
     }
 }

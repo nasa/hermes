@@ -27,7 +27,6 @@ mod codegen {
     };
 
     use anyhow::{Context, Error};
-    use syn::__private::quote::quote;
     use xsd_parser::config::{GeneratorFlags, InterpreterFlags, OptimizerFlags, Schema};
     use xsd_parser::models::schema::xs::AttributeUseType;
 
@@ -101,6 +100,10 @@ mod codegen {
                     Ok(mut parsed) => {
                         // Post-process to add deserialize_with for enum content fields
                         fix_enum_content_in_parsed_file(&mut parsed);
+                        // Optimize single-field wrapper structs by replacing Option<Wrapper> with Vec<Content>
+                        optimize_single_field_wrappers(&mut parsed);
+                        // Remove Serialize derives to disable serialization functionality
+                        remove_serialize_derives(&mut parsed);
                         write(filename, prettyplease::unparse(&parsed))?
                     }
                     Err(_) => write(filename, &unformatted_code)?,
@@ -123,17 +126,8 @@ mod codegen {
                         if attr.meta.use_ == AttributeUseType::Required {
                             attr.is_option = false;
                         }
-
-                        if attr.is_option {
-                            attr.extra_attributes.push(quote! {
-                                serde(skip_serializing_if = "Option::is_none")
-                            })
-                        }
-                        // if attr.ident == "base_type" {
-                        //
-                        //     eprintln!("{:?}", attr);
-                        //     std::process::exit(1);
-                        // }
+                        // Note: skip_serializing_if attributes are no longer added
+                        // since serialization support has been removed
                     }
                 }
                 _ => {}
@@ -158,32 +152,12 @@ mod codegen {
         trimmed
     }
 
-    /// Add deserialize_with and skip_serializing_if attributes to generated code.
+    /// Add deserialize_with attributes to generated code for proper enum deserialization.
     fn fix_enum_content_in_parsed_file(file: &mut syn::File) {
         use quote::ToTokens;
         use syn::visit_mut::{self, VisitMut};
         use syn::{Field, ItemEnum, ItemStruct};
         use std::collections::HashSet;
-
-        // XSD container types that require children when present
-        const EMPTY_CONTAINER_TYPES: &[&str] = &[
-            "AncillaryDataSetType",
-            "ErrorDetectCorrectType",
-            "CalibratorType",
-            "ContextCalibratorListType",
-            "ParameterSetType",
-            "ContainerSetType",
-            "MessageSetType",
-            "StreamSetType",
-            "AlgorithmSetType",
-            "EnumerationListType",
-            "RangeEnumerationType",
-            "ArgumentAssignmentListType",
-            "ArgumentListType",
-            "MetaCommandStepListType",
-            "ParameterToSetListType",
-            "ParameterToSuspendAlarmsListType",
-        ];
 
         struct EnumCollector {
             enum_names: HashSet<String>,
@@ -220,7 +194,6 @@ mod codegen {
 
                 let mut has_value_rename = false;
                 let mut has_attribute_rename = false;
-                let field_name = field.ident.as_ref().map(|i| i.to_string());
 
                 for attr in &field.attrs {
                     if attr.path().is_ident("serde") {
@@ -235,16 +208,7 @@ mod codegen {
                     }
                 }
 
-                // Special case: idle_pattern is an enum attribute that cannot be serialized
-                // Skip serialization when it has the default value
-                if field_name.as_deref() == Some("idle_pattern") && base_type == "FixedIntegerValueType" {
-                    let attr: syn::Attribute = syn::parse_quote! {
-                        #[serde(skip_serializing_if = "crate::serde_helpers::is_default_idle_pattern")]
-                    };
-                    field.attrs.push(attr);
-                    return;
-                }
-
+                // Add custom deserializers for enum content fields
                 if self.enum_names.contains(base_type) && !has_value_rename && !has_attribute_rename {
                     let helper_path = if is_option {
                         "crate::serde_helpers::deserialize_optional_enum_content"
@@ -259,34 +223,6 @@ mod codegen {
                     };
                     field.attrs.push(attr);
                 }
-
-                if EMPTY_CONTAINER_TYPES.contains(&base_type) {
-                    let already_has_skip = field.attrs.iter().any(|attr| {
-                        if attr.path().is_ident("serde") {
-                            let tokens = attr.meta.to_token_stream().to_string();
-                            tokens.contains("skip_serializing_if")
-                        } else {
-                            false
-                        }
-                    });
-
-                    if !already_has_skip {
-                        let skip_condition = if base_type == "CalibratorType" && is_option {
-                            "crate::serde_helpers::is_empty_calibrator"
-                        } else if is_option {
-                            "Option::is_none"
-                        } else if is_vec {
-                            "Vec::is_empty"
-                        } else {
-                            return;
-                        };
-
-                        let attr: syn::Attribute = syn::parse_quote! {
-                            #[serde(skip_serializing_if = #skip_condition)]
-                        };
-                        field.attrs.push(attr);
-                    }
-                }
             }
         }
 
@@ -299,6 +235,360 @@ mod codegen {
             enum_names: collector.enum_names,
         };
         fixer.visit_file_mut(file);
+    }
+
+    /// Optimize single-field wrapper structs by replacing Option<Wrapper> with Vec<Content>
+    /// This removes unnecessary indirection for structs that only contain a Vec in a "content" field
+    fn optimize_single_field_wrappers(file: &mut syn::File) {
+        use quote::ToTokens;
+        use syn::visit_mut::{self, VisitMut};
+        use syn::{Field, Item, ItemStruct, Type, TypePath};
+        use std::collections::HashMap;
+
+        /// Collect all single-field wrapper structs
+        struct WrapperCollector {
+            wrappers: HashMap<String, Type>,
+        }
+
+        impl WrapperCollector {
+            fn is_vec_type(&self, ty: &Type) -> Option<Type> {
+                if let Type::Path(TypePath { path, .. }) = ty {
+                    if path.segments.len() >= 2 {
+                        let last = &path.segments.last()?;
+                        if last.ident == "Vec" {
+                            if let syn::PathArguments::AngleBracketed(args) = &last.arguments {
+                                if let Some(syn::GenericArgument::Type(inner)) = args.args.first() {
+                                    return Some(inner.clone());
+                                }
+                            }
+                        }
+                    }
+                }
+                None
+            }
+
+            fn has_value_rename(&self, field: &Field) -> bool {
+                field.attrs.iter().any(|attr| {
+                    if attr.path().is_ident("serde") {
+                        let tokens = attr.meta.to_token_stream().to_string();
+                        tokens.contains("rename") && tokens.contains("$value")
+                    } else {
+                        false
+                    }
+                })
+            }
+        }
+
+        impl VisitMut for WrapperCollector {
+            fn visit_item_struct_mut(&mut self, node: &mut ItemStruct) {
+                if let syn::Fields::Named(ref fields) = node.fields {
+                    // Check if this is a single-field struct
+                    if fields.named.len() == 1 {
+                        let field = fields.named.first().unwrap();
+                        // Check if field is named "content" and is a Vec
+                        if field.ident.as_ref().map(|i| i == "content").unwrap_or(false) {
+                            if let Some(_inner_type) = self.is_vec_type(&field.ty) {
+                                // Check if it has the $value rename attribute
+                                if self.has_value_rename(field) {
+                                    let struct_name = node.ident.to_string();
+                                    // Store the full Vec type
+                                    self.wrappers.insert(struct_name, field.ty.clone());
+                                }
+                            }
+                        }
+                    }
+                }
+                visit_mut::visit_item_struct_mut(self, node);
+            }
+        }
+
+        /// Replace Option<Wrapper> with Vec<Content> in all struct fields
+        struct FieldReplacer {
+            wrappers: HashMap<String, Type>,
+        }
+
+        impl FieldReplacer {
+            fn extract_option_inner(&self, ty: &Type) -> Option<String> {
+                if let Type::Path(TypePath { path, .. }) = ty {
+                    if let Some(last) = path.segments.last() {
+                        if last.ident == "Option" {
+                            if let syn::PathArguments::AngleBracketed(args) = &last.arguments {
+                                if let Some(syn::GenericArgument::Type(Type::Path(inner_path))) = args.args.first() {
+                                    if let Some(inner_seg) = inner_path.path.segments.last() {
+                                        return Some(inner_seg.ident.to_string());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                None
+            }
+
+            fn update_serde_attributes(&self, field: &mut Field) {
+                // Update skip_serializing_if from Option::is_none to Vec::is_empty
+                // Add custom deserializer for container Vec pattern
+                let mut new_attrs = Vec::new();
+
+                for attr in field.attrs.drain(..) {
+                    if attr.path().is_ident("serde") {
+                        let tokens = attr.meta.to_token_stream().to_string();
+                        if tokens.contains("skip_serializing_if") && tokens.contains("is_none") {
+                            // Replace with Vec::is_empty
+                            new_attrs.push(syn::parse_quote! {
+                                #[serde(skip_serializing_if = "Vec::is_empty")]
+                            });
+                        } else {
+                            // Keep other attributes
+                            new_attrs.push(attr);
+                        }
+                    } else {
+                        // Keep non-serde attributes
+                        new_attrs.push(attr);
+                    }
+                }
+
+                // Add custom deserializer for container vec pattern
+                // This handles the XML container element wrapping the vec elements
+                new_attrs.push(syn::parse_quote! {
+                    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+                });
+
+                field.attrs = new_attrs;
+            }
+        }
+
+        impl VisitMut for FieldReplacer {
+            fn visit_field_mut(&mut self, field: &mut Field) {
+                let mut replaced = false;
+
+                // Check if this field is Option<WrapperType>
+                if let Some(wrapper_name) = self.extract_option_inner(&field.ty) {
+                    if let Some(vec_type) = self.wrappers.get(&wrapper_name) {
+                        // Replace the type
+                        field.ty = vec_type.clone();
+                        replaced = true;
+                    }
+                } else if let Type::Path(TypePath { path, .. }) = &field.ty {
+                    // Check if this is a direct WrapperType reference (not in Option)
+                    if let Some(last) = path.segments.last() {
+                        let type_name = last.ident.to_string();
+                        if let Some(vec_type) = self.wrappers.get(&type_name) {
+                            // Replace direct wrapper type with Vec
+                            field.ty = vec_type.clone();
+                            replaced = true;
+                        }
+                    }
+                }
+
+                if replaced {
+                    // Update serde attributes for the replaced field
+                    self.update_serde_attributes(field);
+                }
+
+                visit_mut::visit_field_mut(self, field);
+            }
+
+            fn visit_type_mut(&mut self, ty: &mut Type) {
+                // Also check for direct type references (e.g., in enum variants)
+                if let Type::Path(TypePath { path, .. }) = ty {
+                    if let Some(last) = path.segments.last() {
+                        let type_name = last.ident.to_string();
+                        if let Some(vec_type) = self.wrappers.get(&type_name) {
+                            // Replace direct wrapper type reference with Vec type
+                            *ty = vec_type.clone();
+                            return; // Don't recurse after replacement
+                        }
+                    }
+                }
+                visit_mut::visit_type_mut(self, ty);
+            }
+        }
+
+        /// Remove wrapper struct definitions
+        struct WrapperRemover {
+            wrappers: HashMap<String, Type>,
+        }
+
+        impl VisitMut for WrapperRemover {
+            fn visit_file_mut(&mut self, file: &mut syn::File) {
+                file.items.retain(|item| {
+                    if let Item::Struct(item_struct) = item {
+                        let struct_name = item_struct.ident.to_string();
+                        // Keep the item if it's NOT a wrapper struct
+                        !self.wrappers.contains_key(&struct_name)
+                    } else {
+                        true
+                    }
+                });
+                visit_mut::visit_file_mut(self, file);
+            }
+        }
+
+        /// Rename *TypeContent enums to *Type for removed wrapper structs
+        struct ContentEnumRenamer {
+            wrappers: HashMap<String, Type>,
+        }
+
+        impl VisitMut for ContentEnumRenamer {
+            fn visit_item_enum_mut(&mut self, node: &mut syn::ItemEnum) {
+                let enum_name = node.ident.to_string();
+                // Check if this enum is a *TypeContent for a removed wrapper
+                if enum_name.ends_with("Content") {
+                    let base_name = &enum_name[..enum_name.len() - 7]; // Remove "Content"
+                    if self.wrappers.contains_key(base_name) {
+                        // Rename enum from FooTypeContent to FooType
+                        node.ident = syn::Ident::new(base_name, node.ident.span());
+                    }
+                }
+                visit_mut::visit_item_enum_mut(self, node);
+            }
+
+            fn visit_type_path_mut(&mut self, node: &mut syn::TypePath) {
+                // Update type references from FooTypeContent to FooType
+                if let Some(last_segment) = node.path.segments.last_mut() {
+                    let type_name = last_segment.ident.to_string();
+                    if type_name.ends_with("Content") {
+                        let base_name = &type_name[..type_name.len() - 7];
+                        if self.wrappers.contains_key(base_name) {
+                            last_segment.ident = syn::Ident::new(base_name, last_segment.ident.span());
+                        }
+                    }
+                }
+                visit_mut::visit_type_path_mut(self, node);
+            }
+        }
+
+        // Execute optimization phases
+        let mut collector = WrapperCollector {
+            wrappers: HashMap::new(),
+        };
+        collector.visit_file_mut(file);
+
+        if !collector.wrappers.is_empty() {
+            let mut replacer = FieldReplacer {
+                wrappers: collector.wrappers.clone(),
+            };
+            replacer.visit_file_mut(file);
+
+            let mut remover = WrapperRemover {
+                wrappers: collector.wrappers.clone(),
+            };
+            remover.visit_file_mut(file);
+
+            // Rename *TypeContent enums to *Type now that wrappers are removed
+            let mut renamer = ContentEnumRenamer {
+                wrappers: collector.wrappers,
+            };
+            renamer.visit_file_mut(file);
+        }
+    }
+
+    /// Remove all Serialize derives from generated code to disable serialization functionality
+    fn remove_serialize_derives(file: &mut syn::File) {
+        use syn::visit_mut::{self, VisitMut};
+        use syn::{Attribute, ItemEnum, ItemStruct};
+
+        struct SerializeRemover;
+
+        impl SerializeRemover {
+            fn filter_serialization_attrs(&self, attrs: &mut Vec<Attribute>) {
+                use quote::ToTokens;
+
+                attrs.retain(|attr| {
+                    // Remove skip_serializing_if attributes (only needed for serialization)
+                    if attr.path().is_ident("serde") {
+                        let tokens = attr.meta.to_token_stream().to_string();
+                        if tokens.contains("skip_serializing_if") {
+                            return false;
+                        }
+                    }
+                    true
+                });
+            }
+
+            fn filter_derives(&self, attrs: &mut Vec<Attribute>) {
+                use proc_macro2::TokenStream;
+                use std::str::FromStr;
+
+                let mut new_attrs = Vec::new();
+
+                for attr in attrs.drain(..) {
+                    if !attr.path().is_ident("derive") {
+                        new_attrs.push(attr);
+                        continue;
+                    }
+
+                    // Parse the derive tokens to filter out Serialize
+                    if let syn::Meta::List(ref meta_list) = attr.meta {
+                        let tokens_str = meta_list.tokens.to_string();
+
+                        // Split by comma and filter out Serialize and Serialize_enum_str
+                        let derives: Vec<&str> = tokens_str
+                            .split(',')
+                            .map(|s| s.trim())
+                            .filter(|s| *s != "Serialize" && *s != "Serialize_enum_str")
+                            .collect();
+
+                        // Only add back the derive attribute if there are remaining derives
+                        if !derives.is_empty() {
+                            let derives_joined = derives.join(", ");
+                            // Parse as a token stream and create attribute
+                            if let Ok(tokens) = TokenStream::from_str(&derives_joined) {
+                                new_attrs.push(syn::parse_quote! { #[derive(#tokens)] });
+                            }
+                        }
+                    } else {
+                        new_attrs.push(attr);
+                    }
+                }
+
+                *attrs = new_attrs;
+            }
+        }
+
+        impl VisitMut for SerializeRemover {
+            fn visit_field_mut(&mut self, node: &mut syn::Field) {
+                self.filter_serialization_attrs(&mut node.attrs);
+                visit_mut::visit_field_mut(self, node);
+            }
+
+            fn visit_item_enum_mut(&mut self, node: &mut ItemEnum) {
+                self.filter_derives(&mut node.attrs);
+                self.filter_serialization_attrs(&mut node.attrs);
+                visit_mut::visit_item_enum_mut(self, node);
+            }
+
+            fn visit_item_struct_mut(&mut self, node: &mut ItemStruct) {
+                self.filter_derives(&mut node.attrs);
+                self.filter_serialization_attrs(&mut node.attrs);
+                visit_mut::visit_item_struct_mut(self, node);
+            }
+        }
+
+        let mut remover = SerializeRemover;
+        remover.visit_file_mut(file);
+
+        // Also remove the Serialize import from the serde use statement
+        for item in &mut file.items {
+            if let syn::Item::Use(use_item) = item {
+                if let syn::UseTree::Path(use_path) = &mut use_item.tree {
+                    // Remove Serialize from serde::{Deserialize, Serialize}
+                    if use_path.ident == "serde" {
+                        if let syn::UseTree::Group(ref mut group) = *use_path.tree {
+                            // Filter out Serialize from the serde import group
+                            group.items = group.items.clone().into_iter().filter(|item| {
+                                if let syn::UseTree::Name(name) = item {
+                                    name.ident != "Serialize"
+                                } else {
+                                    true
+                                }
+                            }).collect();
+                        }
+                    }
+                }
+            }
+        }
     }
 
     #[derive(Default, Debug, Clone)]
@@ -408,10 +698,6 @@ mod codegen {
                                 "Deserialize_enum_str",
                                 proc_macro2::Span::call_site(),
                             )),
-                            IdentPath::from_ident(proc_macro2::Ident::new(
-                                "Serialize_enum_str",
-                                proc_macro2::Span::call_site(),
-                            )),
                         ]);
 
                         // We are using a custom derive, we must include it
@@ -459,7 +745,6 @@ mod codegen {
                 {
                     ctx.add_usings(vec![
                         "serde_enum_str::Deserialize_enum_str",
-                        "serde_enum_str::Serialize_enum_str",
                     ]);
                 }
             }
