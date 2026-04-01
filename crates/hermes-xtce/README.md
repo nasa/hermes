@@ -9,11 +9,10 @@ the type information.
 > `xsd-parser` has a lot of manual modifications to make it work with serialization and deserialization of XTCE XML.
 > If you find issues please report them and we can add more fixes!
 
-> [!WARNING]
-> This package is not meant for _serializing_ XTCE files. Currently this
-> functionality is not well supported due to [issues](https://github.com/tafia/quick-xml/issues/717)
-> in XML serialization in Rust. If you need to serialize XTCE files, you are
-> better off writing the nodes out manually instead of from these XTCE data structures.
+> [!NOTE]
+> This package is not meant for _serializing_ XTCE files.
+> If you need to generate an XTCE file, we recommend using an XML library in Python or
+> your preferred language. This package is simply for loading XTCE files into Hermes
 
 ## Generating XTCE Rust code
 

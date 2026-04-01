@@ -1,26 +1,26 @@
 use serde::Deserialize;
-#[derive(Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize)]
 pub struct EntitiesType(pub ::std::vec::Vec<::std::string::String>);
 pub type EntityType = ::std::string::String;
 pub type IdType = ::std::string::String;
 pub type IdrefType = ::std::string::String;
-#[derive(Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize)]
 pub struct IdrefsType(pub ::std::vec::Vec<::std::string::String>);
 pub type NcNameType = ::std::string::String;
 pub type NmtokenType = ::std::string::String;
-#[derive(Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize)]
 pub struct NmtokensType(pub ::std::vec::Vec<::std::string::String>);
 pub type NotationType = ::std::string::String;
 pub type NameType = ::std::string::String;
 pub type QNameType = ::std::string::String;
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AnySimpleType {
     #[serde(default, rename = "@type")]
     pub type_: ::core::option::Option<::std::string::String>,
     #[serde(default, rename = "$text")]
     pub content: Content1Type,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AnyType {
     #[serde(default, rename = "$text")]
     pub text: ::core::option::Option<::std::string::String>,
