@@ -1,4 +1,4 @@
-//! Serde helpers for XML deserialization and serialization with quick-xml.
+//! Serde helpers for XML deserialization with quick-xml.
 
 use serde::{Deserialize, Deserializer};
 
@@ -49,27 +49,6 @@ where
 
     Vec::<Wrapper<T>>::deserialize(deserializer)
         .map(|vec| vec.into_iter().map(|w| w.inner).collect())
-}
-
-/// Check if AncillaryDataSet should be omitted from serialization.
-pub fn is_empty_ancillary_data_set(opt: &Option<crate::AncillaryDataSetType>) -> bool {
-    match opt {
-        None => true,
-        Some(val) => val.ancillary_data.is_empty(),
-    }
-}
-
-/// Check if CalibratorType should be omitted from serialization.
-pub fn is_empty_calibrator(opt: &Option<crate::CalibratorType>) -> bool {
-    match opt {
-        None => true,
-        Some(val) => val.content.is_empty(),
-    }
-}
-
-/// Check if FixedIntegerValueType is the default value (0).
-pub fn is_default_idle_pattern(val: &crate::FixedIntegerValueType) -> bool {
-    matches!(val, crate::FixedIntegerValueType::I32(0))
 }
 
 /// Deserialize a Vec from an XML container element with $value children.

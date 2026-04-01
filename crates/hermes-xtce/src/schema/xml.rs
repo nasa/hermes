@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 pub type Base = super::xs::AnyUriType;
 pub type Lang = super::xs::LanguageType;
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 pub enum Space {
     #[serde(rename = "default")]
     Default,

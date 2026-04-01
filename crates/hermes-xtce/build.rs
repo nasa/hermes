@@ -27,7 +27,6 @@ mod codegen {
     };
 
     use anyhow::{Context, Error};
-    use syn::__private::quote::quote;
     use xsd_parser::config::{GeneratorFlags, InterpreterFlags, OptimizerFlags, Schema};
     use xsd_parser::models::schema::xs::AttributeUseType;
 
@@ -103,6 +102,8 @@ mod codegen {
                         fix_enum_content_in_parsed_file(&mut parsed);
                         // Optimize single-field wrapper structs by replacing Option<Wrapper> with Vec<Content>
                         optimize_single_field_wrappers(&mut parsed);
+                        // Remove Serialize derives to disable serialization functionality
+                        remove_serialize_derives(&mut parsed);
                         write(filename, prettyplease::unparse(&parsed))?
                     }
                     Err(_) => write(filename, &unformatted_code)?,
@@ -125,17 +126,8 @@ mod codegen {
                         if attr.meta.use_ == AttributeUseType::Required {
                             attr.is_option = false;
                         }
-
-                        if attr.is_option {
-                            attr.extra_attributes.push(quote! {
-                                serde(skip_serializing_if = "Option::is_none")
-                            })
-                        }
-                        // if attr.ident == "base_type" {
-                        //
-                        //     eprintln!("{:?}", attr);
-                        //     std::process::exit(1);
-                        // }
+                        // Note: skip_serializing_if attributes are no longer added
+                        // since serialization support has been removed
                     }
                 }
                 _ => {}
@@ -160,32 +152,12 @@ mod codegen {
         trimmed
     }
 
-    /// Add deserialize_with and skip_serializing_if attributes to generated code.
+    /// Add deserialize_with attributes to generated code for proper enum deserialization.
     fn fix_enum_content_in_parsed_file(file: &mut syn::File) {
         use quote::ToTokens;
         use syn::visit_mut::{self, VisitMut};
         use syn::{Field, ItemEnum, ItemStruct};
         use std::collections::HashSet;
-
-        // XSD container types that require children when present
-        const EMPTY_CONTAINER_TYPES: &[&str] = &[
-            "AncillaryDataSetType",
-            "ErrorDetectCorrectType",
-            "CalibratorType",
-            "ContextCalibratorListType",
-            "ParameterSetType",
-            "ContainerSetType",
-            "MessageSetType",
-            "StreamSetType",
-            "AlgorithmSetType",
-            "EnumerationListType",
-            "RangeEnumerationType",
-            "ArgumentAssignmentListType",
-            "ArgumentListType",
-            "MetaCommandStepListType",
-            "ParameterToSetListType",
-            "ParameterToSuspendAlarmsListType",
-        ];
 
         struct EnumCollector {
             enum_names: HashSet<String>,
@@ -222,7 +194,6 @@ mod codegen {
 
                 let mut has_value_rename = false;
                 let mut has_attribute_rename = false;
-                let field_name = field.ident.as_ref().map(|i| i.to_string());
 
                 for attr in &field.attrs {
                     if attr.path().is_ident("serde") {
@@ -237,16 +208,7 @@ mod codegen {
                     }
                 }
 
-                // Special case: idle_pattern is an enum attribute that cannot be serialized
-                // Skip serialization when it has the default value
-                if field_name.as_deref() == Some("idle_pattern") && base_type == "FixedIntegerValueType" {
-                    let attr: syn::Attribute = syn::parse_quote! {
-                        #[serde(skip_serializing_if = "crate::serde_helpers::is_default_idle_pattern")]
-                    };
-                    field.attrs.push(attr);
-                    return;
-                }
-
+                // Add custom deserializers for enum content fields
                 if self.enum_names.contains(base_type) && !has_value_rename && !has_attribute_rename {
                     let helper_path = if is_option {
                         "crate::serde_helpers::deserialize_optional_enum_content"
@@ -260,34 +222,6 @@ mod codegen {
                         #[serde(deserialize_with = #helper_path)]
                     };
                     field.attrs.push(attr);
-                }
-
-                if EMPTY_CONTAINER_TYPES.contains(&base_type) {
-                    let already_has_skip = field.attrs.iter().any(|attr| {
-                        if attr.path().is_ident("serde") {
-                            let tokens = attr.meta.to_token_stream().to_string();
-                            tokens.contains("skip_serializing_if")
-                        } else {
-                            false
-                        }
-                    });
-
-                    if !already_has_skip {
-                        let skip_condition = if base_type == "CalibratorType" && is_option {
-                            "crate::serde_helpers::is_empty_calibrator"
-                        } else if is_option {
-                            "Option::is_none"
-                        } else if is_vec {
-                            "Vec::is_empty"
-                        } else {
-                            return;
-                        };
-
-                        let attr: syn::Attribute = syn::parse_quote! {
-                            #[serde(skip_serializing_if = #skip_condition)]
-                        };
-                        field.attrs.push(attr);
-                    }
                 }
             }
         }
@@ -550,6 +484,113 @@ mod codegen {
         }
     }
 
+    /// Remove all Serialize derives from generated code to disable serialization functionality
+    fn remove_serialize_derives(file: &mut syn::File) {
+        use syn::visit_mut::{self, VisitMut};
+        use syn::{Attribute, ItemEnum, ItemStruct};
+
+        struct SerializeRemover;
+
+        impl SerializeRemover {
+            fn filter_serialization_attrs(&self, attrs: &mut Vec<Attribute>) {
+                use quote::ToTokens;
+
+                attrs.retain(|attr| {
+                    // Remove skip_serializing_if attributes (only needed for serialization)
+                    if attr.path().is_ident("serde") {
+                        let tokens = attr.meta.to_token_stream().to_string();
+                        if tokens.contains("skip_serializing_if") {
+                            return false;
+                        }
+                    }
+                    true
+                });
+            }
+
+            fn filter_derives(&self, attrs: &mut Vec<Attribute>) {
+                use proc_macro2::TokenStream;
+                use std::str::FromStr;
+
+                let mut new_attrs = Vec::new();
+
+                for attr in attrs.drain(..) {
+                    if !attr.path().is_ident("derive") {
+                        new_attrs.push(attr);
+                        continue;
+                    }
+
+                    // Parse the derive tokens to filter out Serialize
+                    if let syn::Meta::List(ref meta_list) = attr.meta {
+                        let tokens_str = meta_list.tokens.to_string();
+
+                        // Split by comma and filter out Serialize and Serialize_enum_str
+                        let derives: Vec<&str> = tokens_str
+                            .split(',')
+                            .map(|s| s.trim())
+                            .filter(|s| *s != "Serialize" && *s != "Serialize_enum_str")
+                            .collect();
+
+                        // Only add back the derive attribute if there are remaining derives
+                        if !derives.is_empty() {
+                            let derives_joined = derives.join(", ");
+                            // Parse as a token stream and create attribute
+                            if let Ok(tokens) = TokenStream::from_str(&derives_joined) {
+                                new_attrs.push(syn::parse_quote! { #[derive(#tokens)] });
+                            }
+                        }
+                    } else {
+                        new_attrs.push(attr);
+                    }
+                }
+
+                *attrs = new_attrs;
+            }
+        }
+
+        impl VisitMut for SerializeRemover {
+            fn visit_field_mut(&mut self, node: &mut syn::Field) {
+                self.filter_serialization_attrs(&mut node.attrs);
+                visit_mut::visit_field_mut(self, node);
+            }
+
+            fn visit_item_enum_mut(&mut self, node: &mut ItemEnum) {
+                self.filter_derives(&mut node.attrs);
+                self.filter_serialization_attrs(&mut node.attrs);
+                visit_mut::visit_item_enum_mut(self, node);
+            }
+
+            fn visit_item_struct_mut(&mut self, node: &mut ItemStruct) {
+                self.filter_derives(&mut node.attrs);
+                self.filter_serialization_attrs(&mut node.attrs);
+                visit_mut::visit_item_struct_mut(self, node);
+            }
+        }
+
+        let mut remover = SerializeRemover;
+        remover.visit_file_mut(file);
+
+        // Also remove the Serialize import from the serde use statement
+        for item in &mut file.items {
+            if let syn::Item::Use(use_item) = item {
+                if let syn::UseTree::Path(use_path) = &mut use_item.tree {
+                    // Remove Serialize from serde::{Deserialize, Serialize}
+                    if use_path.ident == "serde" {
+                        if let syn::UseTree::Group(ref mut group) = *use_path.tree {
+                            // Filter out Serialize from the serde import group
+                            group.items = group.items.clone().into_iter().filter(|item| {
+                                if let syn::UseTree::Name(name) = item {
+                                    name.ident != "Serialize"
+                                } else {
+                                    true
+                                }
+                            }).collect();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     #[derive(Default, Debug, Clone)]
     struct XtceNamingFix {
         default: NamingImpl,
@@ -657,10 +698,6 @@ mod codegen {
                                 "Deserialize_enum_str",
                                 proc_macro2::Span::call_site(),
                             )),
-                            IdentPath::from_ident(proc_macro2::Ident::new(
-                                "Serialize_enum_str",
-                                proc_macro2::Span::call_site(),
-                            )),
                         ]);
 
                         // We are using a custom derive, we must include it
@@ -708,7 +745,6 @@ mod codegen {
                 {
                     ctx.add_usings(vec![
                         "serde_enum_str::Deserialize_enum_str",
-                        "serde_enum_str::Serialize_enum_str",
                     ]);
                 }
             }
