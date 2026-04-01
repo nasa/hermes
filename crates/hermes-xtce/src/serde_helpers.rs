@@ -72,6 +72,51 @@ pub fn is_default_idle_pattern(val: &crate::FixedIntegerValueType) -> bool {
     matches!(val, crate::FixedIntegerValueType::I32(0))
 }
 
+/// Deserialize a Vec from an XML container element with $value children.
+/// This flattens the structure by removing the intermediate wrapper struct.
+///
+/// For example, XML like:
+/// ```xml
+/// <ParameterTypeSet>
+///   <IntegerParameterType>...</IntegerParameterType>
+///   <StringParameterType>...</StringParameterType>
+/// </ParameterTypeSet>
+/// ```
+///
+/// Can be deserialized directly into `Vec<ParameterTypeSetTypeContent>`
+/// instead of `Option<ParameterSetType>` where ParameterSetType wraps the Vec.
+///
+/// This deserializer handles the case where the field's `rename` attribute
+/// matches the container element name, so by the time this is called,
+/// we're already inside the container and just need to deserialize the Vec of children.
+pub fn deserialize_container_vec<'de, D, T>(deserializer: D) -> Result<Vec<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    // When the field has #[serde(rename = "ContainerName")], serde has already
+    // matched and entered the container element. We use $value to capture all child elements.
+    #[derive(Deserialize)]
+    struct Wrapper<T> {
+        #[serde(rename = "$value")]
+        items: Vec<T>,
+    }
+
+    // For empty containers, the Wrapper deserialization might fail with "missing field $value"
+    // In that case, we return an empty Vec
+    Wrapper::<T>::deserialize(deserializer)
+        .map(|w| w.items)
+        .or_else(|e| {
+            // Check if the error is about missing $value field
+            let err_msg = e.to_string();
+            if err_msg.contains("missing field") && err_msg.contains("$value") {
+                Ok(Vec::new())
+            } else {
+                Err(e)
+            }
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

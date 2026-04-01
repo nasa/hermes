@@ -2,19 +2,16 @@ use serde::{Deserialize, Serialize};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 ///Describe two or more conditions that are logically anded together. Conditions may be a mix of Condition and ORedCondition.   See ORedConditionType and BooleanExpressionType.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct AnDedConditionsType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<AnDedConditionsTypeContent>,
-}
-///Describe two or more conditions that are logically anded together. Conditions may be a mix of Condition and ORedCondition.   See ORedConditionType and BooleanExpressionType.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum AnDedConditionsTypeContent {
+pub enum AnDedConditionsType {
     ///Condition elements describe a test similar to the Comparison element except that the parameters used have additional flexibility for the compare.
     #[serde(rename = "Condition")]
     Condition(ComparisonCheckType),
     ///This element describes tests similar to the ComparisonList element except that the parameters used are more flexible and the and/or for multiple checks can be specified.
     #[serde(rename = "ORedConditions")]
-    ORedConditions(ORedConditionsType),
+    ORedConditions(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<ORedConditionsType>,
+    ),
 }
 ///Describe an absolute time argument type relative to a known epoch (such as TAI).  The string representation of this time should use the [ISO 8601] extended format CCYY-MM-DDThh:mm:ss where "CC" represents the century, "YY" the year, "MM" the month and "DD" the day, preceded by an optional leading "-" sign to indicate a negative number. If the sign is omitted, "+" is assumed. The letter "T" is the date/time separator and "hh", "mm", "ss" represent hour, minute and second respectively. Additional digits can be used to increase the precision of fractional seconds if desired i.e. the format ss.ss... with any number of digits after the decimal point is supported.  See TAIType, IntegerDataEncoding and AbsoluteTimeDataType.
 #[derive(Debug, Deserialize, Serialize)]
@@ -410,13 +407,7 @@ impl AlarmType {
 }
 ///An unordered collection of algorithms
 #[derive(Debug, Deserialize, Serialize)]
-pub struct AlgorithmSetType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<AlgorithmSetTypeContent>,
-}
-///An unordered collection of algorithms
-#[derive(Debug, Deserialize, Serialize)]
-pub enum AlgorithmSetTypeContent {
+pub enum AlgorithmSetType {
     #[serde(rename = "CustomAlgorithm")]
     CustomAlgorithm(InputOutputTriggerAlgorithmType),
     #[serde(rename = "MathAlgorithm")]
@@ -484,19 +475,16 @@ impl AncillaryDataType {
 }
 ///Identical to ANDedConditionsType but supports argument instance references.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ArgumentAnDedConditionsType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<ArgumentAnDedConditionsTypeContent>,
-}
-///Identical to ANDedConditionsType but supports argument instance references.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ArgumentAnDedConditionsTypeContent {
+pub enum ArgumentAnDedConditionsType {
     ///Condition elements describe a test similar to the Comparison element except that the arguments/parameters used have additional flexibility for the compare.
     #[serde(rename = "Condition")]
     Condition(ArgumentComparisonCheckType),
     ///This element describes tests similar to the ComparisonList element except that the arguments/parameters used are more flexible and the and/or for multiple checks can be specified.
     #[serde(rename = "ORedConditions")]
-    ORedConditions(ArgumentORedConditionsType),
+    ORedConditions(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<ArgumentORedConditionsType>,
+    ),
 }
 ///A base schema type for describing an absolute time data type. Contains an absolute (to a known epoch) time.  Use the [ISO 8601] extended format CCYY-MM-DDThh:mm:ss where "CC" represents the century, "YY" the year, "MM" the month and "DD" the day, preceded by an optional leading "-" sign to indicate a negative number. If the sign is omitted, "+" is assumed. The letter "T" is the date/time separator and "hh", "mm", "ss" represent hour, minute and second respectively. Additional digits can be used to increase the precision of fractional seconds if desired i.e. the format ss.ss... with any number of digits after the decimal point is supported. See AbsoluteTimeParameterType and AbsoluteTimeArgumentType.  See AbsouteTimeParameterType, AbsoluteTimeArgumentType and BaseTimeDataType.
 #[derive(Debug, Deserialize, Serialize)]
@@ -773,8 +761,9 @@ pub struct ArgumentBinaryDataEncodingType {
     pub byte_order: ByteOrderType,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(default, rename = "ErrorDetectCorrect")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_detect_correct: ::core::option::Option<ErrorDetectCorrectType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub error_detect_correct: ::std::vec::Vec<ErrorDetectCorrectType>,
     ///Number of bits this value occupies on the stream being encoded/decoded.
     #[serde(rename = "SizeInBits")]
     #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
@@ -928,10 +917,16 @@ pub enum ArgumentBooleanExpressionType {
     Condition(ArgumentComparisonCheckType),
     ///This element describes tests similar to the ComparisonList element except that the arguments/parameters used are more flexible.
     #[serde(rename = "ANDedConditions")]
-    AnDedConditions(ArgumentAnDedConditionsType),
+    AnDedConditions(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<ArgumentAnDedConditionsType>,
+    ),
     ///This element describes tests similar to the ComparisonList element except that the arguments/parameters used are more flexible.
     #[serde(rename = "ORedConditions")]
-    ORedConditions(ArgumentORedConditionsType),
+    ORedConditions(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<ArgumentORedConditionsType>,
+    ),
 }
 ///Identical to ComparisonCheckType but supports argument instance references.
 #[derive(Debug, Deserialize, Serialize)]
@@ -1108,13 +1103,7 @@ pub enum ArgumentDiscreteLookupTypeContent {
 }
 ///Identical to DynamicValueType but supports argument instance references.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ArgumentDynamicValueType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<ArgumentDynamicValueTypeContent>,
-}
-///Identical to DynamicValueType but supports argument instance references.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ArgumentDynamicValueTypeContent {
+pub enum ArgumentDynamicValueType {
     ///Retrieve the value by referencing the value of an Argument.
     #[serde(rename = "ArgumentInstanceRef")]
     ArgumentInstanceRef(ArgumentInstanceRefType),
@@ -1334,17 +1323,12 @@ pub struct ArgumentInputAlgorithmType {
     pub external_algorithm_set: ::core::option::Option<ExternalAlgorithmSetType>,
     ///The InputSet describes the list of arguments and/or parameters that should be made available as input arguments to the algorithm.
     #[serde(default, rename = "InputSet")]
-    pub input_set: ::core::option::Option<ArgumentInputSetType>,
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub input_set: ::std::vec::Vec<ArgumentInputSetType>,
 }
 ///Identical to InputSetType but supports argument instance references.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ArgumentInputSetType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<ArgumentInputSetTypeContent>,
-}
-///Identical to InputSetType but supports argument instance references.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ArgumentInputSetTypeContent {
+pub enum ArgumentInputSetType {
     ///Reference a parameter to serve as an input to the algorithm.
     #[serde(rename = "InputParameterInstanceRef")]
     InputParameterInstanceRef(InputParameterInstanceRefType),
@@ -1453,7 +1437,10 @@ pub enum ArgumentIntegerValueType {
     FixedValue(super::xs::LongType),
     ///Determine the value by interrogating an instance of an argument or parameter.
     #[serde(rename = "DynamicValue")]
-    DynamicValue(ArgumentDynamicValueType),
+    DynamicValue(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<ArgumentDynamicValueType>,
+    ),
     ///Determine the value by interrogating an instance of an argument or parameter and selecting a specified value based on tests of the value of that argument or parameter.
     #[serde(rename = "DiscreteLookupList")]
     DiscreteLookupList(ArgumentDiscreteLookupListType),
@@ -1484,7 +1471,10 @@ pub enum ArgumentLocationInContainerInBitsTypeContent {
     FixedValue(super::xs::LongType),
     ///Determine the value by interrogating an instance of an argument or parameter.
     #[serde(rename = "DynamicValue")]
-    DynamicValue(ArgumentDynamicValueType),
+    DynamicValue(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<ArgumentDynamicValueType>,
+    ),
     ///Determine the value by interrogating an instance of an argument or parameter and selecting a specified value based on tests of the value of that argument or parameter.
     #[serde(rename = "DiscreteLookupList")]
     DiscreteLookupList(ArgumentDiscreteLookupListType),
@@ -1513,13 +1503,7 @@ pub enum ArgumentMatchCriteriaType {
 }
 ///Describe a value to set to a destination Parameter after completion of a commanding lifecycle step.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ArgumentMathOperationType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<ArgumentMathOperationTypeContent>,
-}
-///Describe a value to set to a destination Parameter after completion of a commanding lifecycle step.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ArgumentMathOperationTypeContent {
+pub enum ArgumentMathOperationType {
     ///Use a constant in the calculation.
     #[serde(rename = "ValueOperand")]
     ValueOperand(super::xs::StringType),
@@ -1538,19 +1522,16 @@ pub enum ArgumentMathOperationTypeContent {
 }
 ///Identical to ORedConditionsType but supports argument instance references.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ArgumentORedConditionsType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<ArgumentORedConditionsTypeContent>,
-}
-///Identical to ORedConditionsType but supports argument instance references.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ArgumentORedConditionsTypeContent {
+pub enum ArgumentORedConditionsType {
     ///Condition elements describe a test similar to the Comparison element except that the arguments/parameters used have additional flexibility for the compare.
     #[serde(rename = "Condition")]
     Condition(ArgumentComparisonCheckType),
     ///This element describes tests similar to the ComparisonList element except that the arguments/parameters used are more flexible and the and/or for multiple checks can be specified.
     #[serde(rename = "ANDedConditions")]
-    AnDedConditions(ArgumentAnDedConditionsType),
+    AnDedConditions(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<ArgumentAnDedConditionsType>,
+    ),
 }
 ///Identical to ParameterRefEntryType but supports argument instance references.
 #[derive(Debug, Deserialize, Serialize)]
@@ -1758,7 +1739,10 @@ pub struct ArgumentStringDataEncodingType {
 pub enum ArgumentStringDataEncodingTypeContent {
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(rename = "ErrorDetectCorrect")]
-    ErrorDetectCorrect(ErrorDetectCorrectType),
+    ErrorDetectCorrect(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<ErrorDetectCorrectType>,
+    ),
     ///Static length strings do not change in overall length between samples.   They may terminate before the end of their buffer using a terminating character, or by various lookups, or calculations.  But they have a maximum fixed size, and the data itself is always within that maximum size.
     #[serde(rename = "SizeInBits")]
     SizeInBits(SizeInBitsType),
@@ -1869,13 +1853,7 @@ pub struct ArgumentType {
 }
 ///Describe an unordered collection of argument type definitions.  These types named for the engineering/calibrated type of the argument.  See BaseDataType and BaseTimeDataType.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ArgumentTypeSetType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<ArgumentTypeSetTypeContent>,
-}
-///Describe an unordered collection of argument type definitions.  These types named for the engineering/calibrated type of the argument.  See BaseDataType and BaseTimeDataType.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ArgumentTypeSetTypeContent {
+pub enum ArgumentTypeSetType {
     ///Describe an argument type that has an engineering/calibrated value in the form of a character string.
     #[serde(rename = "StringArgumentType")]
     StringArgumentType(StringArgumentType),
@@ -1921,7 +1899,10 @@ pub struct ArgumentVariableStringType {
 pub enum ArgumentVariableStringTypeContent {
     ///Determine the container size in bits by interrogating an instance of a parameter or argument.
     #[serde(rename = "DynamicValue")]
-    DynamicValue(ArgumentDynamicValueType),
+    DynamicValue(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<ArgumentDynamicValueType>,
+    ),
     ///Determine the container size in bits by interrogating an instance of a parameter or argument and selecting a specified value based on tests of the value of that parameter or argument.
     #[serde(rename = "DiscreteLookupList")]
     DiscreteLookupList(ArgumentDiscreteLookupListType),
@@ -2419,8 +2400,9 @@ pub struct BinaryDataEncodingType {
     pub byte_order: ByteOrderType,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(default, rename = "ErrorDetectCorrect")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_detect_correct: ::core::option::Option<ErrorDetectCorrectType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub error_detect_correct: ::std::vec::Vec<ErrorDetectCorrectType>,
     ///Number of bits this value occupies on the stream being encoded/decoded.
     #[serde(rename = "SizeInBits")]
     #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
@@ -2847,10 +2829,16 @@ pub enum BooleanExpressionType {
     Condition(ComparisonCheckType),
     ///This element describes tests similar to the ComparisonList element except that the parameters used are more flexible.
     #[serde(rename = "ANDedConditions")]
-    AnDedConditions(AnDedConditionsType),
+    AnDedConditions(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<AnDedConditionsType>,
+    ),
     ///This element describes tests similar to the ComparisonList element except that the parameters used are more flexible.
     #[serde(rename = "ORedConditions")]
-    ORedConditions(ORedConditionsType),
+    ORedConditions(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<ORedConditionsType>,
+    ),
 }
 ///Describe a boolean parameter type which has two values only: "True" (1) or "False" (0). The values one and zero may be mapped to a specific string using the attributes oneStringValue and zeroStringValue.  This type is a simplified form of the EnumeratedDataType.  See IntegerDataEncoding and BooleanDataType.
 #[derive(Debug, Deserialize, Serialize)]
@@ -3224,13 +3212,7 @@ impl ChecksumType {
 }
 ///Describe an entry list for a CommandContainer which is associated with a MetaCommand. The entry list for a MetaCommand CommandContainer element operates in a similar fashion as the entry list element for a SequenceContainer element.  It adds fixed value and argument entries to the entry list not present in sequence containers.  See MetaCommandType, CommandContainerType and EntryListType.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct CommandContainerEntryListType {
-    #[serde(default, rename = "$value")]
-    pub content: ::std::vec::Vec<CommandContainerEntryListTypeContent>,
-}
-///Describe an entry list for a CommandContainer which is associated with a MetaCommand. The entry list for a MetaCommand CommandContainer element operates in a similar fashion as the entry list element for a SequenceContainer element.  It adds fixed value and argument entries to the entry list not present in sequence containers.  See MetaCommandType, CommandContainerType and EntryListType.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum CommandContainerEntryListTypeContent {
+pub enum CommandContainerEntryListType {
     ///Specify a Parameter to be a part of this container layout definition.
     #[serde(rename = "ParameterRefEntry")]
     ParameterRefEntry(ArgumentParameterRefEntryType),
@@ -3297,7 +3279,8 @@ pub struct CommandContainerType {
     pub binary_encoding: ::core::option::Option<ContainerBinaryDataEncodingType>,
     ///List of item entries to pack/encode into this container definition.
     #[serde(rename = "EntryList")]
-    pub entry_list: CommandContainerEntryListType,
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub entry_list: ::std::vec::Vec<CommandContainerEntryListType>,
     ///When a MetaCommand inherits/extends another MetaCommand, this references the CommandContainer from the BaseMetaCommand.
     #[serde(default, rename = "BaseContainer")]
     pub base_container: ::core::option::Option<BaseContainerType>,
@@ -3307,28 +3290,34 @@ pub struct CommandContainerType {
 pub struct CommandMetaDataType {
     ///A list of parameter types.
     #[serde(default, rename = "ParameterTypeSet")]
-    pub parameter_type_set: ::core::option::Option<ParameterTypeSetType>,
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub parameter_type_set: ::std::vec::Vec<ParameterTypeSetType>,
     ///Parameters referenced by MetaCommands.  This Parameter Set is located here so that MetaCommand data can be built independently of TelemetryMetaData.
     #[serde(default, rename = "ParameterSet")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parameter_set: ::core::option::Option<ParameterSetType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub parameter_set: ::std::vec::Vec<ParameterSetType>,
     ///A list of argument types.  MetaCommand definitions can contain arguments and parameters.  Arguments are user provided to the specific command definition.  Parameters are provided/calculated/determined by the software creating the command instance.  As a result, arguments contain separate type information.  In some cases, arguments have different descriptive characteristics.
     #[serde(default, rename = "ArgumentTypeSet")]
-    pub argument_type_set: ::core::option::Option<ArgumentTypeSetType>,
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub argument_type_set: ::std::vec::Vec<ArgumentTypeSetType>,
     ///A list of command definitions with their arguments, parameters, and container encoding descriptions.
     #[serde(default, rename = "MetaCommandSet")]
-    pub meta_command_set: ::core::option::Option<MetaCommandSetType>,
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub meta_command_set: ::std::vec::Vec<MetaCommandSetType>,
     ///Similar to the ContainerSet for telemetry, the CommandContainerSet contains containers that can be referenced/shared by MetaCommand definitions.
     #[serde(default, rename = "CommandContainerSet")]
     pub command_container_set: ::core::option::Option<CommandContainerSetType>,
     ///Contains an unordered set of Streams.
     #[serde(default, rename = "StreamSet")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub stream_set: ::core::option::Option<StreamSetType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub stream_set: ::std::vec::Vec<StreamSetType>,
     ///Contains an unordered set of Algorithms.
     #[serde(default, rename = "AlgorithmSet")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub algorithm_set: ::core::option::Option<AlgorithmSetType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub algorithm_set: ::std::vec::Vec<AlgorithmSetType>,
 }
 ///A command verifier is used to check that the command has been successfully executed. Command Verifiers may be either a Custom Algorithm or a Boolean Check or the presence of a Container for a relative change in the value of a Parameter.  The CheckWindow is a time period where the verification must test true to pass.
 #[derive(Debug, Deserialize, Serialize)]
@@ -3577,8 +3566,9 @@ pub struct ConstantType {
 pub struct ContainerBinaryDataEncodingType {
     ///Describes the optional inclusion of an error detection and/or correction algorithm used with this container.
     #[serde(default, rename = "ErrorDetectCorrect")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_detect_correct: ::core::option::Option<ErrorDetectCorrectType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub error_detect_correct: ::std::vec::Vec<ErrorDetectCorrectType>,
     ///Number of bits this container occupies on the stream being encoded/decoded.  This is only needed to "force" the bit length of the container to be a fixed value.  In most cases, the entry list would define the size of the container.
     #[serde(default, rename = "SizeInBits")]
     #[serde(
@@ -3673,13 +3663,7 @@ pub struct ContainerSegmentRefEntryType {
 }
 ///Unordered Set of Containers
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ContainerSetType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<ContainerSetTypeContent>,
-}
-///Unordered Set of Containers
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ContainerSetTypeContent {
+pub enum ContainerSetType {
     ///SequenceContainers define sequences of parameters or other containers.
     #[serde(rename = "SequenceContainer")]
     SequenceContainer(SequenceContainerType),
@@ -3838,8 +3822,9 @@ pub struct DataEncodingType {
     pub byte_order: ByteOrderType,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(default, rename = "ErrorDetectCorrect")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_detect_correct: ::core::option::Option<ErrorDetectCorrectType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub error_detect_correct: ::std::vec::Vec<ErrorDetectCorrectType>,
 }
 impl DataEncodingType {
     #[must_use]
@@ -3978,13 +3963,7 @@ impl EncodingType {
 }
 ///Contains an ordered list of Entries.  Used in Sequence Container
 #[derive(Debug, Deserialize, Serialize)]
-pub struct EntryListType {
-    #[serde(default, rename = "$value")]
-    pub content: ::std::vec::Vec<EntryListTypeContent>,
-}
-///Contains an ordered list of Entries.  Used in Sequence Container
-#[derive(Debug, Deserialize, Serialize)]
-pub enum EntryListTypeContent {
+pub enum EntryListType {
     ///Specify a Parameter to be a part of this container layout definition.
     #[serde(rename = "ParameterRefEntry")]
     ParameterRefEntry(ParameterRefEntryType),
@@ -4367,13 +4346,7 @@ pub enum EpochType {
 }
 ///Describe CRC, Checksum, Parity, or XOR for error detection and correction algorithm calculation.  See CRCType, ChecksumType, ParityType, and XORType.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ErrorDetectCorrectType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<ErrorDetectCorrectTypeContent>,
-}
-///Describe CRC, Checksum, Parity, or XOR for error detection and correction algorithm calculation.  See CRCType, ChecksumType, ParityType, and XORType.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ErrorDetectCorrectTypeContent {
+pub enum ErrorDetectCorrectType {
     ///Describe checksum or hash function applied to all or part of this container definition.
     #[serde(rename = "Checksum")]
     Checksum(ChecksumType),
@@ -4742,8 +4715,9 @@ pub struct FloatDataEncodingType {
     pub change_threshold: ::core::option::Option<super::xs::DoubleType>,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(default, rename = "ErrorDetectCorrect")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_detect_correct: ::core::option::Option<ErrorDetectCorrectType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub error_detect_correct: ::std::vec::Vec<ErrorDetectCorrectType>,
     ///Calibrator to be applied to the raw uncalibrated value to arrive at the engineering/calibrated value when no Context Calibrators are provided or evaluate to true, based on their MatchCriteria.
     #[serde(default, rename = "DefaultCalibrator")]
     #[serde(skip_serializing_if = "crate::serde_helpers::is_empty_calibrator")]
@@ -5143,7 +5117,8 @@ pub struct InputAlgorithmType {
     pub external_algorithm_set: ::core::option::Option<ExternalAlgorithmSetType>,
     ///The InputSet describes the list of parameters that should be made available as input arguments to the algorithm.
     #[serde(default, rename = "InputSet")]
-    pub input_set: ::core::option::Option<InputSetType>,
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub input_set: ::std::vec::Vec<InputSetType>,
 }
 ///A set of labeled outputs are added to the SimpleInputAlgorithmType
 #[derive(Debug, Deserialize, Serialize)]
@@ -5173,7 +5148,8 @@ pub struct InputOutputAlgorithmType {
     pub external_algorithm_set: ::core::option::Option<ExternalAlgorithmSetType>,
     ///The InputSet describes the list of parameters that should be made available as input arguments to the algorithm.
     #[serde(default, rename = "InputSet")]
-    pub input_set: ::core::option::Option<InputSetType>,
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub input_set: ::std::vec::Vec<InputSetType>,
     #[serde(default, rename = "OutputSet")]
     pub output_set: ::core::option::Option<OutputSetType>,
 }
@@ -5222,7 +5198,8 @@ pub struct InputOutputTriggerAlgorithmType {
     pub external_algorithm_set: ::core::option::Option<ExternalAlgorithmSetType>,
     ///The InputSet describes the list of parameters that should be made available as input arguments to the algorithm.
     #[serde(default, rename = "InputSet")]
-    pub input_set: ::core::option::Option<InputSetType>,
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub input_set: ::std::vec::Vec<InputSetType>,
     #[serde(default, rename = "OutputSet")]
     pub output_set: ::core::option::Option<OutputSetType>,
     #[serde(default, rename = "TriggerSet")]
@@ -5264,12 +5241,7 @@ impl InputParameterInstanceRefType {
     }
 }
 #[derive(Debug, Deserialize, Serialize)]
-pub struct InputSetType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<InputSetTypeContent>,
-}
-#[derive(Debug, Deserialize, Serialize)]
-pub enum InputSetTypeContent {
+pub enum InputSetType {
     ///Reference a parameter to serve as an input to the algorithm.
     #[serde(rename = "InputParameterInstanceRef")]
     InputParameterInstanceRef(InputParameterInstanceRefType),
@@ -5381,8 +5353,9 @@ pub struct IntegerDataEncodingType {
     pub change_threshold: ::core::option::Option<NonNegativeLongType>,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(default, rename = "ErrorDetectCorrect")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub error_detect_correct: ::core::option::Option<ErrorDetectCorrectType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub error_detect_correct: ::std::vec::Vec<ErrorDetectCorrectType>,
     ///Calibrator to be applied to the raw uncalibrated value to arrive at the engineering/calibrated value when no Context Calibrators are provided or evaluate to true, based on their MatchCriteria.
     #[serde(default, rename = "DefaultCalibrator")]
     #[serde(skip_serializing_if = "crate::serde_helpers::is_empty_calibrator")]
@@ -6051,13 +6024,7 @@ pub struct MessageType {
 }
 ///Describes an unordered collection of command definitions.  Duplicates are invalid based on the name attribute of MetaCommand and BlockMetaCommand.  See MetaCommandType and BlockMetaCommandType.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct MetaCommandSetType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<MetaCommandSetTypeContent>,
-}
-///Describes an unordered collection of command definitions.  Duplicates are invalid based on the name attribute of MetaCommand and BlockMetaCommand.  See MetaCommandType and BlockMetaCommandType.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum MetaCommandSetTypeContent {
+pub enum MetaCommandSetType {
     ///All atomic commands to be sent on this mission are listed here.  In addition this area has verification and validation information.
     #[serde(rename = "MetaCommand")]
     MetaCommand(MetaCommandType),
@@ -6461,19 +6428,16 @@ impl NumericContextAlarmType {
 }
 ///Describe two or more conditions that are logically ored together. Conditions may be a mix of Condition and ANDedCondition.   See ORedConditionType and BooleanExpressionType.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ORedConditionsType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<ORedConditionsTypeContent>,
-}
-///Describe two or more conditions that are logically ored together. Conditions may be a mix of Condition and ANDedCondition.   See ORedConditionType and BooleanExpressionType.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ORedConditionsTypeContent {
+pub enum ORedConditionsType {
     ///Condition elements describe a test similar to the Comparison element except that the parameters used have additional flexibility for the compare.
     #[serde(rename = "Condition")]
     Condition(ComparisonCheckType),
     ///This element describes tests similar to the ComparisonList element except that the parameters used are more flexible and the and/or for multiple checks can be specified.
     #[serde(rename = "ANDedConditions")]
-    AnDedConditions(AnDedConditionsType),
+    AnDedConditions(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<AnDedConditionsType>,
+    ),
 }
 ///A simple restriction on string for hexadecimal numbers.  Must be in 0o or 0O form.
 pub type OctalType = ::std::string::String;
@@ -6733,13 +6697,7 @@ pub struct ParameterSegmentRefEntryType {
 }
 ///Describe an unordered collection of parameters where duplicates defined by the Parameter name attribute are invalid. The ParameterSet exists in both the TelemetryMetaData and the CommandMetaData element so that each may be built independently but from a single namespace.  See TelemetryMetaDataType and CommandMetaDataType.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ParameterSetType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<ParameterSetTypeContent>,
-}
-///Describe an unordered collection of parameters where duplicates defined by the Parameter name attribute are invalid. The ParameterSet exists in both the TelemetryMetaData and the CommandMetaData element so that each may be built independently but from a single namespace.  See TelemetryMetaDataType and CommandMetaDataType.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ParameterSetTypeContent {
+pub enum ParameterSetType {
     ///Defines a named and typed Parameter.
     #[serde(rename = "Parameter")]
     Parameter(ParameterType),
@@ -6772,7 +6730,10 @@ pub struct ParameterToSetType {
 pub enum ParameterToSetTypeContent {
     ///Specify a simple algorithm to use to set the target Parameter value.  See ArgumentMathOperationType.
     #[serde(rename = "Derivation")]
-    Derivation(ArgumentMathOperationType),
+    Derivation(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<ArgumentMathOperationType>,
+    ),
     ///Specify value as a string compliant with the XML schema (xs) type specified for each XTCE type: integer=xs:integer; float=xs:double; string=xs:string; boolean=xs:boolean; binary=xs:hexBinary; enum=xs:string from EnumerationList; relative time= xs:duration; absolute time=xs:dateTime.  Supplied value must be within the ValidRange specified for the Parameter and appropriate for the type.
     #[serde(rename = "NewValue")]
     NewValue(super::xs::StringType),
@@ -6835,13 +6796,7 @@ pub struct ParameterType {
 }
 ///Describe an unordered collection of parameter type definitions.  These types named for the engineering/calibrated type of the parameter.  See BaseDataType and BaseTimeDataType.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ParameterTypeSetType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<ParameterTypeSetTypeContent>,
-}
-///Describe an unordered collection of parameter type definitions.  These types named for the engineering/calibrated type of the parameter.  See BaseDataType and BaseTimeDataType.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum ParameterTypeSetTypeContent {
+pub enum ParameterTypeSetType {
     ///Describe a parameter type that has an engineering/calibrated value in the form of a character string.
     #[serde(rename = "StringParameterType")]
     StringParameterType(StringParameterType),
@@ -7432,7 +7387,8 @@ pub struct SequenceContainerType {
     pub binary_encoding: ::core::option::Option<ContainerBinaryDataEncodingType>,
     ///List of item entries to pack/encode into this container definition.
     #[serde(rename = "EntryList")]
-    pub entry_list: EntryListType,
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub entry_list: ::std::vec::Vec<EntryListType>,
     ///Optional inheritance for this container from another named container.
     #[serde(default, rename = "BaseContainer")]
     pub base_container: ::core::option::Option<BaseContainerType>,
@@ -7742,13 +7698,7 @@ pub struct StreamSegmentEntryType {
 }
 ///Contains an unordered set of Streams.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct StreamSetType {
-    #[serde(rename = "$value")]
-    pub content: ::std::vec::Vec<StreamSetTypeContent>,
-}
-///Contains an unordered set of Streams.
-#[derive(Debug, Deserialize, Serialize)]
-pub enum StreamSetTypeContent {
+pub enum StreamSetType {
     #[serde(rename = "FixedFrameStream")]
     FixedFrameStream(FixedFrameStreamType),
     #[serde(rename = "VariableFrameStream")]
@@ -7993,7 +7943,10 @@ pub struct StringDataEncodingType {
 pub enum StringDataEncodingTypeContent {
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(rename = "ErrorDetectCorrect")]
-    ErrorDetectCorrect(ErrorDetectCorrectType),
+    ErrorDetectCorrect(
+        #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+        ::std::vec::Vec<ErrorDetectCorrectType>,
+    ),
     ///Static length strings do not change in overall length between samples.   They may terminate before the end of their buffer using a terminating character, or by various lookups, or calculations.  But they have a maximum fixed size, and the data itself is always within that maximum size.
     #[serde(rename = "SizeInBits")]
     SizeInBits(SizeInBitsType),
@@ -8270,25 +8223,30 @@ pub enum TelemetryDataSourceType {
 pub struct TelemetryMetaDataType {
     ///A list of parameter types
     #[serde(default, rename = "ParameterTypeSet")]
-    pub parameter_type_set: ::core::option::Option<ParameterTypeSetType>,
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub parameter_type_set: ::std::vec::Vec<ParameterTypeSetType>,
     ///A list of Parameters for this Space System.
     #[serde(default, rename = "ParameterSet")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parameter_set: ::core::option::Option<ParameterSetType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub parameter_set: ::std::vec::Vec<ParameterSetType>,
     ///Holds the list of all potential container definitions for telemetry. Containers may parts of packets or TDM, and then groups of the containers, and then an entire entity -- such as a packet.  In order to maximize re-used for duplication, the pieces may defined once here, and then assembled as needed into larger structures, also here.
     #[serde(default, rename = "ContainerSet")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub container_set: ::core::option::Option<ContainerSetType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub container_set: ::std::vec::Vec<ContainerSetType>,
     ///Messages are an alternative method of uniquely identifying containers within a Service.  A message provides a test in the form of MatchCriteria to match to a container.  A simple example might be: [When minorframeID=21, the message is the 21st minorframe container.  The collection of messages to search thru will be bound by a Service.
     #[serde(default, rename = "MessageSet")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_set: ::core::option::Option<MessageSetType>,
     #[serde(default, rename = "StreamSet")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub stream_set: ::core::option::Option<StreamSetType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub stream_set: ::std::vec::Vec<StreamSetType>,
     #[serde(default, rename = "AlgorithmSet")]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub algorithm_set: ::core::option::Option<AlgorithmSetType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_container_vec")]
+    pub algorithm_set: ::std::vec::Vec<AlgorithmSetType>,
 }
 ///A term in a polynomial expression.
 #[derive(Debug, Deserialize, Serialize)]
