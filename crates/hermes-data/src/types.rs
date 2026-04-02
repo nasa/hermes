@@ -4,6 +4,22 @@ use hermes_xtce::{
 
 use crate::Calibrator;
 
+#[derive(Clone, Debug)]
+pub struct ParameterRef(String);
+
+/// An expanded parameter reference that allows applying calibration function
+/// And optionally querying local sample cache
+#[derive(Clone, Debug)]
+pub struct ParameterInstanceRef {
+    pub parameter: ParameterRef,
+    // TODO(tumbar) Build in a store for caching a limited number of samples
+    // pub instance: i64,
+    pub use_calibrated_value: bool,
+}
+
+#[derive(Clone, Debug)]
+pub struct ArgumentRef(String);
+
 ///A slope and intercept may be applied to scale or shift the value of the parameter in the dynamic value.  The default of slope=1 and intercept=0 results in no change to the value.
 #[derive(Clone, Debug)]
 pub struct LinearAdjustment {
@@ -14,8 +30,8 @@ pub struct LinearAdjustment {
 #[derive(Clone, Debug)]
 pub enum IntegerValueKind {
     FixedValue(i64),
-    DynamicValueParameter(hermes_xtce::ParameterInstanceRefType),
-    DynamicValueArgument(String),
+    DynamicValueParameter(ParameterInstanceRef),
+    DynamicValueArgument(ArgumentRef),
 }
 
 #[derive(Clone, Debug)]
