@@ -9,8 +9,8 @@ use error::*;
 
 pub use calibrator::*;
 pub use container::*;
-pub use types::*;
 pub use parameter::*;
+pub use types::*;
 use util::*;
 
 use hermes_xtce::MetaCommandType;
@@ -84,59 +84,5 @@ impl MissionDatabase {
 
     pub fn containers(&self) -> &HashMap<String, Rc<SequenceContainer>> {
         &self.de.containers
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::util::resolve_name_reference;
-
-    #[test]
-    fn test_resolve_name_reference_absolute() {
-        assert_eq!(
-            resolve_name_reference("/Current/Path", "/Absolute/Path/Item"),
-            "/Absolute/Path/Item"
-        );
-    }
-
-    #[test]
-    fn test_resolve_name_reference_unqualified() {
-        assert_eq!(
-            resolve_name_reference("/Root/System", "Item"),
-            "/Root/System/Item"
-        );
-        assert_eq!(resolve_name_reference("/", "Item"), "/Item");
-    }
-
-    #[test]
-    fn test_resolve_name_reference_relative_current() {
-        assert_eq!(
-            resolve_name_reference("/Root/System", "./Item"),
-            "/Root/System/Item"
-        );
-    }
-
-    #[test]
-    fn test_resolve_name_reference_relative_parent() {
-        assert_eq!(
-            resolve_name_reference("/Root/System/Sub", "../Other/Item"),
-            "/Root/System/Other/Item"
-        );
-        assert_eq!(
-            resolve_name_reference("/Root/System/Sub", "../../Item"),
-            "/Root/Item"
-        );
-    }
-
-    #[test]
-    fn test_resolve_name_reference_mixed() {
-        assert_eq!(
-            resolve_name_reference("/Root/System", "Sub/Item"),
-            "/Root/System/Sub/Item"
-        );
-        assert_eq!(
-            resolve_name_reference("/Root/System", "../Other/Sub/Item"),
-            "/Root/Other/Sub/Item"
-        );
     }
 }

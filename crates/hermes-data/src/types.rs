@@ -124,11 +124,17 @@ pub struct BinaryType {
 }
 
 #[derive(Clone, Debug)]
+pub enum TimeSystem {
+    OffsetFrom(ParameterInstanceRef),
+    Epoch(std::time::SystemTime),
+}
+
+#[derive(Clone, Debug)]
 pub struct AbsoluteTimeType {
     /// The time encoding definition
     pub encoding: TimeEncoding,
-    /// Reference epoch for time calculations
-    pub epoch: Epoch,
+    /// The time system for computing conversions
+    pub time_system: TimeSystem,
 }
 
 #[derive(Clone, Debug)]
@@ -145,16 +151,6 @@ pub enum TimeEncoding {
     Integer(IntegerType),
     /// Time encoded as string
     String(StringType),
-}
-
-#[derive(Clone, Debug)]
-pub enum Epoch {
-    TAI,   // CCSDS standard
-    J2000, // 2000-01-01T12:00:00 TT
-    Unix,  // 1970-01-01T00:00:00 UTC (also POSIX)
-    GPS,   // 1980-01-06T00:00:00 UTC
-    UserDefined { date_time: String },
-    // TODO(tumbar) Define integrations with SPICE
 }
 
 #[derive(Clone, Debug)]
@@ -201,7 +197,7 @@ pub enum Type {
 #[derive(Clone, Debug)]
 pub struct Time {
     /// Time system this count represents
-    pub system: i32,
+    pub system: TimeSystem,
 
     /// Nanoseconds since time-systems epoch (~585-year span after epoch)
     pub ns: u64,
