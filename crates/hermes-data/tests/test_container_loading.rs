@@ -30,33 +30,28 @@ fn test_load_fprime_containers() {
         "FPrimeTelemetryPacket should be loaded"
     );
 
-    let fprime_container = fprime_telemetry.unwrap();
+    // With the new pattern, parents track their children
+    // Verify that CCSDSSpacePacket has FPrimeTelemetryPacket as a child
+    let ccsds_container = ccsds_packet.unwrap();
+    let fprime_child = ccsds_container.children.iter()
+        .find(|(_, child)| child.head.name == "FPrimeTelemetryPacket");
     assert!(
-        fprime_container.base.is_some(),
-        "FPrimeTelemetryPacket should have a base container"
+        fprime_child.is_some(),
+        "CCSDSSpacePacket should have FPrimeTelemetryPacket as a child"
     );
 
-    let base = fprime_container.base.as_ref().unwrap();
-    assert_eq!(
-        base.parent.head.name, "CCSDSSpacePacket",
-        "FPrimeTelemetryPacket should extend CCSDSSpacePacket"
+    // Verify that FPrimeTelemetryPacket has SystemRes1 as a child
+    let fprime_container = fprime_telemetry.unwrap();
+    let system_res1_child = fprime_container.children.iter()
+        .find(|(_, child)| child.head.name == "SystemRes1");
+    assert!(
+        system_res1_child.is_some(),
+        "FPrimeTelemetryPacket should have SystemRes1 as a child"
     );
 
-    // Verify grandchild: SystemRes1 extends FPrimeTelemetryPacket
+    // Verify SystemRes1 exists
     let system_res1 = mdb.get_telemetry_container(&format!("{}/SystemRes1", root_name));
     assert!(system_res1.is_some(), "SystemRes1 should be loaded");
-
-    let system_res1_container = system_res1.unwrap();
-    assert!(
-        system_res1_container.base.is_some(),
-        "SystemRes1 should have a base container"
-    );
-
-    let base = system_res1_container.base.as_ref().unwrap();
-    assert_eq!(
-        base.parent.head.name, "FPrimeTelemetryPacket",
-        "SystemRes1 should extend FPrimeTelemetryPacket"
-    );
 }
 
 #[test_log::test]

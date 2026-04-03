@@ -1,8 +1,40 @@
 use crate::container::SequenceContainer;
-use crate::{Error, RelativeTime, Result};
+use crate::{
+    AndCondition, BooleanExpression, Comparison, ComparisonCheck, Error, OrCondition,
+    ParameterInstanceRef, ParameterRef, ParameterRefOrValue, RelativeTime, RestrictionCriteria,
+    Result,
+};
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::Duration;
+
+/// Constructs a fully qualified name by joining a path and name.
+///
+/// Handles the special case where path is empty or root ("/").
+fn make_qualified_name(path: &str, name: &str) -> String {
+    if path.is_empty() || path == "/" {
+        format!("/{}", name)
+    } else {
+        format!("{}/{}", path, name)
+    }
+}
+
+/// Moves up one level in a hierarchical path.
+///
+/// Returns an empty string if already at or above root.
+fn move_up_path(path: &str) -> String {
+    if path.is_empty() || path == "/" {
+        String::new()
+    } else if let Some(idx) = path.rfind('/') {
+        if idx == 0 {
+            "/".to_string()
+        } else {
+            path[..idx].to_string()
+        }
+    } else {
+        String::new()
+    }
+}
 
 /// Resolves an XTCE name reference to a fully qualified name.
 ///
@@ -38,11 +70,7 @@ pub(crate) fn resolve_name_reference(current_path: &str, name_ref: &str) -> Stri
         format!("/{}", parts.join("/"))
     } else {
         // Unqualified name - append to current path
-        if current_path.is_empty() || current_path == "/" {
-            format!("/{}", name_ref)
-        } else {
-            format!("{}/{}", current_path, name_ref)
-        }
+        make_qualified_name(current_path, name_ref)
     }
 }
 
@@ -77,6 +105,54 @@ pub(crate) struct UnresolvedParameter {
     pub space_system_path: String,
 }
 
+/// Generic upward search through SpaceSystem hierarchy with XTCE semantics.
+///
+/// For unqualified names, search starts in the current SpaceSystem and moves upward
+/// through parent SpaceSystems until the item is found or root is reached.
+///
+/// # Arguments
+/// * `current_path` - The path where the reference originates
+/// * `name_ref` - The name reference (absolute, relative, or unqualified)
+/// * `exists_fn` - Function to check if a candidate qualified name exists
+/// * `error_fn` - Function to generate appropriate error message
+fn resolve_reference_with_upward_search<F, E>(
+    current_path: &str,
+    name_ref: &str,
+    exists_fn: F,
+    error_fn: E,
+) -> Result<String>
+where
+    F: Fn(&str) -> bool,
+    E: Fn(&str, &str) -> Error,
+{
+    // If it's an absolute or relative path with /, use standard resolution
+    if name_ref.starts_with('/') || name_ref.contains('/') {
+        let resolved = resolve_name_reference(current_path, name_ref);
+        if exists_fn(&resolved) {
+            return Ok(resolved);
+        }
+        return Err(error_fn(name_ref, &resolved));
+    }
+
+    // Unqualified name - search upward through SpaceSystem hierarchy
+    let mut search_path = current_path.to_string();
+    loop {
+        let candidate = make_qualified_name(&search_path, name_ref);
+
+        if exists_fn(&candidate) {
+            return Ok(candidate);
+        }
+
+        // Move up one level
+        if search_path.is_empty() || search_path == "/" {
+            // Reached root without finding the item
+            return Err(error_fn(name_ref, current_path));
+        }
+
+        search_path = move_up_path(&search_path);
+    }
+}
+
 /// Resolve a container reference with XTCE upward search semantics.
 ///
 /// For unqualified names, search starts in the current SpaceSystem and moves upward
@@ -86,51 +162,24 @@ pub(crate) fn resolve_container_reference(
     name_ref: &str,
     unresolved: &HashMap<String, UnresolvedContainer>,
 ) -> Result<String> {
-    // If it's an absolute or relative path with /, use standard resolution
-    if name_ref.starts_with('/') || name_ref.contains('/') {
-        let resolved = resolve_name_reference(current_path, name_ref);
-        if unresolved.contains_key(&resolved) {
-            return Ok(resolved);
-        }
-        return Err(Error::ContainerNotFound(format!(
-            "Container reference '{}' resolved to '{}' but not found",
-            name_ref, resolved
-        )));
-    }
-
-    // Unqualified name - search upward through SpaceSystem hierarchy
-    let mut search_path = current_path.to_string();
-    loop {
-        let candidate = if search_path.is_empty() || search_path == "/" {
-            format!("/{}", name_ref)
-        } else {
-            format!("{}/{}", search_path, name_ref)
-        };
-
-        if unresolved.contains_key(&candidate) {
-            return Ok(candidate);
-        }
-
-        // Move up one level
-        if search_path.is_empty() || search_path == "/" {
-            // Reached root without finding the container
-            return Err(Error::ContainerNotFound(format!(
-                "Container '{}' not found in '{}' or any parent SpaceSystem",
-                name_ref, current_path
-            )));
-        }
-
-        // Remove the last path component
-        if let Some(idx) = search_path.rfind('/') {
-            search_path = if idx == 0 {
-                "/".to_string()
+    resolve_reference_with_upward_search(
+        current_path,
+        name_ref,
+        |candidate| unresolved.contains_key(candidate),
+        |name_ref, context| {
+            if name_ref.contains('/') {
+                Error::ContainerNotFound(format!(
+                    "Container reference '{}' resolved to '{}' but not found",
+                    name_ref, context
+                ))
             } else {
-                search_path[..idx].to_string()
-            };
-        } else {
-            search_path = String::new();
-        }
-    }
+                Error::ContainerNotFound(format!(
+                    "Container '{}' not found in '{}' or any parent SpaceSystem",
+                    name_ref, context
+                ))
+            }
+        },
+    )
 }
 
 /// Pass 1: Collect containers from SpaceSystem tree
@@ -149,11 +198,7 @@ pub(crate) fn collect_containers(
         for container_set in &telemetry_metadata.container_set {
             match container_set {
                 ContainerSetType::SequenceContainer(container) => {
-                    let qualified_name = if path.is_empty() || path == "/" {
-                        format!("/{}", container.name)
-                    } else {
-                        format!("{}/{}", path, container.name)
-                    };
+                    let qualified_name = make_qualified_name(path, &container.name);
 
                     let base_container_ref = container
                         .base_container
@@ -175,11 +220,7 @@ pub(crate) fn collect_containers(
 
     // Recursively process child SpaceSystems
     for child in &schema.space_system {
-        let child_path = if path.is_empty() || path == "/" {
-            format!("/{}", child.name)
-        } else {
-            format!("{}/{}", path, child.name)
-        };
+        let child_path = make_qualified_name(path, &child.name);
         collect_containers(&child_path, child, unresolved);
     }
 }
@@ -197,11 +238,7 @@ pub(crate) fn collect_parameter_types(
     if let Some(telemetry_metadata) = &schema.telemetry_meta_data {
         for param_type_set in &telemetry_metadata.parameter_type_set {
             let name = get_parameter_type_name(param_type_set);
-            let qualified_name = if path.is_empty() || path == "/" {
-                format!("/{}", name)
-            } else {
-                format!("{}/{}", path, name)
-            };
+            let qualified_name = make_qualified_name(path, name);
 
             unresolved.insert(
                 qualified_name,
@@ -215,11 +252,7 @@ pub(crate) fn collect_parameter_types(
 
     // Recursively process child SpaceSystems
     for child in &schema.space_system {
-        let child_path = if path.is_empty() || path == "/" {
-            format!("/{}", child.name)
-        } else {
-            format!("{}/{}", path, child.name)
-        };
+        let child_path = make_qualified_name(path, &child.name);
         collect_parameter_types(&child_path, child, unresolved);
     }
 }
@@ -238,11 +271,7 @@ pub(crate) fn collect_parameters(
         for param_set in &telemetry_metadata.parameter_set {
             match param_set {
                 hermes_xtce::ParameterSetType::Parameter(param) => {
-                    let qualified_name = if path.is_empty() || path == "/" {
-                        format!("/{}", param.name)
-                    } else {
-                        format!("{}/{}", path, param.name)
-                    };
+                    let qualified_name = make_qualified_name(path, &param.name);
 
                     unresolved.insert(
                         qualified_name,
@@ -263,11 +292,7 @@ pub(crate) fn collect_parameters(
 
     // Recursively process child SpaceSystems
     for child in &schema.space_system {
-        let child_path = if path.is_empty() || path == "/" {
-            format!("/{}", child.name)
-        } else {
-            format!("{}/{}", path, child.name)
-        };
+        let child_path = make_qualified_name(path, &child.name);
         collect_parameters(&child_path, child, unresolved);
     }
 }
@@ -426,51 +451,24 @@ pub(crate) fn resolve_parameter_type_name(
     type_ref: &str,
     parameter_types: &HashMap<String, Rc<crate::Type>>,
 ) -> Result<String> {
-    // If it's an absolute or relative path with /, use standard resolution
-    if type_ref.starts_with('/') || type_ref.contains('/') {
-        let resolved = resolve_name_reference(current_path, type_ref);
-        if parameter_types.contains_key(&resolved) {
-            return Ok(resolved);
-        }
-        return Err(Error::InvalidXtce(format!(
-            "Parameter type reference '{}' resolved to '{}' but not found",
-            type_ref, resolved
-        )));
-    }
-
-    // Unqualified name - search upward through SpaceSystem hierarchy
-    let mut search_path = current_path.to_string();
-    loop {
-        let candidate = if search_path.is_empty() || search_path == "/" {
-            format!("/{}", type_ref)
-        } else {
-            format!("{}/{}", search_path, type_ref)
-        };
-
-        if parameter_types.contains_key(&candidate) {
-            return Ok(candidate);
-        }
-
-        // Move up one level
-        if search_path.is_empty() || search_path == "/" {
-            // Reached root without finding the type
-            return Err(Error::InvalidXtce(format!(
-                "Parameter type '{}' not found in '{}' or any parent SpaceSystem",
-                type_ref, current_path
-            )));
-        }
-
-        // Remove the last path component
-        if let Some(idx) = search_path.rfind('/') {
-            search_path = if idx == 0 {
-                "/".to_string()
+    resolve_reference_with_upward_search(
+        current_path,
+        type_ref,
+        |candidate| parameter_types.contains_key(candidate),
+        |type_ref, context| {
+            if type_ref.contains('/') {
+                Error::InvalidXtce(format!(
+                    "Parameter type reference '{}' resolved to '{}' but not found",
+                    type_ref, context
+                ))
             } else {
-                search_path[..idx].to_string()
-            };
-        } else {
-            search_path = String::new();
-        }
-    }
+                Error::InvalidXtce(format!(
+                    "Parameter type '{}' not found in '{}' or any parent SpaceSystem",
+                    type_ref, context
+                ))
+            }
+        },
+    )
 }
 
 /// Takes unresolved containers and creates a dependency graph where each container
@@ -552,58 +550,221 @@ pub(crate) fn build_dependency_graph(
     Ok((sorted, dependencies))
 }
 
-/// Build SequenceContainer objects with resolved parents by processing
-/// containers in dependency order (parents before children).
+fn convert_restriction_criteria(
+    xml: &hermes_xtce::RestrictionCriteriaType,
+) -> Result<RestrictionCriteria> {
+    use hermes_xtce::RestrictionCriteriaType as X;
+    match xml {
+        X::Comparison(comp) => Ok(RestrictionCriteria::Comparison(convert_comparison(comp)?)),
+        X::ComparisonList(list) => {
+            let comparisons = list
+                .comparison
+                .iter()
+                .map(convert_comparison)
+                .collect::<Result<Vec<_>>>()?;
+            Ok(RestrictionCriteria::ComparisonList(comparisons))
+        }
+        X::BooleanExpression(expr) => Ok(RestrictionCriteria::BooleanExpression(
+            convert_boolean_expression(expr)?,
+        )),
+        X::CustomAlgorithm(_) => Err(Error::NotImplemented(
+            "CustomAlgorithm in RestrictionCriteria",
+        )),
+        X::NextContainer(_) => Err(Error::NotImplemented(
+            "NextContainer in RestrictionCriteria",
+        )),
+    }
+}
+
+fn convert_boolean_expression(
+    xml: &hermes_xtce::BooleanExpressionType,
+) -> Result<BooleanExpression> {
+    use hermes_xtce::BooleanExpressionType as X;
+    match xml {
+        X::Condition(cond) => Ok(BooleanExpression::Condition(convert_comparison_check(
+            cond,
+        )?)),
+        X::AnDedConditions(ands) => {
+            let conditions = ands
+                .iter()
+                .map(convert_and_condition)
+                .collect::<Result<Vec<_>>>()?;
+            Ok(BooleanExpression::AndCondition(conditions))
+        }
+        X::ORedConditions(ors) => {
+            let conditions = ors
+                .iter()
+                .map(convert_or_condition)
+                .collect::<Result<Vec<_>>>()?;
+            Ok(BooleanExpression::OrCondition(conditions))
+        }
+    }
+}
+
+fn convert_comparison_check(xml: &hermes_xtce::ComparisonCheckType) -> Result<ComparisonCheck> {
+    use hermes_xtce::ComparisonCheckTypeContent as C;
+
+    // The content array has exactly 3 elements:
+    // [0]: ParameterInstanceRef (left side)
+    // [1]: ComparisonOperator
+    // [2]: Value or ParameterInstanceRef (right side)
+
+    let left = match &xml.content[0] {
+        C::ParameterInstanceRef(param_ref) => {
+            convert_parameter_instance_ref(param_ref)?
+        }
+        _ => {
+            return Err(Error::InvalidXtce(
+                "ComparisonCheck first element must be ParameterInstanceRef".to_string(),
+            ));
+        }
+    };
+
+    let operator = match &xml.content[1] {
+        C::ComparisonOperator(op) => op.clone(),
+        _ => {
+            return Err(Error::InvalidXtce(
+                "ComparisonCheck second element must be ComparisonOperator".to_string(),
+            ));
+        }
+    };
+
+    let right = match &xml.content[2] {
+        C::ParameterInstanceRef(param_ref) => ParameterRefOrValue::ParameterInstanceRef(
+            convert_parameter_instance_ref(param_ref)?,
+        ),
+        C::Value(val) => ParameterRefOrValue::Value(val.clone()),
+        _ => {
+            return Err(Error::InvalidXtce(
+                "ComparisonCheck third element must be Value or ParameterInstanceRef".to_string(),
+            ));
+        }
+    };
+
+    Ok(ComparisonCheck {
+        left,
+        operator,
+        right,
+    })
+}
+
+fn convert_and_condition(xml: &hermes_xtce::AnDedConditionsType) -> Result<AndCondition> {
+    use hermes_xtce::AnDedConditionsType as X;
+    match xml {
+        X::Condition(cond) => Ok(AndCondition::Condition(convert_comparison_check(cond)?)),
+        X::ORedConditions(ors) => {
+            let conditions = ors
+                .iter()
+                .map(convert_or_condition)
+                .collect::<Result<Vec<_>>>()?;
+            Ok(AndCondition::ORedConditions(conditions))
+        }
+    }
+}
+
+fn convert_or_condition(xml: &hermes_xtce::ORedConditionsType) -> Result<OrCondition> {
+    use hermes_xtce::ORedConditionsType as X;
+    match xml {
+        X::Condition(cond) => Ok(OrCondition::Condition(convert_comparison_check(cond)?)),
+        X::AnDedConditions(ands) => {
+            let conditions = ands
+                .iter()
+                .map(convert_and_condition)
+                .collect::<Result<Vec<_>>>()?;
+            Ok(OrCondition::AndCondition(conditions))
+        }
+    }
+}
+
+fn convert_comparison(xml: &hermes_xtce::ComparisonType) -> Result<Comparison> {
+    Ok(Comparison {
+        parameter_ref: ParameterInstanceRef {
+            parameter: ParameterRef(xml.parameter_ref.clone()),
+            use_calibrated_value: xml.use_calibrated_value,
+        },
+        comparison_operator: xml.comparison_operator.clone(),
+        value: xml.value.clone(),
+    })
+}
+
+/// Build SequenceContainer objects in reverse topological order (children before parents)
+/// so that each parent can include references to its already-constructed children.
 pub(crate) fn construct_containers(
-    mut unresolved: HashMap<String, UnresolvedContainer>,
+    unresolved: HashMap<String, UnresolvedContainer>,
     sorted_names: Vec<String>,
     dependencies: HashMap<String, String>,
 ) -> Result<HashMap<String, Rc<SequenceContainer>>> {
-    use crate::container::convert_base_container_restriction;
+    // Build reverse mapping: parent -> [(child_name, restriction_criteria)]
+    let mut parent_to_children: HashMap<String, Vec<(String, RestrictionCriteria)>> =
+        HashMap::new();
 
-    let mut completed: HashMap<String, Rc<SequenceContainer>> = HashMap::new();
+    for (child_name, parent_name) in &dependencies {
+        let unresolved_container = unresolved.get(child_name).ok_or_else(|| {
+            Error::InvalidXtce(format!(
+                "Child container '{}' not found in unresolved map",
+                child_name
+            ))
+        })?;
 
-    // Process containers in topological order
-    for qualified_name in sorted_names {
-        let unresolved_container = unresolved.remove(&qualified_name).unwrap();
-
-        // Look up resolved parent if this container has one
-        let resolved_parent = if let Some(parent_name) = dependencies.get(&qualified_name) {
-            Some(
-                completed
-                    .get(parent_name)
-                    .ok_or_else(|| {
-                        Error::InvalidXtce(format!(
-                            "Parent '{}' not yet constructed when building '{}'",
-                            parent_name, qualified_name
-                        ))
-                    })?
-                    .clone(),
-            )
+        let criteria = if let Some(base_container) = &unresolved_container.xml.base_container {
+            base_container
+                .restriction_criteria
+                .as_ref()
+                .map(convert_restriction_criteria)
+                .transpose()?
         } else {
             None
         };
 
-        // Extract restriction criteria if present
-        let restriction_criteria =
-            if let Some(base_container) = &unresolved_container.xml.base_container {
-                convert_base_container_restriction(base_container)?
-            } else {
-                None
-            };
+        // A child must have restriction criteria to be a valid child
+        if let Some(criteria) = criteria {
+            parent_to_children
+                .entry(parent_name.clone())
+                .or_default()
+                .push((child_name.clone(), criteria));
+        } else {
+            return Err(Error::InvalidXtce(format!(
+                "Child container '{}' has parent '{}' but no restriction criteria",
+                child_name, parent_name
+            )));
+        }
+    }
 
-        // Construct the SequenceContainer
-        let container = SequenceContainer::new(
-            unresolved_container.xml,
-            qualified_name.clone(),
-            resolved_parent,
-            restriction_criteria,
-        )?;
+    let mut completed: HashMap<String, Rc<SequenceContainer>> = HashMap::new();
+
+    // Process containers in reverse topological order (children first, then parents)
+    for qualified_name in sorted_names.into_iter().rev() {
+        let unresolved_container = unresolved.get(&qualified_name).ok_or_else(|| {
+            Error::InvalidXtce(format!(
+                "Container '{}' not found in unresolved map",
+                qualified_name
+            ))
+        })?;
+
+        // Create the container
+        let mut container =
+            SequenceContainer::new(unresolved_container.xml.clone(), qualified_name.clone())?;
+
+        // Add children if this container is a parent
+        if let Some(children_list) = parent_to_children.get(&qualified_name) {
+            for (child_name, criteria) in children_list {
+                let child_rc = completed
+                    .get(child_name)
+                    .ok_or_else(|| {
+                        Error::InvalidXtce(format!(
+                            "Child container '{}' not yet constructed when building parent '{}'",
+                            child_name, qualified_name
+                        ))
+                    })?
+                    .clone();
+
+                container.children.push((criteria.clone(), child_rc));
+            }
+        }
 
         completed.insert(qualified_name, Rc::new(container));
     }
 
-    assert_eq!(unresolved.len(), 0);
     Ok(completed)
 }
 
@@ -696,9 +857,9 @@ pub(crate) fn convert_integer_value(
 
 pub(crate) fn convert_parameter_instance_ref(
     xml: &hermes_xtce::ParameterInstanceRefType,
-) -> Result<crate::ParameterInstanceRef> {
-    Ok(crate::ParameterInstanceRef {
-        parameter: crate::ParameterRef(xml.parameter_ref.clone()),
+) -> Result<ParameterInstanceRef> {
+    Ok(ParameterInstanceRef {
+        parameter: ParameterRef(xml.parameter_ref.clone()),
         use_calibrated_value: xml.use_calibrated_value,
     })
 }

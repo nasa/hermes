@@ -4,6 +4,7 @@ mod error;
 mod parameter;
 mod types;
 mod util;
+mod deserialize;
 
 use error::*;
 

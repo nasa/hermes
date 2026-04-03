@@ -76,12 +76,6 @@ pub struct Comparison {
 }
 
 #[derive(Clone, Debug)]
-pub struct BaseContainer {
-    pub parent: Rc<SequenceContainer>,
-    pub restriction_criteria: Option<RestrictionCriteria>,
-}
-
-#[derive(Clone, Debug)]
 pub enum ReferenceLocation {
     ContainerStart,
     PreviousEntry,
@@ -130,37 +124,25 @@ pub struct SequenceContainer {
     pub head: Item,
     pub abstract_: bool,
 
-    // Optional inheritance for this container from another named container.
-    // This inheritance is already resolved here just the fully qualified name of the parent is held here
-    pub base: Option<BaseContainer>,
-
     ///Number of bits this container occupies on the stream being encoded/decoded.  This is only needed to "force" the bit length of the container to be a fixed value.  In most cases, the entry list would define the size of the container.
     pub size_in_bits: Option<IntegerValue>,
 
     ///List of item entries to pack/encode into this container definition.
     pub entry_list: Vec<Entry>,
+
+    /// References to child sequence containers
+    pub children: Vec<(RestrictionCriteria, Rc<SequenceContainer>)>,
 }
 
 impl SequenceContainer {
-    /// Create a new SequenceContainer with a resolved parent.
+    /// Create a new SequenceContainer without parent/child relationships.
     ///
-    /// This constructor is used during Pass 3 after all dependencies have been resolved.
-    /// The parent should already be constructed and available in the completed containers map.
-    pub fn new(
+    /// This constructor is used during the first pass of container construction.
+    /// Children are added in a second pass after all containers are created.
+    pub(crate) fn new(
         xml: hermes_xtce::SequenceContainerType,
         qualified_name: String,
-        resolved_parent: Option<Rc<SequenceContainer>>,
-        restriction_criteria: Option<RestrictionCriteria>,
     ) -> Result<SequenceContainer> {
-        // Create BaseContainer with resolved parent if present
-        let base = match (resolved_parent, restriction_criteria) {
-            (Some(parent), criteria) => Some(BaseContainer {
-                parent,
-                restriction_criteria: criteria,
-            }),
-            (None, _) => None,
-        };
-
         // Convert size_in_bits if specified via binary encoding
         let size_in_bits = if let Some(encoding) = &xml.binary_encoding {
             encoding
@@ -188,159 +170,11 @@ impl SequenceContainer {
                 ancillary_data_set: xml.ancillary_data_set.clone(),
             },
             abstract_: xml.abstract_,
-            base,
             size_in_bits,
             entry_list,
+            children: vec![],
         })
     }
-}
-
-/// Extract restriction criteria from BaseContainer XML.
-/// The parent container must be resolved separately and passed to SequenceContainer::new().
-pub(crate) fn convert_base_container_restriction(
-    xml: &hermes_xtce::BaseContainerType,
-) -> Result<Option<RestrictionCriteria>> {
-    xml.restriction_criteria
-        .as_ref()
-        .map(convert_restriction_criteria)
-        .transpose()
-}
-
-fn convert_restriction_criteria(
-    xml: &hermes_xtce::RestrictionCriteriaType,
-) -> Result<RestrictionCriteria> {
-    use hermes_xtce::RestrictionCriteriaType as X;
-    match xml {
-        X::Comparison(comp) => Ok(RestrictionCriteria::Comparison(convert_comparison(comp)?)),
-        X::ComparisonList(list) => {
-            let comparisons = list
-                .comparison
-                .iter()
-                .map(convert_comparison)
-                .collect::<Result<Vec<_>>>()?;
-            Ok(RestrictionCriteria::ComparisonList(comparisons))
-        }
-        X::BooleanExpression(expr) => Ok(RestrictionCriteria::BooleanExpression(
-            convert_boolean_expression(expr)?,
-        )),
-        X::CustomAlgorithm(_) => Err(Error::NotImplemented(
-            "CustomAlgorithm in RestrictionCriteria",
-        )),
-        X::NextContainer(_) => Err(Error::NotImplemented(
-            "NextContainer in RestrictionCriteria",
-        )),
-    }
-}
-
-fn convert_boolean_expression(
-    xml: &hermes_xtce::BooleanExpressionType,
-) -> Result<BooleanExpression> {
-    use hermes_xtce::BooleanExpressionType as X;
-    match xml {
-        X::Condition(cond) => Ok(BooleanExpression::Condition(convert_comparison_check(
-            cond,
-        )?)),
-        X::AnDedConditions(ands) => {
-            let conditions = ands
-                .iter()
-                .map(convert_and_condition)
-                .collect::<Result<Vec<_>>>()?;
-            Ok(BooleanExpression::AndCondition(conditions))
-        }
-        X::ORedConditions(ors) => {
-            let conditions = ors
-                .iter()
-                .map(convert_or_condition)
-                .collect::<Result<Vec<_>>>()?;
-            Ok(BooleanExpression::OrCondition(conditions))
-        }
-    }
-}
-
-fn convert_comparison_check(xml: &hermes_xtce::ComparisonCheckType) -> Result<ComparisonCheck> {
-    use hermes_xtce::ComparisonCheckTypeContent as C;
-
-    // The content array has exactly 3 elements:
-    // [0]: ParameterInstanceRef (left side)
-    // [1]: ComparisonOperator
-    // [2]: Value or ParameterInstanceRef (right side)
-
-    let left = match &xml.content[0] {
-        C::ParameterInstanceRef(param_ref) => {
-            crate::util::convert_parameter_instance_ref(param_ref)?
-        }
-        _ => {
-            return Err(Error::InvalidXtce(
-                "ComparisonCheck first element must be ParameterInstanceRef".to_string(),
-            ));
-        }
-    };
-
-    let operator = match &xml.content[1] {
-        C::ComparisonOperator(op) => op.clone(),
-        _ => {
-            return Err(Error::InvalidXtce(
-                "ComparisonCheck second element must be ComparisonOperator".to_string(),
-            ));
-        }
-    };
-
-    let right = match &xml.content[2] {
-        C::ParameterInstanceRef(param_ref) => ParameterRefOrValue::ParameterInstanceRef(
-            crate::util::convert_parameter_instance_ref(param_ref)?,
-        ),
-        C::Value(val) => ParameterRefOrValue::Value(val.clone()),
-        _ => {
-            return Err(Error::InvalidXtce(
-                "ComparisonCheck third element must be Value or ParameterInstanceRef".to_string(),
-            ));
-        }
-    };
-
-    Ok(ComparisonCheck {
-        left,
-        operator,
-        right,
-    })
-}
-
-fn convert_and_condition(xml: &hermes_xtce::AnDedConditionsType) -> Result<AndCondition> {
-    use hermes_xtce::AnDedConditionsType as X;
-    match xml {
-        X::Condition(cond) => Ok(AndCondition::Condition(convert_comparison_check(cond)?)),
-        X::ORedConditions(ors) => {
-            let conditions = ors
-                .iter()
-                .map(convert_or_condition)
-                .collect::<Result<Vec<_>>>()?;
-            Ok(AndCondition::ORedConditions(conditions))
-        }
-    }
-}
-
-fn convert_or_condition(xml: &hermes_xtce::ORedConditionsType) -> Result<OrCondition> {
-    use hermes_xtce::ORedConditionsType as X;
-    match xml {
-        X::Condition(cond) => Ok(OrCondition::Condition(convert_comparison_check(cond)?)),
-        X::AnDedConditions(ands) => {
-            let conditions = ands
-                .iter()
-                .map(convert_and_condition)
-                .collect::<Result<Vec<_>>>()?;
-            Ok(OrCondition::AndCondition(conditions))
-        }
-    }
-}
-
-fn convert_comparison(xml: &hermes_xtce::ComparisonType) -> Result<Comparison> {
-    Ok(Comparison {
-        parameter_ref: ParameterInstanceRef {
-            parameter: ParameterRef(xml.parameter_ref.clone()),
-            use_calibrated_value: xml.use_calibrated_value,
-        },
-        comparison_operator: xml.comparison_operator.clone(),
-        value: xml.value.clone(),
-    })
 }
 
 fn convert_location_in_bits(
