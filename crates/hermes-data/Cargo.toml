@@ -8,3 +8,6 @@ authors.workspace = true
 hermes-xtce = { path = "../hermes-xtce" }
 thiserror = "2.0"
 tracing = "0.1.44"
+
+[dev-dependencies]
+quick-xml = { version = "0.39", features = ["serialize"] }

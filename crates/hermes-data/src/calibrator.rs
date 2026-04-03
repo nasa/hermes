@@ -136,7 +136,7 @@ impl Polynomial {
 }
 
 #[derive(Clone, Debug)]
-enum MathOperationItem {
+pub enum MathOperationItem {
     ///Use a constant in the calculation.
     Value(f64),
     ///Use the value of this parameter in the calculation. It is the calibrator's value only.  If the raw value is needed, specify it explicitly using ParameterInstanceRefOperand. Note this element has no content.
@@ -148,7 +148,7 @@ enum MathOperationItem {
 }
 
 #[derive(Clone, Debug)]
-pub struct MathOperation(Vec<MathOperationItem>);
+pub struct MathOperation(pub Vec<MathOperationItem>);
 
 impl MathOperation {
     fn compute() -> f64 {

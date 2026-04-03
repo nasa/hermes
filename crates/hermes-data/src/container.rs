@@ -153,15 +153,23 @@ pub struct SequenceContainer {
 }
 
 impl SequenceContainer {
+    /// Create a new SequenceContainer with a resolved parent.
+    ///
+    /// This constructor is used during Pass 3 after all dependencies have been resolved.
+    /// The parent should already be constructed and available in the completed containers map.
     pub fn new(
         xml: &hermes_xtce::SequenceContainerType,
         qualified_name: String,
+        resolved_parent: Option<Rc<SequenceContainer>>,
+        restriction_criteria: Option<RestrictionCriteria>,
     ) -> crate::Result<SequenceContainer> {
-        // Convert base container if present
-        let base = if let Some(base_xml) = &xml.base_container {
-            Some(convert_base_container(base_xml)?)
-        } else {
-            None
+        // Create BaseContainer with resolved parent if present
+        let base = match (resolved_parent, restriction_criteria) {
+            (Some(parent), criteria) => Some(BaseContainer {
+                parent,
+                restriction_criteria: criteria,
+            }),
+            (None, _) => None,
         };
 
         // Convert size_in_bits if specified via binary encoding
@@ -198,13 +206,15 @@ impl SequenceContainer {
     }
 }
 
-fn convert_base_container(_xml: &hermes_xtce::BaseContainerType) -> crate::Result<BaseContainer> {
-    // Note: We store the container_ref as a string for later resolution
-    // The parent field will need to be resolved in a second pass
-    
-    Err(crate::Error::NotImplemented(
-        "BaseContainer conversion requires parent resolution",
-    ))
+/// Extract restriction criteria from BaseContainer XML.
+/// The parent container must be resolved separately and passed to SequenceContainer::new().
+pub(crate) fn convert_base_container_restriction(
+    xml: &hermes_xtce::BaseContainerType,
+) -> crate::Result<Option<RestrictionCriteria>> {
+    xml.restriction_criteria
+        .as_ref()
+        .map(convert_restriction_criteria)
+        .transpose()
 }
 
 fn convert_restriction_criteria(
