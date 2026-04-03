@@ -5,7 +5,7 @@ use hermes_xtce::{
 use crate::Calibrator;
 
 #[derive(Clone, Debug)]
-pub struct ParameterRef(String);
+pub struct ParameterRef(pub String);
 
 /// An expanded parameter reference that allows applying calibration function
 /// And optionally querying local sample cache
@@ -18,7 +18,7 @@ pub struct ParameterInstanceRef {
 }
 
 #[derive(Clone, Debug)]
-pub struct ArgumentRef(String);
+pub struct ArgumentRef(pub String);
 
 ///A slope and intercept may be applied to scale or shift the value of the parameter in the dynamic value.  The default of slope=1 and intercept=0 results in no change to the value.
 #[derive(Clone, Debug)]

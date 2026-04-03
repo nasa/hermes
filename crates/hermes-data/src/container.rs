@@ -122,6 +122,7 @@ pub struct Entry {
     pub kind: EntryKind,
     pub repeat: Option<Repeat>,
     pub include_condition: Option<MatchCriteriaType>,
+    pub location: LocationInContainerInBits,
 }
 
 #[derive(Clone, Debug)]
@@ -149,4 +150,392 @@ pub struct SequenceContainer {
 
     ///List of item entries to pack/encode into this container definition.
     pub entry_list: Vec<Entry>,
+}
+
+impl SequenceContainer {
+    pub fn new(
+        xml: &hermes_xtce::SequenceContainerType,
+        qualified_name: String,
+    ) -> crate::Result<SequenceContainer> {
+        // Convert base container if present
+        let base = if let Some(base_xml) = &xml.base_container {
+            Some(convert_base_container(base_xml)?)
+        } else {
+            None
+        };
+
+        // Convert size_in_bits if specified via binary encoding
+        let size_in_bits = if let Some(encoding) = &xml.binary_encoding {
+            encoding
+                .size_in_bits
+                .as_ref()
+                .map(convert_integer_value)
+                .transpose()?
+        } else {
+            None
+        };
+
+        // Convert entry list
+        let entry_list = xml
+            .entry_list
+            .iter()
+            .map(convert_entry)
+            .collect::<crate::Result<Vec<_>>>()?;
+
+        Ok(SequenceContainer {
+            head: Item {
+                name: xml.name.clone(),
+                qualified_name,
+                short_description: xml.short_description.clone(),
+                long_description: xml.long_description.clone(),
+                ancillary_data_set: xml.ancillary_data_set.clone(),
+            },
+            abstract_: xml.abstract_,
+            base,
+            size_in_bits,
+            entry_list,
+        })
+    }
+}
+
+fn convert_base_container(_xml: &hermes_xtce::BaseContainerType) -> crate::Result<BaseContainer> {
+    // Note: We store the container_ref as a string for later resolution
+    // The parent field will need to be resolved in a second pass
+    
+    Err(crate::Error::NotImplemented(
+        "BaseContainer conversion requires parent resolution",
+    ))
+}
+
+fn convert_restriction_criteria(
+    xml: &hermes_xtce::RestrictionCriteriaType,
+) -> crate::Result<RestrictionCriteria> {
+    use hermes_xtce::RestrictionCriteriaType as X;
+    match xml {
+        X::Comparison(comp) => Ok(RestrictionCriteria::Comparison(convert_comparison(comp)?)),
+        X::ComparisonList(list) => {
+            let comparisons = list
+                .comparison
+                .iter()
+                .map(convert_comparison)
+                .collect::<crate::Result<Vec<_>>>()?;
+            Ok(RestrictionCriteria::ComparisonList(comparisons))
+        }
+        X::BooleanExpression(expr) => Ok(RestrictionCriteria::BooleanExpression(
+            convert_boolean_expression(expr)?,
+        )),
+        X::CustomAlgorithm(_) => Err(crate::Error::NotImplemented(
+            "CustomAlgorithm in RestrictionCriteria",
+        )),
+        X::NextContainer(_) => Err(crate::Error::NotImplemented(
+            "NextContainer in RestrictionCriteria",
+        )),
+    }
+}
+
+fn convert_boolean_expression(
+    xml: &hermes_xtce::BooleanExpressionType,
+) -> crate::Result<BooleanExpression> {
+    use hermes_xtce::BooleanExpressionType as X;
+    match xml {
+        X::Condition(cond) => Ok(BooleanExpression::Condition(convert_comparison_check(
+            cond,
+        )?)),
+        X::AnDedConditions(ands) => {
+            let conditions = ands
+                .iter()
+                .map(convert_and_condition)
+                .collect::<crate::Result<Vec<_>>>()?;
+            Ok(BooleanExpression::AndCondition(conditions))
+        }
+        X::ORedConditions(ors) => {
+            let conditions = ors
+                .iter()
+                .map(convert_or_condition)
+                .collect::<crate::Result<Vec<_>>>()?;
+            Ok(BooleanExpression::OrCondition(conditions))
+        }
+    }
+}
+
+fn convert_comparison_check(
+    xml: &hermes_xtce::ComparisonCheckType,
+) -> crate::Result<ComparisonCheck> {
+    use hermes_xtce::ComparisonCheckTypeContent as C;
+
+    // The content array has exactly 3 elements:
+    // [0]: ParameterInstanceRef (left side)
+    // [1]: ComparisonOperator
+    // [2]: Value or ParameterInstanceRef (right side)
+
+    let left = match &xml.content[0] {
+        C::ParameterInstanceRef(param_ref) => convert_parameter_instance_ref(param_ref)?,
+        _ => {
+            return Err(crate::Error::InvalidXtce(
+                "ComparisonCheck first element must be ParameterInstanceRef".to_string(),
+            ));
+        }
+    };
+
+    let operator = match &xml.content[1] {
+        C::ComparisonOperator(op) => op.clone(),
+        _ => {
+            return Err(crate::Error::InvalidXtce(
+                "ComparisonCheck second element must be ComparisonOperator".to_string(),
+            ));
+        }
+    };
+
+    let right = match &xml.content[2] {
+        C::ParameterInstanceRef(param_ref) => {
+            ParameterRefOrValue::ParameterInstanceRef(convert_parameter_instance_ref(param_ref)?)
+        }
+        C::Value(val) => ParameterRefOrValue::Value(val.clone()),
+        _ => {
+            return Err(crate::Error::InvalidXtce(
+                "ComparisonCheck third element must be Value or ParameterInstanceRef".to_string(),
+            ));
+        }
+    };
+
+    Ok(ComparisonCheck {
+        left,
+        operator,
+        right,
+    })
+}
+
+fn convert_and_condition(xml: &hermes_xtce::AnDedConditionsType) -> crate::Result<AndCondition> {
+    use hermes_xtce::AnDedConditionsType as X;
+    match xml {
+        X::Condition(cond) => Ok(AndCondition::Condition(convert_comparison_check(cond)?)),
+        X::ORedConditions(ors) => {
+            let conditions = ors
+                .iter()
+                .map(convert_or_condition)
+                .collect::<crate::Result<Vec<_>>>()?;
+            Ok(AndCondition::ORedConditions(conditions))
+        }
+    }
+}
+
+fn convert_or_condition(xml: &hermes_xtce::ORedConditionsType) -> crate::Result<OrCondition> {
+    use hermes_xtce::ORedConditionsType as X;
+    match xml {
+        X::Condition(cond) => Ok(OrCondition::Condition(convert_comparison_check(cond)?)),
+        X::AnDedConditions(ands) => {
+            let conditions = ands
+                .iter()
+                .map(convert_and_condition)
+                .collect::<crate::Result<Vec<_>>>()?;
+            Ok(OrCondition::AndCondition(conditions))
+        }
+    }
+}
+
+fn convert_comparison(xml: &hermes_xtce::ComparisonType) -> crate::Result<Comparison> {
+    Ok(Comparison {
+        parameter_ref: ParameterInstanceRef {
+            parameter: ParameterRef(xml.parameter_ref.clone()),
+            use_calibrated_value: xml.use_calibrated_value,
+        },
+        comparison_operator: xml.comparison_operator.clone(),
+        value: xml.value.clone(),
+    })
+}
+
+fn convert_entry(xml: &hermes_xtce::EntryListType) -> crate::Result<Entry> {
+    use hermes_xtce::EntryListType as X;
+
+    match xml {
+        X::ParameterRefEntry(param_entry) => {
+            let repeat = param_entry
+                .repeat_entry
+                .as_ref()
+                .map(convert_repeat)
+                .transpose()?;
+
+            let location = param_entry
+                .location_in_container_in_bits
+                .as_ref()
+                .map(convert_location_in_container_in_bits)
+                .transpose()?
+                .unwrap_or_else(|| LocationInContainerInBits {
+                    reference: ReferenceLocation::PreviousEntry,
+                    location: IntegerValue {
+                        value: crate::IntegerValueKind::FixedValue(0),
+                        linear_adjustment: None,
+                    },
+                });
+
+            // if param_entry.time_association.is_some() {
+            //     return Err(crate::Error::NotImplemented("TimeAssociation in Entry"));
+            // }
+
+            // if param_entry.ancillary_data_set.is_some() {
+            //     return Err(crate::Error::NotImplemented("AncillaryDataSet in Entry"));
+            // }
+
+            Ok(Entry {
+                kind: EntryKind::ParameterRefEntry(ParameterRef(param_entry.parameter_ref.clone())),
+                repeat,
+                include_condition: param_entry.include_condition.clone(),
+                location,
+            })
+        }
+        X::ContainerRefEntry(container_entry) => {
+            let repeat = container_entry
+                .repeat_entry
+                .as_ref()
+                .map(convert_repeat)
+                .transpose()?;
+
+            let location = container_entry
+                .location_in_container_in_bits
+                .as_ref()
+                .map(convert_location_in_container_in_bits)
+                .transpose()?
+                .unwrap_or_else(|| LocationInContainerInBits {
+                    reference: ReferenceLocation::PreviousEntry,
+                    location: IntegerValue {
+                        value: crate::IntegerValueKind::FixedValue(0),
+                        linear_adjustment: None,
+                    },
+                });
+
+            // if container_entry.time_association.is_some() {
+            //     return Err(crate::Error::NotImplemented("TimeAssociation in Entry"));
+            // }
+
+            // if container_entry.ancillary_data_set.is_some() {
+            //     return Err(crate::Error::NotImplemented("AncillaryDataSet in Entry"));
+            // }
+
+            Ok(Entry {
+                kind: EntryKind::ContainerRefEntry(ContainerRef(
+                    container_entry.container_ref.clone(),
+                )),
+                repeat,
+                include_condition: container_entry.include_condition.clone(),
+                location,
+            })
+        }
+        X::ParameterSegmentRefEntry(_) => {
+            Err(crate::Error::NotImplemented("ParameterSegmentRefEntry"))
+        }
+        X::ContainerSegmentRefEntry(_) => {
+            Err(crate::Error::NotImplemented("ContainerSegmentRefEntry"))
+        }
+        X::StreamSegmentEntry(_) => Err(crate::Error::NotImplemented("StreamSegmentEntry")),
+        X::IndirectParameterRefEntry(_) => {
+            Err(crate::Error::NotImplemented("IndirectParameterRefEntry"))
+        }
+        X::ArrayParameterRefEntry(_) => Err(crate::Error::NotImplemented("ArrayParameterRefEntry")),
+    }
+}
+
+fn convert_location_in_container_in_bits(
+    xml: &hermes_xtce::LocationInContainerInBitsType,
+) -> crate::Result<LocationInContainerInBits> {
+    use hermes_xtce::{LocationInContainerInBitsTypeContent as C, ReferenceLocationType as R};
+
+    let reference = match xml.reference_location {
+        R::ContainerStart => ReferenceLocation::ContainerStart,
+        R::PreviousEntry => ReferenceLocation::PreviousEntry,
+        R::ContainerEnd => {
+            return Err(crate::Error::NotImplemented(
+                "ReferenceLocation::ContainerEnd",
+            ));
+        }
+        R::NextEntry => {
+            return Err(crate::Error::NotImplemented("ReferenceLocation::NextEntry"));
+        }
+    };
+
+    let location = match &xml.content {
+        C::FixedValue(val) => IntegerValue {
+            value: crate::IntegerValueKind::FixedValue(*val),
+            linear_adjustment: None,
+        },
+        C::DynamicValue(dyn_val) => {
+            let parameter = convert_parameter_instance_ref(&dyn_val.parameter_instance_ref)?;
+            let linear_adjustment =
+                dyn_val
+                    .linear_adjustment
+                    .as_ref()
+                    .map(|adj| crate::LinearAdjustment {
+                        slope: adj.slope,
+                        intercept: adj.intercept,
+                    });
+
+            IntegerValue {
+                value: crate::IntegerValueKind::DynamicValueParameter(parameter),
+                linear_adjustment,
+            }
+        }
+        C::DiscreteLookupList(_) => {
+            return Err(crate::Error::NotImplemented(
+                "DiscreteLookupList in LocationInContainerInBits",
+            ));
+        }
+    };
+
+    Ok(LocationInContainerInBits {
+        reference,
+        location,
+    })
+}
+
+fn convert_repeat(xml: &hermes_xtce::RepeatType) -> crate::Result<Repeat> {
+    let count = convert_integer_value(&xml.count)?;
+    let offset = xml
+        .offset
+        .as_ref()
+        .map(convert_integer_value)
+        .transpose()?
+        .unwrap_or_else(|| IntegerValue {
+            value: crate::IntegerValueKind::FixedValue(0),
+            linear_adjustment: None,
+        });
+
+    Ok(Repeat { count, offset })
+}
+
+fn convert_integer_value(xml: &hermes_xtce::IntegerValueType) -> crate::Result<IntegerValue> {
+    use hermes_xtce::IntegerValueType as X;
+
+    match xml {
+        X::FixedValue(val) => Ok(IntegerValue {
+            value: crate::IntegerValueKind::FixedValue(*val),
+            linear_adjustment: None,
+        }),
+        X::DynamicValue(dyn_val) => {
+            let parameter = convert_parameter_instance_ref(&dyn_val.parameter_instance_ref)?;
+            let linear_adjustment =
+                dyn_val
+                    .linear_adjustment
+                    .as_ref()
+                    .map(|adj| crate::LinearAdjustment {
+                        slope: adj.slope,
+                        intercept: adj.intercept,
+                    });
+
+            Ok(IntegerValue {
+                value: crate::IntegerValueKind::DynamicValueParameter(parameter),
+                linear_adjustment,
+            })
+        }
+        X::DiscreteLookupList(_) => Err(crate::Error::NotImplemented(
+            "DiscreteLookupList in IntegerValue",
+        )),
+    }
+}
+
+fn convert_parameter_instance_ref(
+    xml: &hermes_xtce::ParameterInstanceRefType,
+) -> crate::Result<ParameterInstanceRef> {
+    Ok(ParameterInstanceRef {
+        parameter: ParameterRef(xml.parameter_ref.clone()),
+        use_calibrated_value: xml.use_calibrated_value,
+    })
 }
