@@ -17,43 +17,34 @@ use hermes_xtce::MetaCommandType;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-/// Data structures that are related to uplink
-struct Commands {
-    pub parameter_types: HashMap<String, Rc<Type>>,
-    pub parameters: HashMap<String, Rc<Parameter>>,
-    pub argument_types: HashMap<String, Rc<Type>>,
-    pub arguments: HashMap<String, Rc<Argument>>,
-    pub commands: HashMap<String, Rc<MetaCommandType>>,
-}
-
-struct Telemetry {
-    pub parameter_types: HashMap<String, Rc<Type>>,
-    pub parameters: HashMap<String, Rc<Parameter>>,
-    pub containers: HashMap<String, Rc<SequenceContainer>>,
-}
-
 /// The mission database is a resolved form of the XTCE definition which
 /// places XTCE definitions into more favorable data structures
 pub struct MissionDatabase {
-    ser: Commands,
-    de: Telemetry,
+    command_parameter_types: HashMap<String, Rc<Type>>,
+    command_parameters: HashMap<String, Rc<Parameter>>,
+    command_argument_types: HashMap<String, Rc<Type>>,
+    command_arguments: HashMap<String, Rc<Argument>>,
+    command_containers: HashMap<String, Rc<SequenceContainer>>,
+    commands: HashMap<String, Rc<MetaCommandType>>,
+
+    telemetry_parameter_types: HashMap<String, Rc<Type>>,
+    telemetry_parameters: HashMap<String, Rc<Parameter>>,
+    telemetry_containers: HashMap<String, Rc<SequenceContainer>>,
 }
 
 impl MissionDatabase {
     pub fn new(schema: &hermes_xtce::SpaceSystem) -> Result<Self> {
         let mut out = MissionDatabase {
-            ser: Commands {
-                parameter_types: Default::default(),
-                parameters: Default::default(),
-                argument_types: Default::default(),
-                arguments: Default::default(),
-                commands: Default::default(),
-            },
-            de: Telemetry {
-                parameter_types: Default::default(),
-                parameters: Default::default(),
-                containers: Default::default(),
-            },
+            command_parameter_types: Default::default(),
+            command_parameters: Default::default(),
+            command_argument_types: Default::default(),
+            command_arguments: Default::default(),
+            command_containers: Default::default(),
+            commands: Default::default(),
+
+            telemetry_parameter_types: Default::default(),
+            telemetry_parameters: Default::default(),
+            telemetry_containers: Default::default(),
         };
 
         let root_path = format!("/{}", schema.name);
@@ -69,8 +60,8 @@ impl MissionDatabase {
         let parameters = construct_parameters(unresolved_parameters, &parameter_types)?;
 
         // Store parameter types and parameters in the database
-        out.de.parameter_types = parameter_types;
-        out.de.parameters = parameters;
+        out.telemetry_parameter_types = parameter_types;
+        out.telemetry_parameters = parameters;
 
         // Collect all containers with their unresolved references
         let mut unresolved_containers = HashMap::new();
@@ -84,32 +75,32 @@ impl MissionDatabase {
             construct_containers(unresolved_containers, sorted_names, dependencies)?;
 
         // Store completed containers in the database
-        out.de.containers = completed_containers;
+        out.telemetry_containers = completed_containers;
 
         Ok(out)
     }
 
-    pub fn get_parameter(&self, name: &str) -> Option<&Rc<Parameter>> {
-        self.de.parameters.get(name)
+    pub fn get_telemetry(&self, name: &str) -> Option<&Rc<Parameter>> {
+        self.telemetry_parameters.get(name)
     }
 
-    pub fn get_parameter_type(&self, name: &str) -> Option<&Rc<Type>> {
-        self.de.parameter_types.get(name)
+    pub fn all_telemetry(&self) -> &HashMap<String, Rc<Parameter>> {
+        &self.telemetry_parameters
     }
 
-    pub fn parameters(&self) -> &HashMap<String, Rc<Parameter>> {
-        &self.de.parameters
+    pub fn get_telemetry_parameter_type(&self, name: &str) -> Option<&Rc<Type>> {
+        self.telemetry_parameter_types.get(name)
     }
 
-    pub fn parameter_types(&self) -> &HashMap<String, Rc<Type>> {
-        &self.de.parameter_types
+    pub fn all_telemetry_parameter_types(&self) -> &HashMap<String, Rc<Type>> {
+        &self.telemetry_parameter_types
     }
 
-    pub fn get_container(&self, name: &str) -> Option<&Rc<SequenceContainer>> {
-        self.de.containers.get(name)
+    pub fn get_telemetry_container(&self, name: &str) -> Option<&Rc<SequenceContainer>> {
+        self.telemetry_containers.get(name)
     }
 
-    pub fn containers(&self) -> &HashMap<String, Rc<SequenceContainer>> {
-        &self.de.containers
+    pub fn all_telemetry_containers(&self) -> &HashMap<String, Rc<SequenceContainer>> {
+        &self.telemetry_containers
     }
 }

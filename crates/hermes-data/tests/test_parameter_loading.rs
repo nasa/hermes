@@ -21,22 +21,22 @@ fn test_load_fprime_parameter_types() {
     let root_name = format!("/{}", space_system.name);
 
     // Check that basic parameter types exist
-    let u8_type = mdb.get_parameter_type(&format!("{}/U8", root_name));
+    let u8_type = mdb.get_telemetry_parameter_type(&format!("{}/U8", root_name));
     assert!(u8_type.is_some(), "U8 parameter type should be loaded");
 
-    let u16_type = mdb.get_parameter_type(&format!("{}/U16", root_name));
+    let u16_type = mdb.get_telemetry_parameter_type(&format!("{}/U16", root_name));
     assert!(u16_type.is_some(), "U16 parameter type should be loaded");
 
-    let u32_type = mdb.get_parameter_type(&format!("{}/U32", root_name));
+    let u32_type = mdb.get_telemetry_parameter_type(&format!("{}/U32", root_name));
     assert!(u32_type.is_some(), "U32 parameter type should be loaded");
 
-    let bool_type = mdb.get_parameter_type(&format!("{}/bool", root_name));
+    let bool_type = mdb.get_telemetry_parameter_type(&format!("{}/bool", root_name));
     assert!(bool_type.is_some(), "bool parameter type should be loaded");
 
-    let f32_type = mdb.get_parameter_type(&format!("{}/F32", root_name));
+    let f32_type = mdb.get_telemetry_parameter_type(&format!("{}/F32", root_name));
     assert!(f32_type.is_some(), "F32 parameter type should be loaded");
 
-    let f64_type = mdb.get_parameter_type(&format!("{}/F64", root_name));
+    let f64_type = mdb.get_telemetry_parameter_type(&format!("{}/F64", root_name));
     assert!(f64_type.is_some(), "F64 parameter type should be loaded");
 }
 
@@ -57,19 +57,19 @@ fn test_load_fprime_parameters() {
     let root_name = format!("/{}", space_system.name);
 
     // Check that parameters exist (excluding ones with aggregate types)
-    let fprime_packet_id = mdb.get_parameter(&format!("{}/FPrimePacketId", root_name));
+    let fprime_packet_id = mdb.get_telemetry(&format!("{}/FPrimePacketId", root_name));
     assert!(
         fprime_packet_id.is_some(),
         "FPrimePacketId parameter should be loaded"
     );
 
-    let fprime_event_id = mdb.get_parameter(&format!("{}/FPrimeEventId", root_name));
+    let fprime_event_id = mdb.get_telemetry(&format!("{}/FPrimeEventId", root_name));
     assert!(
         fprime_event_id.is_some(),
         "FPrimeEventId parameter should be loaded"
     );
 
-    let fprime_channel_id = mdb.get_parameter(&format!("{}/FPrimeChannelId", root_name));
+    let fprime_channel_id = mdb.get_telemetry(&format!("{}/FPrimeChannelId", root_name));
     assert!(
         fprime_channel_id.is_some(),
         "FPrimeChannelId parameter should be loaded"
@@ -80,7 +80,7 @@ fn test_load_fprime_parameters() {
 
     // Verify that at least some parameters were loaded
     assert!(
-        !mdb.parameters().is_empty(),
+        !mdb.all_telemetry().is_empty(),
         "Should have loaded some parameters"
     );
 }
@@ -102,13 +102,13 @@ fn test_parameter_has_correct_type() {
 
     // Get parameter and verify it has the correct type
     let fprime_event_id = mdb
-        .get_parameter(&format!("{}/FPrimeEventId", root_name))
+        .get_telemetry(&format!("{}/FPrimeEventId", root_name))
         .expect("FPrimeEventId parameter should exist");
 
     // Verify the parameter references U32 type
     // We can't directly compare Rc pointers, but we can verify the type exists
     let u32_type = mdb
-        .get_parameter_type(&format!("{}/U32", root_name))
+        .get_telemetry_parameter_type(&format!("{}/U32", root_name))
         .expect("U32 type should exist");
 
     // Both should exist and be valid
@@ -131,7 +131,7 @@ fn test_parameter_names_are_fully_qualified() {
     let mdb = MissionDatabase::new(&space_system).expect("Failed to build mission database");
 
     // All parameter names should be fully qualified (start with /)
-    for (name, parameter) in mdb.parameters().iter() {
+    for (name, parameter) in mdb.all_telemetry().iter() {
         assert!(
             name.starts_with('/'),
             "Parameter name '{}' should be fully qualified",
@@ -156,7 +156,7 @@ fn test_parameter_type_names_are_fully_qualified() {
     let mdb = MissionDatabase::new(&space_system).expect("Failed to build mission database");
 
     // All parameter type names should be fully qualified (start with /)
-    for name in mdb.parameter_types().keys() {
+    for name in mdb.all_telemetry_parameter_types().keys() {
         assert!(
             name.starts_with('/'),
             "Parameter type name '{}' should be fully qualified",
@@ -179,7 +179,7 @@ fn test_enumerated_parameter_type() {
     let root_name = format!("/{}", space_system.name);
 
     // Find an enumerated type
-    let group_flags_type = mdb.get_parameter_type(&format!("{}/CCSDS_Group_Flags_Type", root_name));
+    let group_flags_type = mdb.get_telemetry_parameter_type(&format!("{}/CCSDS_Group_Flags_Type", root_name));
     assert!(
         group_flags_type.is_some(),
         "CCSDS_Group_Flags_Type should be loaded"
@@ -231,7 +231,7 @@ fn test_parameters_from_nested_space_systems() {
     // Check for parameters in nested SpaceSystems (e.g., CdhCore/cmdDisp)
     // These should have fully qualified names like /FPrime/CdhCore/cmdDisp/CommandsDispatched
     let nested_params: Vec<_> = mdb
-        .parameters()
+        .all_telemetry()
         .keys()
         .filter(|name| name.contains("CdhCore"))
         .collect();
@@ -243,7 +243,7 @@ fn test_parameters_from_nested_space_systems() {
 
     // Verify one specific nested parameter
     let commands_dispatched_exists = mdb
-        .parameters()
+        .all_telemetry()
         .keys()
         .any(|name| name.ends_with("CommandsDispatched"));
     assert!(
@@ -266,7 +266,7 @@ fn test_aggregate_parameter_type() {
     let root_name = format!("/{}", space_system.name);
 
     // Find an aggregate type (CCSDS_Packet_ID_Type)
-    let packet_id_type = mdb.get_parameter_type(&format!("{}/CCSDS_Packet_ID_Type", root_name));
+    let packet_id_type = mdb.get_telemetry_parameter_type(&format!("{}/CCSDS_Packet_ID_Type", root_name));
     assert!(
         packet_id_type.is_some(),
         "CCSDS_Packet_ID_Type should be loaded"
@@ -306,7 +306,7 @@ fn test_array_parameter_type() {
 
     // Find an array type (there should be some in nested SpaceSystems like ComQueueDepth)
     let array_types: Vec<_> = mdb
-        .parameter_types()
+        .all_telemetry_parameter_types()
         .iter()
         .filter_map(|(name, type_)| match &**type_ {
             hermes_data::Type::Array(_) => Some(name.clone()),
@@ -321,7 +321,7 @@ fn test_array_parameter_type() {
 
     // Check a specific array type if we found any
     if let Some(array_type_name) = array_types.first() {
-        let array_type = mdb.get_parameter_type(array_type_name).unwrap();
+        let array_type = mdb.get_telemetry_parameter_type(array_type_name).unwrap();
         match &**array_type {
             hermes_data::Type::Array(arr_type) => {
                 // Verify it has dimensions

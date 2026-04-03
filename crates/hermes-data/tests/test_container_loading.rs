@@ -20,11 +20,11 @@ fn test_load_fprime_containers() {
     let root_name = format!("/{}", space_system.name);
 
     // Check that base container exists
-    let ccsds_packet = mdb.get_container(&format!("{}/CCSDSSpacePacket", root_name));
+    let ccsds_packet = mdb.get_telemetry_container(&format!("{}/CCSDSSpacePacket", root_name));
     assert!(ccsds_packet.is_some(), "CCSDSSpacePacket should be loaded");
 
     // Check that child container exists
-    let fprime_telemetry = mdb.get_container(&format!("{}/FPrimeTelemetryPacket", root_name));
+    let fprime_telemetry = mdb.get_telemetry_container(&format!("{}/FPrimeTelemetryPacket", root_name));
     assert!(
         fprime_telemetry.is_some(),
         "FPrimeTelemetryPacket should be loaded"
@@ -43,7 +43,7 @@ fn test_load_fprime_containers() {
     );
 
     // Verify grandchild: SystemRes1 extends FPrimeTelemetryPacket
-    let system_res1 = mdb.get_container(&format!("{}/SystemRes1", root_name));
+    let system_res1 = mdb.get_telemetry_container(&format!("{}/SystemRes1", root_name));
     assert!(system_res1.is_some(), "SystemRes1 should be loaded");
 
     let system_res1_container = system_res1.unwrap();
@@ -71,7 +71,7 @@ fn test_container_names_are_fully_qualified() {
     let mdb = MissionDatabase::new(&space_system).expect("Failed to build mission database");
 
     // All container names should be fully qualified (start with /)
-    for (name, container) in mdb.containers().iter() {
+    for (name, container) in mdb.all_telemetry_containers().iter() {
         assert!(
             name.starts_with('/'),
             "Container name '{}' should be fully qualified",
