@@ -1,6 +1,8 @@
-use hermes_xtce::{MathOperatorsType, PolynomialCalibratorType};
+use hermes_xtce::{
+    MathOperationCalibratorTypeContent, MathOperatorsType, PolynomialCalibratorType,
+};
 
-use crate::{Error, Result};
+use crate::{Error, ParameterInstanceRef, Result};
 
 #[derive(Clone, Debug)]
 pub struct SplinePoint {
@@ -22,7 +24,7 @@ pub struct Spline {
 }
 
 impl Spline {
-    pub fn new(spline_calibrator: &hermes_xtce::SplineCalibratorType) -> Result<Spline> {
+    pub fn new(spline_calibrator: hermes_xtce::SplineCalibratorType) -> Result<Spline> {
         if spline_calibrator.spline_point.len() < 2 {
             return Err(Error::InvalidSpline(
                 "Spline must have at least 2 points".to_string(),
@@ -94,7 +96,7 @@ impl Spline {
 pub struct Polynomial(Vec<f64>);
 
 impl Polynomial {
-    pub fn new(polynomial: &PolynomialCalibratorType) -> Result<Polynomial> {
+    pub fn new(polynomial: PolynomialCalibratorType) -> Result<Polynomial> {
         if polynomial.term.is_empty() {
             return Err(Error::InvalidPolynomial(
                 "Polynomial must have at least one term".to_string(),
@@ -144,14 +146,105 @@ pub enum MathOperationItem {
     ///All operators utilize operands on the top values in the stack and leaving the result on the top of the stack.  Ternary operators utilize the top three operands on the stack, binary operators utilize the top two operands on the stack, and unary operators use the top operand on the stack.
     Operator(MathOperatorsType),
     ///This element is used to reference the last received/assigned value of any Parameter in this math operation.
-    ParameterInstanceRefOperand(String),
+    ParameterInstanceRefOperand(ParameterInstanceRef),
 }
 
 #[derive(Clone, Debug)]
-pub struct MathOperation(pub Vec<MathOperationItem>);
+pub struct MathOperation(Vec<MathOperationItem>);
 
 impl MathOperation {
-    fn compute() -> f64 {
+    pub fn new(items: Vec<MathOperationItem>) -> Result<MathOperation> {
+        if items.is_empty() {
+            Err(Error::MathOperation(
+                "Math must have at least one item".to_string(),
+            ))
+        } else {
+            let op = MathOperation(items);
+            op.validate()?;
+            Ok(op)
+        }
+    }
+
+    fn validate(&self) -> Result<()> {
+        let mut stack_size = 0;
+        for (index, item) in self.0.iter().enumerate() {
+            let (pop_n, push_n) = match item {
+                MathOperationItem::Value(_) => (0, 1),
+                MathOperationItem::ThisParameterOperand => (0, 1),
+                MathOperationItem::Operator(op) => {
+                    match op {
+                        // Binary operators
+                        MathOperatorsType::Plus
+                        | MathOperatorsType::Minus
+                        | MathOperatorsType::Multiply
+                        | MathOperatorsType::Divide
+                        | MathOperatorsType::Modulo
+                        | MathOperatorsType::Pow
+                        | MathOperatorsType::YX
+                        | MathOperatorsType::BitwiseLShift
+                        | MathOperatorsType::BitwiseRShift
+                        | MathOperatorsType::BitwiseAnd
+                        | MathOperatorsType::BitwiseOr
+                        | MathOperatorsType::And
+                        | MathOperatorsType::Or
+                        | MathOperatorsType::Gt
+                        | MathOperatorsType::Gte
+                        | MathOperatorsType::Lt
+                        | MathOperatorsType::Lte
+                        | MathOperatorsType::Eq
+                        | MathOperatorsType::Neq
+                        | MathOperatorsType::Min
+                        | MathOperatorsType::Max
+                        | MathOperatorsType::Xor
+                        | MathOperatorsType::BitwiseNot
+                        | MathOperatorsType::Atan2 => (2, 1),
+
+                        // Unary operators
+                        MathOperatorsType::Ln
+                        | MathOperatorsType::Log
+                        | MathOperatorsType::EX
+                        | MathOperatorsType::_1X
+                        | MathOperatorsType::Factorial
+                        | MathOperatorsType::Tan
+                        | MathOperatorsType::Cos
+                        | MathOperatorsType::Sin
+                        | MathOperatorsType::Atan
+                        | MathOperatorsType::Acos
+                        | MathOperatorsType::Asin
+                        | MathOperatorsType::Tanh
+                        | MathOperatorsType::Cosh
+                        | MathOperatorsType::Sinh
+                        | MathOperatorsType::Atanh
+                        | MathOperatorsType::Acosh
+                        | MathOperatorsType::Asinh
+                        | MathOperatorsType::Abs
+                        | MathOperatorsType::Div
+                        | MathOperatorsType::Int
+                        | MathOperatorsType::Not => (1, 1),
+
+                        // Special operators
+                        MathOperatorsType::Swap => (2, 2),
+                        MathOperatorsType::Drop => (1, 0),
+                        MathOperatorsType::Dup => (1, 2),
+                        MathOperatorsType::Over => (1, 2),
+                    }
+                }
+                MathOperationItem::ParameterInstanceRefOperand(_) => (0, 1),
+            };
+
+            if stack_size < pop_n {
+                return Err(Error::MathOperation(format!(
+                    "Index {index}: Expected at least {pop_n} on the stack, found {stack_size}"
+                )));
+            }
+
+            stack_size += push_n;
+        }
+
+        Ok(())
+    }
+
+    pub fn compute(&self) -> f64 {
         0.0
     }
 }
@@ -165,23 +258,43 @@ pub enum Calibrator {
 }
 
 impl Calibrator {
-    pub fn new(calibrator: &hermes_xtce::CalibratorType) -> Result<Calibrator> {
-        calibrator
-            .content
-            .iter()
-            .find_map(|f| match f {
+    pub fn new(calibrator: hermes_xtce::CalibratorType) -> Result<Calibrator> {
+        for item in calibrator.content {
+            match item {
                 hermes_xtce::CalibratorTypeContent::SplineCalibrator(def) => {
-                    Some(Spline::new(def).map(|x| Calibrator::Spline(x)))
+                    return Ok(Calibrator::Spline(Spline::new(def)?));
                 }
                 hermes_xtce::CalibratorTypeContent::PolynomialCalibrator(def) => {
-                    Some(Polynomial::new(def).map(|x| Calibrator::Polynomial(x)))
+                    return Ok(Calibrator::Polynomial(Polynomial::new(def)?));
                 }
-                hermes_xtce::CalibratorTypeContent::MathOperationCalibrator(_) => {
-                    Some(Err(Error::NotImplemented("Math Operations Calibrator")))
+                hermes_xtce::CalibratorTypeContent::MathOperationCalibrator(m) => {
+                    let ops: Vec<_> = m
+                        .content
+                        .into_iter()
+                        .filter_map(|item| match item {
+                            MathOperationCalibratorTypeContent::AncillaryDataSet(_) => None,
+                            MathOperationCalibratorTypeContent::ValueOperand(v) => {
+                                Some(MathOperationItem::Value(0.0))
+                            }
+                            MathOperationCalibratorTypeContent::ThisParameterOperand(_) => {
+                                Some(MathOperationItem::ThisParameterOperand)
+                            }
+                            MathOperationCalibratorTypeContent::Operator(op) => {
+                                Some(MathOperationItem::Operator(op))
+                            }
+                            MathOperationCalibratorTypeContent::ParameterInstanceRefOperand(r) => {
+                                Some(MathOperationItem::ParameterInstanceRefOperand(r.into()))
+                            }
+                        })
+                        .collect();
+
+                    return Ok(Calibrator::MathOperation(MathOperation::new(ops)?));
                 }
-                _ => None,
-            })
-            .unwrap_or(Ok(Calibrator::None))
+                _ => {}
+            }
+        }
+
+        Ok(Calibrator::None)
     }
 
     pub fn compute(&self, raw: f64) -> Result<f64> {

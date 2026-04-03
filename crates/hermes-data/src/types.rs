@@ -1,5 +1,6 @@
 use hermes_xtce::{
-    BitOrderType, ByteOrderType, FloatEncodingType, IntegerEncodingType, StringEncodingType,
+    BitOrderType, ByteOrderType, FloatEncodingType, IntegerEncodingType, ParameterInstanceRefType,
+    StringEncodingType,
 };
 
 use crate::Calibrator;
@@ -15,6 +16,15 @@ pub struct ParameterInstanceRef {
     // TODO(tumbar) Build in a store for caching a limited number of samples
     // pub instance: i64,
     pub use_calibrated_value: bool,
+}
+
+impl From<hermes_xtce::ParameterInstanceRefType> for ParameterInstanceRef {
+    fn from(value: ParameterInstanceRefType) -> Self {
+        ParameterInstanceRef {
+            parameter: ParameterRef(value.parameter_ref),
+            use_calibrated_value: value.use_calibrated_value,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

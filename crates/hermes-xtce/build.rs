@@ -657,6 +657,7 @@ mod codegen {
                 "||" => "Or".to_string(),
                 "!" => "Not".to_string(),
                 "~" => "BitwiseNot".to_string(),
+                "x!" => "Factorial".to_string(),
                 _ => self.default.format_variant_name(s),
             };
 

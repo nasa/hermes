@@ -5554,7 +5554,7 @@ pub enum MathOperatorsType {
     _1X,
     ///factorial (x -- x!)
     #[serde(rename = "x!")]
-    X,
+    Factorial,
     ///tangent (x -- tan(x)) radians
     #[serde(rename = "tan")]
     Tan,

@@ -1,7 +1,5 @@
 use std::rc::Rc;
 
-use hermes_xtce::{ComparisonOperatorsType, MatchCriteriaType};
-
 use crate::{IntegerValue, ParameterInstanceRef, ParameterRef, Type};
 
 #[derive(Clone, Debug)]
@@ -50,7 +48,7 @@ pub enum BooleanExpression {
 #[derive(Clone, Debug)]
 pub struct ComparisonCheck {
     pub left: ParameterInstanceRef,
-    pub operator: ComparisonOperatorsType,
+    pub operator: hermes_xtce::ComparisonOperatorsType,
     pub right: ParameterRefOrValue,
 }
 
@@ -121,7 +119,7 @@ pub struct Entry {
     // pub short_description: Option<String>,
     pub kind: EntryKind,
     pub repeat: Option<Repeat>,
-    pub include_condition: Option<MatchCriteriaType>,
+    pub include_condition: Option<hermes_xtce::MatchCriteriaType>,
     pub location: LocationInContainerInBits,
 }
 
@@ -134,7 +132,7 @@ pub enum EntryKind {
 }
 
 #[derive(Clone, Debug)]
-pub struct ContainerRef(String);
+pub struct ContainerRef(pub String);
 
 #[derive(Clone, Debug)]
 pub struct SequenceContainer {
