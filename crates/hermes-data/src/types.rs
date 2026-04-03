@@ -1,9 +1,14 @@
 use hermes_xtce::{
-    BitOrderType, ByteOrderType, FloatEncodingType, IntegerEncodingType, ParameterInstanceRefType,
+    ByteOrderType, FloatEncodingType, IntegerEncodingType, ParameterInstanceRefType,
     StringEncodingType,
 };
+use std::time::Duration;
 
-use crate::Calibrator;
+use crate::error::Error;
+use crate::util::{
+    parse_boolean, parse_float, parse_hex_binary, parse_integer, parse_relative_time,
+};
+use crate::{Calibrator, Result};
 
 #[derive(Clone, Debug)]
 pub struct ParameterRef(pub String);
@@ -54,8 +59,6 @@ pub struct IntegerValue {
 pub struct IntegerType {
     pub size_in_bits: i64,
     pub signed: bool,
-    ///Describes the bit ordering of the encoded value.
-    pub bit_order: BitOrderType,
     ///Describes the endianness of the encoded value.
     pub byte_order: ByteOrderType,
     ///Specifies integer numeric value to raw encoding method, with the default being "unsigned".
@@ -66,8 +69,6 @@ pub struct IntegerType {
 #[derive(Clone, Debug)]
 pub struct FloatType {
     pub size_in_bits: hermes_xtce::FloatSizeInBitsType,
-    ///Describes the bit ordering of the encoded value.
-    pub bit_order: BitOrderType,
     ///Describes the endianness of the encoded value.
     pub byte_order: ByteOrderType,
     ///Specifies real/decimal numeric value to raw encoding method, with the default being "IEEE754_1985".
@@ -77,10 +78,6 @@ pub struct FloatType {
 
 #[derive(Clone, Debug)]
 pub struct StringType {
-    /// Describes the bit ordering of the encoded value.
-    pub bit_order: BitOrderType,
-    /// Describes the endianness of the encoded value.
-    pub byte_order: ByteOrderType,
     /// Specifies string encoding method, with the default being "UTF-8".
     pub encoding: StringEncodingType,
     /// Fixed size in bits, if applicable (None for variable-length strings)
@@ -90,8 +87,6 @@ pub struct StringType {
 #[derive(Clone, Debug)]
 pub struct BooleanType {
     pub size_in_bits: i64,
-    /// Describes the bit ordering of the encoded value.
-    pub bit_order: BitOrderType,
     /// Describes the endianness of the encoded value.
     pub byte_order: ByteOrderType,
     /// Specifies integer numeric value to raw encoding method (typically size_in_bits=1).
@@ -105,8 +100,6 @@ pub struct BooleanType {
 #[derive(Clone, Debug)]
 pub struct EnumeratedType {
     pub size_in_bits: i64,
-    /// Describes the bit ordering of the encoded value.
-    pub bit_order: BitOrderType,
     /// Describes the endianness of the encoded value.
     pub byte_order: ByteOrderType,
     /// Specifies integer numeric value to raw encoding method.
@@ -124,8 +117,6 @@ pub struct EnumerationEntry {
 
 #[derive(Clone, Debug)]
 pub struct BinaryType {
-    /// Describes the bit ordering of the encoded value.
-    pub bit_order: BitOrderType,
     /// Describes the endianness of the encoded value.
     pub byte_order: ByteOrderType,
     /// Size in bits (can be fixed or dynamic)
@@ -205,4 +196,89 @@ pub enum Type {
     RelativeTime(RelativeTimeType),
     Array(ArrayType),
     Aggregate(AggregateType),
+}
+
+#[derive(Clone, Debug)]
+pub struct Time {
+    /// Time system this count represents
+    pub system: i32,
+
+    /// Nanoseconds since time-systems epoch (~585-year span after epoch)
+    pub ns: u64,
+}
+
+#[derive(Clone, Debug)]
+pub struct AggregateValue(Vec<(String, Value)>);
+
+impl AggregateValue {
+    pub fn iter(&self) -> impl Iterator<Item = &(String, Value)> {
+        self.0.iter()
+    }
+
+    pub fn get(&self, name: &str) -> Option<&Value> {
+        self.0
+            .iter()
+            .find(|(i_name, _)| i_name == name)
+            .map(|(_, v)| v)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum RelativeTime {
+    // Relative duration forward in time
+    Forward(Duration),
+    // Negative duration backward in time
+    Backward(Duration),
+}
+
+#[derive(Clone, Debug)]
+pub enum Value {
+    Integer(i64),
+    Float(f64),
+    String(String),
+    Boolean(bool),
+    Binary(Vec<u8>),
+    Enumerated(EnumerationEntry),
+    AbsoluteTime(Time),
+    RelativeTime(RelativeTime),
+    Array(Vec<Value>),
+    Aggregate(AggregateValue),
+}
+
+impl Value {
+    pub fn parse(ty: &Type, s: &str) -> Result<Value> {
+        match ty {
+            // Values that don't need their types
+            Type::Integer(_) => Ok(Value::Integer(parse_integer(s)?)),
+            Type::Float(_) => Ok(Value::Float(parse_float(s)?)),
+            Type::String(_) => Ok(Value::String(s.to_string())),
+            Type::Boolean(_) => Ok(Value::Boolean(parse_boolean(s)?)),
+            Type::Binary(_) => Ok(Value::Binary(parse_hex_binary(s)?)),
+            Type::RelativeTime(_) => Ok(Value::RelativeTime(parse_relative_time(s)?)),
+
+            Type::Enumerated(ty) => ty
+                .enumeration_list
+                .iter()
+                .find_map(|item| {
+                    if item.label == s {
+                        Some(Ok(Value::Enumerated(item.clone())))
+                    } else {
+                        None
+                    }
+                })
+                .unwrap_or(Err(Error::InvalidValue(format!(
+                    "No enumeration entry for {}",
+                    s
+                )))),
+            Type::AbsoluteTime(_) => Err(Error::NotImplemented(
+                "Parsing absolute time is not implemented yet",
+            )),
+            Type::Array(_) => Err(Error::NotImplemented(
+                "Parsing array values is not implemented yet",
+            )),
+            Type::Aggregate(_) => Err(Error::NotImplemented(
+                "Parsing aggregate values is not implemented yet",
+            )),
+        }
+    }
 }

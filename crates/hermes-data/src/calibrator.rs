@@ -2,6 +2,7 @@ use hermes_xtce::{
     MathOperationCalibratorTypeContent, MathOperatorsType, PolynomialCalibratorType,
 };
 
+use crate::util::parse_float;
 use crate::{Error, ParameterInstanceRef, Result};
 
 #[derive(Clone, Debug)]
@@ -268,25 +269,24 @@ impl Calibrator {
                     return Ok(Calibrator::Polynomial(Polynomial::new(def)?));
                 }
                 hermes_xtce::CalibratorTypeContent::MathOperationCalibrator(m) => {
-                    let ops: Vec<_> = m
-                        .content
-                        .into_iter()
-                        .filter_map(|item| match item {
-                            MathOperationCalibratorTypeContent::AncillaryDataSet(_) => None,
+                    let mut ops = Vec::new();
+                    for item in m.content {
+                        match item {
+                            MathOperationCalibratorTypeContent::AncillaryDataSet(_) => {}
                             MathOperationCalibratorTypeContent::ValueOperand(v) => {
-                                Some(MathOperationItem::Value(0.0))
+                                ops.push(MathOperationItem::Value(parse_float(&v)?));
                             }
                             MathOperationCalibratorTypeContent::ThisParameterOperand(_) => {
-                                Some(MathOperationItem::ThisParameterOperand)
+                                ops.push(MathOperationItem::ThisParameterOperand)
                             }
                             MathOperationCalibratorTypeContent::Operator(op) => {
-                                Some(MathOperationItem::Operator(op))
+                                ops.push(MathOperationItem::Operator(op))
                             }
                             MathOperationCalibratorTypeContent::ParameterInstanceRefOperand(r) => {
-                                Some(MathOperationItem::ParameterInstanceRefOperand(r.into()))
+                                ops.push(MathOperationItem::ParameterInstanceRefOperand(r.into()))
                             }
-                        })
-                        .collect();
+                        }
+                    }
 
                     return Ok(Calibrator::MathOperation(MathOperation::new(ops)?));
                 }

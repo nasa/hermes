@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{IntegerValue, ParameterInstanceRef, ParameterRef, Type};
+use crate::{Error, IntegerValue, ParameterInstanceRef, ParameterRef, Result};
 
 #[derive(Clone, Debug)]
 pub struct Item {
@@ -14,15 +14,6 @@ pub struct Item {
     pub long_description: Option<String>,
     ///Use for any non-standard data associated with this named item.  See AncillaryDataSetType for additional explanation.
     pub ancillary_data_set: Option<hermes_xtce::AncillaryDataSetType>,
-}
-
-#[derive(Clone, Debug)]
-pub struct Parameter {
-    pub head: Item,
-    /// Data type of this parameter
-    pub type_: Type,
-    ///Describes extended properties/attributes of Parameter definitions.
-    pub properties: Option<hermes_xtce::ParameterPropertiesType>,
 }
 
 #[derive(Clone, Debug)]
@@ -156,11 +147,11 @@ impl SequenceContainer {
     /// This constructor is used during Pass 3 after all dependencies have been resolved.
     /// The parent should already be constructed and available in the completed containers map.
     pub fn new(
-        xml: &hermes_xtce::SequenceContainerType,
+        xml: hermes_xtce::SequenceContainerType,
         qualified_name: String,
         resolved_parent: Option<Rc<SequenceContainer>>,
         restriction_criteria: Option<RestrictionCriteria>,
-    ) -> crate::Result<SequenceContainer> {
+    ) -> Result<SequenceContainer> {
         // Create BaseContainer with resolved parent if present
         let base = match (resolved_parent, restriction_criteria) {
             (Some(parent), criteria) => Some(BaseContainer {
@@ -184,9 +175,9 @@ impl SequenceContainer {
         // Convert entry list
         let entry_list = xml
             .entry_list
-            .iter()
+            .into_iter()
             .map(convert_entry)
-            .collect::<crate::Result<Vec<_>>>()?;
+            .collect::<Result<Vec<_>>>()?;
 
         Ok(SequenceContainer {
             head: Item {
@@ -208,7 +199,7 @@ impl SequenceContainer {
 /// The parent container must be resolved separately and passed to SequenceContainer::new().
 pub(crate) fn convert_base_container_restriction(
     xml: &hermes_xtce::BaseContainerType,
-) -> crate::Result<Option<RestrictionCriteria>> {
+) -> Result<Option<RestrictionCriteria>> {
     xml.restriction_criteria
         .as_ref()
         .map(convert_restriction_criteria)
@@ -217,7 +208,7 @@ pub(crate) fn convert_base_container_restriction(
 
 fn convert_restriction_criteria(
     xml: &hermes_xtce::RestrictionCriteriaType,
-) -> crate::Result<RestrictionCriteria> {
+) -> Result<RestrictionCriteria> {
     use hermes_xtce::RestrictionCriteriaType as X;
     match xml {
         X::Comparison(comp) => Ok(RestrictionCriteria::Comparison(convert_comparison(comp)?)),
@@ -226,16 +217,16 @@ fn convert_restriction_criteria(
                 .comparison
                 .iter()
                 .map(convert_comparison)
-                .collect::<crate::Result<Vec<_>>>()?;
+                .collect::<Result<Vec<_>>>()?;
             Ok(RestrictionCriteria::ComparisonList(comparisons))
         }
         X::BooleanExpression(expr) => Ok(RestrictionCriteria::BooleanExpression(
             convert_boolean_expression(expr)?,
         )),
-        X::CustomAlgorithm(_) => Err(crate::Error::NotImplemented(
+        X::CustomAlgorithm(_) => Err(Error::NotImplemented(
             "CustomAlgorithm in RestrictionCriteria",
         )),
-        X::NextContainer(_) => Err(crate::Error::NotImplemented(
+        X::NextContainer(_) => Err(Error::NotImplemented(
             "NextContainer in RestrictionCriteria",
         )),
     }
@@ -243,7 +234,7 @@ fn convert_restriction_criteria(
 
 fn convert_boolean_expression(
     xml: &hermes_xtce::BooleanExpressionType,
-) -> crate::Result<BooleanExpression> {
+) -> Result<BooleanExpression> {
     use hermes_xtce::BooleanExpressionType as X;
     match xml {
         X::Condition(cond) => Ok(BooleanExpression::Condition(convert_comparison_check(
@@ -253,22 +244,20 @@ fn convert_boolean_expression(
             let conditions = ands
                 .iter()
                 .map(convert_and_condition)
-                .collect::<crate::Result<Vec<_>>>()?;
+                .collect::<Result<Vec<_>>>()?;
             Ok(BooleanExpression::AndCondition(conditions))
         }
         X::ORedConditions(ors) => {
             let conditions = ors
                 .iter()
                 .map(convert_or_condition)
-                .collect::<crate::Result<Vec<_>>>()?;
+                .collect::<Result<Vec<_>>>()?;
             Ok(BooleanExpression::OrCondition(conditions))
         }
     }
 }
 
-fn convert_comparison_check(
-    xml: &hermes_xtce::ComparisonCheckType,
-) -> crate::Result<ComparisonCheck> {
+fn convert_comparison_check(xml: &hermes_xtce::ComparisonCheckType) -> Result<ComparisonCheck> {
     use hermes_xtce::ComparisonCheckTypeContent as C;
 
     // The content array has exactly 3 elements:
@@ -279,7 +268,7 @@ fn convert_comparison_check(
     let left = match &xml.content[0] {
         C::ParameterInstanceRef(param_ref) => convert_parameter_instance_ref(param_ref)?,
         _ => {
-            return Err(crate::Error::InvalidXtce(
+            return Err(Error::InvalidXtce(
                 "ComparisonCheck first element must be ParameterInstanceRef".to_string(),
             ));
         }
@@ -288,7 +277,7 @@ fn convert_comparison_check(
     let operator = match &xml.content[1] {
         C::ComparisonOperator(op) => op.clone(),
         _ => {
-            return Err(crate::Error::InvalidXtce(
+            return Err(Error::InvalidXtce(
                 "ComparisonCheck second element must be ComparisonOperator".to_string(),
             ));
         }
@@ -300,7 +289,7 @@ fn convert_comparison_check(
         }
         C::Value(val) => ParameterRefOrValue::Value(val.clone()),
         _ => {
-            return Err(crate::Error::InvalidXtce(
+            return Err(Error::InvalidXtce(
                 "ComparisonCheck third element must be Value or ParameterInstanceRef".to_string(),
             ));
         }
@@ -313,7 +302,7 @@ fn convert_comparison_check(
     })
 }
 
-fn convert_and_condition(xml: &hermes_xtce::AnDedConditionsType) -> crate::Result<AndCondition> {
+fn convert_and_condition(xml: &hermes_xtce::AnDedConditionsType) -> Result<AndCondition> {
     use hermes_xtce::AnDedConditionsType as X;
     match xml {
         X::Condition(cond) => Ok(AndCondition::Condition(convert_comparison_check(cond)?)),
@@ -321,13 +310,13 @@ fn convert_and_condition(xml: &hermes_xtce::AnDedConditionsType) -> crate::Resul
             let conditions = ors
                 .iter()
                 .map(convert_or_condition)
-                .collect::<crate::Result<Vec<_>>>()?;
+                .collect::<Result<Vec<_>>>()?;
             Ok(AndCondition::ORedConditions(conditions))
         }
     }
 }
 
-fn convert_or_condition(xml: &hermes_xtce::ORedConditionsType) -> crate::Result<OrCondition> {
+fn convert_or_condition(xml: &hermes_xtce::ORedConditionsType) -> Result<OrCondition> {
     use hermes_xtce::ORedConditionsType as X;
     match xml {
         X::Condition(cond) => Ok(OrCondition::Condition(convert_comparison_check(cond)?)),
@@ -335,13 +324,13 @@ fn convert_or_condition(xml: &hermes_xtce::ORedConditionsType) -> crate::Result<
             let conditions = ands
                 .iter()
                 .map(convert_and_condition)
-                .collect::<crate::Result<Vec<_>>>()?;
+                .collect::<Result<Vec<_>>>()?;
             Ok(OrCondition::AndCondition(conditions))
         }
     }
 }
 
-fn convert_comparison(xml: &hermes_xtce::ComparisonType) -> crate::Result<Comparison> {
+fn convert_comparison(xml: &hermes_xtce::ComparisonType) -> Result<Comparison> {
     Ok(Comparison {
         parameter_ref: ParameterInstanceRef {
             parameter: ParameterRef(xml.parameter_ref.clone()),
@@ -352,7 +341,23 @@ fn convert_comparison(xml: &hermes_xtce::ComparisonType) -> crate::Result<Compar
     })
 }
 
-fn convert_entry(xml: &hermes_xtce::EntryListType) -> crate::Result<Entry> {
+fn convert_location_in_bits(
+    loc: Option<hermes_xtce::LocationInContainerInBitsType>,
+) -> Result<LocationInContainerInBits> {
+    Ok(loc
+        .as_ref()
+        .map(convert_location_in_container_in_bits)
+        .transpose()?
+        .unwrap_or_else(|| LocationInContainerInBits {
+            reference: ReferenceLocation::PreviousEntry,
+            location: IntegerValue {
+                value: crate::IntegerValueKind::FixedValue(0),
+                linear_adjustment: None,
+            },
+        }))
+}
+
+fn convert_entry(xml: hermes_xtce::EntryListType) -> Result<Entry> {
     use hermes_xtce::EntryListType as X;
 
     match xml {
@@ -362,19 +367,6 @@ fn convert_entry(xml: &hermes_xtce::EntryListType) -> crate::Result<Entry> {
                 .as_ref()
                 .map(convert_repeat)
                 .transpose()?;
-
-            let location = param_entry
-                .location_in_container_in_bits
-                .as_ref()
-                .map(convert_location_in_container_in_bits)
-                .transpose()?
-                .unwrap_or_else(|| LocationInContainerInBits {
-                    reference: ReferenceLocation::PreviousEntry,
-                    location: IntegerValue {
-                        value: crate::IntegerValueKind::FixedValue(0),
-                        linear_adjustment: None,
-                    },
-                });
 
             // if param_entry.time_association.is_some() {
             //     return Err(crate::Error::NotImplemented("TimeAssociation in Entry"));
@@ -388,7 +380,7 @@ fn convert_entry(xml: &hermes_xtce::EntryListType) -> crate::Result<Entry> {
                 kind: EntryKind::ParameterRefEntry(ParameterRef(param_entry.parameter_ref.clone())),
                 repeat,
                 include_condition: param_entry.include_condition.clone(),
-                location,
+                location: convert_location_in_bits(param_entry.location_in_container_in_bits)?,
             })
         }
         X::ContainerRefEntry(container_entry) => {
@@ -397,19 +389,6 @@ fn convert_entry(xml: &hermes_xtce::EntryListType) -> crate::Result<Entry> {
                 .as_ref()
                 .map(convert_repeat)
                 .transpose()?;
-
-            let location = container_entry
-                .location_in_container_in_bits
-                .as_ref()
-                .map(convert_location_in_container_in_bits)
-                .transpose()?
-                .unwrap_or_else(|| LocationInContainerInBits {
-                    reference: ReferenceLocation::PreviousEntry,
-                    location: IntegerValue {
-                        value: crate::IntegerValueKind::FixedValue(0),
-                        linear_adjustment: None,
-                    },
-                });
 
             // if container_entry.time_association.is_some() {
             //     return Err(crate::Error::NotImplemented("TimeAssociation in Entry"));
@@ -425,38 +404,36 @@ fn convert_entry(xml: &hermes_xtce::EntryListType) -> crate::Result<Entry> {
                 )),
                 repeat,
                 include_condition: container_entry.include_condition.clone(),
-                location,
+                location: convert_location_in_bits(container_entry.location_in_container_in_bits)?,
             })
         }
-        X::ParameterSegmentRefEntry(_) => {
-            Err(crate::Error::NotImplemented("ParameterSegmentRefEntry"))
-        }
+        X::ParameterSegmentRefEntry(_) => Err(Error::NotImplemented("ParameterSegmentRefEntry")),
         X::ContainerSegmentRefEntry(_) => {
-            Err(crate::Error::NotImplemented("ContainerSegmentRefEntry"))
+            Err(Error::NotImplemented("ContainerSegmentRefEntry"))
         }
-        X::StreamSegmentEntry(_) => Err(crate::Error::NotImplemented("StreamSegmentEntry")),
+        X::StreamSegmentEntry(_) => Err(Error::NotImplemented("StreamSegmentEntry")),
         X::IndirectParameterRefEntry(_) => {
-            Err(crate::Error::NotImplemented("IndirectParameterRefEntry"))
+            Err(Error::NotImplemented("IndirectParameterRefEntry"))
         }
-        X::ArrayParameterRefEntry(_) => Err(crate::Error::NotImplemented("ArrayParameterRefEntry")),
+        X::ArrayParameterRefEntry(_) => Err(Error::NotImplemented("ArrayParameterRefEntry")),
     }
 }
 
 fn convert_location_in_container_in_bits(
     xml: &hermes_xtce::LocationInContainerInBitsType,
-) -> crate::Result<LocationInContainerInBits> {
+) -> Result<LocationInContainerInBits> {
     use hermes_xtce::{LocationInContainerInBitsTypeContent as C, ReferenceLocationType as R};
 
     let reference = match xml.reference_location {
         R::ContainerStart => ReferenceLocation::ContainerStart,
         R::PreviousEntry => ReferenceLocation::PreviousEntry,
         R::ContainerEnd => {
-            return Err(crate::Error::NotImplemented(
+            return Err(Error::NotImplemented(
                 "ReferenceLocation::ContainerEnd",
             ));
         }
         R::NextEntry => {
-            return Err(crate::Error::NotImplemented("ReferenceLocation::NextEntry"));
+            return Err(Error::NotImplemented("ReferenceLocation::NextEntry"));
         }
     };
 
@@ -482,7 +459,7 @@ fn convert_location_in_container_in_bits(
             }
         }
         C::DiscreteLookupList(_) => {
-            return Err(crate::Error::NotImplemented(
+            return Err(Error::NotImplemented(
                 "DiscreteLookupList in LocationInContainerInBits",
             ));
         }
@@ -494,7 +471,7 @@ fn convert_location_in_container_in_bits(
     })
 }
 
-fn convert_repeat(xml: &hermes_xtce::RepeatType) -> crate::Result<Repeat> {
+fn convert_repeat(xml: &hermes_xtce::RepeatType) -> Result<Repeat> {
     let count = convert_integer_value(&xml.count)?;
     let offset = xml
         .offset
@@ -509,7 +486,7 @@ fn convert_repeat(xml: &hermes_xtce::RepeatType) -> crate::Result<Repeat> {
     Ok(Repeat { count, offset })
 }
 
-fn convert_integer_value(xml: &hermes_xtce::IntegerValueType) -> crate::Result<IntegerValue> {
+fn convert_integer_value(xml: &hermes_xtce::IntegerValueType) -> Result<IntegerValue> {
     use hermes_xtce::IntegerValueType as X;
 
     match xml {
@@ -533,7 +510,7 @@ fn convert_integer_value(xml: &hermes_xtce::IntegerValueType) -> crate::Result<I
                 linear_adjustment,
             })
         }
-        X::DiscreteLookupList(_) => Err(crate::Error::NotImplemented(
+        X::DiscreteLookupList(_) => Err(Error::NotImplemented(
             "DiscreteLookupList in IntegerValue",
         )),
     }
@@ -541,7 +518,7 @@ fn convert_integer_value(xml: &hermes_xtce::IntegerValueType) -> crate::Result<I
 
 fn convert_parameter_instance_ref(
     xml: &hermes_xtce::ParameterInstanceRefType,
-) -> crate::Result<ParameterInstanceRef> {
+) -> Result<ParameterInstanceRef> {
     Ok(ParameterInstanceRef {
         parameter: ParameterRef(xml.parameter_ref.clone()),
         use_calibrated_value: xml.use_calibrated_value,

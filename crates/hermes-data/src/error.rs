@@ -27,6 +27,9 @@ pub enum Error {
     #[error("Invalid XTCE definition: {0}")]
     InvalidXtce(String),
 
+    #[error("Invalid value: {0}")]
+    InvalidValue(String),
+
     #[error("Operation Not Implemented: {0}")]
     NotImplemented(&'static str),
 }

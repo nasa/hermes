@@ -5,29 +5,30 @@ mod parameter;
 mod types;
 mod util;
 
+use error::*;
+
 pub use calibrator::*;
-pub use error::*;
+pub use container::*;
 pub use types::*;
+pub use parameter::*;
+use util::*;
 
 use hermes_xtce::MetaCommandType;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::container::SequenceContainer;
-use crate::util::{build_dependency_graph, collect_containers, construct_containers};
-
 /// Data structures that are related to uplink
 struct Commands {
-    pub parameter_types: HashMap<String, Rc<hermes_xtce::ParameterTypeSetType>>,
-    pub parameters: HashMap<String, Rc<hermes_xtce::ParameterType>>,
-    pub argument_types: HashMap<String, Rc<hermes_xtce::ArgumentTypeSetType>>,
-    pub arguments: HashMap<String, Rc<hermes_xtce::ArgumentType>>,
+    pub parameter_types: HashMap<String, Rc<Type>>,
+    pub parameters: HashMap<String, Rc<Parameter>>,
+    pub argument_types: HashMap<String, Rc<Type>>,
+    pub arguments: HashMap<String, Rc<Argument>>,
     pub commands: HashMap<String, Rc<MetaCommandType>>,
 }
 
 struct Telemetry {
-    pub parameter_types: HashMap<String, Rc<hermes_xtce::ParameterTypeSetType>>,
-    pub parameters: HashMap<String, Rc<hermes_xtce::ParameterType>>,
+    pub parameter_types: HashMap<String, Rc<Type>>,
+    pub parameters: HashMap<String, Rc<Parameter>>,
     pub containers: HashMap<String, Rc<SequenceContainer>>,
 }
 
@@ -71,6 +72,10 @@ impl MissionDatabase {
         out.de.containers = completed_containers;
 
         Ok(out)
+    }
+
+    pub fn get_parameter(&self, name: &str) -> Option<&Rc<Parameter>> {
+        self.de.parameters.get(name)
     }
 
     pub fn get_container(&self, name: &str) -> Option<&Rc<SequenceContainer>> {

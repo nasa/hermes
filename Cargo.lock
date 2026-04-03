@@ -737,6 +737,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
+name = "hermes-data"
+version = "4.1.0-a1"
+dependencies = [
+ "hermes-xtce",
+ "quick-xml 0.39.2",
+ "thiserror 2.0.18",
+ "tracing",
+]
+
+[[package]]
+name = "hermes-decode"
+version = "4.1.0-a1"
+
+[[package]]
 name = "hermes-fprime-dictionary"
 version = "4.1.0-a1"
 dependencies = [
