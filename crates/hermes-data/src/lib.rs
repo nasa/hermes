@@ -13,19 +13,18 @@ pub use parameter::*;
 pub use types::*;
 use util::*;
 
-use hermes_xtce::MetaCommandType;
 use std::collections::HashMap;
 use std::rc::Rc;
 
 /// The mission database is a resolved form of the XTCE definition which
 /// places XTCE definitions into more favorable data structures
 pub struct MissionDatabase {
-    command_parameter_types: HashMap<String, Rc<Type>>,
-    command_parameters: HashMap<String, Rc<Parameter>>,
-    command_argument_types: HashMap<String, Rc<Type>>,
-    command_arguments: HashMap<String, Rc<Argument>>,
-    command_containers: HashMap<String, Rc<SequenceContainer>>,
-    commands: HashMap<String, Rc<MetaCommandType>>,
+    // command_parameter_types: HashMap<String, Rc<Type>>,
+    // command_parameters: HashMap<String, Rc<Parameter>>,
+    // command_argument_types: HashMap<String, Rc<Type>>,
+    // command_arguments: HashMap<String, Rc<Argument>>,
+    // command_containers: HashMap<String, Rc<SequenceContainer>>,
+    // commands: HashMap<String, Rc<MetaCommandType>>,
 
     telemetry_parameter_types: HashMap<String, Rc<Type>>,
     telemetry_parameters: HashMap<String, Rc<Parameter>>,
@@ -35,12 +34,12 @@ pub struct MissionDatabase {
 impl MissionDatabase {
     pub fn new(schema: &hermes_xtce::SpaceSystem) -> Result<Self> {
         let mut out = MissionDatabase {
-            command_parameter_types: Default::default(),
-            command_parameters: Default::default(),
-            command_argument_types: Default::default(),
-            command_arguments: Default::default(),
-            command_containers: Default::default(),
-            commands: Default::default(),
+            // command_parameter_types: Default::default(),
+            // command_parameters: Default::default(),
+            // command_argument_types: Default::default(),
+            // command_arguments: Default::default(),
+            // command_containers: Default::default(),
+            // commands: Default::default(),
 
             telemetry_parameter_types: Default::default(),
             telemetry_parameters: Default::default(),
