@@ -783,9 +783,9 @@
     <SpaceSystem name="cmdDisp">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="CommandsDispatched" shortDescription="Number of commands dispatched" parameterTypeRef="U32" />
-          <Parameter name="CommandErrors" shortDescription="Number of command errors" parameterTypeRef="U32" />
-          <Parameter name="CommandsDropped" shortDescription="Number of commands drooped due to buffer overflow" parameterTypeRef="U32" />
+          <Parameter name="CommandsDispatched" shortDescription="Number of commands dispatched" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="CommandErrors" shortDescription="Number of command errors" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="CommandsDropped" shortDescription="Number of commands drooped due to buffer overflow" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="CommandsDispatched">
@@ -945,7 +945,7 @@
     <SpaceSystem name="health">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="PingLateWarnings" shortDescription="Number of overrun warnings" parameterTypeRef="U32" />
+          <Parameter name="PingLateWarnings" shortDescription="Number of overrun warnings" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="PingLateWarnings">
@@ -1024,7 +1024,7 @@
     <SpaceSystem name="tlmSend">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="SendLevel" shortDescription="Telemetry send level" parameterTypeRef="FwChanIdType" />
+          <Parameter name="SendLevel" shortDescription="Telemetry send level" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/FwChanIdType" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="SendLevel">
@@ -1081,28 +1081,28 @@
     <SpaceSystem name="version">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="FrameworkVersion" shortDescription="Software framework version" parameterTypeRef="string40" />
-          <Parameter name="ProjectVersion" shortDescription="Software project version" parameterTypeRef="string40" />
-          <Parameter name="CustomVersion01" shortDescription="Custom Versions" parameterTypeRef="Svc/CustomVersionDb" />
-          <Parameter name="CustomVersion02" parameterTypeRef="Svc/CustomVersionDb" />
-          <Parameter name="CustomVersion03" parameterTypeRef="Svc/CustomVersionDb" />
-          <Parameter name="CustomVersion04" parameterTypeRef="Svc/CustomVersionDb" />
-          <Parameter name="CustomVersion05" parameterTypeRef="Svc/CustomVersionDb" />
-          <Parameter name="CustomVersion06" parameterTypeRef="Svc/CustomVersionDb" />
-          <Parameter name="CustomVersion07" parameterTypeRef="Svc/CustomVersionDb" />
-          <Parameter name="CustomVersion08" parameterTypeRef="Svc/CustomVersionDb" />
-          <Parameter name="CustomVersion09" parameterTypeRef="Svc/CustomVersionDb" />
-          <Parameter name="CustomVersion10" parameterTypeRef="Svc/CustomVersionDb" />
-          <Parameter name="LibraryVersion01" shortDescription="Library Versions" parameterTypeRef="string40" />
-          <Parameter name="LibraryVersion02" parameterTypeRef="string40" />
-          <Parameter name="LibraryVersion03" parameterTypeRef="string40" />
-          <Parameter name="LibraryVersion04" parameterTypeRef="string40" />
-          <Parameter name="LibraryVersion05" parameterTypeRef="string40" />
-          <Parameter name="LibraryVersion06" parameterTypeRef="string40" />
-          <Parameter name="LibraryVersion07" parameterTypeRef="string40" />
-          <Parameter name="LibraryVersion08" parameterTypeRef="string40" />
-          <Parameter name="LibraryVersion09" parameterTypeRef="string40" />
-          <Parameter name="LibraryVersion10" parameterTypeRef="string40" />
+          <Parameter name="FrameworkVersion" shortDescription="Software framework version" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/string40" />
+          <Parameter name="ProjectVersion" shortDescription="Software project version" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/string40" />
+          <Parameter name="CustomVersion01" shortDescription="Custom Versions" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/Svc/CustomVersionDb" />
+          <Parameter name="CustomVersion02" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/Svc/CustomVersionDb" />
+          <Parameter name="CustomVersion03" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/Svc/CustomVersionDb" />
+          <Parameter name="CustomVersion04" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/Svc/CustomVersionDb" />
+          <Parameter name="CustomVersion05" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/Svc/CustomVersionDb" />
+          <Parameter name="CustomVersion06" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/Svc/CustomVersionDb" />
+          <Parameter name="CustomVersion07" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/Svc/CustomVersionDb" />
+          <Parameter name="CustomVersion08" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/Svc/CustomVersionDb" />
+          <Parameter name="CustomVersion09" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/Svc/CustomVersionDb" />
+          <Parameter name="CustomVersion10" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/Svc/CustomVersionDb" />
+          <Parameter name="LibraryVersion01" shortDescription="Library Versions" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/string40" />
+          <Parameter name="LibraryVersion02" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/string40" />
+          <Parameter name="LibraryVersion03" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/string40" />
+          <Parameter name="LibraryVersion04" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/string40" />
+          <Parameter name="LibraryVersion05" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/string40" />
+          <Parameter name="LibraryVersion06" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/string40" />
+          <Parameter name="LibraryVersion07" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/string40" />
+          <Parameter name="LibraryVersion08" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/string40" />
+          <Parameter name="LibraryVersion09" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/string40" />
+          <Parameter name="LibraryVersion10" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/string40" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="FrameworkVersion">
@@ -1413,8 +1413,8 @@
     <SpaceSystem name="comQueue">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="comQueueDepth" shortDescription="Depth of queues of Fw::ComBuffer type" parameterTypeRef="Svc/ComQueueDepth" />
-          <Parameter name="buffQueueDepth" shortDescription="Depth of queues of Fw::Buffer type" parameterTypeRef="Svc/BuffQueueDepth" />
+          <Parameter name="comQueueDepth" shortDescription="Depth of queues of Fw::ComBuffer type" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/Svc/ComQueueDepth" />
+          <Parameter name="buffQueueDepth" shortDescription="Depth of queues of Fw::Buffer type" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/Svc/BuffQueueDepth" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="comQueueDepth">
@@ -1500,11 +1500,11 @@
     <SpaceSystem name="commsBufferManager">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="TotalBuffs" shortDescription="The total buffers allocated" parameterTypeRef="U32" />
-          <Parameter name="CurrBuffs" shortDescription="The current number of allocated buffers" parameterTypeRef="U32" />
-          <Parameter name="HiBuffs" shortDescription="The high water mark of allocated buffers" parameterTypeRef="U32" />
-          <Parameter name="NoBuffs" shortDescription="The number of requests that couldn't return a buffer" parameterTypeRef="U32" />
-          <Parameter name="EmptyBuffs" shortDescription="The number of empty buffers returned" parameterTypeRef="U32" />
+          <Parameter name="TotalBuffs" shortDescription="The total buffers allocated" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="CurrBuffs" shortDescription="The current number of allocated buffers" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="HiBuffs" shortDescription="The high water mark of allocated buffers" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="NoBuffs" shortDescription="The number of requests that couldn't return a buffer" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="EmptyBuffs" shortDescription="The number of empty buffers returned" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="TotalBuffs">
@@ -1617,11 +1617,11 @@
     <SpaceSystem name="dpBufferManager">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="TotalBuffs" shortDescription="The total buffers allocated" parameterTypeRef="U32" />
-          <Parameter name="CurrBuffs" shortDescription="The current number of allocated buffers" parameterTypeRef="U32" />
-          <Parameter name="HiBuffs" shortDescription="The high water mark of allocated buffers" parameterTypeRef="U32" />
-          <Parameter name="NoBuffs" shortDescription="The number of requests that couldn't return a buffer" parameterTypeRef="U32" />
-          <Parameter name="EmptyBuffs" shortDescription="The number of empty buffers returned" parameterTypeRef="U32" />
+          <Parameter name="TotalBuffs" shortDescription="The total buffers allocated" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="CurrBuffs" shortDescription="The current number of allocated buffers" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="HiBuffs" shortDescription="The high water mark of allocated buffers" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="NoBuffs" shortDescription="The number of requests that couldn't return a buffer" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="EmptyBuffs" shortDescription="The number of empty buffers returned" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="TotalBuffs">
@@ -1690,8 +1690,8 @@
     <SpaceSystem name="dpCat">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="CatalogDps" shortDescription="Number of data products in catalog" parameterTypeRef="U32" />
-          <Parameter name="DpsSent" shortDescription="Number of data products sent" parameterTypeRef="U32" />
+          <Parameter name="CatalogDps" shortDescription="Number of data products in catalog" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="DpsSent" shortDescription="Number of data products sent" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="CatalogDps">
@@ -1779,10 +1779,10 @@
     <SpaceSystem name="dpMgr">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="NumSuccessfulAllocations" shortDescription="The number of successful buffer allocations" parameterTypeRef="U32" />
-          <Parameter name="NumFailedAllocations" shortDescription="The number of failed buffer allocations" parameterTypeRef="U32" />
-          <Parameter name="NumDataProducts" shortDescription="Number of data products handled" parameterTypeRef="U32" />
-          <Parameter name="NumBytes" shortDescription="Number of bytes handled" parameterTypeRef="U64" />
+          <Parameter name="NumSuccessfulAllocations" shortDescription="The number of successful buffer allocations" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="NumFailedAllocations" shortDescription="The number of failed buffer allocations" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="NumDataProducts" shortDescription="Number of data products handled" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="NumBytes" shortDescription="Number of bytes handled" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U64" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="NumSuccessfulAllocations">
@@ -1854,11 +1854,11 @@
     <SpaceSystem name="dpWriter">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="NumBuffersReceived" shortDescription="The number of buffers received" parameterTypeRef="U32" />
-          <Parameter name="NumBytesWritten" shortDescription="The number of bytes written" parameterTypeRef="U64" />
-          <Parameter name="NumSuccessfulWrites" shortDescription="The number of successful writes" parameterTypeRef="U32" />
-          <Parameter name="NumFailedWrites" shortDescription="The number of failed writes" parameterTypeRef="U32" />
-          <Parameter name="NumErrors" shortDescription="The number of errors" parameterTypeRef="U32" />
+          <Parameter name="NumBuffersReceived" shortDescription="The number of buffers received" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="NumBytesWritten" shortDescription="The number of bytes written" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U64" />
+          <Parameter name="NumSuccessfulWrites" shortDescription="The number of successful writes" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="NumFailedWrites" shortDescription="The number of failed writes" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="NumErrors" shortDescription="The number of errors" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="NumBuffersReceived">
@@ -1944,9 +1944,9 @@
     <SpaceSystem name="fileDownlink">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="FilesSent" shortDescription="The total number of files sent" parameterTypeRef="U32" />
-          <Parameter name="PacketsSent" shortDescription="The total number of packets sent" parameterTypeRef="U32" />
-          <Parameter name="Warnings" shortDescription="The total number of warnings" parameterTypeRef="U32" />
+          <Parameter name="FilesSent" shortDescription="The total number of files sent" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="PacketsSent" shortDescription="The total number of packets sent" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="Warnings" shortDescription="The total number of warnings" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="FilesSent">
@@ -2046,8 +2046,8 @@
     <SpaceSystem name="fileManager">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="CommandsExecuted" shortDescription="The total number of commands successfully executed" parameterTypeRef="U32" />
-          <Parameter name="Errors" shortDescription="The total number of errors" parameterTypeRef="U32" />
+          <Parameter name="CommandsExecuted" shortDescription="The total number of commands successfully executed" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="Errors" shortDescription="The total number of errors" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="CommandsExecuted">
@@ -2236,9 +2236,9 @@
     <SpaceSystem name="fileUplink">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="FilesReceived" shortDescription="The total number of complete files received" parameterTypeRef="U32" />
-          <Parameter name="PacketsReceived" shortDescription="The total number of packets received" parameterTypeRef="U32" />
-          <Parameter name="Warnings" shortDescription="The total number of warnings issued" parameterTypeRef="U32" />
+          <Parameter name="FilesReceived" shortDescription="The total number of complete files received" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="PacketsReceived" shortDescription="The total number of packets received" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="Warnings" shortDescription="The total number of warnings issued" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="FilesReceived">
@@ -2331,11 +2331,11 @@
     <SpaceSystem name="cmdSeq">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="CS_LoadCommands" shortDescription="The number of Load commands executed" parameterTypeRef="U32" />
-          <Parameter name="CS_CancelCommands" shortDescription="The number of Cancel commands executed" parameterTypeRef="U32" />
-          <Parameter name="CS_Errors" shortDescription="The number of errors that have occurred" parameterTypeRef="U32" />
-          <Parameter name="CS_CommandsExecuted" shortDescription="The number of commands executed across all sequences." parameterTypeRef="U32" />
-          <Parameter name="CS_SequencesCompleted" shortDescription="The number of sequences completed." parameterTypeRef="U32" />
+          <Parameter name="CS_LoadCommands" shortDescription="The number of Load commands executed" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="CS_CancelCommands" shortDescription="The number of Cancel commands executed" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="CS_Errors" shortDescription="The number of errors that have occurred" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="CS_CommandsExecuted" shortDescription="The number of commands executed across all sequences." parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="CS_SequencesCompleted" shortDescription="The number of sequences completed." parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="CS_LoadCommands">
@@ -2508,8 +2508,8 @@
     <SpaceSystem name="rateGroup1">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="RgMaxTime" shortDescription="Max execution time rate group" parameterTypeRef="U32" />
-          <Parameter name="RgCycleSlips" shortDescription="Cycle slips for rate group" parameterTypeRef="U32" />
+          <Parameter name="RgMaxTime" shortDescription="Max execution time rate group" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="RgCycleSlips" shortDescription="Cycle slips for rate group" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="RgMaxTime">
@@ -2542,8 +2542,8 @@
     <SpaceSystem name="rateGroup2">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="RgMaxTime" shortDescription="Max execution time rate group" parameterTypeRef="U32" />
-          <Parameter name="RgCycleSlips" shortDescription="Cycle slips for rate group" parameterTypeRef="U32" />
+          <Parameter name="RgMaxTime" shortDescription="Max execution time rate group" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="RgCycleSlips" shortDescription="Cycle slips for rate group" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="RgMaxTime">
@@ -2576,8 +2576,8 @@
     <SpaceSystem name="rateGroup3">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="RgMaxTime" shortDescription="Max execution time rate group" parameterTypeRef="U32" />
-          <Parameter name="RgCycleSlips" shortDescription="Cycle slips for rate group" parameterTypeRef="U32" />
+          <Parameter name="RgMaxTime" shortDescription="Max execution time rate group" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+          <Parameter name="RgCycleSlips" shortDescription="Cycle slips for rate group" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="RgMaxTime">
@@ -2610,27 +2610,27 @@
     <SpaceSystem name="systemResources">
       <TelemetryMetaData>
         <ParameterSet>
-          <Parameter name="MEMORY_TOTAL" shortDescription="Total system memory in KB" parameterTypeRef="U64" />
-          <Parameter name="MEMORY_USED" shortDescription="System memory used in KB" parameterTypeRef="U64" />
-          <Parameter name="NON_VOLATILE_TOTAL" shortDescription="System non-volatile available in KB" parameterTypeRef="U64" />
-          <Parameter name="NON_VOLATILE_FREE" shortDescription="System non-volatile available in KB" parameterTypeRef="U64" />
-          <Parameter name="CPU" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_00" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_01" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_02" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_03" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_04" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_05" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_06" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_07" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_08" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_09" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_10" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_11" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_12" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_13" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_14" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
-          <Parameter name="CPU_15" shortDescription="System's CPU Percentage" parameterTypeRef="F32" />
+          <Parameter name="MEMORY_TOTAL" shortDescription="Total system memory in KB" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U64" />
+          <Parameter name="MEMORY_USED" shortDescription="System memory used in KB" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U64" />
+          <Parameter name="NON_VOLATILE_TOTAL" shortDescription="System non-volatile available in KB" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U64" />
+          <Parameter name="NON_VOLATILE_FREE" shortDescription="System non-volatile available in KB" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/U64" />
+          <Parameter name="CPU" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_00" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_01" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_02" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_03" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_04" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_05" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_06" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_07" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_08" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_09" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_10" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_11" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_12" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_13" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_14" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
+          <Parameter name="CPU_15" shortDescription="System's CPU Percentage" parameterTypeRef="/FprimeYamcsReference_YamcsDeployment/F32" />
         </ParameterSet>
         <ContainerSet>
           <SequenceContainer name="MEMORY_TOTAL">
@@ -2914,8 +2914,8 @@
       <ParameterTypeSet>
         <AggregateParameterType name="TimeIntervalValue" shortDescription="Data structure for Time Interval">
           <MemberList>
-            <Member name="seconds" shortDescription="seconds portion of TimeInterval" typeRef="U32" />
-            <Member name="useconds" shortDescription="microseconds portion of TimeInterval" typeRef="U32" />
+            <Member name="seconds" shortDescription="seconds portion of TimeInterval" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+            <Member name="useconds" shortDescription="microseconds portion of TimeInterval" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
           </MemberList>
         </AggregateParameterType>
         <EnumeratedParameterType name="DpState">
@@ -2958,10 +2958,10 @@
         </EnumeratedParameterType>
         <AggregateParameterType name="TimeValue" shortDescription="Data structure for Time">
           <MemberList>
-            <Member name="timeBase" shortDescription="basis of time (defined by system)" typeRef="TimeBase" />
-            <Member name="timeContext" shortDescription="user settable value. Could be reboot count, node, etc" typeRef="FwTimeContextStoreType" />
-            <Member name="seconds" shortDescription="seconds portion of Time" typeRef="U32" />
-            <Member name="useconds" shortDescription="microseconds portion of Time" typeRef="U32" />
+            <Member name="timeBase" shortDescription="basis of time (defined by system)" typeRef="/FprimeYamcsReference_YamcsDeployment/TimeBase" />
+            <Member name="timeContext" shortDescription="user settable value. Could be reboot count, node, etc" typeRef="/FprimeYamcsReference_YamcsDeployment/FwTimeContextStoreType" />
+            <Member name="seconds" shortDescription="seconds portion of Time" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+            <Member name="useconds" shortDescription="microseconds portion of Time" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
           </MemberList>
         </AggregateParameterType>
         <EnumeratedParameterType name="Wait" shortDescription="Wait or don't wait for something">
@@ -2984,8 +2984,8 @@
       <ArgumentTypeSet>
         <AggregateArgumentType name="TimeIntervalValue" shortDescription="Data structure for Time Interval">
           <MemberList>
-            <Member name="seconds" shortDescription="seconds portion of TimeInterval" typeRef="U32" />
-            <Member name="useconds" shortDescription="microseconds portion of TimeInterval" typeRef="U32" />
+            <Member name="seconds" shortDescription="seconds portion of TimeInterval" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+            <Member name="useconds" shortDescription="microseconds portion of TimeInterval" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
           </MemberList>
         </AggregateArgumentType>
         <EnumeratedArgumentType name="DpState">
@@ -3028,10 +3028,10 @@
         </EnumeratedArgumentType>
         <AggregateArgumentType name="TimeValue" shortDescription="Data structure for Time">
           <MemberList>
-            <Member name="timeBase" shortDescription="basis of time (defined by system)" typeRef="TimeBase" />
-            <Member name="timeContext" shortDescription="user settable value. Could be reboot count, node, etc" typeRef="FwTimeContextStoreType" />
-            <Member name="seconds" shortDescription="seconds portion of Time" typeRef="U32" />
-            <Member name="useconds" shortDescription="microseconds portion of Time" typeRef="U32" />
+            <Member name="timeBase" shortDescription="basis of time (defined by system)" typeRef="/FprimeYamcsReference_YamcsDeployment/TimeBase" />
+            <Member name="timeContext" shortDescription="user settable value. Could be reboot count, node, etc" typeRef="/FprimeYamcsReference_YamcsDeployment/FwTimeContextStoreType" />
+            <Member name="seconds" shortDescription="seconds portion of Time" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+            <Member name="useconds" shortDescription="microseconds portion of Time" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
           </MemberList>
         </AggregateArgumentType>
         <EnumeratedArgumentType name="Wait" shortDescription="Wait or don't wait for something">
@@ -3080,7 +3080,7 @@
   <SpaceSystem name="Svc">
     <TelemetryMetaData>
       <ParameterTypeSet>
-        <ArrayParameterType name="ComQueueDepth" shortDescription="Array of queue depths for Fw::Com types" arrayTypeRef="U32">
+        <ArrayParameterType name="ComQueueDepth" shortDescription="Array of queue depths for Fw::Com types" arrayTypeRef="/FprimeYamcsReference_YamcsDeployment/U32">
           <DimensionList>
             <Dimension>
               <StartingIndex>
@@ -3102,7 +3102,7 @@
             <Enumeration shortDescription="all above versions" value="4" label="ALL" />
           </EnumerationList>
         </EnumeratedParameterType>
-        <ArrayParameterType name="BuffQueueDepth" shortDescription="Array of queue depths for Fw::Buffer types" arrayTypeRef="U32">
+        <ArrayParameterType name="BuffQueueDepth" shortDescription="Array of queue depths for Fw::Buffer types" arrayTypeRef="/FprimeYamcsReference_YamcsDeployment/U32">
           <DimensionList>
             <Dimension>
               <StartingIndex>
@@ -3146,13 +3146,13 @@
         </EnumeratedParameterType>
         <AggregateParameterType name="DpRecord" shortDescription="Data structure representing a data product.">
           <MemberList>
-            <Member name="id" typeRef="FwDpIdType" />
-            <Member name="tSec" typeRef="U32" />
-            <Member name="tSub" typeRef="U32" />
-            <Member name="priority" typeRef="U32" />
-            <Member name="size" typeRef="U64" />
-            <Member name="blocks" typeRef="U32" />
-            <Member name="state" typeRef="Fw/DpState" />
+            <Member name="id" typeRef="/FprimeYamcsReference_YamcsDeployment/FwDpIdType" />
+            <Member name="tSec" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+            <Member name="tSub" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+            <Member name="priority" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+            <Member name="size" typeRef="/FprimeYamcsReference_YamcsDeployment/U64" />
+            <Member name="blocks" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+            <Member name="state" typeRef="/FprimeYamcsReference_YamcsDeployment/Fw/DpState" />
           </MemberList>
         </AggregateParameterType>
         <EnumeratedParameterType name="VersionStatus" shortDescription="An enumeration for version status">
@@ -3173,16 +3173,16 @@
         </EnumeratedParameterType>
         <AggregateParameterType name="CustomVersionDb" shortDescription="Data Structure for custom version Tlm">
           <MemberList>
-            <Member name="version_enum" shortDescription="enumeration/name of the custom version" typeRef="Svc/VersionCfg/VersionEnum" />
-            <Member name="version_value" shortDescription="string containing custom version" typeRef="string80" />
-            <Member name="version_status" shortDescription="status of the custom version" typeRef="Svc/VersionStatus" />
+            <Member name="version_enum" shortDescription="enumeration/name of the custom version" typeRef="/FprimeYamcsReference_YamcsDeployment/Svc/VersionCfg/VersionEnum" />
+            <Member name="version_value" shortDescription="string containing custom version" typeRef="/FprimeYamcsReference_YamcsDeployment/string80" />
+            <Member name="version_status" shortDescription="status of the custom version" typeRef="/FprimeYamcsReference_YamcsDeployment/Svc/VersionStatus" />
           </MemberList>
         </AggregateParameterType>
       </ParameterTypeSet>
     </TelemetryMetaData>
     <CommandMetaData>
       <ArgumentTypeSet>
-        <ArrayArgumentType name="ComQueueDepth" shortDescription="Array of queue depths for Fw::Com types" arrayTypeRef="U32">
+        <ArrayArgumentType name="ComQueueDepth" shortDescription="Array of queue depths for Fw::Com types" arrayTypeRef="/FprimeYamcsReference_YamcsDeployment/U32">
           <DimensionList>
             <Dimension>
               <StartingIndex>
@@ -3204,7 +3204,7 @@
             <Enumeration shortDescription="all above versions" value="4" label="ALL" />
           </EnumerationList>
         </EnumeratedArgumentType>
-        <ArrayArgumentType name="BuffQueueDepth" shortDescription="Array of queue depths for Fw::Buffer types" arrayTypeRef="U32">
+        <ArrayArgumentType name="BuffQueueDepth" shortDescription="Array of queue depths for Fw::Buffer types" arrayTypeRef="/FprimeYamcsReference_YamcsDeployment/U32">
           <DimensionList>
             <Dimension>
               <StartingIndex>
@@ -3248,13 +3248,13 @@
         </EnumeratedArgumentType>
         <AggregateArgumentType name="DpRecord" shortDescription="Data structure representing a data product.">
           <MemberList>
-            <Member name="id" typeRef="FwDpIdType" />
-            <Member name="tSec" typeRef="U32" />
-            <Member name="tSub" typeRef="U32" />
-            <Member name="priority" typeRef="U32" />
-            <Member name="size" typeRef="U64" />
-            <Member name="blocks" typeRef="U32" />
-            <Member name="state" typeRef="Fw/DpState" />
+            <Member name="id" typeRef="/FprimeYamcsReference_YamcsDeployment/FwDpIdType" />
+            <Member name="tSec" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+            <Member name="tSub" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+            <Member name="priority" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+            <Member name="size" typeRef="/FprimeYamcsReference_YamcsDeployment/U64" />
+            <Member name="blocks" typeRef="/FprimeYamcsReference_YamcsDeployment/U32" />
+            <Member name="state" typeRef="/FprimeYamcsReference_YamcsDeployment/Fw/DpState" />
           </MemberList>
         </AggregateArgumentType>
         <EnumeratedArgumentType name="VersionStatus" shortDescription="An enumeration for version status">
@@ -3275,9 +3275,9 @@
         </EnumeratedArgumentType>
         <AggregateArgumentType name="CustomVersionDb" shortDescription="Data Structure for custom version Tlm">
           <MemberList>
-            <Member name="version_enum" shortDescription="enumeration/name of the custom version" typeRef="Svc/VersionCfg/VersionEnum" />
-            <Member name="version_value" shortDescription="string containing custom version" typeRef="string80" />
-            <Member name="version_status" shortDescription="status of the custom version" typeRef="Svc/VersionStatus" />
+            <Member name="version_enum" shortDescription="enumeration/name of the custom version" typeRef="/FprimeYamcsReference_YamcsDeployment/Svc/VersionCfg/VersionEnum" />
+            <Member name="version_value" shortDescription="string containing custom version" typeRef="/FprimeYamcsReference_YamcsDeployment/string80" />
+            <Member name="version_status" shortDescription="status of the custom version" typeRef="/FprimeYamcsReference_YamcsDeployment/Svc/VersionStatus" />
           </MemberList>
         </AggregateArgumentType>
       </ArgumentTypeSet>

@@ -57,6 +57,26 @@ pub(crate) struct UnresolvedContainer {
     pub space_system_path: String,
 }
 
+/// Intermediate structure holding a parameter type during Pass 1 before construction
+#[derive(Clone)]
+pub(crate) struct UnresolvedParameterType {
+    /// The original XTCE XML parameter type definition
+    pub xml: hermes_xtce::ParameterTypeSetType,
+    /// The SpaceSystem path where this type is defined
+    pub space_system_path: String,
+}
+
+/// Intermediate structure holding a parameter during Pass 1 before construction
+#[derive(Clone)]
+pub(crate) struct UnresolvedParameter {
+    /// The original XTCE XML parameter definition
+    pub xml: hermes_xtce::ParameterType,
+    /// Unresolved parameter type reference (may be relative/unqualified)
+    pub parameter_type_ref: String,
+    /// The SpaceSystem path where this parameter is defined
+    pub space_system_path: String,
+}
+
 /// Resolve a container reference with XTCE upward search semantics.
 ///
 /// For unqualified names, search starts in the current SpaceSystem and moves upward
@@ -161,6 +181,295 @@ pub(crate) fn collect_containers(
             format!("{}/{}", path, child.name)
         };
         collect_containers(&child_path, child, unresolved);
+    }
+}
+
+/// Pass 1: Collect parameter types from SpaceSystem tree
+///
+/// Recursively traverse the SpaceSystem tree, collecting all ParameterTypes
+/// along with their fully qualified names.
+pub(crate) fn collect_parameter_types(
+    path: &str,
+    schema: &hermes_xtce::SpaceSystem,
+    unresolved: &mut HashMap<String, UnresolvedParameterType>,
+) {
+    // Collect telemetry parameter types
+    if let Some(telemetry_metadata) = &schema.telemetry_meta_data {
+        for param_type_set in &telemetry_metadata.parameter_type_set {
+            let name = get_parameter_type_name(param_type_set);
+            let qualified_name = if path.is_empty() || path == "/" {
+                format!("/{}", name)
+            } else {
+                format!("{}/{}", path, name)
+            };
+
+            unresolved.insert(
+                qualified_name,
+                UnresolvedParameterType {
+                    xml: param_type_set.clone(),
+                    space_system_path: path.to_string(),
+                },
+            );
+        }
+    }
+
+    // Recursively process child SpaceSystems
+    for child in &schema.space_system {
+        let child_path = if path.is_empty() || path == "/" {
+            format!("/{}", child.name)
+        } else {
+            format!("{}/{}", path, child.name)
+        };
+        collect_parameter_types(&child_path, child, unresolved);
+    }
+}
+
+/// Pass 1: Collect parameters from SpaceSystem tree
+///
+/// Recursively traverse the SpaceSystem tree, collecting all Parameters
+/// along with their fully qualified names and unresolved type references.
+pub(crate) fn collect_parameters(
+    path: &str,
+    schema: &hermes_xtce::SpaceSystem,
+    unresolved: &mut HashMap<String, UnresolvedParameter>,
+) {
+    // Collect telemetry parameters
+    if let Some(telemetry_metadata) = &schema.telemetry_meta_data {
+        for param_set in &telemetry_metadata.parameter_set {
+            match param_set {
+                hermes_xtce::ParameterSetType::Parameter(param) => {
+                    let qualified_name = if path.is_empty() || path == "/" {
+                        format!("/{}", param.name)
+                    } else {
+                        format!("{}/{}", path, param.name)
+                    };
+
+                    unresolved.insert(
+                        qualified_name,
+                        UnresolvedParameter {
+                            xml: param.clone(),
+                            parameter_type_ref: param.parameter_type_ref.clone(),
+                            space_system_path: path.to_string(),
+                        },
+                    );
+                }
+                hermes_xtce::ParameterSetType::ParameterRef(_) => {
+                    // ParameterRef is a reference to a parameter defined elsewhere
+                    // We skip it here as it doesn't define a new parameter
+                }
+            }
+        }
+    }
+
+    // Recursively process child SpaceSystems
+    for child in &schema.space_system {
+        let child_path = if path.is_empty() || path == "/" {
+            format!("/{}", child.name)
+        } else {
+            format!("{}/{}", path, child.name)
+        };
+        collect_parameters(&child_path, child, unresolved);
+    }
+}
+
+/// Helper function to extract the name from a ParameterTypeSetType variant
+fn get_parameter_type_name(param_type: &hermes_xtce::ParameterTypeSetType) -> &str {
+    match param_type {
+        hermes_xtce::ParameterTypeSetType::IntegerParameterType(t) => &t.name,
+        hermes_xtce::ParameterTypeSetType::FloatParameterType(t) => &t.name,
+        hermes_xtce::ParameterTypeSetType::StringParameterType(t) => &t.name,
+        hermes_xtce::ParameterTypeSetType::BooleanParameterType(t) => &t.name,
+        hermes_xtce::ParameterTypeSetType::EnumeratedParameterType(t) => &t.name,
+        hermes_xtce::ParameterTypeSetType::BinaryParameterType(t) => &t.name,
+        hermes_xtce::ParameterTypeSetType::AbsoluteTimeParameterType(t) => &t.name,
+        hermes_xtce::ParameterTypeSetType::RelativeTimeParameterType(t) => &t.name,
+        hermes_xtce::ParameterTypeSetType::ArrayParameterType(t) => &t.name,
+        hermes_xtce::ParameterTypeSetType::AggregateParameterType(t) => &t.name,
+    }
+}
+
+pub(crate) fn construct_parameter_types(
+    unresolved: HashMap<String, UnresolvedParameterType>,
+) -> Result<HashMap<String, Rc<crate::Type>>> {
+    let mut completed: HashMap<String, Rc<crate::Type>> = HashMap::new();
+    let mut deferred_array_types: Vec<(String, UnresolvedParameterType)> = Vec::new();
+    let mut deferred_aggregate_types: Vec<(String, UnresolvedParameterType)> = Vec::new();
+
+    // Convert simple types that don't reference other types
+    for (qualified_name, unresolved_type) in unresolved {
+        match &unresolved_type.xml {
+            // Defer Array and Aggregate types to Pass 2
+            hermes_xtce::ParameterTypeSetType::ArrayParameterType(_) => {
+                deferred_array_types.push((qualified_name, unresolved_type));
+            }
+            hermes_xtce::ParameterTypeSetType::AggregateParameterType(_) => {
+                deferred_aggregate_types.push((qualified_name, unresolved_type));
+            }
+            // Convert all other types immediately
+            _ => match crate::types::convert_parameter_type_set(&unresolved_type.xml) {
+                Ok(type_) => {
+                    completed.insert(qualified_name, Rc::new(type_));
+                }
+                Err(Error::NotImplemented(_)) => {
+                    unreachable!("These types should be defered")
+                }
+                Err(e) => {
+                    // Propagate other errors
+                    return Err(e);
+                }
+            },
+        }
+    }
+
+    // Convert Array and Aggregate types now that simple types are available
+    // Process aggregate types first, then arrays (in case arrays reference aggregates)
+    for (qualified_name, unresolved_type) in deferred_aggregate_types {
+        match crate::types::convert_parameter_type_set_with_context(
+            &unresolved_type.xml,
+            &unresolved_type.space_system_path,
+            &completed,
+        ) {
+            Ok(type_) => {
+                completed.insert(qualified_name, Rc::new(type_));
+            }
+            Err(Error::NotImplemented(msg)) => {
+                tracing::warn!(
+                    "Skipping unsupported parameter type '{}': {}",
+                    qualified_name,
+                    msg
+                );
+            }
+            Err(e) => {
+                tracing::warn!(
+                    "Failed to construct aggregate type '{}': {}",
+                    qualified_name,
+                    e
+                );
+            }
+        }
+    }
+
+    for (qualified_name, unresolved_type) in deferred_array_types {
+        match crate::types::convert_parameter_type_set_with_context(
+            &unresolved_type.xml,
+            &unresolved_type.space_system_path,
+            &completed,
+        ) {
+            Ok(type_) => {
+                completed.insert(qualified_name, Rc::new(type_));
+            }
+            Err(e) => {
+                tracing::warn!("Failed to construct array type '{}': {}", qualified_name, e);
+            }
+        }
+    }
+
+    Ok(completed)
+}
+
+/// Pass 3: Construct parameters with resolved type references
+pub(crate) fn construct_parameters(
+    unresolved: HashMap<String, UnresolvedParameter>,
+    parameter_types: &HashMap<String, Rc<crate::Type>>,
+) -> Result<HashMap<String, Rc<crate::Parameter>>> {
+    let mut completed: HashMap<String, Rc<crate::Parameter>> = HashMap::new();
+
+    for (qualified_name, unresolved_param) in unresolved {
+        // Try to resolve parameter type reference
+        match resolve_parameter_type_name(
+            &unresolved_param.space_system_path,
+            &unresolved_param.parameter_type_ref,
+            parameter_types,
+        ) {
+            Ok(resolved_type_name) => {
+                let type_ = parameter_types
+                    .get(&resolved_type_name)
+                    .ok_or_else(|| {
+                        Error::InvalidXtce(format!(
+                            "Parameter type '{}' not found in constructed types",
+                            resolved_type_name
+                        ))
+                    })?
+                    .clone();
+
+                let parameter = crate::Parameter {
+                    head: crate::Item {
+                        name: unresolved_param.xml.name.clone(),
+                        qualified_name: qualified_name.clone(),
+                        short_description: unresolved_param.xml.short_description.clone(),
+                        long_description: unresolved_param.xml.long_description.clone(),
+                        ancillary_data_set: unresolved_param.xml.ancillary_data_set.clone(),
+                    },
+                    type_,
+                    properties: unresolved_param.xml.parameter_properties.clone(),
+                };
+
+                completed.insert(qualified_name, Rc::new(parameter));
+            }
+            Err(_) => {
+                // Skip parameters that reference unsupported or missing types
+                tracing::warn!(
+                    "Skipping parameter '{}' because its type '{}' could not be resolved",
+                    qualified_name,
+                    unresolved_param.parameter_type_ref
+                );
+            }
+        }
+    }
+
+    Ok(completed)
+}
+
+/// Resolve a parameter type name by searching in the constructed types map
+pub(crate) fn resolve_parameter_type_name(
+    current_path: &str,
+    type_ref: &str,
+    parameter_types: &HashMap<String, Rc<crate::Type>>,
+) -> Result<String> {
+    // If it's an absolute or relative path with /, use standard resolution
+    if type_ref.starts_with('/') || type_ref.contains('/') {
+        let resolved = resolve_name_reference(current_path, type_ref);
+        if parameter_types.contains_key(&resolved) {
+            return Ok(resolved);
+        }
+        return Err(Error::InvalidXtce(format!(
+            "Parameter type reference '{}' resolved to '{}' but not found",
+            type_ref, resolved
+        )));
+    }
+
+    // Unqualified name - search upward through SpaceSystem hierarchy
+    let mut search_path = current_path.to_string();
+    loop {
+        let candidate = if search_path.is_empty() || search_path == "/" {
+            format!("/{}", type_ref)
+        } else {
+            format!("{}/{}", search_path, type_ref)
+        };
+
+        if parameter_types.contains_key(&candidate) {
+            return Ok(candidate);
+        }
+
+        // Move up one level
+        if search_path.is_empty() || search_path == "/" {
+            // Reached root without finding the type
+            return Err(Error::InvalidXtce(format!(
+                "Parameter type '{}' not found in '{}' or any parent SpaceSystem",
+                type_ref, current_path
+            )));
+        }
+
+        // Remove the last path component
+        if let Some(idx) = search_path.rfind('/') {
+            search_path = if idx == 0 {
+                "/".to_string()
+            } else {
+                search_path[..idx].to_string()
+            };
+        } else {
+            search_path = String::new();
+        }
     }
 }
 
@@ -351,6 +660,47 @@ pub(crate) fn parse_hex_binary(s: &str) -> Result<Vec<u8>> {
     }
 
     Ok(out)
+}
+
+pub(crate) fn convert_integer_value(
+    xml: &hermes_xtce::IntegerValueType,
+) -> Result<crate::IntegerValue> {
+    use hermes_xtce::IntegerValueType as X;
+
+    match xml {
+        X::FixedValue(val) => Ok(crate::IntegerValue {
+            value: crate::IntegerValueKind::FixedValue(*val),
+            linear_adjustment: None,
+        }),
+        X::DynamicValue(dyn_val) => {
+            let parameter = convert_parameter_instance_ref(&dyn_val.parameter_instance_ref)?;
+            let linear_adjustment =
+                dyn_val
+                    .linear_adjustment
+                    .as_ref()
+                    .map(|adj| crate::LinearAdjustment {
+                        slope: adj.slope,
+                        intercept: adj.intercept,
+                    });
+
+            Ok(crate::IntegerValue {
+                value: crate::IntegerValueKind::DynamicValueParameter(parameter),
+                linear_adjustment,
+            })
+        }
+        X::DiscreteLookupList(_) => {
+            Err(Error::NotImplemented("DiscreteLookupList in IntegerValue"))
+        }
+    }
+}
+
+pub(crate) fn convert_parameter_instance_ref(
+    xml: &hermes_xtce::ParameterInstanceRefType,
+) -> Result<crate::ParameterInstanceRef> {
+    Ok(crate::ParameterInstanceRef {
+        parameter: crate::ParameterRef(xml.parameter_ref.clone()),
+        use_calibrated_value: xml.use_calibrated_value,
+    })
 }
 
 pub(crate) fn parse_relative_time(s: &str) -> Result<RelativeTime> {

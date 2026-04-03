@@ -166,7 +166,7 @@ impl SequenceContainer {
             encoding
                 .size_in_bits
                 .as_ref()
-                .map(convert_integer_value)
+                .map(crate::util::convert_integer_value)
                 .transpose()?
         } else {
             None
@@ -266,7 +266,9 @@ fn convert_comparison_check(xml: &hermes_xtce::ComparisonCheckType) -> Result<Co
     // [2]: Value or ParameterInstanceRef (right side)
 
     let left = match &xml.content[0] {
-        C::ParameterInstanceRef(param_ref) => convert_parameter_instance_ref(param_ref)?,
+        C::ParameterInstanceRef(param_ref) => {
+            crate::util::convert_parameter_instance_ref(param_ref)?
+        }
         _ => {
             return Err(Error::InvalidXtce(
                 "ComparisonCheck first element must be ParameterInstanceRef".to_string(),
@@ -284,9 +286,9 @@ fn convert_comparison_check(xml: &hermes_xtce::ComparisonCheckType) -> Result<Co
     };
 
     let right = match &xml.content[2] {
-        C::ParameterInstanceRef(param_ref) => {
-            ParameterRefOrValue::ParameterInstanceRef(convert_parameter_instance_ref(param_ref)?)
-        }
+        C::ParameterInstanceRef(param_ref) => ParameterRefOrValue::ParameterInstanceRef(
+            crate::util::convert_parameter_instance_ref(param_ref)?,
+        ),
         C::Value(val) => ParameterRefOrValue::Value(val.clone()),
         _ => {
             return Err(Error::InvalidXtce(
@@ -408,13 +410,9 @@ fn convert_entry(xml: hermes_xtce::EntryListType) -> Result<Entry> {
             })
         }
         X::ParameterSegmentRefEntry(_) => Err(Error::NotImplemented("ParameterSegmentRefEntry")),
-        X::ContainerSegmentRefEntry(_) => {
-            Err(Error::NotImplemented("ContainerSegmentRefEntry"))
-        }
+        X::ContainerSegmentRefEntry(_) => Err(Error::NotImplemented("ContainerSegmentRefEntry")),
         X::StreamSegmentEntry(_) => Err(Error::NotImplemented("StreamSegmentEntry")),
-        X::IndirectParameterRefEntry(_) => {
-            Err(Error::NotImplemented("IndirectParameterRefEntry"))
-        }
+        X::IndirectParameterRefEntry(_) => Err(Error::NotImplemented("IndirectParameterRefEntry")),
         X::ArrayParameterRefEntry(_) => Err(Error::NotImplemented("ArrayParameterRefEntry")),
     }
 }
@@ -428,9 +426,7 @@ fn convert_location_in_container_in_bits(
         R::ContainerStart => ReferenceLocation::ContainerStart,
         R::PreviousEntry => ReferenceLocation::PreviousEntry,
         R::ContainerEnd => {
-            return Err(Error::NotImplemented(
-                "ReferenceLocation::ContainerEnd",
-            ));
+            return Err(Error::NotImplemented("ReferenceLocation::ContainerEnd"));
         }
         R::NextEntry => {
             return Err(Error::NotImplemented("ReferenceLocation::NextEntry"));
@@ -443,7 +439,8 @@ fn convert_location_in_container_in_bits(
             linear_adjustment: None,
         },
         C::DynamicValue(dyn_val) => {
-            let parameter = convert_parameter_instance_ref(&dyn_val.parameter_instance_ref)?;
+            let parameter =
+                crate::util::convert_parameter_instance_ref(&dyn_val.parameter_instance_ref)?;
             let linear_adjustment =
                 dyn_val
                     .linear_adjustment
@@ -472,11 +469,11 @@ fn convert_location_in_container_in_bits(
 }
 
 fn convert_repeat(xml: &hermes_xtce::RepeatType) -> Result<Repeat> {
-    let count = convert_integer_value(&xml.count)?;
+    let count = crate::util::convert_integer_value(&xml.count)?;
     let offset = xml
         .offset
         .as_ref()
-        .map(convert_integer_value)
+        .map(crate::util::convert_integer_value)
         .transpose()?
         .unwrap_or_else(|| IntegerValue {
             value: crate::IntegerValueKind::FixedValue(0),
@@ -484,43 +481,4 @@ fn convert_repeat(xml: &hermes_xtce::RepeatType) -> Result<Repeat> {
         });
 
     Ok(Repeat { count, offset })
-}
-
-fn convert_integer_value(xml: &hermes_xtce::IntegerValueType) -> Result<IntegerValue> {
-    use hermes_xtce::IntegerValueType as X;
-
-    match xml {
-        X::FixedValue(val) => Ok(IntegerValue {
-            value: crate::IntegerValueKind::FixedValue(*val),
-            linear_adjustment: None,
-        }),
-        X::DynamicValue(dyn_val) => {
-            let parameter = convert_parameter_instance_ref(&dyn_val.parameter_instance_ref)?;
-            let linear_adjustment =
-                dyn_val
-                    .linear_adjustment
-                    .as_ref()
-                    .map(|adj| crate::LinearAdjustment {
-                        slope: adj.slope,
-                        intercept: adj.intercept,
-                    });
-
-            Ok(IntegerValue {
-                value: crate::IntegerValueKind::DynamicValueParameter(parameter),
-                linear_adjustment,
-            })
-        }
-        X::DiscreteLookupList(_) => Err(Error::NotImplemented(
-            "DiscreteLookupList in IntegerValue",
-        )),
-    }
-}
-
-fn convert_parameter_instance_ref(
-    xml: &hermes_xtce::ParameterInstanceRefType,
-) -> Result<ParameterInstanceRef> {
-    Ok(ParameterInstanceRef {
-        parameter: ParameterRef(xml.parameter_ref.clone()),
-        use_calibrated_value: xml.use_calibrated_value,
-    })
 }

@@ -1,14 +1,17 @@
+mod common;
+
 use hermes_data::MissionDatabase;
 use std::fs;
 
-#[test]
+#[test_log::test]
 fn test_load_fprime_containers() {
+    let _guard = common::assert_no_warnings();
+
     // Load the test XTCE file
     let xml_content = fs::read_to_string("../hermes-xtce/tests/data/fprime.xtce.xml")
         .expect("Failed to read test file");
 
-    let space_system: hermes_xtce::SpaceSystem =
-        quick_xml::de::from_str(&xml_content).expect("Failed to parse XTCE");
+    let space_system = hermes_xtce::from_str(&xml_content).expect("Failed to parse XTCE");
 
     // Create mission database with multi-pass container loading
     let mdb = MissionDatabase::new(&space_system).expect("Failed to build mission database");
@@ -56,13 +59,14 @@ fn test_load_fprime_containers() {
     );
 }
 
-#[test]
+#[test_log::test]
 fn test_container_names_are_fully_qualified() {
+    let _guard = common::assert_no_warnings();
+
     let xml_content = fs::read_to_string("../hermes-xtce/tests/data/fprime.xtce.xml")
         .expect("Failed to read test file");
 
-    let space_system: hermes_xtce::SpaceSystem =
-        quick_xml::de::from_str(&xml_content).expect("Failed to parse XTCE");
+    let space_system = hermes_xtce::from_str(&xml_content).expect("Failed to parse XTCE");
 
     let mdb = MissionDatabase::new(&space_system).expect("Failed to build mission database");
 

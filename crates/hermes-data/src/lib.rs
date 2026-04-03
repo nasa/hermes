@@ -56,9 +56,24 @@ impl MissionDatabase {
             },
         };
 
+        let root_path = format!("/{}", schema.name);
+
+        // Load parameter types
+        let mut unresolved_param_types = HashMap::new();
+        collect_parameter_types(&root_path, schema, &mut unresolved_param_types);
+        let parameter_types = construct_parameter_types(unresolved_param_types)?;
+
+        // Load parameters
+        let mut unresolved_parameters = HashMap::new();
+        collect_parameters(&root_path, schema, &mut unresolved_parameters);
+        let parameters = construct_parameters(unresolved_parameters, &parameter_types)?;
+
+        // Store parameter types and parameters in the database
+        out.de.parameter_types = parameter_types;
+        out.de.parameters = parameters;
+
         // Collect all containers with their unresolved references
         let mut unresolved_containers = HashMap::new();
-        let root_path = format!("/{}", schema.name);
         collect_containers(&root_path, schema, &mut unresolved_containers);
 
         // Build dependency graph and topological sort
@@ -76,6 +91,18 @@ impl MissionDatabase {
 
     pub fn get_parameter(&self, name: &str) -> Option<&Rc<Parameter>> {
         self.de.parameters.get(name)
+    }
+
+    pub fn get_parameter_type(&self, name: &str) -> Option<&Rc<Type>> {
+        self.de.parameter_types.get(name)
+    }
+
+    pub fn parameters(&self) -> &HashMap<String, Rc<Parameter>> {
+        &self.de.parameters
+    }
+
+    pub fn parameter_types(&self) -> &HashMap<String, Rc<Type>> {
+        &self.de.parameter_types
     }
 
     pub fn get_container(&self, name: &str) -> Option<&Rc<SequenceContainer>> {

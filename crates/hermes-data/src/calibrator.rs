@@ -245,8 +245,9 @@ impl MathOperation {
         Ok(())
     }
 
-    pub fn compute(&self) -> f64 {
-        0.0
+    // TODO(tumbar)
+    pub fn compute(&self, raw: f64) -> f64 {
+        raw
     }
 }
 
@@ -302,7 +303,7 @@ impl Calibrator {
             Calibrator::None => Ok(raw),
             Calibrator::Spline(spline) => Ok(spline.compute(raw)),
             Calibrator::Polynomial(polynomial) => Ok(polynomial.compute(raw)),
-            Calibrator::MathOperation(_) => Err(Error::NotImplemented("MathOperation calibrator")),
+            Calibrator::MathOperation(operation) => Ok(operation.compute(raw)),
         }
     }
 }

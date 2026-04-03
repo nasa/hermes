@@ -10,4 +10,5 @@ thiserror = "2.0"
 tracing = "0.1.44"
 
 [dev-dependencies]
-quick-xml = { version = "0.39", features = ["serialize"] }
+test-log = {version = "0.2", default-features = false, features = ["trace"]}
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
