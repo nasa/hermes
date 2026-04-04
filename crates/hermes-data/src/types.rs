@@ -462,57 +462,7 @@ fn convert_string_parameter_type(xml: &hermes_xtce::StringParameterType) -> Resu
 
     // Determine size (fixed, leading, or termination char)
     let byte_order = encoding.byte_order.clone().try_into()?;
-    let size = encoding
-        .content
-        .iter()
-        .find_map(|item| match item {
-            hermes_xtce::StringDataEncodingTypeContent::SizeInBits(size) => {
-                // Fixed size strings - check for optional termination char or leading size
-                if let Some(leading_size) = &size.leading_size {
-                    // Pascal-style string with fixed buffer and leading size tag
-                    Some(Ok(StringSize::LeadingSize(IntegerType {
-                        size_in_bits: leading_size.size_in_bits_of_size_tag,
-                        signed: false,
-                        byte_order,
-                        encoding: hermes_xtce::IntegerEncodingType::Unsigned,
-                        calibrator: Calibrator::None,
-                    })))
-                } else if let Some(term_char) = &size.termination_char {
-                    // Null-terminated string with fixed buffer
-                    Some(parse_termination_char(term_char).map(StringSize::TerminationChar))
-                } else {
-                    // Fixed size string
-                    Some(Ok(StringSize::Fixed((size.fixed.fixed_value / 8) as usize)))
-                }
-            }
-            hermes_xtce::StringDataEncodingTypeContent::Variable(var) => {
-                // Variable size strings - check what determines the size
-                var.content
-                    .iter()
-                    .find_map(|var_content| match var_content {
-                        hermes_xtce::VariableStringTypeContent::LeadingSize(leading_size) => {
-                            Some(Ok(StringSize::LeadingSize(IntegerType {
-                                size_in_bits: leading_size.size_in_bits_of_size_tag,
-                                signed: false,
-                                byte_order,
-                                encoding: hermes_xtce::IntegerEncodingType::Unsigned,
-                                calibrator: Calibrator::None,
-                            })))
-                        }
-                        hermes_xtce::VariableStringTypeContent::TerminationChar(term_char) => {
-                            Some(parse_termination_char(term_char).map(StringSize::TerminationChar))
-                        }
-                        _ => None,
-                    })
-            }
-            _ => None,
-        })
-        .transpose()?
-        .ok_or_else(|| {
-            Error::InvalidXtce(
-                "StringParameterType missing size specification (Fixed or Variable)".to_string(),
-            )
-        })?;
+    let size = convert_string_size(&encoding.content, byte_order)?;
 
     Ok(StringType {
         encoding: encoding.encoding.clone(),
@@ -532,6 +482,64 @@ fn parse_termination_char(hex: &str) -> Result<u8> {
     }
 
     Ok(bytes[0])
+}
+
+/// Helper to create an IntegerType for a leading size tag
+fn create_leading_size_integer_type(
+    size_in_bits: i64,
+    byte_order: ByteOrder,
+) -> IntegerType {
+    IntegerType {
+        size_in_bits,
+        signed: false,
+        byte_order,
+        encoding: hermes_xtce::IntegerEncodingType::Unsigned,
+        calibrator: Calibrator::None,
+    }
+}
+
+/// Helper to convert string data encoding content to StringSize
+fn convert_string_size(
+    content: &[hermes_xtce::StringDataEncodingTypeContent],
+    byte_order: ByteOrder,
+) -> Result<StringSize> {
+    content
+        .iter()
+        .find_map(|item| match item {
+            hermes_xtce::StringDataEncodingTypeContent::SizeInBits(size) => {
+                if let Some(leading_size) = &size.leading_size {
+                    Some(Ok(StringSize::LeadingSize(create_leading_size_integer_type(
+                        leading_size.size_in_bits_of_size_tag,
+                        byte_order,
+                    ))))
+                } else if let Some(term_char) = &size.termination_char {
+                    Some(parse_termination_char(term_char).map(StringSize::TerminationChar))
+                } else {
+                    Some(Ok(StringSize::Fixed((size.fixed.fixed_value / 8) as usize)))
+                }
+            }
+            hermes_xtce::StringDataEncodingTypeContent::Variable(var) => {
+                var.content.iter().find_map(|var_content| match var_content {
+                    hermes_xtce::VariableStringTypeContent::LeadingSize(leading_size) => {
+                        Some(Ok(StringSize::LeadingSize(create_leading_size_integer_type(
+                            leading_size.size_in_bits_of_size_tag,
+                            byte_order,
+                        ))))
+                    }
+                    hermes_xtce::VariableStringTypeContent::TerminationChar(term_char) => {
+                        Some(parse_termination_char(term_char).map(StringSize::TerminationChar))
+                    }
+                    _ => None,
+                })
+            }
+            _ => None,
+        })
+        .transpose()?
+        .ok_or_else(|| {
+            Error::InvalidXtce(
+                "StringDataEncoding missing size specification (Fixed or Variable)".to_string(),
+            )
+        })
 }
 
 fn convert_boolean_parameter_type(xml: &hermes_xtce::BooleanParameterType) -> Result<BooleanType> {
@@ -642,51 +650,7 @@ fn convert_absolute_time_parameter_type(
         }
         hermes_xtce::EncodingTypeContent::StringDataEncoding(enc) => {
             let byte_order = enc.byte_order.clone().try_into()?;
-            let size = enc
-                .content
-                .iter()
-                .find_map(|item| match item {
-                    hermes_xtce::StringDataEncodingTypeContent::SizeInBits(size) => {
-                        if let Some(leading_size) = &size.leading_size {
-                            Some(Ok(StringSize::LeadingSize(IntegerType {
-                                size_in_bits: leading_size.size_in_bits_of_size_tag,
-                                signed: false,
-                                byte_order,
-                                encoding: hermes_xtce::IntegerEncodingType::Unsigned,
-                                calibrator: Calibrator::None,
-                            })))
-                        } else if let Some(term_char) = &size.termination_char {
-                            Some(parse_termination_char(term_char).map(StringSize::TerminationChar))
-                        } else {
-                            Some(Ok(StringSize::Fixed((size.fixed.fixed_value / 8) as usize)))
-                        }
-                    }
-                    hermes_xtce::StringDataEncodingTypeContent::Variable(var) => var
-                        .content
-                        .iter()
-                        .find_map(|var_content| match var_content {
-                            hermes_xtce::VariableStringTypeContent::LeadingSize(leading_size) => {
-                                Some(Ok(StringSize::LeadingSize(IntegerType {
-                                    size_in_bits: leading_size.size_in_bits_of_size_tag,
-                                    signed: false,
-                                    byte_order,
-                                    encoding: hermes_xtce::IntegerEncodingType::Unsigned,
-                                    calibrator: Calibrator::None,
-                                })))
-                            }
-                            hermes_xtce::VariableStringTypeContent::TerminationChar(term_char) => {
-                                Some(
-                                    parse_termination_char(term_char)
-                                        .map(StringSize::TerminationChar),
-                                )
-                            }
-                            _ => None,
-                        }),
-                    _ => None,
-                })
-                .transpose()
-                .ok()
-                .flatten()
+            let size = convert_string_size(&enc.content, byte_order)
                 .unwrap_or(StringSize::Fixed(0)); // Default for time strings
             TimeEncoding::String(StringType {
                 encoding: enc.encoding.clone(),
@@ -731,51 +695,7 @@ fn convert_relative_time_parameter_type(
         }
         hermes_xtce::EncodingTypeContent::StringDataEncoding(enc) => {
             let byte_order = enc.byte_order.clone().try_into()?;
-            let size = enc
-                .content
-                .iter()
-                .find_map(|item| match item {
-                    hermes_xtce::StringDataEncodingTypeContent::SizeInBits(size) => {
-                        if let Some(leading_size) = &size.leading_size {
-                            Some(Ok(StringSize::LeadingSize(IntegerType {
-                                size_in_bits: leading_size.size_in_bits_of_size_tag,
-                                signed: false,
-                                byte_order,
-                                encoding: hermes_xtce::IntegerEncodingType::Unsigned,
-                                calibrator: Calibrator::None,
-                            })))
-                        } else if let Some(term_char) = &size.termination_char {
-                            Some(parse_termination_char(term_char).map(StringSize::TerminationChar))
-                        } else {
-                            Some(Ok(StringSize::Fixed((size.fixed.fixed_value / 8) as usize)))
-                        }
-                    }
-                    hermes_xtce::StringDataEncodingTypeContent::Variable(var) => var
-                        .content
-                        .iter()
-                        .find_map(|var_content| match var_content {
-                            hermes_xtce::VariableStringTypeContent::LeadingSize(leading_size) => {
-                                Some(Ok(StringSize::LeadingSize(IntegerType {
-                                    size_in_bits: leading_size.size_in_bits_of_size_tag,
-                                    signed: false,
-                                    byte_order,
-                                    encoding: hermes_xtce::IntegerEncodingType::Unsigned,
-                                    calibrator: Calibrator::None,
-                                })))
-                            }
-                            hermes_xtce::VariableStringTypeContent::TerminationChar(term_char) => {
-                                Some(
-                                    parse_termination_char(term_char)
-                                        .map(StringSize::TerminationChar),
-                                )
-                            }
-                            _ => None,
-                        }),
-                    _ => None,
-                })
-                .transpose()
-                .ok()
-                .flatten()
+            let size = convert_string_size(&enc.content, byte_order)
                 .unwrap_or(StringSize::Fixed(0)); // Default for time strings
             TimeEncoding::String(StringType {
                 encoding: enc.encoding.clone(),

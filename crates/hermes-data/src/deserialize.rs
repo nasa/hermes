@@ -90,6 +90,7 @@ impl IntegerValue {
 
 impl IntegerType {
     fn deserialize(&self, ctx: &mut DeserializationContext, start_location: usize) -> Result<Value> {
+        
 
         if self.signed {
 
