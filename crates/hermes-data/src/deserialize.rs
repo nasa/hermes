@@ -7,7 +7,7 @@ pub struct DecodedValue {
     /// The raw value directly from the packet (DN)
     pub raw_value: Value,
     /// The value after calibration has been applied (EU)
-    pub calibrated_value: Value,
+    pub calibrated_value: Option<f64>,
     /// The container stack where this value is from
     pub containers: Vec<String>,
     /// The parameter this value refers to
@@ -18,14 +18,14 @@ pub struct DecodedValue {
     pub end_bit: usize,
 }
 
-struct ContainerContext<'a> {
+struct Context<'a> {
     db: &'a MissionDatabase,
     data: BitVec<'a>,
     position: usize,
     parameters: HashMap<String, Vec<DecodedValue>>,
 }
 
-impl<'a> ContainerContext<'a> {
+impl<'a> Context<'a> {
     fn get_bits(&mut self, num_bits: usize, order: ByteOrder) -> u64 {
         assert!(num_bits <= 64, "Invalid bit count {}", num_bits);
 
@@ -47,12 +47,17 @@ impl<'a> ContainerContext<'a> {
         }
     }
 
-    fn get_parameter_instance(&self, r: &ParameterInstanceRef) -> Result<Value> {
+    fn get_parameter_instance_num(&self, r: &ParameterInstanceRef) -> Result<f64> {
         let value = self.get_decoded_value(&r.parameter)?;
-        if r.use_calibrated_value {
-            Ok(value.calibrated_value.clone())
+        if r.use_calibrated_value && let Some(v) = value.calibrated_value {
+            Ok(v)
         } else {
-            Ok(value.raw_value.clone())
+            match &value.raw_value {
+                Value::UnsignedInteger(v) => Ok(*v as f64),
+                Value::SignedInteger(v) => Ok(*v as f64),
+                Value::Float(v) => Ok(*v),
+                v => Err(Error::InvalidValue(format!("Expected numeric value, got {}", v)))
+            }
         }
     }
 
@@ -60,20 +65,15 @@ impl<'a> ContainerContext<'a> {
         match r {
             VariableSize::Fixed(size) => Ok(self.get_data(*size)),
             VariableSize::DynamicParameterRef(ref_) => {
-                match self.get_parameter_instance(ref_)? {
-                    Value::UnsignedInteger(u) => Ok(self.get_data(u as usize)),
-                    Value::SignedInteger(i) => Ok(self.get_data(i as usize)),
-                    Value::Float(f) => Ok(self.get_data(f  as usize)),
-                    r => Err(Error::InvalidValue(format!("Invalid variable size {}", r))),
-                }
-            },
+                Ok(self.get_data(self.get_parameter_instance_num(ref_)? as usize))
+            }
             VariableSize::LeadingSize {
                 kind,
                 max_size_in_bits,
             } => {
-                let size = match kind.deserialize(self)? { 
+                let size = match kind.deserialize(self)? {
                     Value::UnsignedInteger(size) => size,
-                    r => return Err(Error::InvalidValue(format!("Invalid leading size {}", r))) 
+                    r => return Err(Error::InvalidValue(format!("Invalid leading size {}", r)))
                 };
                 let size = size as usize;
                 if (size * 8) > *max_size_in_bits {
@@ -107,37 +107,26 @@ impl<'a> ContainerContext<'a> {
 }
 
 impl IntegerValue {
-    fn get(&self, ctx: &ContainerContext) -> Result<i64> {
+    fn get(&self, ctx: &Context) -> Result<i64> {
         match &self {
             IntegerValue::FixedValue(v) => Ok(*v),
             IntegerValue::DynamicValueParameter {
                 ref_,
                 linear_adjustment,
-            } => match ctx.get_parameter_instance(ref_)? {
-                Value::SignedInteger(i) => Ok(linear_adjustment
-                    .as_ref()
-                    .map(|la| (la.intercept + la.slope * (i as f64)) as i64)
-                    .unwrap_or(i)),
-                Value::UnsignedInteger(i) => Ok(linear_adjustment
-                    .as_ref()
-                    .map(|la| (la.intercept + la.slope * (i as f64)) as i64)
-                    .unwrap_or(i as i64)),
-                Value::Float(f) => Ok(linear_adjustment
-                    .as_ref()
-                    .map(|la| (la.intercept + la.slope * f) as i64)
-                    .unwrap_or(f as i64)),
-                _ => Err(Error::InvalidValue(format!(
-                    "Cannot convert value for parameter {} to integer",
-                    ref_.parameter.0
-                ))),
-            },
+            } => {
+                let raw = ctx.get_parameter_instance_num(ref_)?;
+                match &linear_adjustment.as_ref().map(|la| la.intercept + la.slope * raw) {
+                    None => Ok(raw as i64),
+                    Some(l) => Ok(*l as i64)
+                }
+            }
             IntegerValue::DynamicValueArgument { .. } => unreachable!(),
         }
     }
 }
 
 impl IntegerType {
-    fn deserialize(&self, ctx: &mut ContainerContext) -> Result<Value> {
+    fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
         let r = ctx.get_bits(self.size_in_bits as usize, self.byte_order);
         match (&self.encoding, self.signed) {
             (IntegerEncodingType::Unsigned, _) => Ok(Value::UnsignedInteger(r)),
@@ -196,7 +185,7 @@ impl IntegerType {
 }
 
 impl FloatType {
-    fn deserialize(&self, ctx: &mut ContainerContext) -> Result<Value> {
+    fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
         match self.size_in_bits {
             FloatSizeInBitsType::_32 => {
                 let raw = ctx.get_bits(32, self.byte_order) as u32;
@@ -208,38 +197,30 @@ impl FloatType {
                 Ok(Value::Float(f64::from_bits(raw)))
             }
             FloatSizeInBitsType::_128 => {
-                // We can only load data in 64-bit chunks
-                // For big endian this is not an issue, just load the two chunks and merge them
-                // For little endian we need to load each chunk in big endian and swap everything
-                let hi = ctx.get_bits(64, ByteOrder::BigEndian);
-                let lo = ctx.get_bits(64, ByteOrder::BigEndian);
-
                 // TODO(tumbar) Rust has a nightly feature to represent f128 but it is not standard
                 //              on most systems. We will just store these as binary
-                Ok(Value::Binary(
-                    vec![hi.to_be_bytes(), lo.to_be_bytes()].concat(),
-                ))
+                Ok(Value::Binary(ctx.get_data(16)))
             }
         }
     }
 }
 
 impl StringType {
-    fn deserialize(&self, ctx: &mut ContainerContext) -> Result<Value> {
+    fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
         let raw: Vec<u8> = ctx.read_variable_size(&self.size)?;
 
-            match &self.encoding {
-                StringEncoding::UsAscii => Ok(Value::String(String::from_utf8_lossy(&raw).to_string())),
-                StringEncoding::Utf8 => Ok(Value::String(String::from_utf8_lossy(&raw).to_string())),
-                StringEncoding::Utf16 => Ok(Value::String(
-                    String::from_utf16_lossy(&raw.into()).to_string(),
-                )),
-            }
+        match &self.encoding {
+            StringEncoding::UsAscii => Ok(Value::String(String::from_utf8_lossy(&raw).to_string())),
+            StringEncoding::Utf8 => Ok(Value::String(String::from_utf8_lossy(&raw).to_string())),
+            StringEncoding::Utf16 => Ok(Value::String(
+                String::from_utf16_lossy(&raw.into()).to_string(),
+            )),
+        }
     }
 }
 
 impl BooleanType {
-    fn deserialize(&self, ctx: &mut ContainerContext) -> Result<Value> {
+    fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
         match &self.encoding {
             BooleanEncoding::Integer(ty) => {
                 match ty.deserialize(ctx)? {
@@ -257,33 +238,47 @@ impl BooleanType {
 }
 
 impl BinaryType {
-    fn deserialize(&self, ctx: &mut ContainerContext) -> Result<Value> {
+    fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
         let data = ctx.read_variable_size(&self.size)?;
         Ok(Value::Binary(data))
     }
 }
 
 impl Type {
-    fn deserialize(&self, ctx: &mut ContainerContext) -> Result<Value> {
+    fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
         match self {
             Type::Integer(ty) => ty.deserialize(ctx),
             Type::Float(ty) => ty.deserialize(ctx),
             Type::String(ty) => ty.deserialize(ctx),
             Type::Boolean(ty) => ty.deserialize(ctx),
             Type::Binary(ty) => ty.deserialize(ctx),
-            Type::Enumerated(ty) => {}
-            Type::AbsoluteTime(ty) => {}
-            Type::RelativeTime(ty) => {}
-            Type::Array(ty) => {}
-            Type::Aggregate(ty) => {}
+            // Type::Enumerated(ty) => {}
+            // Type::AbsoluteTime(ty) => {}
+            // Type::RelativeTime(ty) => {}
+            // Type::Array(ty) => {}
+            // Type::Aggregate(ty) => {}
+            _ => unimplemented!()
+        }
+    }
+
+    fn calibrate(&self, value: &Value) -> Result<Value> {
+        match (self, value) {
+            (Type::Integer(ty), Value::SignedInteger(i)) => {
+                Ok(Value::Float(ty.calibrator.compute(*i as f64)?))
+            }
+            (Type::Integer(ty), Value::UnsignedInteger(i)) => {
+                Ok(Value::Float(ty.calibrator.compute(*i as f64)?))
+            }
+            (Type::Float(ty), Value::Float(i)) => {
+                Ok(Value::Float(ty.calibrator.compute(*i)?))
+            }
+            _ => Ok(value.clone())
         }
     }
 }
 
 impl Entry {
-    fn deserialize_once(&self, ctx: &mut ContainerContext) -> Result<()> {}
-
-    fn deserialize(&self, ctx: &mut ContainerContext) -> Result<()> {
+    fn deserialize(&self, ctx: &mut Context) -> Result<()> {
         let start_location = (match &self.location.reference {
             ReferenceLocation::ContainerStart => 0,
             ReferenceLocation::PreviousEntry => ctx.position,
@@ -298,7 +293,6 @@ impl Entry {
                     ctx.add(r, value)
                 }
                 EntryKind::ContainerRefEntry(r) => {
-                    ctx.get_data()
                     let c = ctx.db.telemetry_containers.get(&r.0).unwrap();
                 }
             }
@@ -310,9 +304,10 @@ impl Entry {
 }
 
 impl SequenceContainer {
-    fn deserialize(&self, ctx: &mut ContainerContext) -> Result<()> {}
+    fn deserialize(&self, ctx: &mut Context) -> Result<()> {}
+}
 
-    impl MissionDatabase {
+impl MissionDatabase {
         pub fn deserialize(&self, data: Vec<u8>) -> Result<Packet> {
             unimplemented!();
             // let mut ctx = DeserializationContext {

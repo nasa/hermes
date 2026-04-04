@@ -322,7 +322,7 @@ impl std::fmt::Display for Value {
         match self {
             Value::UnsignedInteger(u) => f.write_fmt(format_args!("{}", u)),
             Value::SignedInteger(i) => f.write_fmt(format_args!("{}", i)),
-            Value::Float(f) => f.write_fmt(format_args!("{}", f)),
+            Value::Float(fl) => f.write_fmt(format_args!("{}", fl)),
             Value::String(s) => f.write_fmt(format_args!("\"{}\"", s)),
             Value::Boolean(b) => f.write_str(if *b { "true" } else { "false" }),
             Value::Binary(b) => f.write_fmt(format_args!("{:?}", b)),
