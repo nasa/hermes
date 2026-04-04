@@ -8,7 +8,7 @@ use std::time::Duration;
 #[derive(Clone, Debug)]
 pub struct ParameterRef(pub String);
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ByteOrder {
     LittleEndian,
     BigEndian,
@@ -108,30 +108,67 @@ pub struct FloatType {
 }
 
 #[derive(Clone, Debug)]
-pub enum StringSize {
-    /// String size is fixed and not encoded in the binary
+pub enum VariableSize {
+    /// Size is fixed and not encoded in the binary
     Fixed(usize),
+    /// Read a different parameters value to determine the size
+    DynamicParameterRef(ParameterInstanceRef),
     /// Size is encoded before the string contents as an integer
-    LeadingSize(IntegerType),
+    LeadingSize {
+        kind: IntegerType,
+        max_size_in_bits: usize,
+    },
     /// String is terminated by a single ascii byte
-    TerminationChar(u8),
+    TerminationChar { chr: u8, max_size_in_bits: usize },
+}
+
+#[derive(Clone, Debug, Default)]
+pub enum StringEncoding {
+    #[default]
+    Utf8,
+    UsAscii,
+    Utf16,
+}
+
+impl TryFrom<hermes_xtce::StringEncodingType> for StringEncoding {
+    type Error = Error;
+
+    fn try_from(value: hermes_xtce::StringEncodingType) -> Result<Self> {
+        match value {
+            hermes_xtce::StringEncodingType::Utf8 => Ok(StringEncoding::Utf8),
+            hermes_xtce::StringEncodingType::UsAscii => Ok(StringEncoding::UsAscii),
+            hermes_xtce::StringEncodingType::Utf16 => Ok(StringEncoding::Utf16),
+            hermes_xtce::StringEncodingType::Utf16Le => Ok(StringEncoding::Utf16),
+            hermes_xtce::StringEncodingType::Utf16Be => Ok(StringEncoding::Utf16),
+            hermes_xtce::StringEncodingType::Iso88591
+            | hermes_xtce::StringEncodingType::Windows1252
+            | hermes_xtce::StringEncodingType::Utf32
+            | hermes_xtce::StringEncodingType::Utf32Le
+            | hermes_xtce::StringEncodingType::Utf32Be => Err(Error::InvalidXtce(format!(
+                "Unsupported string encoding: {:?}",
+                value
+            ))),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
 pub struct StringType {
     /// Specifies string encoding method, with the default being "UTF-8".
-    pub encoding: hermes_xtce::StringEncodingType,
+    pub encoding: StringEncoding,
     /// Strings are typically variably sized, determines how to handle this
-    pub size: StringSize,
+    pub size: VariableSize,
+}
+
+#[derive(Clone, Debug)]
+pub enum BooleanEncoding {
+    Integer(IntegerType),
+    String(StringType),
 }
 
 #[derive(Clone, Debug)]
 pub struct BooleanType {
-    pub size_in_bits: i64,
-    /// Describes the endianness of the encoded value.
-    pub byte_order: ByteOrder,
-    /// Specifies integer numeric value to raw encoding method (typically size_in_bits=1).
-    pub encoding: hermes_xtce::IntegerEncodingType,
+    pub encoding: BooleanEncoding,
     /// String representation for true value (default: "True")
     pub one_string_value: String,
     /// String representation for false value (default: "False")
@@ -158,10 +195,7 @@ pub struct EnumerationEntry {
 
 #[derive(Clone, Debug)]
 pub struct BinaryType {
-    /// Describes the endianness of the encoded value.
-    pub byte_order: ByteOrder,
-    /// Size in bits (can be fixed or dynamic)
-    pub size_in_bits: IntegerValue,
+    pub size: VariableSize,
 }
 
 #[derive(Clone, Debug)]
@@ -281,6 +315,45 @@ pub enum Value {
     RelativeTime(RelativeTime),
     Array(Vec<Value>),
     Aggregate(AggregateValue),
+}
+
+impl std::fmt::Display for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Value::UnsignedInteger(u) => f.write_fmt(format_args!("{}", u)),
+            Value::SignedInteger(i) => f.write_fmt(format_args!("{}", i)),
+            Value::Float(f) => f.write_fmt(format_args!("{}", f)),
+            Value::String(s) => f.write_fmt(format_args!("\"{}\"", s)),
+            Value::Boolean(b) => f.write_str(if *b { "true" } else { "false" }),
+            Value::Binary(b) => f.write_fmt(format_args!("{:?}", b)),
+            Value::Enumerated(e) => f.write_fmt(format_args!("{:?}", e)),
+            Value::AbsoluteTime(t) => write!(f, "{}ns", t.ns),
+            Value::RelativeTime(rt) => match rt {
+                RelativeTime::Forward(d) => write!(f, "+{:?}", d),
+                RelativeTime::Backward(d) => write!(f, "-{:?}", d),
+            },
+            Value::Array(arr) => {
+                f.write_str("[")?;
+                for (i, v) in arr.iter().enumerate() {
+                    if i > 0 {
+                        f.write_str(", ")?;
+                    }
+                    write!(f, "{}", v)?;
+                }
+                f.write_str("]")
+            }
+            Value::Aggregate(agg) => {
+                f.write_str("{")?;
+                for (i, (name, v)) in agg.iter().enumerate() {
+                    if i > 0 {
+                        f.write_str(", ")?;
+                    }
+                    write!(f, "{}: {}", name, v)?;
+                }
+                f.write_str("}")
+            }
+        }
+    }
 }
 
 impl Value {
@@ -460,12 +533,15 @@ fn convert_string_parameter_type(xml: &hermes_xtce::StringParameterType) -> Resu
             Error::InvalidXtce("StringParameterType missing StringDataEncoding".to_string())
         })?;
 
+    // Validate and convert string encoding
+    let string_encoding = encoding.encoding.clone().try_into()?;
+
     // Determine size (fixed, leading, or termination char)
     let byte_order = encoding.byte_order.clone().try_into()?;
     let size = convert_string_size(&encoding.content, byte_order)?;
 
     Ok(StringType {
-        encoding: encoding.encoding.clone(),
+        encoding: string_encoding,
         size,
     })
 }
@@ -485,10 +561,7 @@ fn parse_termination_char(hex: &str) -> Result<u8> {
 }
 
 /// Helper to create an IntegerType for a leading size tag
-fn create_leading_size_integer_type(
-    size_in_bits: i64,
-    byte_order: ByteOrder,
-) -> IntegerType {
+fn create_leading_size_integer_type(size_in_bits: i64, byte_order: ByteOrder) -> IntegerType {
     IntegerType {
         size_in_bits,
         signed: false,
@@ -498,40 +571,57 @@ fn create_leading_size_integer_type(
     }
 }
 
-/// Helper to convert string data encoding content to StringSize
+/// Helper to convert string data encoding content to VariableSize
 fn convert_string_size(
     content: &[hermes_xtce::StringDataEncodingTypeContent],
     byte_order: ByteOrder,
-) -> Result<StringSize> {
+) -> Result<VariableSize> {
     content
         .iter()
         .find_map(|item| match item {
             hermes_xtce::StringDataEncodingTypeContent::SizeInBits(size) => {
                 if let Some(leading_size) = &size.leading_size {
-                    Some(Ok(StringSize::LeadingSize(create_leading_size_integer_type(
-                        leading_size.size_in_bits_of_size_tag,
-                        byte_order,
-                    ))))
-                } else if let Some(term_char) = &size.termination_char {
-                    Some(parse_termination_char(term_char).map(StringSize::TerminationChar))
-                } else {
-                    Some(Ok(StringSize::Fixed((size.fixed.fixed_value / 8) as usize)))
-                }
-            }
-            hermes_xtce::StringDataEncodingTypeContent::Variable(var) => {
-                var.content.iter().find_map(|var_content| match var_content {
-                    hermes_xtce::VariableStringTypeContent::LeadingSize(leading_size) => {
-                        Some(Ok(StringSize::LeadingSize(create_leading_size_integer_type(
+                    Some(Ok(VariableSize::LeadingSize {
+                        kind: create_leading_size_integer_type(
                             leading_size.size_in_bits_of_size_tag,
                             byte_order,
-                        ))))
+                        ),
+                        max_size_in_bits: size.fixed.fixed_value as usize,
+                    }))
+                } else if let Some(term_char) = &size.termination_char {
+                    Some(
+                        parse_termination_char(term_char).map(|chr| VariableSize::TerminationChar {
+                            chr,
+                            max_size_in_bits: size.fixed.fixed_value as usize,
+                        }),
+                    )
+                } else {
+                    Some(Ok(VariableSize::Fixed((size.fixed.fixed_value / 8) as usize)))
+                }
+            }
+            hermes_xtce::StringDataEncodingTypeContent::Variable(var) => var
+                .content
+                .iter()
+                .find_map(|var_content| match var_content {
+                    hermes_xtce::VariableStringTypeContent::LeadingSize(leading_size) => {
+                        Some(Ok(VariableSize::LeadingSize {
+                            kind: create_leading_size_integer_type(
+                                leading_size.size_in_bits_of_size_tag,
+                                byte_order,
+                            ),
+                            max_size_in_bits: var.max_size_in_bits as usize,
+                        }))
                     }
                     hermes_xtce::VariableStringTypeContent::TerminationChar(term_char) => {
-                        Some(parse_termination_char(term_char).map(StringSize::TerminationChar))
+                        Some(parse_termination_char(term_char).map(|chr| {
+                            VariableSize::TerminationChar {
+                                chr,
+                                max_size_in_bits: var.max_size_in_bits as usize,
+                            }
+                        }))
                     }
                     _ => None,
-                })
-            }
+                }),
             _ => None,
         })
         .transpose()?
@@ -543,22 +633,40 @@ fn convert_string_size(
 }
 
 fn convert_boolean_parameter_type(xml: &hermes_xtce::BooleanParameterType) -> Result<BooleanType> {
-    // Extract encoding information from content
+    // Extract encoding information from content (can be either Integer or String)
     let encoding = xml
         .content
         .iter()
         .find_map(|item| match item {
-            hermes_xtce::BooleanParameterTypeContent::IntegerDataEncoding(enc) => Some(enc),
+            hermes_xtce::BooleanParameterTypeContent::IntegerDataEncoding(enc) => {
+                Some(BooleanEncoding::Integer(IntegerType {
+                    size_in_bits: enc.size_in_bits,
+                    signed: false,
+                    byte_order: enc.byte_order.clone().try_into().ok()?,
+                    encoding: enc.encoding.clone(),
+                    calibrator: Calibrator::None,
+                }))
+            }
+            hermes_xtce::BooleanParameterTypeContent::StringDataEncoding(enc) => {
+                let byte_order = enc.byte_order.clone().try_into().ok()?;
+                let size = convert_string_size(&enc.content, byte_order).ok()?;
+                let string_encoding = enc.encoding.clone().try_into().ok()?;
+                Some(BooleanEncoding::String(StringType {
+                    encoding: string_encoding,
+                    size,
+                }))
+            }
             _ => None,
         })
         .ok_or_else(|| {
-            Error::InvalidXtce("BooleanParameterType missing IntegerDataEncoding".to_string())
+            Error::InvalidXtce(
+                "BooleanParameterType missing IntegerDataEncoding or StringDataEncoding"
+                    .to_string(),
+            )
         })?;
 
     Ok(BooleanType {
-        size_in_bits: encoding.size_in_bits,
-        byte_order: encoding.byte_order.clone().try_into()?,
-        encoding: encoding.encoding.clone(),
+        encoding,
         one_string_value: xml.one_string_value.clone(),
         zero_string_value: xml.zero_string_value.clone(),
     })
@@ -621,12 +729,30 @@ fn convert_binary_parameter_type(xml: &hermes_xtce::BinaryParameterType) -> Resu
         })?;
 
     // Convert size (IntegerValueType can be fixed or dynamic)
-    let size_in_bits = crate::util::convert_integer_value(&encoding.size_in_bits)?;
+    let size_integer_value = crate::util::convert_integer_value(&encoding.size_in_bits)?;
 
-    Ok(BinaryType {
-        byte_order: encoding.byte_order.clone().try_into()?,
-        size_in_bits,
-    })
+    // Convert IntegerValue to VariableSize
+    let size = match size_integer_value {
+        IntegerValue::FixedValue(bits) => {
+            // Convert bits to bytes
+            VariableSize::Fixed((bits / 8) as usize)
+        }
+        IntegerValue::DynamicValueParameter { ref_, linear_adjustment } => {
+            if linear_adjustment.is_some() {
+                return Err(Error::NotImplemented(
+                    "Linear adjustment for binary size not supported",
+                ));
+            }
+            VariableSize::DynamicParameterRef(ref_)
+        }
+        IntegerValue::DynamicValueArgument { .. } => {
+            return Err(Error::NotImplemented(
+                "Argument reference for binary size not supported",
+            ));
+        }
+    };
+
+    Ok(BinaryType { size })
 }
 
 fn convert_absolute_time_parameter_type(
@@ -650,10 +776,11 @@ fn convert_absolute_time_parameter_type(
         }
         hermes_xtce::EncodingTypeContent::StringDataEncoding(enc) => {
             let byte_order = enc.byte_order.clone().try_into()?;
-            let size = convert_string_size(&enc.content, byte_order)
-                .unwrap_or(StringSize::Fixed(0)); // Default for time strings
+            let size =
+                convert_string_size(&enc.content, byte_order).unwrap_or(VariableSize::Fixed(0)); // Default for time strings
+            let string_encoding = enc.encoding.clone().try_into()?;
             TimeEncoding::String(StringType {
-                encoding: enc.encoding.clone(),
+                encoding: string_encoding,
                 size,
             })
         }
@@ -695,10 +822,11 @@ fn convert_relative_time_parameter_type(
         }
         hermes_xtce::EncodingTypeContent::StringDataEncoding(enc) => {
             let byte_order = enc.byte_order.clone().try_into()?;
-            let size = convert_string_size(&enc.content, byte_order)
-                .unwrap_or(StringSize::Fixed(0)); // Default for time strings
+            let size =
+                convert_string_size(&enc.content, byte_order).unwrap_or(VariableSize::Fixed(0)); // Default for time strings
+            let string_encoding = enc.encoding.clone().try_into()?;
             TimeEncoding::String(StringType {
-                encoding: enc.encoding.clone(),
+                encoding: string_encoding,
                 size,
             })
         }

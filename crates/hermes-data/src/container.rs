@@ -100,8 +100,6 @@ pub struct Repeat {
 
 #[derive(Clone, Debug)]
 pub struct Entry {
-    ///Optional short description for this entry element.
-    // pub short_description: Option<String>,
     pub kind: EntryKind,
     pub repeat: Option<Repeat>,
     pub include_condition: Option<hermes_xtce::MatchCriteriaType>,
@@ -186,10 +184,7 @@ fn convert_location_in_bits(
         .transpose()?
         .unwrap_or_else(|| LocationInContainerInBits {
             reference: ReferenceLocation::PreviousEntry,
-            location: IntegerValue {
-                kind: crate::IntegerValueKind::FixedValue(0),
-                linear_adjustment: None,
-            },
+            location: IntegerValue::FixedValue(0),
         }))
 }
 
@@ -268,10 +263,7 @@ fn convert_location_in_container_in_bits(
     };
 
     let location = match &xml.content {
-        C::FixedValue(val) => IntegerValue {
-            kind: crate::IntegerValueKind::FixedValue(*val),
-            linear_adjustment: None,
-        },
+        C::FixedValue(val) => IntegerValue::FixedValue(*val),
         C::DynamicValue(dyn_val) => {
             let parameter =
                 crate::util::convert_parameter_instance_ref(&dyn_val.parameter_instance_ref)?;
@@ -284,8 +276,8 @@ fn convert_location_in_container_in_bits(
                         intercept: adj.intercept,
                     });
 
-            IntegerValue {
-                kind: crate::IntegerValueKind::DynamicValueParameter(parameter),
+            IntegerValue::DynamicValueParameter {
+                ref_: parameter,
                 linear_adjustment,
             }
         }
@@ -309,10 +301,7 @@ fn convert_repeat(xml: &hermes_xtce::RepeatType) -> Result<Repeat> {
         .as_ref()
         .map(crate::util::convert_integer_value)
         .transpose()?
-        .unwrap_or_else(|| IntegerValue {
-            kind: crate::IntegerValueKind::FixedValue(0),
-            linear_adjustment: None,
-        });
+        .unwrap_or(IntegerValue::FixedValue(0));
 
     Ok(Repeat { count, offset })
 }

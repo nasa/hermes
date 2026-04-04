@@ -5,6 +5,7 @@ mod error;
 mod parameter;
 mod types;
 mod util;
+mod bit_vec;
 
 use error::*;
 
