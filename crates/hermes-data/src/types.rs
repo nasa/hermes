@@ -1,17 +1,33 @@
-use hermes_xtce::{
-    ByteOrderType, FloatEncodingType, IntegerEncodingType, ParameterInstanceRefType,
-    StringEncodingType,
-};
-use std::time::Duration;
-
 use crate::error::Error;
 use crate::util::{
-    parse_boolean, parse_float, parse_hex_binary, parse_integer, parse_relative_time,
+    parse_boolean, parse_float, parse_hex_binary, parse_i64, parse_relative_time, parse_u64,
 };
 use crate::{Calibrator, Result};
+use std::time::Duration;
 
 #[derive(Clone, Debug)]
 pub struct ParameterRef(pub String);
+
+#[derive(Clone, Copy, Debug)]
+pub enum ByteOrder {
+    LittleEndian,
+    BigEndian,
+}
+
+impl TryFrom<hermes_xtce::ByteOrderType> for ByteOrder {
+    type Error = Error;
+
+    fn try_from(value: hermes_xtce::ByteOrderType) -> Result<Self> {
+        match value {
+            hermes_xtce::ByteOrderType::MostSignificantByteFirst => Ok(ByteOrder::BigEndian),
+            hermes_xtce::ByteOrderType::LeastSignificantByteFirst => Ok(ByteOrder::LittleEndian),
+            hermes_xtce::ByteOrderType::String(s) => Err(Error::InvalidXtce(format!(
+                "Unsupported byte order type: {}",
+                s
+            ))),
+        }
+    }
+}
 
 /// An expanded parameter reference that allows applying calibration function
 /// And optionally querying local sample cache
@@ -24,7 +40,7 @@ pub struct ParameterInstanceRef {
 }
 
 impl From<hermes_xtce::ParameterInstanceRefType> for ParameterInstanceRef {
-    fn from(value: ParameterInstanceRefType) -> Self {
+    fn from(value: hermes_xtce::ParameterInstanceRefType) -> Self {
         ParameterInstanceRef {
             parameter: ParameterRef(value.parameter_ref),
             use_calibrated_value: value.use_calibrated_value,
@@ -41,18 +57,26 @@ pub struct LinearAdjustment {
     pub slope: f64,
     pub intercept: f64,
 }
-
 #[derive(Clone, Debug)]
-pub enum IntegerValueKind {
+pub enum IntegerValue {
     FixedValue(i64),
-    DynamicValueParameter(ParameterInstanceRef),
-    DynamicValueArgument(ArgumentRef),
+    DynamicValueParameter {
+        ref_: ParameterInstanceRef,
+        linear_adjustment: Option<LinearAdjustment>,
+    },
+    DynamicValueArgument {
+        ref_: ArgumentRef,
+        linear_adjustment: Option<LinearAdjustment>,
+    },
 }
 
 #[derive(Clone, Debug)]
-pub struct IntegerValue {
-    pub value: IntegerValueKind,
-    pub linear_adjustment: Option<LinearAdjustment>,
+#[repr(usize)]
+pub enum IntegerSize {
+    U8 = 8,
+    U16 = 16,
+    U32 = 32,
+    U64 = 64,
 }
 
 #[derive(Clone, Debug)]
@@ -60,9 +84,9 @@ pub struct IntegerType {
     pub size_in_bits: i64,
     pub signed: bool,
     ///Describes the endianness of the encoded value.
-    pub byte_order: ByteOrderType,
+    pub byte_order: ByteOrder,
     ///Specifies integer numeric value to raw encoding method, with the default being "unsigned".
-    pub encoding: IntegerEncodingType,
+    pub encoding: hermes_xtce::IntegerEncodingType,
     pub calibrator: Calibrator,
 }
 
@@ -77,9 +101,9 @@ pub enum FloatSize {
 pub struct FloatType {
     pub size_in_bits: hermes_xtce::FloatSizeInBitsType,
     ///Describes the endianness of the encoded value.
-    pub byte_order: ByteOrderType,
+    pub byte_order: ByteOrder,
     ///Specifies real/decimal numeric value to raw encoding method, with the default being "IEEE754_1985".
-    pub encoding: FloatEncodingType,
+    pub encoding: hermes_xtce::FloatEncodingType,
     pub calibrator: Calibrator,
 }
 
@@ -96,7 +120,7 @@ pub enum StringSize {
 #[derive(Clone, Debug)]
 pub struct StringType {
     /// Specifies string encoding method, with the default being "UTF-8".
-    pub encoding: StringEncodingType,
+    pub encoding: hermes_xtce::StringEncodingType,
     /// Strings are typically variably sized, determines how to handle this
     pub size: StringSize,
 }
@@ -105,9 +129,9 @@ pub struct StringType {
 pub struct BooleanType {
     pub size_in_bits: i64,
     /// Describes the endianness of the encoded value.
-    pub byte_order: ByteOrderType,
+    pub byte_order: ByteOrder,
     /// Specifies integer numeric value to raw encoding method (typically size_in_bits=1).
-    pub encoding: IntegerEncodingType,
+    pub encoding: hermes_xtce::IntegerEncodingType,
     /// String representation for true value (default: "True")
     pub one_string_value: String,
     /// String representation for false value (default: "False")
@@ -118,9 +142,9 @@ pub struct BooleanType {
 pub struct EnumeratedType {
     pub size_in_bits: i64,
     /// Describes the endianness of the encoded value.
-    pub byte_order: ByteOrderType,
+    pub byte_order: ByteOrder,
     /// Specifies integer numeric value to raw encoding method.
-    pub encoding: IntegerEncodingType,
+    pub encoding: hermes_xtce::IntegerEncodingType,
     /// List of enumeration label/value pairs
     pub enumeration_list: Vec<EnumerationEntry>,
 }
@@ -135,7 +159,7 @@ pub struct EnumerationEntry {
 #[derive(Clone, Debug)]
 pub struct BinaryType {
     /// Describes the endianness of the encoded value.
-    pub byte_order: ByteOrderType,
+    pub byte_order: ByteOrder,
     /// Size in bits (can be fixed or dynamic)
     pub size_in_bits: IntegerValue,
 }
@@ -246,7 +270,8 @@ pub enum RelativeTime {
 
 #[derive(Clone, Debug)]
 pub enum Value {
-    Integer(i64),
+    UnsignedInteger(u64),
+    SignedInteger(i64),
     Float(f64),
     String(String),
     Boolean(bool),
@@ -262,7 +287,13 @@ impl Value {
     pub fn parse(ty: &Type, s: &str) -> Result<Value> {
         match ty {
             // Values that don't need their types
-            Type::Integer(_) => Ok(Value::Integer(parse_integer(s)?)),
+            Type::Integer(ty) => {
+                if ty.signed {
+                    Ok(Value::SignedInteger(parse_i64(s)?))
+                } else {
+                    Ok(Value::UnsignedInteger(parse_u64(s)?))
+                }
+            }
             Type::Float(_) => Ok(Value::Float(parse_float(s)?)),
             Type::String(_) => Ok(Value::String(s.to_string())),
             Type::Boolean(_) => Ok(Value::Boolean(parse_boolean(s)?)),
@@ -360,7 +391,7 @@ fn convert_integer_parameter_type(xml: &hermes_xtce::IntegerParameterType) -> Re
         };
         (
             enc.size_in_bits,
-            enc.byte_order.clone(),
+            enc.byte_order.clone().try_into()?,
             enc.encoding.clone(),
             calibrator,
         )
@@ -369,7 +400,7 @@ fn convert_integer_parameter_type(xml: &hermes_xtce::IntegerParameterType) -> Re
         // This handles types that inherit from baseType without their own encoding
         (
             xml.size_in_bits,
-            hermes_xtce::ByteOrderType::MostSignificantByteFirst,
+            ByteOrder::BigEndian,
             if xml.signed {
                 hermes_xtce::IntegerEncodingType::TwosComplement
             } else {
@@ -410,7 +441,7 @@ fn convert_float_parameter_type(xml: &hermes_xtce::FloatParameterType) -> Result
 
     Ok(FloatType {
         size_in_bits: xml.size_in_bits.clone(),
-        byte_order: encoding.byte_order.clone(),
+        byte_order: encoding.byte_order.clone().try_into()?,
         encoding: encoding.encoding.clone(),
         calibrator,
     })
@@ -430,6 +461,7 @@ fn convert_string_parameter_type(xml: &hermes_xtce::StringParameterType) -> Resu
         })?;
 
     // Determine size (fixed, leading, or termination char)
+    let byte_order = encoding.byte_order.clone().try_into()?;
     let size = encoding
         .content
         .iter()
@@ -441,7 +473,7 @@ fn convert_string_parameter_type(xml: &hermes_xtce::StringParameterType) -> Resu
                     Some(Ok(StringSize::LeadingSize(IntegerType {
                         size_in_bits: leading_size.size_in_bits_of_size_tag,
                         signed: false,
-                        byte_order: encoding.byte_order.clone(),
+                        byte_order,
                         encoding: hermes_xtce::IntegerEncodingType::Unsigned,
                         calibrator: Calibrator::None,
                     })))
@@ -462,7 +494,7 @@ fn convert_string_parameter_type(xml: &hermes_xtce::StringParameterType) -> Resu
                             Some(Ok(StringSize::LeadingSize(IntegerType {
                                 size_in_bits: leading_size.size_in_bits_of_size_tag,
                                 signed: false,
-                                byte_order: encoding.byte_order.clone(),
+                                byte_order,
                                 encoding: hermes_xtce::IntegerEncodingType::Unsigned,
                                 calibrator: Calibrator::None,
                             })))
@@ -517,7 +549,7 @@ fn convert_boolean_parameter_type(xml: &hermes_xtce::BooleanParameterType) -> Re
 
     Ok(BooleanType {
         size_in_bits: encoding.size_in_bits,
-        byte_order: encoding.byte_order.clone(),
+        byte_order: encoding.byte_order.clone().try_into()?,
         encoding: encoding.encoding.clone(),
         one_string_value: xml.one_string_value.clone(),
         zero_string_value: xml.zero_string_value.clone(),
@@ -561,7 +593,7 @@ fn convert_enumerated_parameter_type(
 
     Ok(EnumeratedType {
         size_in_bits: encoding.size_in_bits,
-        byte_order: encoding.byte_order.clone(),
+        byte_order: encoding.byte_order.clone().try_into()?,
         encoding: encoding.encoding.clone(),
         enumeration_list,
     })
@@ -584,7 +616,7 @@ fn convert_binary_parameter_type(xml: &hermes_xtce::BinaryParameterType) -> Resu
     let size_in_bits = crate::util::convert_integer_value(&encoding.size_in_bits)?;
 
     Ok(BinaryType {
-        byte_order: encoding.byte_order.clone(),
+        byte_order: encoding.byte_order.clone().try_into()?,
         size_in_bits,
     })
 }
@@ -603,12 +635,13 @@ fn convert_absolute_time_parameter_type(
             TimeEncoding::Integer(IntegerType {
                 size_in_bits: enc.size_in_bits,
                 signed: false, // Time is typically unsigned
-                byte_order: enc.byte_order.clone(),
+                byte_order: enc.byte_order.clone().try_into()?,
                 encoding: enc.encoding.clone(),
                 calibrator: Calibrator::None,
             })
         }
         hermes_xtce::EncodingTypeContent::StringDataEncoding(enc) => {
+            let byte_order = enc.byte_order.clone().try_into()?;
             let size = enc
                 .content
                 .iter()
@@ -618,7 +651,7 @@ fn convert_absolute_time_parameter_type(
                             Some(Ok(StringSize::LeadingSize(IntegerType {
                                 size_in_bits: leading_size.size_in_bits_of_size_tag,
                                 signed: false,
-                                byte_order: enc.byte_order.clone(),
+                                byte_order,
                                 encoding: hermes_xtce::IntegerEncodingType::Unsigned,
                                 calibrator: Calibrator::None,
                             })))
@@ -636,7 +669,7 @@ fn convert_absolute_time_parameter_type(
                                 Some(Ok(StringSize::LeadingSize(IntegerType {
                                     size_in_bits: leading_size.size_in_bits_of_size_tag,
                                     signed: false,
-                                    byte_order: enc.byte_order.clone(),
+                                    byte_order,
                                     encoding: hermes_xtce::IntegerEncodingType::Unsigned,
                                     calibrator: Calibrator::None,
                                 })))
@@ -691,12 +724,13 @@ fn convert_relative_time_parameter_type(
             TimeEncoding::Integer(IntegerType {
                 size_in_bits: enc.size_in_bits,
                 signed: false,
-                byte_order: enc.byte_order.clone(),
+                byte_order: enc.byte_order.clone().try_into()?,
                 encoding: enc.encoding.clone(),
                 calibrator: Calibrator::None,
             })
         }
         hermes_xtce::EncodingTypeContent::StringDataEncoding(enc) => {
+            let byte_order = enc.byte_order.clone().try_into()?;
             let size = enc
                 .content
                 .iter()
@@ -706,7 +740,7 @@ fn convert_relative_time_parameter_type(
                             Some(Ok(StringSize::LeadingSize(IntegerType {
                                 size_in_bits: leading_size.size_in_bits_of_size_tag,
                                 signed: false,
-                                byte_order: enc.byte_order.clone(),
+                                byte_order,
                                 encoding: hermes_xtce::IntegerEncodingType::Unsigned,
                                 calibrator: Calibrator::None,
                             })))
@@ -724,7 +758,7 @@ fn convert_relative_time_parameter_type(
                                 Some(Ok(StringSize::LeadingSize(IntegerType {
                                     size_in_bits: leading_size.size_in_bits_of_size_tag,
                                     signed: false,
-                                    byte_order: enc.byte_order.clone(),
+                                    byte_order,
                                     encoding: hermes_xtce::IntegerEncodingType::Unsigned,
                                     calibrator: Calibrator::None,
                                 })))

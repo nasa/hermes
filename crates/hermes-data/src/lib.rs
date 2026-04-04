@@ -1,10 +1,10 @@
 mod calibrator;
 mod container;
+mod deserialize;
 mod error;
 mod parameter;
 mod types;
 mod util;
-mod deserialize;
 
 use error::*;
 
@@ -14,6 +14,7 @@ pub use parameter::*;
 pub use types::*;
 use util::*;
 
+use crate::error::Error::InvalidXtce;
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -26,7 +27,7 @@ pub struct MissionDatabase {
     // command_arguments: HashMap<String, Rc<Argument>>,
     // command_containers: HashMap<String, Rc<SequenceContainer>>,
     // commands: HashMap<String, Rc<MetaCommandType>>,
-
+    telemetry_root: Rc<SequenceContainer>,
     telemetry_parameter_types: HashMap<String, Rc<Type>>,
     telemetry_parameters: HashMap<String, Rc<Parameter>>,
     telemetry_containers: HashMap<String, Rc<SequenceContainer>>,
@@ -34,34 +35,18 @@ pub struct MissionDatabase {
 
 impl MissionDatabase {
     pub fn new(schema: &hermes_xtce::SpaceSystem) -> Result<Self> {
-        let mut out = MissionDatabase {
-            // command_parameter_types: Default::default(),
-            // command_parameters: Default::default(),
-            // command_argument_types: Default::default(),
-            // command_arguments: Default::default(),
-            // command_containers: Default::default(),
-            // commands: Default::default(),
-
-            telemetry_parameter_types: Default::default(),
-            telemetry_parameters: Default::default(),
-            telemetry_containers: Default::default(),
-        };
-
         let root_path = format!("/{}", schema.name);
 
         // Load parameter types
         let mut unresolved_param_types = HashMap::new();
         collect_parameter_types(&root_path, schema, &mut unresolved_param_types);
-        let parameter_types = construct_parameter_types(unresolved_param_types)?;
+        let telemetry_parameter_types = construct_parameter_types(unresolved_param_types)?;
 
         // Load parameters
         let mut unresolved_parameters = HashMap::new();
         collect_parameters(&root_path, schema, &mut unresolved_parameters);
-        let parameters = construct_parameters(unresolved_parameters, &parameter_types)?;
-
-        // Store parameter types and parameters in the database
-        out.telemetry_parameter_types = parameter_types;
-        out.telemetry_parameters = parameters;
+        let telemetry_parameters =
+            construct_parameters(unresolved_parameters, &telemetry_parameter_types)?;
 
         // Collect all containers with their unresolved references
         let mut unresolved_containers = HashMap::new();
@@ -70,14 +55,36 @@ impl MissionDatabase {
         // Build dependency graph and topological sort
         let (sorted_names, dependencies) = build_dependency_graph(&unresolved_containers)?;
 
+        if sorted_names.is_empty() {
+            return Err(InvalidXtce(
+                "Mission database requires at least one telemetry container".to_string(),
+            ));
+        }
+
+        let root_name = sorted_names[0].clone();
+
         // Construct containers in dependency order
-        let completed_containers =
+        let telemetry_containers =
             construct_containers(unresolved_containers, sorted_names, dependencies)?;
 
-        // Store completed containers in the database
-        out.telemetry_containers = completed_containers;
+        let telemetry_root = telemetry_containers.get(&root_name).unwrap();
 
-        Ok(out)
+        Ok(MissionDatabase {
+            // command_parameter_types: Default::default(),
+            // command_parameters: Default::default(),
+            // command_argument_types: Default::default(),
+            // command_arguments: Default::default(),
+            // command_containers: Default::default(),
+            // commands: Default::default(),
+            telemetry_root: telemetry_root.clone(),
+            telemetry_parameter_types,
+            telemetry_parameters,
+            telemetry_containers,
+        })
+    }
+
+    pub fn telemetry_root(&self) -> &Rc<SequenceContainer> {
+        &self.telemetry_root
     }
 
     pub fn get_telemetry(&self, name: &str) -> Option<&Rc<Parameter>> {

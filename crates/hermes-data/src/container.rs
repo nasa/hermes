@@ -187,7 +187,7 @@ fn convert_location_in_bits(
         .unwrap_or_else(|| LocationInContainerInBits {
             reference: ReferenceLocation::PreviousEntry,
             location: IntegerValue {
-                value: crate::IntegerValueKind::FixedValue(0),
+                kind: crate::IntegerValueKind::FixedValue(0),
                 linear_adjustment: None,
             },
         }))
@@ -269,7 +269,7 @@ fn convert_location_in_container_in_bits(
 
     let location = match &xml.content {
         C::FixedValue(val) => IntegerValue {
-            value: crate::IntegerValueKind::FixedValue(*val),
+            kind: crate::IntegerValueKind::FixedValue(*val),
             linear_adjustment: None,
         },
         C::DynamicValue(dyn_val) => {
@@ -285,7 +285,7 @@ fn convert_location_in_container_in_bits(
                     });
 
             IntegerValue {
-                value: crate::IntegerValueKind::DynamicValueParameter(parameter),
+                kind: crate::IntegerValueKind::DynamicValueParameter(parameter),
                 linear_adjustment,
             }
         }
@@ -310,7 +310,7 @@ fn convert_repeat(xml: &hermes_xtce::RepeatType) -> Result<Repeat> {
         .map(crate::util::convert_integer_value)
         .transpose()?
         .unwrap_or_else(|| IntegerValue {
-            value: crate::IntegerValueKind::FixedValue(0),
+            kind: crate::IntegerValueKind::FixedValue(0),
             linear_adjustment: None,
         });
 

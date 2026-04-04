@@ -610,9 +610,7 @@ fn convert_comparison_check(xml: &hermes_xtce::ComparisonCheckType) -> Result<Co
     // [2]: Value or ParameterInstanceRef (right side)
 
     let left = match &xml.content[0] {
-        C::ParameterInstanceRef(param_ref) => {
-            convert_parameter_instance_ref(param_ref)?
-        }
+        C::ParameterInstanceRef(param_ref) => convert_parameter_instance_ref(param_ref)?,
         _ => {
             return Err(Error::InvalidXtce(
                 "ComparisonCheck first element must be ParameterInstanceRef".to_string(),
@@ -630,9 +628,9 @@ fn convert_comparison_check(xml: &hermes_xtce::ComparisonCheckType) -> Result<Co
     };
 
     let right = match &xml.content[2] {
-        C::ParameterInstanceRef(param_ref) => ParameterRefOrValue::ParameterInstanceRef(
-            convert_parameter_instance_ref(param_ref)?,
-        ),
+        C::ParameterInstanceRef(param_ref) => {
+            ParameterRefOrValue::ParameterInstanceRef(convert_parameter_instance_ref(param_ref)?)
+        }
         C::Value(val) => ParameterRefOrValue::Value(val.clone()),
         _ => {
             return Err(Error::InvalidXtce(
@@ -768,8 +766,15 @@ pub(crate) fn construct_containers(
     Ok(completed)
 }
 
-pub(crate) fn parse_integer(s: &str) -> Result<i64> {
-    match s.parse::<i64>() {
+pub(crate) fn parse_i64(s: &str) -> Result<i64> {
+    match s.parse() {
+        Ok(f) => Ok(f),
+        Err(e) => Err(Error::InvalidValue(format!("{}", e))),
+    }
+}
+
+pub(crate) fn parse_u64(s: &str) -> Result<u64> {
+    match s.parse() {
         Ok(f) => Ok(f),
         Err(e) => Err(Error::InvalidValue(format!("{}", e))),
     }
@@ -829,10 +834,7 @@ pub(crate) fn convert_integer_value(
     use hermes_xtce::IntegerValueType as X;
 
     match xml {
-        X::FixedValue(val) => Ok(crate::IntegerValue {
-            value: crate::IntegerValueKind::FixedValue(*val),
-            linear_adjustment: None,
-        }),
+        X::FixedValue(val) => Ok(crate::IntegerValue::FixedValue(*val)),
         X::DynamicValue(dyn_val) => {
             let parameter = convert_parameter_instance_ref(&dyn_val.parameter_instance_ref)?;
             let linear_adjustment =
@@ -844,8 +846,8 @@ pub(crate) fn convert_integer_value(
                         intercept: adj.intercept,
                     });
 
-            Ok(crate::IntegerValue {
-                value: crate::IntegerValueKind::DynamicValueParameter(parameter),
+            Ok(crate::IntegerValue::DynamicValueParameter {
+                ref_: parameter,
                 linear_adjustment,
             })
         }
