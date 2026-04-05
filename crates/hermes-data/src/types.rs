@@ -97,13 +97,25 @@ pub enum FloatSize {
     F64 = 64,
 }
 
+impl TryFrom<hermes_xtce::FloatSizeInBitsType> for FloatSize {
+    type Error = Error;
+
+    fn try_from(value: hermes_xtce::FloatSizeInBitsType) -> Result<Self> {
+        match value {
+            hermes_xtce::FloatSizeInBitsType::_32 => Ok(FloatSize::F32),
+            hermes_xtce::FloatSizeInBitsType::_64 => Ok(FloatSize::F64),
+            hermes_xtce::FloatSizeInBitsType::_128 => Err(Error::InvalidXtce(
+                "128-bit floats are not supported".to_string(),
+            )),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct FloatType {
-    pub size_in_bits: hermes_xtce::FloatSizeInBitsType,
+    pub size_in_bits: FloatSize,
     ///Describes the endianness of the encoded value.
     pub byte_order: ByteOrder,
-    ///Specifies real/decimal numeric value to raw encoding method, with the default being "IEEE754_1985".
-    pub encoding: hermes_xtce::FloatEncodingType,
     pub calibrator: Calibrator,
 }
 
@@ -127,7 +139,6 @@ pub enum StringEncoding {
     #[default]
     Utf8,
     UsAscii,
-    Utf16,
 }
 
 impl TryFrom<hermes_xtce::StringEncodingType> for StringEncoding {
@@ -137,14 +148,10 @@ impl TryFrom<hermes_xtce::StringEncodingType> for StringEncoding {
         match value {
             hermes_xtce::StringEncodingType::Utf8 => Ok(StringEncoding::Utf8),
             hermes_xtce::StringEncodingType::UsAscii => Ok(StringEncoding::UsAscii),
-            hermes_xtce::StringEncodingType::Utf16 => Ok(StringEncoding::Utf16),
-            hermes_xtce::StringEncodingType::Utf16Le => Ok(StringEncoding::Utf16),
-            hermes_xtce::StringEncodingType::Utf16Be => Ok(StringEncoding::Utf16),
-            hermes_xtce::StringEncodingType::Iso88591
-            | hermes_xtce::StringEncodingType::Windows1252
-            | hermes_xtce::StringEncodingType::Utf32
-            | hermes_xtce::StringEncodingType::Utf32Le
-            | hermes_xtce::StringEncodingType::Utf32Be => Err(Error::InvalidXtce(format!(
+            // hermes_xtce::StringEncodingType::Utf16 => Ok(StringEncoding::Utf16),
+            // hermes_xtce::StringEncodingType::Utf16Le => Ok(StringEncoding::Utf16),
+            // hermes_xtce::StringEncodingType::Utf16Be => Ok(StringEncoding::Utf16),
+            _ => Err(Error::InvalidXtce(format!(
                 "Unsupported string encoding: {:?}",
                 value
             ))),
@@ -513,9 +520,8 @@ fn convert_float_parameter_type(xml: &hermes_xtce::FloatParameterType) -> Result
     };
 
     Ok(FloatType {
-        size_in_bits: xml.size_in_bits.clone(),
+        size_in_bits: xml.size_in_bits.clone().try_into()?,
         byte_order: encoding.byte_order.clone().try_into()?,
-        encoding: encoding.encoding.clone(),
         calibrator,
     })
 }
@@ -589,14 +595,16 @@ fn convert_string_size(
                         max_size_in_bits: size.fixed.fixed_value as usize,
                     }))
                 } else if let Some(term_char) = &size.termination_char {
-                    Some(
-                        parse_termination_char(term_char).map(|chr| VariableSize::TerminationChar {
+                    Some(parse_termination_char(term_char).map(|chr| {
+                        VariableSize::TerminationChar {
                             chr,
                             max_size_in_bits: size.fixed.fixed_value as usize,
-                        }),
-                    )
+                        }
+                    }))
                 } else {
-                    Some(Ok(VariableSize::Fixed((size.fixed.fixed_value / 8) as usize)))
+                    Some(Ok(VariableSize::Fixed(
+                        (size.fixed.fixed_value / 8) as usize,
+                    )))
                 }
             }
             hermes_xtce::StringDataEncodingTypeContent::Variable(var) => var
@@ -737,7 +745,10 @@ fn convert_binary_parameter_type(xml: &hermes_xtce::BinaryParameterType) -> Resu
             // Convert bits to bytes
             VariableSize::Fixed((bits / 8) as usize)
         }
-        IntegerValue::DynamicValueParameter { ref_, linear_adjustment } => {
+        IntegerValue::DynamicValueParameter {
+            ref_,
+            linear_adjustment,
+        } => {
             if linear_adjustment.is_some() {
                 return Err(Error::NotImplemented(
                     "Linear adjustment for binary size not supported",

@@ -1,31 +1,47 @@
 use crate::bit_vec::BitVec;
 use crate::*;
-use hermes_xtce::{FloatSizeInBitsType, IntegerEncodingType};
+use hermes_xtce::IntegerEncodingType;
 
 #[derive(Clone, Debug)]
-pub struct DecodedValue {
+pub struct ParameterValue {
     /// The raw value directly from the packet (DN)
     pub raw_value: Value,
     /// The value after calibration has been applied (EU)
     pub calibrated_value: Option<f64>,
-    /// The container stack where this value is from
-    pub containers: Vec<String>,
     /// The parameter this value refers to
     pub parameter: Rc<Parameter>,
     /// The first bit this value resides in the parent container
     pub start_bit: usize,
     /// The last bit this value resides in the parent container
     pub end_bit: usize,
+    /// Time this value was received and decoded
+    pub reception_time: std::time::SystemTime,
+    // Time this value was generated on-board converted from raw counts
+    // pub generation_time: Option<std::time::SystemTime>,
+    // Time in the native representation on the spacecraft
+    // pub sclk_time: Time,
 }
 
 struct Context<'a> {
     db: &'a MissionDatabase,
     data: BitVec<'a>,
     position: usize,
-    parameters: HashMap<String, Vec<DecodedValue>>,
+    parameters: &'a mut HashMap<String, Vec<ParameterValue>>,
 }
 
 impl<'a> Context<'a> {
+    fn add_parameter(&mut self, pv: ParameterValue) {
+        match self.parameters.get_mut(&pv.parameter.head.name) {
+            Some(pvl) => {
+                pvl.push(pv);
+            }
+            None => {
+                self.parameters
+                    .insert(pv.parameter.head.name.clone(), vec![pv]);
+            }
+        }
+    }
+
     fn get_bits(&mut self, num_bits: usize, order: ByteOrder) -> u64 {
         assert!(num_bits <= 64, "Invalid bit count {}", num_bits);
 
@@ -40,7 +56,7 @@ impl<'a> Context<'a> {
         r
     }
 
-    fn get_decoded_value(&self, r: &ParameterRef) -> Result<&DecodedValue> {
+    fn get_parameter_value(&self, r: &ParameterRef) -> Result<&ParameterValue> {
         match self.parameters.get(&r.0) {
             None => Err(Error::ParameterNotFound(r.0.to_string())),
             Some(v) => Ok(v.first().unwrap()),
@@ -48,15 +64,20 @@ impl<'a> Context<'a> {
     }
 
     fn get_parameter_instance_num(&self, r: &ParameterInstanceRef) -> Result<f64> {
-        let value = self.get_decoded_value(&r.parameter)?;
-        if r.use_calibrated_value && let Some(v) = value.calibrated_value {
+        let value = self.get_parameter_value(&r.parameter)?;
+        if r.use_calibrated_value
+            && let Some(v) = value.calibrated_value
+        {
             Ok(v)
         } else {
             match &value.raw_value {
                 Value::UnsignedInteger(v) => Ok(*v as f64),
                 Value::SignedInteger(v) => Ok(*v as f64),
                 Value::Float(v) => Ok(*v),
-                v => Err(Error::InvalidValue(format!("Expected numeric value, got {}", v)))
+                v => Err(Error::InvalidValue(format!(
+                    "Expected numeric value, got {}",
+                    v
+                ))),
             }
         }
     }
@@ -73,7 +94,7 @@ impl<'a> Context<'a> {
             } => {
                 let size = match kind.deserialize(self)? {
                     Value::UnsignedInteger(size) => size,
-                    r => return Err(Error::InvalidValue(format!("Invalid leading size {}", r)))
+                    r => return Err(Error::InvalidValue(format!("Invalid leading size {}", r))),
                 };
                 let size = size as usize;
                 if (size * 8) > *max_size_in_bits {
@@ -115,9 +136,12 @@ impl IntegerValue {
                 linear_adjustment,
             } => {
                 let raw = ctx.get_parameter_instance_num(ref_)?;
-                match &linear_adjustment.as_ref().map(|la| la.intercept + la.slope * raw) {
+                match &linear_adjustment
+                    .as_ref()
+                    .map(|la| la.intercept + la.slope * raw)
+                {
                     None => Ok(raw as i64),
-                    Some(l) => Ok(*l as i64)
+                    Some(l) => Ok(*l as i64),
                 }
             }
             IntegerValue::DynamicValueArgument { .. } => unreachable!(),
@@ -187,19 +211,14 @@ impl IntegerType {
 impl FloatType {
     fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
         match self.size_in_bits {
-            FloatSizeInBitsType::_32 => {
+            FloatSize::F32 => {
                 let raw = ctx.get_bits(32, self.byte_order) as u32;
                 let f: f32 = f32::from_bits(raw);
                 Ok(Value::Float(f as f64))
             }
-            FloatSizeInBitsType::_64 => {
+            FloatSize::F64 => {
                 let raw = ctx.get_bits(64, self.byte_order);
                 Ok(Value::Float(f64::from_bits(raw)))
-            }
-            FloatSizeInBitsType::_128 => {
-                // TODO(tumbar) Rust has a nightly feature to represent f128 but it is not standard
-                //              on most systems. We will just store these as binary
-                Ok(Value::Binary(ctx.get_data(16)))
             }
         }
     }
@@ -212,9 +231,9 @@ impl StringType {
         match &self.encoding {
             StringEncoding::UsAscii => Ok(Value::String(String::from_utf8_lossy(&raw).to_string())),
             StringEncoding::Utf8 => Ok(Value::String(String::from_utf8_lossy(&raw).to_string())),
-            StringEncoding::Utf16 => Ok(Value::String(
-                String::from_utf16_lossy(&raw.into()).to_string(),
-            )),
+            // StringEncoding::Utf16 => Ok(Value::String(
+            //     String::from_utf16_lossy(&raw.into()).to_string(),
+            // )),
         }
     }
 }
@@ -222,15 +241,15 @@ impl StringType {
 impl BooleanType {
     fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
         match &self.encoding {
-            BooleanEncoding::Integer(ty) => {
-                match ty.deserialize(ctx)? {
-                    Value::UnsignedInteger(v) => Ok(Value::Boolean(v != 0)),
-                    Value::SignedInteger(v) => Ok(Value::Boolean(v != 0)),
-                    _ => unreachable!(),
-                }
-            }
+            BooleanEncoding::Integer(ty) => match ty.deserialize(ctx)? {
+                Value::UnsignedInteger(v) => Ok(Value::Boolean(v != 0)),
+                Value::SignedInteger(v) => Ok(Value::Boolean(v != 0)),
+                _ => unreachable!(),
+            },
             BooleanEncoding::String(ty) => {
-                let Value::String(v) = ty.deserialize(ctx)? else { unreachable!() };
+                let Value::String(v) = ty.deserialize(ctx)? else {
+                    unreachable!()
+                };
                 Ok(Value::Boolean(v != self.zero_string_value))
             }
         }
@@ -257,27 +276,63 @@ impl Type {
             // Type::RelativeTime(ty) => {}
             // Type::Array(ty) => {}
             // Type::Aggregate(ty) => {}
-            _ => unimplemented!()
+            _ => unimplemented!(),
         }
     }
 
-    fn calibrate(&self, value: &Value) -> Result<Value> {
+    fn calibrate(&self, value: &Value) -> Result<Option<f64>> {
         match (self, value) {
             (Type::Integer(ty), Value::SignedInteger(i)) => {
-                Ok(Value::Float(ty.calibrator.compute(*i as f64)?))
+                Ok(Some(ty.calibrator.compute(*i as f64)?))
             }
             (Type::Integer(ty), Value::UnsignedInteger(i)) => {
-                Ok(Value::Float(ty.calibrator.compute(*i as f64)?))
+                Ok(Some(ty.calibrator.compute(*i as f64)?))
             }
-            (Type::Float(ty), Value::Float(i)) => {
-                Ok(Value::Float(ty.calibrator.compute(*i)?))
-            }
-            _ => Ok(value.clone())
+            (Type::Float(ty), Value::Float(i)) => Ok(Some(ty.calibrator.compute(*i)?)),
+            _ => Ok(None),
         }
     }
 }
 
 impl Entry {
+    fn deserialize_once(&self, ctx: &mut Context) -> Result<()> {
+        match &self.kind {
+            EntryKind::ParameterRefEntry(r) => {
+                let prm = ctx.db.telemetry_parameters.get(&r.0).unwrap();
+
+                let start_location = ctx.position;
+                let raw_value = prm.type_.deserialize(ctx)?;
+                let end_location = ctx.position;
+
+                let calibrated_value = match prm.type_.calibrate(&raw_value) {
+                    Ok(v) => v,
+                    Err(err) => {
+                        tracing::warn!("Failed to calibrate parameter {}: {}", r.0, err);
+                        None
+                    }
+                };
+
+                let pv = ParameterValue {
+                    raw_value,
+                    calibrated_value,
+                    parameter: prm.clone(),
+                    start_bit: start_location,
+                    end_bit: end_location,
+                    reception_time: std::time::SystemTime::now(),
+                    // generation_time: todo!(),
+                    // sclk_time: todo!(),
+                };
+
+                ctx.add_parameter(pv);
+                Ok(())
+            }
+            EntryKind::ContainerRefEntry(r) => {
+                let c = ctx.db.telemetry_containers.get(&r.0).unwrap();
+                c.deserialize(ctx)
+            }
+        }
+    }
+
     fn deserialize(&self, ctx: &mut Context) -> Result<()> {
         let start_location = (match &self.location.reference {
             ReferenceLocation::ContainerStart => 0,
@@ -286,20 +341,17 @@ impl Entry {
 
         ctx.position = start_location;
 
-        if let Some(repeat) = self.repeat {} else {
-            let ty = match &self.kind {
-                EntryKind::ParameterRefEntry(r) => {
-                    let value = ctx.db.telemetry_parameters.get(&r.0).unwrap().type_.deserialize(ctx)?;
-                    ctx.add(r, value)
-                }
-                EntryKind::ContainerRefEntry(r) => {
-                    let c = ctx.db.telemetry_containers.get(&r.0).unwrap();
-                }
+        if let Some(repeat) = &self.repeat {
+            let count = repeat.count.get(ctx)?;
+            for _ in 0..count {
+                self.deserialize_once(ctx)?;
+                ctx.position += repeat.offset.get(ctx)? as usize;
             }
+
+            Ok(())
+        } else {
+            self.deserialize_once(ctx)
         }
-
-
-        Ok(())
     }
 }
 
@@ -308,24 +360,24 @@ impl SequenceContainer {
 }
 
 impl MissionDatabase {
-        pub fn deserialize(&self, data: Vec<u8>) -> Result<Packet> {
-            unimplemented!();
-            // let mut ctx = DeserializationContext {
-            //     db: self,
-            //     data: &data,
-            //     last_entry_bit: 0,
-            //     parameters: Default::default(),
-            // };
-            //
-            // let root = &self.telemetry_root;
-            // for entry in &root.entry_list {
-            //     entry.deserialize(&mut ctx)?;
-            // }
-            //
-            // Ok(Packet {
-            //     raw: data,
-            //     container: root.clone(),
-            //     parameters: vec![],
-            // })
-        }
+    pub fn deserialize(&self, data: Vec<u8>) -> Result<Packet> {
+        unimplemented!();
+        // let mut ctx = DeserializationContext {
+        //     db: self,
+        //     data: &data,
+        //     last_entry_bit: 0,
+        //     parameters: Default::default(),
+        // };
+        //
+        // let root = &self.telemetry_root;
+        // for entry in &root.entry_list {
+        //     entry.deserialize(&mut ctx)?;
+        // }
+        //
+        // Ok(Packet {
+        //     raw: data,
+        //     container: root.clone(),
+        //     parameters: vec![],
+        // })
     }
+}
