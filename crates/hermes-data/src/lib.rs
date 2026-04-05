@@ -7,10 +7,9 @@ mod types;
 mod util;
 mod bit_vec;
 
-use error::*;
-
 pub use calibrator::*;
 pub use container::*;
+pub use error::{Error, Result};
 pub use parameter::*;
 pub use types::*;
 use util::*;

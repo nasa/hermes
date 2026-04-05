@@ -550,6 +550,14 @@ fn convert_integer_parameter_type(xml: &hermes_xtce::IntegerParameterType) -> Re
         )
     };
 
+    // Validate that bit size is within supported range
+    if size_in_bits <= 0 || size_in_bits > 64 {
+        return Err(Error::InvalidXtce(format!(
+            "Integer type '{}' has invalid size_in_bits: {}. Must be between 1 and 64 bits.",
+            xml.name, size_in_bits
+        )));
+    }
+
     Ok(IntegerType {
         size_in_bits,
         signed: xml.signed,
@@ -627,14 +635,22 @@ fn parse_termination_char(hex: &str) -> Result<u8> {
 }
 
 /// Helper to create an IntegerType for a leading size tag
-fn create_leading_size_integer_type(size_in_bits: i64, byte_order: ByteOrder) -> IntegerType {
-    IntegerType {
+fn create_leading_size_integer_type(size_in_bits: i64, byte_order: ByteOrder) -> Result<IntegerType> {
+    // Validate bit size
+    if size_in_bits <= 0 || size_in_bits > 64 {
+        return Err(Error::InvalidXtce(format!(
+            "Leading size tag has invalid size_in_bits: {}. Must be between 1 and 64 bits.",
+            size_in_bits
+        )));
+    }
+
+    Ok(IntegerType {
         size_in_bits,
         signed: false,
         byte_order,
         encoding: hermes_xtce::IntegerEncodingType::Unsigned,
         calibrator: Calibrator::None,
-    }
+    })
 }
 
 /// Helper to convert string data encoding content to VariableSize
@@ -647,13 +663,16 @@ fn convert_string_size(
         .find_map(|item| match item {
             hermes_xtce::StringDataEncodingTypeContent::SizeInBits(size) => {
                 if let Some(leading_size) = &size.leading_size {
-                    Some(Ok(VariableSize::LeadingSize {
-                        kind: create_leading_size_integer_type(
+                    Some(
+                        create_leading_size_integer_type(
                             leading_size.size_in_bits_of_size_tag,
                             byte_order,
-                        ),
-                        max_size_in_bits: size.fixed.fixed_value as usize,
-                    }))
+                        )
+                        .map(|kind| VariableSize::LeadingSize {
+                            kind,
+                            max_size_in_bits: size.fixed.fixed_value as usize,
+                        }),
+                    )
                 } else if let Some(term_char) = &size.termination_char {
                     Some(parse_termination_char(term_char).map(|chr| {
                         VariableSize::TerminationChar {
@@ -672,13 +691,16 @@ fn convert_string_size(
                 .iter()
                 .find_map(|var_content| match var_content {
                     hermes_xtce::VariableStringTypeContent::LeadingSize(leading_size) => {
-                        Some(Ok(VariableSize::LeadingSize {
-                            kind: create_leading_size_integer_type(
+                        Some(
+                            create_leading_size_integer_type(
                                 leading_size.size_in_bits_of_size_tag,
                                 byte_order,
-                            ),
-                            max_size_in_bits: var.max_size_in_bits as usize,
-                        }))
+                            )
+                            .map(|kind| VariableSize::LeadingSize {
+                                kind,
+                                max_size_in_bits: var.max_size_in_bits as usize,
+                            }),
+                        )
                     }
                     hermes_xtce::VariableStringTypeContent::TerminationChar(term_char) => {
                         Some(parse_termination_char(term_char).map(|chr| {
@@ -707,6 +729,10 @@ fn convert_boolean_parameter_type(xml: &hermes_xtce::BooleanParameterType) -> Re
         .iter()
         .find_map(|item| match item {
             hermes_xtce::BooleanParameterTypeContent::IntegerDataEncoding(enc) => {
+                // Validate bit size for integer encoding
+                if enc.size_in_bits <= 0 || enc.size_in_bits > 64 {
+                    return None; // Will be caught by ok_or_else below
+                }
                 Some(BooleanEncoding::Integer(IntegerType {
                     size_in_bits: enc.size_in_bits,
                     signed: false,
@@ -732,6 +758,16 @@ fn convert_boolean_parameter_type(xml: &hermes_xtce::BooleanParameterType) -> Re
                     .to_string(),
             )
         })?;
+
+    // Additional validation for integer encoding bit size
+    if let BooleanEncoding::Integer(ref int_type) = encoding {
+        if int_type.size_in_bits <= 0 || int_type.size_in_bits > 64 {
+            return Err(Error::InvalidXtce(format!(
+                "Boolean type '{}' has invalid size_in_bits: {}. Must be between 1 and 64 bits.",
+                xml.name, int_type.size_in_bits
+            )));
+        }
+    }
 
     Ok(BooleanType {
         encoding,
@@ -774,6 +810,14 @@ fn convert_enumerated_parameter_type(
                 .collect()
         })
         .unwrap_or_default();
+
+    // Validate that bit size is within supported range
+    if encoding.size_in_bits <= 0 || encoding.size_in_bits > 64 {
+        return Err(Error::InvalidXtce(format!(
+            "Enumerated type '{}' has invalid size_in_bits: {}. Must be between 1 and 64 bits.",
+            xml.name, encoding.size_in_bits
+        )));
+    }
 
     // Create IntegerType for the encoding
     let integer_type = IntegerType {
@@ -850,6 +894,13 @@ fn convert_absolute_time_parameter_type(
     // Convert encoding (can be Integer or String)
     let encoding = match &encoding_xml.content {
         hermes_xtce::EncodingTypeContent::IntegerDataEncoding(enc) => {
+            // Validate bit size for integer encoding
+            if enc.size_in_bits <= 0 || enc.size_in_bits > 64 {
+                return Err(Error::InvalidXtce(format!(
+                    "AbsoluteTime type '{}' has invalid size_in_bits: {}. Must be between 1 and 64 bits.",
+                    xml.name, enc.size_in_bits
+                )));
+            }
             TimeEncoding::Integer(IntegerType {
                 size_in_bits: enc.size_in_bits,
                 signed: false, // Time is typically unsigned
@@ -896,6 +947,13 @@ fn convert_relative_time_parameter_type(
     // Convert encoding (typically Integer for duration counts)
     let encoding = match &encoding_xml.content {
         hermes_xtce::EncodingTypeContent::IntegerDataEncoding(enc) => {
+            // Validate bit size for integer encoding
+            if enc.size_in_bits <= 0 || enc.size_in_bits > 64 {
+                return Err(Error::InvalidXtce(format!(
+                    "RelativeTime type '{}' has invalid size_in_bits: {}. Must be between 1 and 64 bits.",
+                    xml.name, enc.size_in_bits
+                )));
+            }
             TimeEncoding::Integer(IntegerType {
                 size_in_bits: enc.size_in_bits,
                 signed: false,
