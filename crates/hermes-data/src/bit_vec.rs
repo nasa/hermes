@@ -27,13 +27,6 @@ impl<'a> BitVec<'a> {
         Self { buffer, offset }
     }
 
-    pub(crate) fn offset(&self, offset: usize) -> Self {
-        Self {
-            buffer: self.buffer,
-            offset: self.offset + offset,
-        }
-    }
-
     fn get_be(&self, bit_offset: usize, bit_size: usize) -> u64 {
         let mut result = 0u64;
 
