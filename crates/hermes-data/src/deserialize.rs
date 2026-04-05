@@ -27,13 +27,15 @@ struct Context<'a> {
 
 impl<'a> Context<'a> {
     fn add_parameter(&mut self, pv: ParameterValue) {
-        match self.parameters.get_mut(&pv.parameter.head.qualified_name) {
+        // Store parameters by their fully qualified name
+        let qualified_name = &pv.parameter.head.qualified_name;
+        match self.parameters.get_mut(qualified_name) {
             Some(pvl) => {
                 pvl.push(pv);
             }
             None => {
                 self.parameters
-                    .insert(pv.parameter.head.qualified_name.clone(), vec![pv]);
+                    .insert(qualified_name.clone(), vec![pv]);
             }
         }
     }
@@ -53,32 +55,61 @@ impl<'a> Context<'a> {
     }
 
     fn get_parameter_value(&self, r: &ParameterRef) -> Result<&ParameterValue> {
+        // r.name should already be a fully qualified name after loading
         match self.parameters.get(&r.name) {
             None => Err(Error::ParameterNotFound(r.name.to_string())),
             Some(v) => Ok(v.first().unwrap()),
         }
     }
 
-    fn get_parameter_instance(&self, r: &ParameterInstanceRef) -> Result<&ParameterValue> {
-        self.get_parameter_value(&r.parameter)
+    fn get_parameter_instance(&self, r: &ParameterInstanceRef) -> Result<Value> {
+        let param_value = self.get_parameter_value(&r.parameter)?;
+
+        // If there's a member path, navigate to the member value
+        if let Some(ref member_path) = r.parameter.member_path {
+            let mut current_value = &param_value.raw_value;
+
+            for member_name in member_path {
+                match current_value {
+                    Value::Aggregate(agg) => {
+                        current_value = agg.get(member_name)
+                            .ok_or_else(|| Error::InvalidXtce(format!(
+                                "Member '{}' not found in aggregate",
+                                member_name
+                            )))?;
+                    }
+                    _ => {
+                        return Err(Error::InvalidXtce(format!(
+                            "Cannot access member '{}' on non-aggregate value",
+                            member_name
+                        )));
+                    }
+                }
+            }
+
+            Ok(current_value.clone())
+        } else if r.use_calibrated_value {
+            // Return calibrated value if requested and available
+            if let Some(cv) = param_value.calibrated_value {
+                Ok(Value::Float(cv))
+            } else {
+                Ok(param_value.raw_value.clone())
+            }
+        } else {
+            Ok(param_value.raw_value.clone())
+        }
     }
 
     fn get_parameter_instance_num(&self, r: &ParameterInstanceRef) -> Result<f64> {
         let value = self.get_parameter_instance(&r)?;
-        if r.use_calibrated_value
-            && let Some(v) = value.calibrated_value
-        {
-            Ok(v)
-        } else {
-            match &value.raw_value {
-                Value::UnsignedInteger(v) => Ok(*v as f64),
-                Value::SignedInteger(v) => Ok(*v as f64),
-                Value::Float(v) => Ok(*v),
-                v => Err(Error::InvalidValue(format!(
-                    "Expected numeric value, got {}",
-                    v
-                ))),
-            }
+        match &value {
+            Value::UnsignedInteger(v) => Ok(*v as f64),
+            Value::SignedInteger(v) => Ok(*v as f64),
+            Value::Float(v) => Ok(*v),
+            v => Err(Error::InvalidValue(format!(
+                "Expected numeric value, got {}",
+                v
+            ))),
         }
     }
 
@@ -467,48 +498,20 @@ fn comparison(
 
 impl Comparison {
     fn evaluate(&self, ctx: &Context) -> Result<bool> {
-        let left = {
-            let left = ctx.get_parameter_instance(&self.parameter_ref)?;
-            if self.parameter_ref.use_calibrated_value
-                && let Some(cv) = left.calibrated_value
-            {
-                Value::Float(cv)
-            } else {
-                left.raw_value.clone()
-            }
-        };
-
+        let left = ctx.get_parameter_instance(&self.parameter_ref)?;
         comparison(&self.comparison_operator, &left, &self.value)
     }
 }
 
 impl ComparisonCheck {
     fn evaluate(&self, ctx: &Context) -> Result<bool> {
-        let left = {
-            let left = ctx.get_parameter_instance(&self.left)?;
-            if self.left.use_calibrated_value
-                && let Some(cv) = left.calibrated_value
-            {
-                Value::Float(cv)
-            } else {
-                left.raw_value.clone()
-            }
-        };
+        let left = ctx.get_parameter_instance(&self.left)?;
 
-        let right = {
-            match &self.right {
-                ParameterRefOrValue::ParameterInstanceRef(parameter_instance_ref) => {
-                    let rv = ctx.get_parameter_instance(&self.left)?;
-                    if parameter_instance_ref.use_calibrated_value
-                        && let Some(cv) = rv.calibrated_value
-                    {
-                        Value::Float(cv)
-                    } else {
-                        rv.raw_value.clone()
-                    }
-                }
-                ParameterRefOrValue::Value(value) => value.clone(),
+        let right = match &self.right {
+            ParameterRefOrValue::ParameterInstanceRef(parameter_instance_ref) => {
+                ctx.get_parameter_instance(parameter_instance_ref)?
             }
+            ParameterRefOrValue::Value(value) => value.clone(),
         };
 
         comparison(&self.operator, &left, &right)

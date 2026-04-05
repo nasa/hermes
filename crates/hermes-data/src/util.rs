@@ -312,17 +312,30 @@ fn get_parameter_type_name(param_type: &hermes_xtce::ParameterTypeSetType) -> &s
     }
 }
 
-pub(crate) fn construct_parameter_types(
+/// Construct parameter types in multiple passes:
+/// Pass 1: Simple types (int, float, string, bool, enum, time) - no dependencies
+/// Pass 2: Aggregate types - depend on simple types
+/// Binary and Array types are deferred until parameters are available (they can reference parameters)
+pub(crate) fn construct_parameter_types_pass1(
     unresolved: HashMap<String, UnresolvedParameterType>,
-) -> Result<HashMap<String, Rc<crate::Type>>> {
+) -> Result<(
+    HashMap<String, Rc<crate::Type>>,
+    Vec<(String, UnresolvedParameterType)>, // deferred binary types
+    Vec<(String, UnresolvedParameterType)>, // deferred array types
+    Vec<(String, UnresolvedParameterType)>, // deferred aggregate types
+)> {
     let mut completed: HashMap<String, Rc<crate::Type>> = HashMap::new();
+    let mut deferred_binary_types: Vec<(String, UnresolvedParameterType)> = Vec::new();
     let mut deferred_array_types: Vec<(String, UnresolvedParameterType)> = Vec::new();
     let mut deferred_aggregate_types: Vec<(String, UnresolvedParameterType)> = Vec::new();
 
-    // Convert simple types that don't reference other types
+    // Convert simple types that don't reference other types or parameters
     for (qualified_name, unresolved_type) in unresolved {
         match &unresolved_type.xml {
-            // Defer Array and Aggregate types to Pass 2
+            // Defer Binary, Array, and Aggregate types
+            hermes_xtce::ParameterTypeSetType::BinaryParameterType(_) => {
+                deferred_binary_types.push((qualified_name, unresolved_type));
+            }
             hermes_xtce::ParameterTypeSetType::ArrayParameterType(_) => {
                 deferred_array_types.push((qualified_name, unresolved_type));
             }
@@ -335,7 +348,7 @@ pub(crate) fn construct_parameter_types(
                     completed.insert(qualified_name, Rc::new(type_));
                 }
                 Err(Error::NotImplemented(_)) => {
-                    unreachable!("These types should be defered")
+                    unreachable!("These types should be deferred")
                 }
                 Err(e) => {
                     // Propagate other errors
@@ -345,8 +358,19 @@ pub(crate) fn construct_parameter_types(
         }
     }
 
-    // Convert Array and Aggregate types now that simple types are available
-    // Process aggregate types first, then arrays (in case arrays reference aggregates)
+    Ok((
+        completed,
+        deferred_binary_types,
+        deferred_array_types,
+        deferred_aggregate_types,
+    ))
+}
+
+/// Pass 2: Construct Aggregate types (after simple types are available)
+pub(crate) fn construct_parameter_types_pass2_aggregates(
+    deferred_aggregate_types: Vec<(String, UnresolvedParameterType)>,
+    completed: &mut HashMap<String, Rc<crate::Type>>,
+) -> Result<()> {
     for (qualified_name, unresolved_type) in deferred_aggregate_types {
         match crate::types::convert_parameter_type_set_with_context(
             &unresolved_type.xml,
@@ -372,15 +396,47 @@ pub(crate) fn construct_parameter_types(
             }
         }
     }
+    Ok(())
+}
 
-    for (qualified_name, unresolved_type) in deferred_array_types {
-        match crate::types::convert_parameter_type_set_with_context(
+/// Pass 3: Construct Binary and Array types (after parameters are available)
+pub(crate) fn construct_parameter_types_pass3_binary_array(
+    deferred_binary_types: Vec<(String, UnresolvedParameterType)>,
+    deferred_array_types: Vec<(String, UnresolvedParameterType)>,
+    types: &mut HashMap<String, Rc<crate::Type>>,
+    parameters: &HashMap<String, Rc<crate::Parameter>>,
+) -> Result<()> {
+    // Construct binary types first
+    for (qualified_name, unresolved_type) in deferred_binary_types {
+        match crate::types::convert_parameter_type_set_with_parameters(
             &unresolved_type.xml,
             &unresolved_type.space_system_path,
-            &completed,
+            types,
+            parameters,
         ) {
             Ok(type_) => {
-                completed.insert(qualified_name, Rc::new(type_));
+                types.insert(qualified_name, Rc::new(type_));
+            }
+            Err(e) => {
+                tracing::warn!(
+                    "Failed to construct binary type '{}': {}",
+                    qualified_name,
+                    e
+                );
+            }
+        }
+    }
+
+    // Then construct array types
+    for (qualified_name, unresolved_type) in deferred_array_types {
+        match crate::types::convert_parameter_type_set_with_parameters(
+            &unresolved_type.xml,
+            &unresolved_type.space_system_path,
+            types,
+            parameters,
+        ) {
+            Ok(type_) => {
+                types.insert(qualified_name, Rc::new(type_));
             }
             Err(e) => {
                 tracing::warn!("Failed to construct array type '{}': {}", qualified_name, e);
@@ -388,16 +444,64 @@ pub(crate) fn construct_parameter_types(
         }
     }
 
-    Ok(completed)
+    Ok(())
 }
 
-/// Pass 3: Construct parameters with resolved type references
+/// Construct parameters with available types.
+/// Returns completed parameters and a list of unresolved parameters (whose types don't exist yet).
 pub(crate) fn construct_parameters(
     unresolved: HashMap<String, UnresolvedParameter>,
     parameter_types: &HashMap<String, Rc<crate::Type>>,
-) -> Result<HashMap<String, Rc<crate::Parameter>>> {
+) -> (
+    HashMap<String, Rc<crate::Parameter>>,
+    HashMap<String, UnresolvedParameter>,
+) {
     let mut completed: HashMap<String, Rc<crate::Parameter>> = HashMap::new();
+    let mut still_unresolved: HashMap<String, UnresolvedParameter> = HashMap::new();
 
+    for (qualified_name, unresolved_param) in unresolved {
+        // Try to resolve parameter type reference
+        match resolve_parameter_type_name(
+            &unresolved_param.space_system_path,
+            &unresolved_param.parameter_type_ref,
+            parameter_types,
+        ) {
+            Ok(resolved_type_name) => {
+                if let Some(type_) = parameter_types.get(&resolved_type_name) {
+                    let parameter = crate::Parameter {
+                        head: crate::Item {
+                            name: unresolved_param.xml.name.clone(),
+                            qualified_name: qualified_name.clone(),
+                            short_description: unresolved_param.xml.short_description.clone(),
+                            long_description: unresolved_param.xml.long_description.clone(),
+                            ancillary_data_set: unresolved_param.xml.ancillary_data_set.clone(),
+                        },
+                        type_: type_.clone(),
+                        properties: unresolved_param.xml.parameter_properties.clone(),
+                    };
+
+                    completed.insert(qualified_name, Rc::new(parameter));
+                } else {
+                    // Type not available yet - defer
+                    still_unresolved.insert(qualified_name, unresolved_param);
+                }
+            }
+            Err(_) => {
+                // Type not found - defer
+                still_unresolved.insert(qualified_name, unresolved_param);
+            }
+        }
+    }
+
+    (completed, still_unresolved)
+}
+
+/// Construct remaining parameters after all types are available.
+pub(crate) fn construct_remaining_parameters(
+    unresolved: HashMap<String, UnresolvedParameter>,
+    parameter_types: &HashMap<String, Rc<crate::Type>>,
+    completed: &mut HashMap<String, Rc<crate::Parameter>>,
+) -> Result<()> {
     for (qualified_name, unresolved_param) in unresolved {
         // Try to resolve parameter type reference
         match resolve_parameter_type_name(
@@ -441,7 +545,7 @@ pub(crate) fn construct_parameters(
         }
     }
 
-    Ok(completed)
+    Ok(())
 }
 
 /// Resolve a parameter type name by searching in the constructed types map
@@ -882,12 +986,13 @@ pub(crate) fn construct_containers(
             ))
         })?;
 
-        // Create the container with parameter reference resolution
+        // Create the container with parameter and container reference resolution
         let mut container = SequenceContainer::new(
             unresolved_container.xml.clone(),
             qualified_name.clone(),
             &unresolved_container.space_system_path,
             parameters,
+            &unresolved,
         )?;
 
         // Add children if this container is a parent
@@ -975,15 +1080,33 @@ pub(crate) fn parse_hex_binary(s: &str) -> Result<Vec<u8>> {
     Ok(out)
 }
 
+/// Convert IntegerValue with resolved parameter references.
+/// Used during container construction when parameters are available.
 pub(crate) fn convert_integer_value(
     xml: &hermes_xtce::IntegerValueType,
+    space_system_path: &str,
+    parameters: &HashMap<String, Rc<crate::Parameter>>,
 ) -> Result<crate::IntegerValue> {
     use hermes_xtce::IntegerValueType as X;
 
     match xml {
         X::FixedValue(val) => Ok(crate::IntegerValue::FixedValue(*val)),
         X::DynamicValue(dyn_val) => {
-            let parameter = convert_parameter_instance_ref(&dyn_val.parameter_instance_ref)?;
+            // Resolve the parameter reference to fully qualified name
+            let (resolved_param_ref, member_path) = resolve_parameter_ref(
+                space_system_path,
+                &dyn_val.parameter_instance_ref.parameter_ref,
+                parameters,
+            )?;
+
+            let parameter = ParameterInstanceRef {
+                parameter: ParameterRef {
+                    name: resolved_param_ref,
+                    member_path,
+                },
+                use_calibrated_value: dyn_val.parameter_instance_ref.use_calibrated_value,
+            };
+
             let linear_adjustment =
                 dyn_val
                     .linear_adjustment
@@ -1002,20 +1125,6 @@ pub(crate) fn convert_integer_value(
             Err(Error::NotImplemented("DiscreteLookupList in IntegerValue"))
         }
     }
-}
-
-pub(crate) fn convert_parameter_instance_ref(
-    xml: &hermes_xtce::ParameterInstanceRefType,
-) -> Result<ParameterInstanceRef> {
-    // Note: This function doesn't validate member paths or resolve references
-    // That happens later when parameters are available
-    Ok(ParameterInstanceRef {
-        parameter: ParameterRef {
-            name: xml.parameter_ref.clone(),
-            member_path: None, // TODO: Parse member path from parameter_ref if needed
-        },
-        use_calibrated_value: xml.use_calibrated_value,
-    })
 }
 
 /// Validate that a member path exists within an aggregate type.

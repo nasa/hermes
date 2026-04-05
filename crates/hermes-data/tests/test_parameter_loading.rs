@@ -75,8 +75,20 @@ fn test_load_fprime_parameters() {
         "FPrimeChannelId parameter should be loaded"
     );
 
-    // Note: CCSDS_Packet_ID is skipped because it uses an aggregate type
-    // which is not yet implemented
+    // Verify aggregate parameter types are loaded
+    let ccsds_packet_id = mdb.get_telemetry(&format!("{}/CCSDS_Packet_ID", root_name));
+    assert!(
+        ccsds_packet_id.is_some(),
+        "CCSDS_Packet_ID parameter with aggregate type should be loaded"
+    );
+
+    // Verify the aggregate parameter has the correct type
+    if let Some(param) = ccsds_packet_id {
+        assert!(
+            matches!(*param.type_, hermes_data::Type::Aggregate(_)),
+            "CCSDS_Packet_ID should have aggregate type"
+        );
+    }
 
     // Verify that at least some parameters were loaded
     assert!(

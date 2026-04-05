@@ -125,23 +125,24 @@ impl SequenceContainer {
         qualified_name: String,
         space_system_path: &str,
         parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+        containers: &std::collections::HashMap<String, crate::util::UnresolvedContainer>,
     ) -> Result<SequenceContainer> {
         // Convert size_in_bits if specified via binary encoding
         let size_in_bits = if let Some(encoding) = &xml.binary_encoding {
             encoding
                 .size_in_bits
                 .as_ref()
-                .map(crate::util::convert_integer_value)
+                .map(|iv| crate::util::convert_integer_value(iv, space_system_path, parameters))
                 .transpose()?
         } else {
             None
         };
 
-        // Convert entry list with parameter reference resolution
+        // Convert entry list with parameter and container reference resolution
         let entry_list = xml
             .entry_list
             .into_iter()
-            .map(|e| convert_entry(e, space_system_path, parameters))
+            .map(|e| convert_entry(e, space_system_path, parameters, containers))
             .collect::<Result<Vec<_>>>()?;
 
         Ok(SequenceContainer {
@@ -162,10 +163,12 @@ impl SequenceContainer {
 
 fn convert_location_in_bits(
     loc: Option<hermes_xtce::LocationInContainerInBitsType>,
+    space_system_path: &str,
+    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
 ) -> Result<LocationInContainerInBits> {
     Ok(loc
         .as_ref()
-        .map(convert_location_in_container_in_bits)
+        .map(|l| convert_location_in_container_in_bits(l, space_system_path, parameters))
         .transpose()?
         .unwrap_or_else(|| LocationInContainerInBits {
             reference: ReferenceLocation::PreviousEntry,
@@ -177,6 +180,7 @@ fn convert_entry(
     xml: hermes_xtce::EntryListType,
     space_system_path: &str,
     parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+    containers: &std::collections::HashMap<String, crate::util::UnresolvedContainer>,
 ) -> Result<Entry> {
     use hermes_xtce::EntryListType as X;
 
@@ -185,7 +189,7 @@ fn convert_entry(
             let repeat = param_entry
                 .repeat_entry
                 .as_ref()
-                .map(convert_repeat)
+                .map(|r| convert_repeat(r, space_system_path, parameters))
                 .transpose()?;
 
             // if param_entry.time_association.is_some() {
@@ -218,14 +222,14 @@ fn convert_entry(
                 }),
                 repeat,
                 include_condition: param_entry.include_condition.clone(),
-                location: convert_location_in_bits(param_entry.location_in_container_in_bits)?,
+                location: convert_location_in_bits(param_entry.location_in_container_in_bits, space_system_path, parameters)?,
             })
         }
         X::ContainerRefEntry(container_entry) => {
             let repeat = container_entry
                 .repeat_entry
                 .as_ref()
-                .map(convert_repeat)
+                .map(|r| convert_repeat(r, space_system_path, parameters))
                 .transpose()?;
 
             // if container_entry.time_association.is_some() {
@@ -236,13 +240,18 @@ fn convert_entry(
             //     return Err(crate::Error::NotImplemented("AncillaryDataSet in Entry"));
             // }
 
+            // Resolve container reference to fully qualified name
+            let resolved_container_ref = crate::util::resolve_container_reference(
+                space_system_path,
+                &container_entry.container_ref,
+                containers,
+            )?;
+
             Ok(Entry {
-                kind: EntryKind::ContainerRefEntry(ContainerRef(
-                    container_entry.container_ref.clone(),
-                )),
+                kind: EntryKind::ContainerRefEntry(ContainerRef(resolved_container_ref)),
                 repeat,
                 include_condition: container_entry.include_condition.clone(),
-                location: convert_location_in_bits(container_entry.location_in_container_in_bits)?,
+                location: convert_location_in_bits(container_entry.location_in_container_in_bits, space_system_path, parameters)?,
             })
         }
         X::ParameterSegmentRefEntry(_) => Err(Error::NotImplemented("ParameterSegmentRefEntry")),
@@ -255,6 +264,8 @@ fn convert_entry(
 
 fn convert_location_in_container_in_bits(
     xml: &hermes_xtce::LocationInContainerInBitsType,
+    space_system_path: &str,
+    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
 ) -> Result<LocationInContainerInBits> {
     use hermes_xtce::{LocationInContainerInBitsTypeContent as C, ReferenceLocationType as R};
 
@@ -272,8 +283,20 @@ fn convert_location_in_container_in_bits(
     let location = match &xml.content {
         C::FixedValue(val) => IntegerValue::FixedValue(*val),
         C::DynamicValue(dyn_val) => {
-            let parameter =
-                crate::util::convert_parameter_instance_ref(&dyn_val.parameter_instance_ref)?;
+            // Resolve the parameter reference to fully qualified name
+            let (resolved_param_ref, member_path) = crate::util::resolve_parameter_ref(
+                space_system_path,
+                &dyn_val.parameter_instance_ref.parameter_ref,
+                parameters,
+            )?;
+
+            let parameter = ParameterInstanceRef {
+                parameter: ParameterRef {
+                    name: resolved_param_ref,
+                    member_path,
+                },
+                use_calibrated_value: dyn_val.parameter_instance_ref.use_calibrated_value,
+            };
             let linear_adjustment =
                 dyn_val
                     .linear_adjustment
@@ -301,12 +324,16 @@ fn convert_location_in_container_in_bits(
     })
 }
 
-fn convert_repeat(xml: &hermes_xtce::RepeatType) -> Result<Repeat> {
-    let count = crate::util::convert_integer_value(&xml.count)?;
+fn convert_repeat(
+    xml: &hermes_xtce::RepeatType,
+    space_system_path: &str,
+    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+) -> Result<Repeat> {
+    let count = crate::util::convert_integer_value(&xml.count, space_system_path, parameters)?;
     let offset = xml
         .offset
         .as_ref()
-        .map(crate::util::convert_integer_value)
+        .map(|iv| crate::util::convert_integer_value(iv, space_system_path, parameters))
         .transpose()?
         .unwrap_or(IntegerValue::FixedValue(0));
 

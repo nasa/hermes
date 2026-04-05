@@ -15,7 +15,6 @@ pub use parameter::*;
 pub use types::*;
 use util::*;
 
-use crate::error::Error::InvalidXtce;
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -38,33 +37,63 @@ impl MissionDatabase {
     pub fn new(schema: &hermes_xtce::SpaceSystem) -> Result<Self> {
         let root_path = format!("/{}", schema.name);
 
-        // Load parameter types
+        // Multi-pass loading to resolve all references:
+
+        // Pass 1: Collect unresolved parameter types
         let mut unresolved_param_types = HashMap::new();
         collect_parameter_types(&root_path, schema, &mut unresolved_param_types);
-        let telemetry_parameter_types = construct_parameter_types(unresolved_param_types)?;
 
-        // Load parameters
+        // Pass 2: Construct simple types (int, float, string, bool, enum, time)
+        // Defer Binary, Array, and Aggregate types
+        let (mut telemetry_parameter_types, deferred_binary, deferred_array, deferred_aggregate) =
+            construct_parameter_types_pass1(unresolved_param_types)?;
+
+        // Pass 3: Construct Aggregate types (now that simple types are available)
+        construct_parameter_types_pass2_aggregates(
+            deferred_aggregate,
+            &mut telemetry_parameter_types,
+        )?;
+
+        // Pass 4: Collect unresolved parameters
         let mut unresolved_parameters = HashMap::new();
         collect_parameters(&root_path, schema, &mut unresolved_parameters);
-        let telemetry_parameters =
-            construct_parameters(unresolved_parameters, &telemetry_parameter_types)?;
 
-        // Collect all containers with their unresolved references
+        // Pass 5: Construct parameters with simple/aggregate types
+        // Parameters that reference binary/array types will be deferred
+        let (mut telemetry_parameters, still_unresolved_params) =
+            construct_parameters(unresolved_parameters, &telemetry_parameter_types);
+
+        // Pass 6: Construct Binary and Array types (now that parameters are available for resolution)
+        construct_parameter_types_pass3_binary_array(
+            deferred_binary,
+            deferred_array,
+            &mut telemetry_parameter_types,
+            &telemetry_parameters,
+        )?;
+
+        // Pass 7: Construct remaining parameters (those that reference binary/array types)
+        construct_remaining_parameters(
+            still_unresolved_params,
+            &telemetry_parameter_types,
+            &mut telemetry_parameters,
+        )?;
+
+        // Pass 8: Collect all containers with their unresolved references
         let mut unresolved_containers = HashMap::new();
         collect_containers(&root_path, schema, &mut unresolved_containers);
 
-        // Build dependency graph and topological sort
+        // Pass 9: Build dependency graph and topological sort
         let (sorted_names, dependencies) = build_dependency_graph(&unresolved_containers)?;
 
         if sorted_names.is_empty() {
-            return Err(InvalidXtce(
+            return Err(Error::InvalidXtce(
                 "Mission database requires at least one telemetry container".to_string(),
             ));
         }
 
         let root_name = sorted_names[0].clone();
 
-        // Construct containers in dependency order
+        // Pass 10: Construct containers in dependency order (all references fully resolved)
         let telemetry_containers = construct_containers(
             unresolved_containers,
             sorted_names,
@@ -75,12 +104,6 @@ impl MissionDatabase {
         let telemetry_root = telemetry_containers.get(&root_name).unwrap();
 
         Ok(MissionDatabase {
-            // command_parameter_types: Default::default(),
-            // command_parameters: Default::default(),
-            // command_argument_types: Default::default(),
-            // command_arguments: Default::default(),
-            // command_containers: Default::default(),
-            // commands: Default::default(),
             telemetry_root: telemetry_root.clone(),
             telemetry_parameter_types,
             telemetry_parameters,

@@ -461,38 +461,55 @@ pub(crate) fn convert_parameter_type_set(xml: &hermes_xtce::ParameterTypeSetType
         hermes_xtce::ParameterTypeSetType::EnumeratedParameterType(t) => {
             Ok(Type::Enumerated(convert_enumerated_parameter_type(t)?))
         }
-        hermes_xtce::ParameterTypeSetType::BinaryParameterType(t) => {
-            Ok(Type::Binary(convert_binary_parameter_type(t)?))
-        }
         hermes_xtce::ParameterTypeSetType::AbsoluteTimeParameterType(t) => {
             Ok(Type::AbsoluteTime(convert_absolute_time_parameter_type(t)?))
         }
         hermes_xtce::ParameterTypeSetType::RelativeTimeParameterType(t) => {
             Ok(Type::RelativeTime(convert_relative_time_parameter_type(t)?))
         }
-        hermes_xtce::ParameterTypeSetType::ArrayParameterType(_t) => {
-            panic!("Array types cannot be converted by 'convert_parameter_type_set'")
+        hermes_xtce::ParameterTypeSetType::BinaryParameterType(_) => {
+            panic!("Binary types cannot be converted by 'convert_parameter_type_set' - use convert_parameter_type_set_with_parameters")
         }
-        hermes_xtce::ParameterTypeSetType::AggregateParameterType(_t) => {
-            panic!("Aggregate types cannot be converted by 'convert_parameter_type_set'")
+        hermes_xtce::ParameterTypeSetType::ArrayParameterType(_) => {
+            panic!("Array types cannot be converted by 'convert_parameter_type_set' - use convert_parameter_type_set_with_parameters")
+        }
+        hermes_xtce::ParameterTypeSetType::AggregateParameterType(_) => {
+            panic!("Aggregate types cannot be converted by 'convert_parameter_type_set' - use convert_parameter_type_set_with_context")
         }
     }
 }
 
-/// Convert parameter type with context for resolving type references (used for Array and Aggregate types)
+/// Convert parameter type with context for resolving type references (used for Aggregate types)
 pub(crate) fn convert_parameter_type_set_with_context(
     xml: &hermes_xtce::ParameterTypeSetType,
     space_system_path: &str,
     available_types: &std::collections::HashMap<String, std::rc::Rc<Type>>,
 ) -> Result<Type> {
     match xml {
-        hermes_xtce::ParameterTypeSetType::ArrayParameterType(t) => Ok(Type::Array(
-            convert_array_parameter_type(t, space_system_path, available_types)?,
-        )),
         hermes_xtce::ParameterTypeSetType::AggregateParameterType(t) => Ok(Type::Aggregate(
             convert_aggregate_parameter_type(t, space_system_path, available_types)?,
         )),
         // For other types, use the simple converter (shouldn't happen in normal flow)
+        _ => convert_parameter_type_set(xml),
+    }
+}
+
+/// Convert parameter type with context for resolving type and parameter references
+/// (used for Binary and Array types that can reference parameters)
+pub(crate) fn convert_parameter_type_set_with_parameters(
+    xml: &hermes_xtce::ParameterTypeSetType,
+    space_system_path: &str,
+    available_types: &std::collections::HashMap<String, std::rc::Rc<Type>>,
+    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+) -> Result<Type> {
+    match xml {
+        hermes_xtce::ParameterTypeSetType::BinaryParameterType(t) => Ok(Type::Binary(
+            convert_binary_parameter_type(t, space_system_path, parameters)?,
+        )),
+        hermes_xtce::ParameterTypeSetType::ArrayParameterType(t) => Ok(Type::Array(
+            convert_array_parameter_type(t, space_system_path, available_types, parameters)?,
+        )),
+        // For other types, shouldn't happen
         _ => convert_parameter_type_set(xml),
     }
 }
@@ -773,7 +790,11 @@ fn convert_enumerated_parameter_type(
     })
 }
 
-fn convert_binary_parameter_type(xml: &hermes_xtce::BinaryParameterType) -> Result<BinaryType> {
+fn convert_binary_parameter_type(
+    xml: &hermes_xtce::BinaryParameterType,
+    space_system_path: &str,
+    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+) -> Result<BinaryType> {
     // Extract encoding information from content
     let encoding = xml
         .content
@@ -787,7 +808,9 @@ fn convert_binary_parameter_type(xml: &hermes_xtce::BinaryParameterType) -> Resu
         })?;
 
     // Convert size (IntegerValueType can be fixed or dynamic)
-    let size_integer_value = crate::util::convert_integer_value(&encoding.size_in_bits)?;
+    // Resolve parameter references to fully qualified names
+    let size_integer_value =
+        crate::util::convert_integer_value(&encoding.size_in_bits, space_system_path, parameters)?;
 
     // Convert IntegerValue to VariableSize
     let size = match size_integer_value {
@@ -908,6 +931,7 @@ fn convert_array_parameter_type(
     xml: &hermes_xtce::ArrayParameterType,
     space_system_path: &str,
     available_types: &std::collections::HashMap<String, std::rc::Rc<Type>>,
+    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
 ) -> Result<ArrayType> {
     // Resolve the element type reference
     let resolved_type_name = crate::util::resolve_parameter_type_name(
@@ -926,15 +950,23 @@ fn convert_array_parameter_type(
     // Clone the Type from the Rc (arrays need owned types, not references)
     let element_type = (**element_type_rc).clone();
 
-    // Convert dimensions
+    // Convert dimensions - resolve parameter references to fully qualified names
     let dimensions: Result<Vec<Dimension>> = xml
         .dimension_list
         .dimension
         .iter()
         .map(|dim| {
             Ok(Dimension {
-                starting_index: crate::util::convert_integer_value(&dim.starting_index)?,
-                ending_index: crate::util::convert_integer_value(&dim.ending_index)?,
+                starting_index: crate::util::convert_integer_value(
+                    &dim.starting_index,
+                    space_system_path,
+                    parameters,
+                )?,
+                ending_index: crate::util::convert_integer_value(
+                    &dim.ending_index,
+                    space_system_path,
+                    parameters,
+                )?,
             })
         })
         .collect();
