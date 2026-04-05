@@ -101,15 +101,27 @@ fn test_deserialize_with_aggregate_member_restriction() {
     if let hermes_data::Value::Aggregate(agg) = &packet_id[0].raw_value {
         // Check Version member
         let version = agg.get("Version").expect("Version member not found");
-        assert_eq!(*version, hermes_data::Value::UnsignedInteger(0), "Version should be 0");
+        assert_eq!(
+            *version,
+            hermes_data::Value::UnsignedInteger(0),
+            "Version should be 0"
+        );
 
         // Check Type member
         let type_val = agg.get("Type").expect("Type member not found");
-        assert_eq!(*type_val, hermes_data::Value::UnsignedInteger(0), "Type should be 0");
+        assert_eq!(
+            *type_val,
+            hermes_data::Value::UnsignedInteger(0),
+            "Type should be 0"
+        );
 
         // Check APID member
         let apid = agg.get("APID").expect("APID member not found");
-        assert_eq!(*apid, hermes_data::Value::UnsignedInteger(42), "APID should be 42");
+        assert_eq!(
+            *apid,
+            hermes_data::Value::UnsignedInteger(42),
+            "APID should be 42"
+        );
     } else {
         panic!("Packet_ID should be an aggregate value");
     }
@@ -203,14 +215,26 @@ fn test_deserialize_with_aggregate_and_condition() {
         .expect("Header not found in packet");
 
     if let hermes_data::Value::Aggregate(agg) = &header[0].raw_value {
-        assert_eq!(*agg.get("Version").unwrap(), hermes_data::Value::UnsignedInteger(1));
-        assert_eq!(*agg.get("Type").unwrap(), hermes_data::Value::UnsignedInteger(5));
+        assert_eq!(
+            *agg.get("Version").unwrap(),
+            hermes_data::Value::UnsignedInteger(1)
+        );
+        assert_eq!(
+            *agg.get("Type").unwrap(),
+            hermes_data::Value::UnsignedInteger(5)
+        );
     }
 
     // Verify Data field was deserialized (proving the restriction matched)
     let data_param = packet.parameters.get("/TestSystem/Data");
-    assert!(data_param.is_some(), "Data should be present when restriction matches");
-    assert_eq!(data_param.unwrap()[0].raw_value, hermes_data::Value::UnsignedInteger(0xAB));
+    assert!(
+        data_param.is_some(),
+        "Data should be present when restriction matches"
+    );
+    assert_eq!(
+        data_param.unwrap()[0].raw_value,
+        hermes_data::Value::UnsignedInteger(0xAB)
+    );
 }
 
 #[test_log::test]
@@ -274,12 +298,21 @@ fn test_deserialize_aggregate_nested_members() {
 
     if let hermes_data::Value::Aggregate(outer_agg) = &outer[0].raw_value {
         // Check ID
-        assert_eq!(*outer_agg.get("ID").unwrap(), hermes_data::Value::UnsignedInteger(1));
+        assert_eq!(
+            *outer_agg.get("ID").unwrap(),
+            hermes_data::Value::UnsignedInteger(1)
+        );
 
         // Check nested aggregate
         if let hermes_data::Value::Aggregate(inner_agg) = outer_agg.get("Inner").unwrap() {
-            assert_eq!(*inner_agg.get("X").unwrap(), hermes_data::Value::UnsignedInteger(2));
-            assert_eq!(*inner_agg.get("Y").unwrap(), hermes_data::Value::UnsignedInteger(3));
+            assert_eq!(
+                *inner_agg.get("X").unwrap(),
+                hermes_data::Value::UnsignedInteger(2)
+            );
+            assert_eq!(
+                *inner_agg.get("Y").unwrap(),
+                hermes_data::Value::UnsignedInteger(3)
+            );
         } else {
             panic!("Inner should be an aggregate value");
         }

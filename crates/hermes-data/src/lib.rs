@@ -1,3 +1,4 @@
+mod bit_vec;
 mod calibrator;
 mod container;
 mod deserialize;
@@ -5,7 +6,6 @@ mod error;
 mod parameter;
 mod types;
 mod util;
-mod bit_vec;
 
 pub use calibrator::*;
 pub use container::*;

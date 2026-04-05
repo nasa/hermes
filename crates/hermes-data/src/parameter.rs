@@ -1,5 +1,5 @@
-use crate::container::Item;
 use crate::Type;
+use crate::container::Item;
 use std::rc::Rc;
 
 #[derive(Clone, Debug)]
@@ -10,8 +10,6 @@ pub struct Parameter {
     ///Describes extended properties/attributes of Parameter definitions.
     pub properties: Option<hermes_xtce::ParameterPropertiesType>,
 }
-
-
 
 #[derive(Clone, Debug)]
 pub struct Argument {

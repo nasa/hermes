@@ -222,7 +222,11 @@ fn convert_entry(
                 }),
                 repeat,
                 include_condition: param_entry.include_condition.clone(),
-                location: convert_location_in_bits(param_entry.location_in_container_in_bits, space_system_path, parameters)?,
+                location: convert_location_in_bits(
+                    param_entry.location_in_container_in_bits,
+                    space_system_path,
+                    parameters,
+                )?,
             })
         }
         X::ContainerRefEntry(container_entry) => {
@@ -251,7 +255,11 @@ fn convert_entry(
                 kind: EntryKind::ContainerRefEntry(ContainerRef(resolved_container_ref)),
                 repeat,
                 include_condition: container_entry.include_condition.clone(),
-                location: convert_location_in_bits(container_entry.location_in_container_in_bits, space_system_path, parameters)?,
+                location: convert_location_in_bits(
+                    container_entry.location_in_container_in_bits,
+                    space_system_path,
+                    parameters,
+                )?,
             })
         }
         X::ParameterSegmentRefEntry(_) => Err(Error::NotImplemented("ParameterSegmentRefEntry")),

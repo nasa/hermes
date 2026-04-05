@@ -668,13 +668,14 @@ fn get_member_type<'a>(
             for member_name in path {
                 match current_type {
                     crate::Type::Aggregate(agg) => {
-                        let member = agg.members.iter()
+                        let member = agg
+                            .members
+                            .iter()
                             .find(|m| &m.name == member_name)
                             .ok_or_else(|| {
                                 Error::InvalidXtce(format!(
                                     "Member '{}' not found in aggregate parameter '{}'",
-                                    member_name,
-                                    parameter.head.qualified_name
+                                    member_name, parameter.head.qualified_name
                                 ))
                             })?;
                         current_type = &member.type_;
@@ -772,11 +773,8 @@ fn convert_comparison_check(
 
     let right = match &xml.content[2] {
         C::ParameterInstanceRef(param_ref) => {
-            let (resolved_right_ref, right_member_path) = resolve_parameter_ref(
-                space_system_path,
-                &param_ref.parameter_ref,
-                parameters,
-            )?;
+            let (resolved_right_ref, right_member_path) =
+                resolve_parameter_ref(space_system_path, &param_ref.parameter_ref, parameters)?;
             ParameterRefOrValue::ParameterInstanceRef(ParameterInstanceRef {
                 parameter: ParameterRef {
                     name: resolved_right_ref,
@@ -954,7 +952,11 @@ pub(crate) fn construct_containers(
                 .restriction_criteria
                 .as_ref()
                 .map(|rc| {
-                    convert_restriction_criteria(rc, &unresolved_container.space_system_path, parameters)
+                    convert_restriction_criteria(
+                        rc,
+                        &unresolved_container.space_system_path,
+                        parameters,
+                    )
                 })
                 .transpose()?
         } else {
@@ -1161,9 +1163,7 @@ fn validate_member_path(
             _ => {
                 return Err(Error::InvalidXtce(format!(
                     "Cannot access member '{}' on non-aggregate type at position {} in path (full reference: '{}')",
-                    member_name,
-                    index,
-                    full_ref
+                    member_name, index, full_ref
                 )));
             }
         }
@@ -1211,9 +1211,7 @@ pub(crate) fn resolve_parameter_ref(
     let parts: Vec<&str> = param_ref.split('/').collect();
 
     if parts.is_empty() {
-        return Err(Error::InvalidXtce(
-            "Empty parameter reference".to_string()
-        ));
+        return Err(Error::InvalidXtce("Empty parameter reference".to_string()));
     }
 
     // Try each prefix, from longest to shortest (but at least one part for member path)
@@ -1229,13 +1227,12 @@ pub(crate) fn resolve_parameter_ref(
             |_, _| Error::InvalidXtce("not found".to_string()),
         ) {
             // Found a parameter - validate that it has an aggregate type and the member path is valid
-            let parameter = parameters.get(&resolved_param_name)
-                .ok_or_else(|| {
-                    Error::InvalidXtce(format!(
-                        "Parameter '{}' not found after resolution",
-                        resolved_param_name
-                    ))
-                })?;
+            let parameter = parameters.get(&resolved_param_name).ok_or_else(|| {
+                Error::InvalidXtce(format!(
+                    "Parameter '{}' not found after resolution",
+                    resolved_param_name
+                ))
+            })?;
 
             // Validate the member path
             validate_member_path(parameter, &member_path, param_ref)?;

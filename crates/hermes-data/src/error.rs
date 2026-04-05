@@ -39,5 +39,5 @@ pub enum Error {
     NotImplemented(&'static str),
 
     #[error("Invalid comparison '{0}' between values: {1}, {2}")]
-    InvalidComparison(hermes_xtce::ComparisonOperatorsType, Value, Value)
+    InvalidComparison(hermes_xtce::ComparisonOperatorsType, Value, Value),
 }

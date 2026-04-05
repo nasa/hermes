@@ -32,8 +32,16 @@ fn test_integer_type_size_validation() {
     assert!(result.is_err());
 
     if let Err(Error::InvalidXtce(msg)) = result {
-        assert!(msg.contains("128"), "Error message should contain '128': {}", msg);
-        assert!(msg.contains("64"), "Error message should contain '64': {}", msg);
+        assert!(
+            msg.contains("128"),
+            "Error message should contain '128': {}",
+            msg
+        );
+        assert!(
+            msg.contains("64"),
+            "Error message should contain '64': {}",
+            msg
+        );
     } else {
         panic!("Expected InvalidXtce error");
     }
@@ -106,8 +114,16 @@ fn test_integer_type_zero_bits() {
     assert!(result.is_err());
 
     if let Err(Error::InvalidXtce(msg)) = result {
-        assert!(msg.contains("0"), "Error message should contain '0': {}", msg);
-        assert!(msg.contains("between 1 and 64"), "Error message should contain 'between 1 and 64': {}", msg);
+        assert!(
+            msg.contains("0"),
+            "Error message should contain '0': {}",
+            msg
+        );
+        assert!(
+            msg.contains("between 1 and 64"),
+            "Error message should contain 'between 1 and 64': {}",
+            msg
+        );
     } else {
         panic!("Expected InvalidXtce error");
     }
@@ -149,8 +165,16 @@ fn test_enumerated_type_size_validation() {
     assert!(result.is_err());
 
     if let Err(Error::InvalidXtce(msg)) = result {
-        assert!(msg.contains("128"), "Error message should contain '128': {}", msg);
-        assert!(msg.contains("64"), "Error message should contain '64': {}", msg);
+        assert!(
+            msg.contains("128"),
+            "Error message should contain '128': {}",
+            msg
+        );
+        assert!(
+            msg.contains("64"),
+            "Error message should contain '64': {}",
+            msg
+        );
     } else {
         panic!("Expected InvalidXtce error");
     }

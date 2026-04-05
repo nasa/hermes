@@ -468,13 +468,19 @@ pub(crate) fn convert_parameter_type_set(xml: &hermes_xtce::ParameterTypeSetType
             Ok(Type::RelativeTime(convert_relative_time_parameter_type(t)?))
         }
         hermes_xtce::ParameterTypeSetType::BinaryParameterType(_) => {
-            panic!("Binary types cannot be converted by 'convert_parameter_type_set' - use convert_parameter_type_set_with_parameters")
+            panic!(
+                "Binary types cannot be converted by 'convert_parameter_type_set' - use convert_parameter_type_set_with_parameters"
+            )
         }
         hermes_xtce::ParameterTypeSetType::ArrayParameterType(_) => {
-            panic!("Array types cannot be converted by 'convert_parameter_type_set' - use convert_parameter_type_set_with_parameters")
+            panic!(
+                "Array types cannot be converted by 'convert_parameter_type_set' - use convert_parameter_type_set_with_parameters"
+            )
         }
         hermes_xtce::ParameterTypeSetType::AggregateParameterType(_) => {
-            panic!("Aggregate types cannot be converted by 'convert_parameter_type_set' - use convert_parameter_type_set_with_context")
+            panic!(
+                "Aggregate types cannot be converted by 'convert_parameter_type_set' - use convert_parameter_type_set_with_context"
+            )
         }
     }
 }
@@ -635,7 +641,10 @@ fn parse_termination_char(hex: &str) -> Result<u8> {
 }
 
 /// Helper to create an IntegerType for a leading size tag
-fn create_leading_size_integer_type(size_in_bits: i64, byte_order: ByteOrder) -> Result<IntegerType> {
+fn create_leading_size_integer_type(
+    size_in_bits: i64,
+    byte_order: ByteOrder,
+) -> Result<IntegerType> {
     // Validate bit size
     if size_in_bits <= 0 || size_in_bits > 64 {
         return Err(Error::InvalidXtce(format!(
@@ -690,18 +699,16 @@ fn convert_string_size(
                 .content
                 .iter()
                 .find_map(|var_content| match var_content {
-                    hermes_xtce::VariableStringTypeContent::LeadingSize(leading_size) => {
-                        Some(
-                            create_leading_size_integer_type(
-                                leading_size.size_in_bits_of_size_tag,
-                                byte_order,
-                            )
-                            .map(|kind| VariableSize::LeadingSize {
-                                kind,
-                                max_size_in_bits: var.max_size_in_bits as usize,
-                            }),
+                    hermes_xtce::VariableStringTypeContent::LeadingSize(leading_size) => Some(
+                        create_leading_size_integer_type(
+                            leading_size.size_in_bits_of_size_tag,
+                            byte_order,
                         )
-                    }
+                        .map(|kind| VariableSize::LeadingSize {
+                            kind,
+                            max_size_in_bits: var.max_size_in_bits as usize,
+                        }),
+                    ),
                     hermes_xtce::VariableStringTypeContent::TerminationChar(term_char) => {
                         Some(parse_termination_char(term_char).map(|chr| {
                             VariableSize::TerminationChar {

@@ -378,7 +378,9 @@ fn test_deserialize_binary_fixed_size() {
     // Create test data: 8 bytes of binary data
     let data = vec![0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08];
 
-    let packet = mdb.deserialize(data.clone()).expect("Failed to deserialize");
+    let packet = mdb
+        .deserialize(data.clone())
+        .expect("Failed to deserialize");
 
     // Verify RawData
     let raw_data = packet

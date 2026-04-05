@@ -34,8 +34,7 @@ impl<'a> Context<'a> {
                 pvl.push(pv);
             }
             None => {
-                self.parameters
-                    .insert(qualified_name.clone(), vec![pv]);
+                self.parameters.insert(qualified_name.clone(), vec![pv]);
             }
         }
     }
@@ -72,11 +71,12 @@ impl<'a> Context<'a> {
             for member_name in member_path {
                 match current_value {
                     Value::Aggregate(agg) => {
-                        current_value = agg.get(member_name)
-                            .ok_or_else(|| Error::InvalidXtce(format!(
+                        current_value = agg.get(member_name).ok_or_else(|| {
+                            Error::InvalidXtce(format!(
                                 "Member '{}' not found in aggregate",
                                 member_name
-                            )))?;
+                            ))
+                        })?;
                     }
                     _ => {
                         return Err(Error::InvalidXtce(format!(

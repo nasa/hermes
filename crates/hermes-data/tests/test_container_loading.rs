@@ -24,7 +24,8 @@ fn test_load_fprime_containers() {
     assert!(ccsds_packet.is_some(), "CCSDSSpacePacket should be loaded");
 
     // Check that child container exists
-    let fprime_telemetry = mdb.get_telemetry_container(&format!("{}/FPrimeTelemetryPacket", root_name));
+    let fprime_telemetry =
+        mdb.get_telemetry_container(&format!("{}/FPrimeTelemetryPacket", root_name));
     assert!(
         fprime_telemetry.is_some(),
         "FPrimeTelemetryPacket should be loaded"
@@ -33,7 +34,9 @@ fn test_load_fprime_containers() {
     // With the new pattern, parents track their children
     // Verify that CCSDSSpacePacket has FPrimeTelemetryPacket as a child
     let ccsds_container = ccsds_packet.unwrap();
-    let fprime_child = ccsds_container.children.iter()
+    let fprime_child = ccsds_container
+        .children
+        .iter()
         .find(|(_, child)| child.head.name == "FPrimeTelemetryPacket");
     assert!(
         fprime_child.is_some(),
@@ -42,7 +45,9 @@ fn test_load_fprime_containers() {
 
     // Verify that FPrimeTelemetryPacket has SystemRes1 as a child
     let fprime_container = fprime_telemetry.unwrap();
-    let system_res1_child = fprime_container.children.iter()
+    let system_res1_child = fprime_container
+        .children
+        .iter()
         .find(|(_, child)| child.head.name == "SystemRes1");
     assert!(
         system_res1_child.is_some(),

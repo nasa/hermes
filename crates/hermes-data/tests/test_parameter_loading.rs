@@ -191,7 +191,8 @@ fn test_enumerated_parameter_type() {
     let root_name = format!("/{}", space_system.name);
 
     // Find an enumerated type
-    let group_flags_type = mdb.get_telemetry_parameter_type(&format!("{}/CCSDS_Group_Flags_Type", root_name));
+    let group_flags_type =
+        mdb.get_telemetry_parameter_type(&format!("{}/CCSDS_Group_Flags_Type", root_name));
     assert!(
         group_flags_type.is_some(),
         "CCSDS_Group_Flags_Type should be loaded"
@@ -278,7 +279,8 @@ fn test_aggregate_parameter_type() {
     let root_name = format!("/{}", space_system.name);
 
     // Find an aggregate type (CCSDS_Packet_ID_Type)
-    let packet_id_type = mdb.get_telemetry_parameter_type(&format!("{}/CCSDS_Packet_ID_Type", root_name));
+    let packet_id_type =
+        mdb.get_telemetry_parameter_type(&format!("{}/CCSDS_Packet_ID_Type", root_name));
     assert!(
         packet_id_type.is_some(),
         "CCSDS_Packet_ID_Type should be loaded"
