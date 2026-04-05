@@ -5,8 +5,14 @@ use crate::util::{
 use crate::{Calibrator, Result};
 use std::time::Duration;
 
-#[derive(Clone, Debug)]
-pub struct ParameterRef(pub String);
+#[derive(Clone, Debug, PartialEq)]
+pub struct ParameterRef {
+    pub name: String,
+    /// Optional path to a member within an aggregate parameter
+    /// Example: for "CCSDS_Packet_ID/Version", name would be "CCSDS_Packet_ID" (fully qualified)
+    /// and member_path would be vec!["Version"]
+    pub member_path: Option<Vec<String>>,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ByteOrder {
@@ -31,7 +37,7 @@ impl TryFrom<hermes_xtce::ByteOrderType> for ByteOrder {
 
 /// An expanded parameter reference that allows applying calibration function
 /// And optionally querying local sample cache
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ParameterInstanceRef {
     pub parameter: ParameterRef,
     // TODO(tumbar) Build in a store for caching a limited number of samples
@@ -42,7 +48,10 @@ pub struct ParameterInstanceRef {
 impl From<hermes_xtce::ParameterInstanceRefType> for ParameterInstanceRef {
     fn from(value: hermes_xtce::ParameterInstanceRefType) -> Self {
         ParameterInstanceRef {
-            parameter: ParameterRef(value.parameter_ref),
+            parameter: ParameterRef {
+                name: value.parameter_ref,
+                member_path: None,
+            },
             use_calibrated_value: value.use_calibrated_value,
         }
     }
@@ -184,11 +193,8 @@ pub struct BooleanType {
 
 #[derive(Clone, Debug)]
 pub struct EnumeratedType {
-    pub size_in_bits: i64,
-    /// Describes the endianness of the encoded value.
-    pub byte_order: ByteOrder,
     /// Specifies integer numeric value to raw encoding method.
-    pub encoding: hermes_xtce::IntegerEncodingType,
+    pub encoding: IntegerType,
     /// List of enumeration label/value pairs
     pub enumeration_list: Vec<EnumerationEntry>,
 }
@@ -197,18 +203,7 @@ pub struct EnumeratedType {
 pub struct EnumerationEntry {
     pub label: String,
     pub value: i64,
-}
-
-impl PartialEq for EnumerationEntry {
-    fn eq(&self, other: &Self) -> bool {
-        self.value == other.value
-    }
-}
-
-impl PartialOrd for EnumerationEntry {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.value.partial_cmp(&other.value)
-    }
+    pub short_description: Option<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -216,7 +211,7 @@ pub struct BinaryType {
     pub size: VariableSize,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum TimeSystem {
     OffsetFrom(ParameterInstanceRef),
     Epoch(std::time::SystemTime),
@@ -287,7 +282,7 @@ pub enum Type {
     Aggregate(AggregateType),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Time {
     /// Time system this count represents
     pub system: TimeSystem,
@@ -296,10 +291,14 @@ pub struct Time {
     pub ns: u64,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct AggregateValue(Vec<(String, Value)>);
 
 impl AggregateValue {
+    pub fn new(members: Vec<(String, Value)>) -> Self {
+        AggregateValue(members)
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &(String, Value)> {
         self.0.iter()
     }
@@ -321,6 +320,33 @@ pub enum RelativeTime {
 }
 
 #[derive(Clone, Debug)]
+pub struct EnumerationValue {
+    pub label: String,
+    pub value: i64,
+}
+
+impl From<EnumerationEntry> for EnumerationValue {
+    fn from(entry: EnumerationEntry) -> Self {
+        EnumerationValue {
+            label: entry.label,
+            value: entry.value,
+        }
+    }
+}
+
+impl PartialEq for EnumerationValue {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
+}
+
+impl PartialOrd for EnumerationValue {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.value.partial_cmp(&other.value)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     UnsignedInteger(u64),
     SignedInteger(i64),
@@ -328,7 +354,7 @@ pub enum Value {
     String(String),
     Boolean(bool),
     Binary(Vec<u8>),
-    Enumerated(EnumerationEntry),
+    Enumerated(EnumerationValue),
     AbsoluteTime(Time),
     RelativeTime(RelativeTime),
     Array(Vec<Value>),
@@ -396,7 +422,7 @@ impl Value {
                 .iter()
                 .find_map(|item| {
                     if item.label == s {
-                        Some(Ok(Value::Enumerated(item.clone())))
+                        Some(Ok(Value::Enumerated(item.clone().into())))
                     } else {
                         None
                     }
@@ -726,15 +752,23 @@ fn convert_enumerated_parameter_type(
                 .map(|e| EnumerationEntry {
                     label: e.label.clone(),
                     value: e.value,
+                    short_description: e.short_description.clone(),
                 })
                 .collect()
         })
         .unwrap_or_default();
 
-    Ok(EnumeratedType {
+    // Create IntegerType for the encoding
+    let integer_type = IntegerType {
         size_in_bits: encoding.size_in_bits,
+        signed: true,
         byte_order: encoding.byte_order.clone().try_into()?,
         encoding: encoding.encoding.clone(),
+        calibrator: Calibrator::None,
+    };
+
+    Ok(EnumeratedType {
+        encoding: integer_type,
         enumeration_list,
     })
 }

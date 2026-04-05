@@ -123,6 +123,8 @@ impl SequenceContainer {
     pub(crate) fn new(
         xml: hermes_xtce::SequenceContainerType,
         qualified_name: String,
+        space_system_path: &str,
+        parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
     ) -> Result<SequenceContainer> {
         // Convert size_in_bits if specified via binary encoding
         let size_in_bits = if let Some(encoding) = &xml.binary_encoding {
@@ -135,11 +137,11 @@ impl SequenceContainer {
             None
         };
 
-        // Convert entry list
+        // Convert entry list with parameter reference resolution
         let entry_list = xml
             .entry_list
             .into_iter()
-            .map(convert_entry)
+            .map(|e| convert_entry(e, space_system_path, parameters))
             .collect::<Result<Vec<_>>>()?;
 
         Ok(SequenceContainer {
@@ -171,7 +173,11 @@ fn convert_location_in_bits(
         }))
 }
 
-fn convert_entry(xml: hermes_xtce::EntryListType) -> Result<Entry> {
+fn convert_entry(
+    xml: hermes_xtce::EntryListType,
+    space_system_path: &str,
+    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+) -> Result<Entry> {
     use hermes_xtce::EntryListType as X;
 
     match xml {
@@ -190,8 +196,26 @@ fn convert_entry(xml: hermes_xtce::EntryListType) -> Result<Entry> {
             //     return Err(crate::Error::NotImplemented("AncillaryDataSet in Entry"));
             // }
 
+            // Resolve parameter ref to fully qualified name
+            let (resolved_param_ref, member_path) = crate::util::resolve_parameter_ref(
+                space_system_path,
+                &param_entry.parameter_ref,
+                parameters,
+            )?;
+
+            // Entry parameter refs should not have member paths
+            if member_path.is_some() {
+                return Err(crate::Error::InvalidXtce(format!(
+                    "Parameter entry '{}' contains member path, which is not supported in container entries",
+                    param_entry.parameter_ref
+                )));
+            }
+
             Ok(Entry {
-                kind: EntryKind::ParameterRefEntry(ParameterRef(param_entry.parameter_ref.clone())),
+                kind: EntryKind::ParameterRefEntry(ParameterRef {
+                    name: resolved_param_ref,
+                    member_path: None,
+                }),
                 repeat,
                 include_condition: param_entry.include_condition.clone(),
                 location: convert_location_in_bits(param_entry.location_in_container_in_bits)?,

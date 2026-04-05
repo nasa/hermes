@@ -147,8 +147,8 @@ mod tests {
 
         let v = BitVec::new(&[0b1011_0011, 0b1110_0101, 0b0110_0011, 0b1111_0000], 0);
         assert_eq!(v.get_be(0, 3), 0b101);
-        assert_eq!(v.get_be(3, 10), 0b1001_1111_0010);
-        assert_eq!(v.get_be(13, 19), 0b1_0110_0011_1111_0000);
+        assert_eq!(v.get_be(3, 10), 0b10_0111_1100);
+        assert_eq!(v.get_be(13, 19), 0b101_0110_0011_1111_0000);
     }
 
     #[test]

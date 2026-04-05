@@ -27,13 +27,13 @@ struct Context<'a> {
 
 impl<'a> Context<'a> {
     fn add_parameter(&mut self, pv: ParameterValue) {
-        match self.parameters.get_mut(&pv.parameter.head.name) {
+        match self.parameters.get_mut(&pv.parameter.head.qualified_name) {
             Some(pvl) => {
                 pvl.push(pv);
             }
             None => {
                 self.parameters
-                    .insert(pv.parameter.head.name.clone(), vec![pv]);
+                    .insert(pv.parameter.head.qualified_name.clone(), vec![pv]);
             }
         }
     }
@@ -53,8 +53,8 @@ impl<'a> Context<'a> {
     }
 
     fn get_parameter_value(&self, r: &ParameterRef) -> Result<&ParameterValue> {
-        match self.parameters.get(&r.0) {
-            None => Err(Error::ParameterNotFound(r.0.to_string())),
+        match self.parameters.get(&r.name) {
+            None => Err(Error::ParameterNotFound(r.name.to_string())),
             Some(v) => Ok(v.first().unwrap()),
         }
     }
@@ -263,6 +263,50 @@ impl BinaryType {
     }
 }
 
+impl AggregateType {
+    fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
+        let mut members = Vec::new();
+
+        for member in &self.members {
+            let value = member.type_.deserialize(ctx)?;
+            members.push((member.name.clone(), value));
+        }
+
+        Ok(Value::Aggregate(AggregateValue::new(members)))
+    }
+}
+
+impl EnumeratedType {
+    fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
+        let Value::SignedInteger(raw) = self.encoding.deserialize(ctx)? else {
+            unreachable!()
+        };
+        match self.enumeration_list.iter().find_map(|item| {
+            if item.value == raw {
+                Some(Value::Enumerated(item.clone().into()))
+            } else {
+                None
+            }
+        }) {
+            Some(v) => Ok(v),
+            None => Err(Error::EnumeratedEntryNotFound(raw)),
+        }
+    }
+}
+
+// impl ArrayType {
+//     fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
+//         let mut members = Vec::new();
+//         let mut current = &mut members;
+//
+//         for dim in &self.dimensions {
+//
+//         }
+//
+//         Ok(Value::Array(members))
+//     }
+// }
+
 impl Type {
     fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
         match self {
@@ -271,12 +315,11 @@ impl Type {
             Type::String(ty) => ty.deserialize(ctx),
             Type::Boolean(ty) => ty.deserialize(ctx),
             Type::Binary(ty) => ty.deserialize(ctx),
-            // Type::Enumerated(ty) => {}
-            // Type::AbsoluteTime(ty) => {}
-            // Type::RelativeTime(ty) => {}
-            // Type::Array(ty) => {}
-            // Type::Aggregate(ty) => {}
-            _ => unimplemented!(),
+            Type::Aggregate(ty) => ty.deserialize(ctx),
+            Type::Enumerated(ty) => ty.deserialize(ctx),
+            Type::AbsoluteTime(_) => todo!("Absolute time type not yet implemented"),
+            Type::RelativeTime(_) => todo!("Relative time type not yet implemented"),
+            Type::Array(_) => todo!("Array type not yet implemented"),
         }
     }
 
@@ -298,7 +341,7 @@ impl Entry {
     fn deserialize_once(&self, ctx: &mut Context) -> Result<()> {
         match &self.kind {
             EntryKind::ParameterRefEntry(r) => {
-                let prm = ctx.db.telemetry_parameters.get(&r.0).unwrap();
+                let prm = ctx.db.telemetry_parameters.get(&r.name).unwrap();
 
                 let start_location = ctx.position;
                 let raw_value = prm.type_.deserialize(ctx)?;
@@ -307,7 +350,7 @@ impl Entry {
                 let calibrated_value = match prm.type_.calibrate(&raw_value) {
                     Ok(v) => v,
                     Err(err) => {
-                        tracing::warn!("Failed to calibrate parameter {}: {}", r.0, err);
+                        warn!("Failed to calibrate parameter {}: {}", r.name, err);
                         None
                     }
                 };
@@ -501,30 +544,23 @@ impl BooleanExpression {
 impl RestrictionCriteria {
     fn evaluate(&self, ctx: &Context) -> bool {
         match self {
-            RestrictionCriteria::Comparison(comparison) => match comparison.evaluate(ctx) {
-                Ok(v) => v,
-                Err(err) => {
+            RestrictionCriteria::Comparison(comparison) => {
+                comparison.evaluate(ctx).unwrap_or_else(|err| {
                     warn!(err = %err, "Failed to perform evaluation");
                     false
-                }
-            },
-            RestrictionCriteria::ComparisonList(comparisons) => {
-                comparisons.iter().all(|c| match c.evaluate(ctx) {
-                    Ok(v) => v,
-                    Err(err) => {
-                        warn!(err = %err, "Failed to perform evaluation");
-                        false
-                    }
                 })
             }
+            RestrictionCriteria::ComparisonList(comparisons) => comparisons.iter().all(|c| {
+                c.evaluate(ctx).unwrap_or_else(|err| {
+                    warn!(err = %err, "Failed to perform evaluation");
+                    false
+                })
+            }),
             RestrictionCriteria::BooleanExpression(boolean_expression) => {
-                match boolean_expression.evaluate(ctx) {
-                    Ok(v) => v,
-                    Err(err) => {
-                        warn!(err = %err, "Failed to perform evaluation");
-                        false
-                    }
-                }
+                boolean_expression.evaluate(ctx).unwrap_or_else(|err| {
+                    warn!(err = %err, "Failed to perform evaluation");
+                    false
+                })
             }
         }
     }

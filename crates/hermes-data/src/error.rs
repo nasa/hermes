@@ -32,6 +32,9 @@ pub enum Error {
     #[error("Invalid value: {0}")]
     InvalidValue(String),
 
+    #[error("No enumerated entry for {0} found")]
+    EnumeratedEntryNotFound(i64),
+
     #[error("Operation Not Implemented: {0}")]
     NotImplemented(&'static str),
 

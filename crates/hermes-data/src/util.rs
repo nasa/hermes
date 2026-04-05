@@ -106,8 +106,8 @@ pub(crate) struct UnresolvedParameter {
 
 /// Generic upward search through SpaceSystem hierarchy with XTCE semantics.
 ///
-/// For unqualified names, search starts in the current SpaceSystem and moves upward
-/// through parent SpaceSystems until the item is found or root is reached.
+/// For unqualified names or hierarchical paths, search starts in the current SpaceSystem
+/// and moves upward through parent SpaceSystems until the item is found or root is reached.
 ///
 /// # Arguments
 /// * `current_path` - The path where the reference originates
@@ -124,19 +124,19 @@ where
     F: Fn(&str) -> bool,
     E: Fn(&str, &str) -> Error,
 {
-    // If it's an absolute or relative path with /, use standard resolution
-    if name_ref.starts_with('/') || name_ref.contains('/') {
-        let resolved = resolve_name_reference(current_path, name_ref);
-        if exists_fn(&resolved) {
-            return Ok(resolved);
+    // If it's an absolute path starting with /, use as-is (no upward search)
+    if name_ref.starts_with('/') {
+        if exists_fn(name_ref) {
+            return Ok(name_ref.to_string());
         }
-        return Err(error_fn(name_ref, &resolved));
+        return Err(error_fn(name_ref, name_ref));
     }
 
-    // Unqualified name - search upward through SpaceSystem hierarchy
+    // For relative or unqualified names (with or without /), do upward search
+    // This handles both simple names ("Item") and hierarchical paths ("Sub/Item")
     let mut search_path = current_path.to_string();
     loop {
-        let candidate = make_qualified_name(&search_path, name_ref);
+        let candidate = resolve_name_reference(&search_path, name_ref);
 
         if exists_fn(&candidate) {
             return Ok(candidate);
@@ -549,25 +549,68 @@ pub(crate) fn build_dependency_graph(
     Ok((sorted, dependencies))
 }
 
+/// Get the type at the end of a member path within an aggregate parameter.
+/// If member_path is None, returns the parameter's type.
+/// If member_path is Some, navigates through the aggregate structure and returns the member's type.
+fn get_member_type<'a>(
+    parameter: &'a crate::Parameter,
+    member_path: &Option<Vec<String>>,
+) -> Result<&'a crate::Type> {
+    match member_path {
+        None => Ok(&*parameter.type_),
+        Some(path) => {
+            let mut current_type = &*parameter.type_;
+
+            for member_name in path {
+                match current_type {
+                    crate::Type::Aggregate(agg) => {
+                        let member = agg.members.iter()
+                            .find(|m| &m.name == member_name)
+                            .ok_or_else(|| {
+                                Error::InvalidXtce(format!(
+                                    "Member '{}' not found in aggregate parameter '{}'",
+                                    member_name,
+                                    parameter.head.qualified_name
+                                ))
+                            })?;
+                        current_type = &member.type_;
+                    }
+                    _ => {
+                        return Err(Error::InvalidXtce(format!(
+                            "Cannot access member '{}' on non-aggregate type",
+                            member_name
+                        )));
+                    }
+                }
+            }
+
+            Ok(current_type)
+        }
+    }
+}
+
 fn convert_restriction_criteria(
     xml: &hermes_xtce::RestrictionCriteriaType,
+    space_system_path: &str,
     parameters: &HashMap<String, Rc<crate::Parameter>>,
 ) -> Result<RestrictionCriteria> {
     use hermes_xtce::RestrictionCriteriaType as X;
     match xml {
         X::Comparison(comp) => Ok(RestrictionCriteria::Comparison(convert_comparison(
-            comp, parameters,
+            comp,
+            space_system_path,
+            parameters,
         )?)),
         X::ComparisonList(list) => {
             let comparisons = list
                 .comparison
                 .iter()
-                .map(|c| convert_comparison(c, parameters))
+                .map(|c| convert_comparison(c, space_system_path, parameters))
                 .collect::<Result<Vec<_>>>()?;
             Ok(RestrictionCriteria::ComparisonList(comparisons))
         }
         X::BooleanExpression(expr) => Ok(RestrictionCriteria::BooleanExpression(
-            convert_boolean_expression(expr, parameters)?,
+            convert_boolean_expression(expr, space_system_path, parameters)?,
         )),
         X::CustomAlgorithm(_) => Err(Error::NotImplemented(
             "CustomAlgorithm in RestrictionCriteria",
@@ -580,6 +623,7 @@ fn convert_restriction_criteria(
 
 fn convert_comparison_check(
     xml: &hermes_xtce::ComparisonCheckType,
+    space_system_path: &str,
     parameters: &HashMap<String, Rc<crate::Parameter>>,
 ) -> Result<ComparisonCheck> {
     use hermes_xtce::ComparisonCheckTypeContent as C;
@@ -589,13 +633,28 @@ fn convert_comparison_check(
     // [1]: ComparisonOperator
     // [2]: Value or ParameterInstanceRef (right side)
 
-    let left = match &xml.content[0] {
-        C::ParameterInstanceRef(param_ref) => convert_parameter_instance_ref(param_ref)?,
+    let left_param_ref_xml = match &xml.content[0] {
+        C::ParameterInstanceRef(param_ref) => param_ref,
         _ => {
             return Err(Error::InvalidXtce(
                 "ComparisonCheck first element must be ParameterInstanceRef".to_string(),
             ));
         }
+    };
+
+    // Resolve the left parameter reference
+    let (resolved_left_ref, left_member_path) = resolve_parameter_ref(
+        space_system_path,
+        &left_param_ref_xml.parameter_ref,
+        parameters,
+    )?;
+
+    let left = ParameterInstanceRef {
+        parameter: ParameterRef {
+            name: resolved_left_ref.clone(),
+            member_path: left_member_path.clone(),
+        },
+        use_calibrated_value: left_param_ref_xml.use_calibrated_value,
     };
 
     let operator = match &xml.content[1] {
@@ -609,18 +668,32 @@ fn convert_comparison_check(
 
     let right = match &xml.content[2] {
         C::ParameterInstanceRef(param_ref) => {
-            ParameterRefOrValue::ParameterInstanceRef(convert_parameter_instance_ref(param_ref)?)
+            let (resolved_right_ref, right_member_path) = resolve_parameter_ref(
+                space_system_path,
+                &param_ref.parameter_ref,
+                parameters,
+            )?;
+            ParameterRefOrValue::ParameterInstanceRef(ParameterInstanceRef {
+                parameter: ParameterRef {
+                    name: resolved_right_ref,
+                    member_path: right_member_path,
+                },
+                use_calibrated_value: param_ref.use_calibrated_value,
+            })
         }
         C::Value(val) => {
-            // Parse the value based on the left parameter's type
-            let parameter = parameters.get(&left.parameter.0).ok_or_else(|| {
+            // Parse the value based on the left parameter's type (possibly with member path)
+            let left_parameter = parameters.get(&resolved_left_ref).ok_or_else(|| {
                 Error::InvalidXtce(format!(
                     "Parameter '{}' referenced in comparison check not found",
-                    left.parameter.0
+                    resolved_left_ref
                 ))
             })?;
 
-            let value = crate::types::parse_value_from_string(val, &parameter.type_)?;
+            // Get the type at the end of the member path
+            let comparison_type = get_member_type(left_parameter, &left_member_path)?;
+
+            let value = crate::types::parse_value_from_string(val, comparison_type)?;
             ParameterRefOrValue::Value(value)
         }
         _ => {
@@ -641,17 +714,20 @@ fn convert_comparison_check(
 /// Each element in AnDedConditions can be either a Condition or nested ORedConditions.
 fn convert_anded_condition(
     xml: &hermes_xtce::AnDedConditionsType,
+    space_system_path: &str,
     parameters: &HashMap<String, Rc<crate::Parameter>>,
 ) -> Result<BooleanExpression> {
     use hermes_xtce::AnDedConditionsType as X;
     match xml {
         X::Condition(cond) => Ok(BooleanExpression::Condition(convert_comparison_check(
-            cond, parameters,
+            cond,
+            space_system_path,
+            parameters,
         )?)),
         X::ORedConditions(ors) => {
             let conditions = ors
                 .iter()
-                .map(|c| convert_ored_condition(c, parameters))
+                .map(|c| convert_ored_condition(c, space_system_path, parameters))
                 .collect::<Result<Vec<_>>>()?;
             Ok(BooleanExpression::OrConditions(conditions))
         }
@@ -662,17 +738,20 @@ fn convert_anded_condition(
 /// Each element in ORedConditions can be either a Condition or nested AnDedConditions.
 fn convert_ored_condition(
     xml: &hermes_xtce::ORedConditionsType,
+    space_system_path: &str,
     parameters: &HashMap<String, Rc<crate::Parameter>>,
 ) -> Result<BooleanExpression> {
     use hermes_xtce::ORedConditionsType as X;
     match xml {
         X::Condition(cond) => Ok(BooleanExpression::Condition(convert_comparison_check(
-            cond, parameters,
+            cond,
+            space_system_path,
+            parameters,
         )?)),
         X::AnDedConditions(ands) => {
             let conditions = ands
                 .iter()
-                .map(|c| convert_anded_condition(c, parameters))
+                .map(|c| convert_anded_condition(c, space_system_path, parameters))
                 .collect::<Result<Vec<_>>>()?;
             Ok(BooleanExpression::AndConditions(conditions))
         }
@@ -681,24 +760,27 @@ fn convert_ored_condition(
 
 fn convert_boolean_expression(
     xml: &hermes_xtce::BooleanExpressionType,
+    space_system_path: &str,
     parameters: &HashMap<String, Rc<crate::Parameter>>,
 ) -> Result<BooleanExpression> {
     use hermes_xtce::BooleanExpressionType as X;
     match xml {
         X::Condition(cond) => Ok(BooleanExpression::Condition(convert_comparison_check(
-            cond, parameters,
+            cond,
+            space_system_path,
+            parameters,
         )?)),
         X::AnDedConditions(ands) => {
             let conditions = ands
                 .iter()
-                .map(|c| convert_anded_condition(c, parameters))
+                .map(|c| convert_anded_condition(c, space_system_path, parameters))
                 .collect::<Result<Vec<_>>>()?;
             Ok(BooleanExpression::AndConditions(conditions))
         }
         X::ORedConditions(ors) => {
             let conditions = ors
                 .iter()
-                .map(|c| convert_ored_condition(c, parameters))
+                .map(|c| convert_ored_condition(c, space_system_path, parameters))
                 .collect::<Result<Vec<_>>>()?;
             Ok(BooleanExpression::OrConditions(conditions))
         }
@@ -707,24 +789,34 @@ fn convert_boolean_expression(
 
 fn convert_comparison(
     xml: &hermes_xtce::ComparisonType,
+    space_system_path: &str,
     parameters: &HashMap<String, Rc<crate::Parameter>>,
 ) -> Result<Comparison> {
-    let param_ref = convert_parameter_instance_ref(&hermes_xtce::ParameterInstanceRefType {
-        parameter_ref: xml.parameter_ref.clone(),
-        instance: xml.instance,
+    // Resolve the parameter reference to a fully qualified name
+    let (resolved_param_ref, member_path) =
+        resolve_parameter_ref(space_system_path, &xml.parameter_ref, parameters)?;
+
+    let param_ref = ParameterInstanceRef {
+        parameter: ParameterRef {
+            name: resolved_param_ref.clone(),
+            member_path: member_path.clone(),
+        },
         use_calibrated_value: xml.use_calibrated_value,
-    })?;
+    };
 
     // Look up the parameter to get its type
-    let parameter = parameters.get(&param_ref.parameter.0).ok_or_else(|| {
+    let parameter = parameters.get(&resolved_param_ref).ok_or_else(|| {
         Error::InvalidXtce(format!(
-            "Parameter '{}' referenced in comparison not found",
-            param_ref.parameter.0
+            "Parameter '{}' (resolved to '{}') referenced in comparison not found",
+            xml.parameter_ref, resolved_param_ref
         ))
     })?;
 
-    // Parse the value based on the parameter's type
-    let value = crate::types::parse_value_from_string(&xml.value, &parameter.type_)?;
+    // Get the type at the end of the member path
+    let comparison_type = get_member_type(parameter, &member_path)?;
+
+    // Parse the value based on the comparison type
+    let value = crate::types::parse_value_from_string(&xml.value, comparison_type)?;
 
     Ok(Comparison {
         parameter_ref: param_ref,
@@ -757,7 +849,9 @@ pub(crate) fn construct_containers(
             base_container
                 .restriction_criteria
                 .as_ref()
-                .map(|rc| convert_restriction_criteria(rc, parameters))
+                .map(|rc| {
+                    convert_restriction_criteria(rc, &unresolved_container.space_system_path, parameters)
+                })
                 .transpose()?
         } else {
             None
@@ -788,9 +882,13 @@ pub(crate) fn construct_containers(
             ))
         })?;
 
-        // Create the container
-        let mut container =
-            SequenceContainer::new(unresolved_container.xml.clone(), qualified_name.clone())?;
+        // Create the container with parameter reference resolution
+        let mut container = SequenceContainer::new(
+            unresolved_container.xml.clone(),
+            qualified_name.clone(),
+            &unresolved_container.space_system_path,
+            parameters,
+        )?;
 
         // Add children if this container is a parent
         if let Some(children_list) = parent_to_children.get(&qualified_name) {
@@ -909,10 +1007,139 @@ pub(crate) fn convert_integer_value(
 pub(crate) fn convert_parameter_instance_ref(
     xml: &hermes_xtce::ParameterInstanceRefType,
 ) -> Result<ParameterInstanceRef> {
+    // Note: This function doesn't validate member paths or resolve references
+    // That happens later when parameters are available
     Ok(ParameterInstanceRef {
-        parameter: ParameterRef(xml.parameter_ref.clone()),
+        parameter: ParameterRef {
+            name: xml.parameter_ref.clone(),
+            member_path: None, // TODO: Parse member path from parameter_ref if needed
+        },
         use_calibrated_value: xml.use_calibrated_value,
     })
+}
+
+/// Validate that a member path exists within an aggregate type.
+/// Returns an error if the path is invalid or doesn't exist.
+fn validate_member_path(
+    parameter: &crate::Parameter,
+    member_path: &[String],
+    full_ref: &str,
+) -> Result<()> {
+    if member_path.is_empty() {
+        return Ok(());
+    }
+
+    let mut current_type = &*parameter.type_;
+
+    for (index, member_name) in member_path.iter().enumerate() {
+        match current_type {
+            crate::Type::Aggregate(agg) => {
+                // Find the member by name
+                let member = agg.members.iter()
+                    .find(|m| &m.name == member_name)
+                    .ok_or_else(|| {
+                        Error::InvalidXtce(format!(
+                            "Member '{}' not found in aggregate parameter '{}' (full reference: '{}')",
+                            member_name,
+                            parameter.head.qualified_name,
+                            full_ref
+                        ))
+                    })?;
+
+                // Move to the member's type for the next iteration
+                current_type = &member.type_;
+            }
+            _ => {
+                return Err(Error::InvalidXtce(format!(
+                    "Cannot access member '{}' on non-aggregate type at position {} in path (full reference: '{}')",
+                    member_name,
+                    index,
+                    full_ref
+                )));
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// Resolve a parameter reference to a fully qualified name using upward search.
+/// This is used during container entry construction to resolve parameter refs.
+///
+/// Supports two types of references:
+/// 1. Hierarchical parameter names: "CdhCore/version/CustomVersion02" (SpaceSystem hierarchy)
+/// 2. Aggregate member references: "CCSDS_Packet_ID/Version" (parameter with member path)
+///
+/// The function tries to resolve the full reference as a parameter first. If that fails,
+/// it tries progressively shorter prefixes to find a parameter with an aggregate type,
+/// treating the remaining parts as the member path.
+///
+/// Returns (resolved_parameter_name, optional_member_path).
+pub(crate) fn resolve_parameter_ref(
+    space_system_path: &str,
+    param_ref: &str,
+    parameters: &HashMap<String, Rc<crate::Parameter>>,
+) -> Result<(String, Option<Vec<String>>)> {
+    // First, try to resolve the entire reference as a parameter name
+    // This handles hierarchical paths like "CdhCore/version/CustomVersion02"
+    match resolve_reference_with_upward_search(
+        space_system_path,
+        param_ref,
+        |name| parameters.contains_key(name),
+        |_, _| Error::InvalidXtce("not found".to_string()), // Dummy error, we'll handle it below
+    ) {
+        Ok(resolved) => {
+            // Successfully resolved as a complete parameter path
+            return Ok((resolved, None));
+        }
+        Err(_) => {
+            // Fall through to try aggregate member reference
+        }
+    }
+
+    // If full resolution failed, try to split into parameter + member path
+    // Walk backwards through the path, trying each prefix as a parameter name
+    let parts: Vec<&str> = param_ref.split('/').collect();
+
+    if parts.is_empty() {
+        return Err(Error::InvalidXtce(
+            "Empty parameter reference".to_string()
+        ));
+    }
+
+    // Try each prefix, from longest to shortest (but at least one part for member path)
+    for split_point in (1..parts.len()).rev() {
+        let base_param_ref = parts[..split_point].join("/");
+        let member_path: Vec<String> = parts[split_point..].iter().map(|s| s.to_string()).collect();
+
+        // Try to resolve the base parameter
+        if let Ok(resolved_param_name) = resolve_reference_with_upward_search(
+            space_system_path,
+            &base_param_ref,
+            |name| parameters.contains_key(name),
+            |_, _| Error::InvalidXtce("not found".to_string()),
+        ) {
+            // Found a parameter - validate that it has an aggregate type and the member path is valid
+            let parameter = parameters.get(&resolved_param_name)
+                .ok_or_else(|| {
+                    Error::InvalidXtce(format!(
+                        "Parameter '{}' not found after resolution",
+                        resolved_param_name
+                    ))
+                })?;
+
+            // Validate the member path
+            validate_member_path(parameter, &member_path, param_ref)?;
+
+            return Ok((resolved_param_name, Some(member_path)));
+        }
+    }
+
+    // If we get here, we couldn't resolve the reference at all
+    Err(Error::InvalidXtce(format!(
+        "Parameter '{}' not found in '{}' or parent SpaceSystems",
+        param_ref, space_system_path
+    )))
 }
 
 pub(crate) fn parse_relative_time(s: &str) -> Result<RelativeTime> {
