@@ -4,10 +4,12 @@ pub use schema::xtce::*;
 
 pub mod serde_helpers;
 
+mod helpers;
+
 use std::io::BufRead;
 
 use quick_xml::DeError;
-pub use quick_xml::de::Deserializer;
+use quick_xml::de::Deserializer;
 use serde::Deserialize;
 
 /// Deserialize an XTCE XML file from a string of XML text.

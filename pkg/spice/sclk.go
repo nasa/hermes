@@ -5,16 +5,6 @@ import (
 	"slices"
 )
 
-type formatDelim rune
-
-const (
-	delimDOT   = '.' // 1
-	delimCOLON = ':' // 2
-	delimDASH  = '-' // 3
-	delimCOMMA = ',' // 4
-	delimSPACE = ' ' // 5
-)
-
 type Partition struct {
 	// The ``first tick'' of this partition.
 	// Mathematically speaking, partitions may be thought of as

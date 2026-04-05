@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde_enum_str::Deserialize_enum_str;
 ///Describe two or more conditions that are logically anded together. Conditions may be a mix of Condition and ORedCondition.   See ORedConditionType and BooleanExpressionType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum AnDedConditionsType {
     ///Condition elements describe a test similar to the Comparison element except that the parameters used have additional flexibility for the compare.
     #[serde(rename = "Condition")]
@@ -14,7 +14,7 @@ pub enum AnDedConditionsType {
     ),
 }
 ///Describe an absolute time argument type relative to a known epoch (such as TAI).  The string representation of this time should use the [ISO 8601] extended format CCYY-MM-DDThh:mm:ss where "CC" represents the century, "YY" the year, "MM" the month and "DD" the day, preceded by an optional leading "-" sign to indicate a negative number. If the sign is omitted, "+" is assumed. The letter "T" is the date/time separator and "hh", "mm", "ss" represent hour, minute and second respectively. Additional digits can be used to increase the precision of fractional seconds if desired i.e. the format ss.ss... with any number of digits after the decimal point is supported.  See TAIType, IntegerDataEncoding and AbsoluteTimeDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AbsoluteTimeArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -48,7 +48,7 @@ pub struct AbsoluteTimeArgumentType {
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///A base schema type for describing an absolute time data type. Contains an absolute (to a known epoch) time.  Use the [ISO 8601] extended format CCYY-MM-DDThh:mm:ss where "CC" represents the century, "YY" the year, "MM" the month and "DD" the day, preceded by an optional leading "-" sign to indicate a negative number. If the sign is omitted, "+" is assumed. The letter "T" is the date/time separator and "hh", "mm", "ss" represent hour, minute and second respectively. Additional digits can be used to increase the precision of fractional seconds if desired i.e. the format ss.ss... with any number of digits after the decimal point is supported. See AbsoluteTimeParameterType and AbsoluteTimeArgumentType.  See AbsouteTimeParameterType, AbsoluteTimeArgumentType and BaseTimeDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AbsoluteTimeDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -82,7 +82,7 @@ pub struct AbsoluteTimeDataType {
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Describe an absolute time parameter type relative to a known epoch (such as TAI).  The string representation of this time should use the [ISO 8601] extended format CCYY-MM-DDThh:mm:ss where "CC" represents the century, "YY" the year, "MM" the month and "DD" the day, preceded by an optional leading "-" sign to indicate a negative number. If the sign is omitted, "+" is assumed. The letter "T" is the date/time separator and "hh", "mm", "ss" represent hour, minute and second respectively. Additional digits can be used to increase the precision of fractional seconds if desired i.e. the format ss.ss... with any number of digits after the decimal point is supported.  See TAIType, IntegerDataEncoding and AbsoluteTimeDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AbsoluteTimeParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -116,7 +116,7 @@ pub struct AbsoluteTimeParameterType {
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///A verifier that means the destination has accepted the command.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AcceptedVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -128,7 +128,7 @@ pub struct AcceptedVerifierType {
     pub content: ::std::vec::Vec<AcceptedVerifierTypeContent>,
 }
 ///A verifier that means the destination has accepted the command.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum AcceptedVerifierTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -168,7 +168,7 @@ pub enum AcceptedVerifierTypeContent {
     ArgumentRestrictionList(ArgumentAssignmentListType),
 }
 ///Describe a complex data type analogous to a C-struct. Each field of the data type is called a Member.  Each Member is part of the MemberList which forms the list of items to be placed under this data type's name.  The MemberList defines a data block and block's size is defined by the DataEncodings of each Member's type reference. The data members are ordered and contiguous in the MemberList element (packed).  Each member may be addressed by the dot syntax similar to C such as P.voltage if P is the referring parameter and voltage is of a member of P's aggregate type.  See MemberType, MemberListType, DataEncodingType, NameReferenceType, and AggregateDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AggregateArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -193,7 +193,7 @@ pub struct AggregateArgumentType {
     pub member_list: MemberListType,
 }
 ///A base schema type for describing a complex data type analogous to a C-struct. Each field of the data type is called a Member.  Each Member is part of the MemberList which forms the list of items to be placed under this data type's name.  The MemberList defines a data block and block's size is defined by the DataEncodings of each Member's type reference. The data members are ordered and contiguous in the MemberList element (packed).  Each member may be addressed by the dot syntax similar to C such as P.voltage if P is the referring parameter and voltage is of a member of P's aggregate type.  See MemberType, MemberListType, DataEncodingType, NameReferenceType, AggregateParameterType and AggregateArgumentType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AggregateDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -218,7 +218,7 @@ pub struct AggregateDataType {
     pub member_list: MemberListType,
 }
 ///Describe a complex data type analogous to a C-struct. Each field of the data type is called a Member.  Each Member is part of the MemberList which forms the list of items to be placed under this data type's name.  The MemberList defines a data block and block's size is defined by the DataEncodings of each Member's type reference. The data members are ordered and contiguous in the MemberList element (packed).  Each member may be addressed by the dot syntax similar to C such as P.voltage if P is the referring parameter and voltage is of a member of P's aggregate type.  See MemberType, MemberListType, DataEncodingType, NameReferenceType, and AggregateDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AggregateParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -243,7 +243,7 @@ pub struct AggregateParameterType {
     pub member_list: MemberListType,
 }
 ///Describe up to six levels: Normal, Watch, Warning, Distress, Critical, and Severe of conditions the alarm will trigger when true. The types are conditions available are a single comparison, a comparison list, a discrete lookup list, and custom algorithm.   See MatchCriteriaType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AlarmConditionsType {
     ///An alarm state of least concern.  Considered to be below the most commonly used Warning level.
     #[serde(default, rename = "WatchAlarm")]
@@ -277,7 +277,7 @@ pub struct AlarmConditionsType {
     pub severe_alarm: ::core::option::Option<MatchCriteriaType>,
 }
 ///Describe any number of alarm ranges, each with its own level (normal, warning, watch, distress, critical, severe) and range form (inside -- (min,max), [min,max), (min, max], [min, max], or outside -- (-inf, min) or (-inf,min] and [max, +inf) or (max,+inf). Ranges may overlap, be disjoint and so forth. Ranges within the value spectrum non-specified are non-normal. The most severe range level of value within the ranges is the level of the alarm. Range values are in calibrated engineering units. See FloatRangeType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AlarmMultiRangesType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -292,7 +292,7 @@ pub struct AlarmMultiRangesType {
     pub range: ::std::vec::Vec<MultiRangeType>,
 }
 ///Describe up to six ranges where either less severe ranges are a subset of more severe ranges (outside), or more severe ranges are a subset of less severe ranges (inside). In both forms, the undefined least severe range is normal. Range values are in calibrated engineering units. See FloatRangeType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AlarmRangesType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -328,7 +328,7 @@ impl AlarmRangesType {
     }
 }
 ///Defines a base schema type used to build up the other data type specific alarm types. The definition includes a count to go into alarm (minViolations - the counts to go out of alarm is the same), a condition style alarm and a custom alarm. See AlarmConditionType, CustomAlgorithmType, BinaryAlarmConditionType, BooleanAlarmType, BinaryContextAlarmType, EnumerationAlarmType, NumericAlarmType, StringAlarmType, TimeAlarmType, TimeAlarmConditionType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -349,7 +349,7 @@ pub struct AlarmType {
     pub content: ::std::vec::Vec<AlarmTypeContent>,
 }
 ///Defines a base schema type used to build up the other data type specific alarm types. The definition includes a count to go into alarm (minViolations - the counts to go out of alarm is the same), a condition style alarm and a custom alarm. See AlarmConditionType, CustomAlgorithmType, BinaryAlarmConditionType, BooleanAlarmType, BinaryContextAlarmType, EnumerationAlarmType, NumericAlarmType, StringAlarmType, TimeAlarmType, TimeAlarmConditionType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum AlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -375,7 +375,7 @@ impl AlarmType {
     }
 }
 ///An unordered collection of algorithms
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum AlgorithmSetType {
     #[serde(rename = "CustomAlgorithm")]
     CustomAlgorithm(InputOutputTriggerAlgorithmType),
@@ -383,7 +383,7 @@ pub enum AlgorithmSetType {
     MathAlgorithm(MathAlgorithmType),
 }
 ///This optional element may be used to enter Pseudo or actual code for the algorithm.  The language for the algorithm is specified with the language attribute
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AlgorithmTextType {
     #[serde(default = "AlgorithmTextType::default_language", rename = "@language")]
     pub language: super::xs::StringType,
@@ -397,14 +397,14 @@ impl AlgorithmTextType {
     }
 }
 ///Contains an unordered collection of Alias elements to describe alternate names or IDs for this named item.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AliasSetType {
     ///An alternate name, ID number, and sometimes flight software variable name in the code for this item.
     #[serde(default, rename = "Alias")]
     pub alias: ::std::vec::Vec<AliasType>,
 }
 ///Used to contain an alias (alternate) name or ID for the object.   For example, a parameter may have a mnemonic, an on-board id, and special IDs used by various ground software applications; all of these are alias's.  Some ground system processing equipment has some severe naming restrictions on parameters (e.g., names must less then 12 characters, single case or integral id's only); their alias's provide a means of capturing each name in a "nameSpace".  Note: the name is not reference-able (it cannot be used in a name reference substituting for the name of the item of interest).  See NameDescriptionType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AliasType {
     ///Aliases should be grouped together in a "namespace" so that they can be switched in and out of data extractions.  The namespace generally identifies the purpose of the alternate name, whether for software variable names, additional operator names, or whatever the purpose.
     #[serde(rename = "@nameSpace")]
@@ -414,14 +414,14 @@ pub struct AliasType {
     pub alias: super::xs::StringType,
 }
 ///Describe an unordered collection of ancillary data.  AncillaryData elements capture platform/program/implementation specific data about the parent element object that is non-standard and would not fit into the schema.  See AncillaryDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AncillaryDataSetType {
     ///Optional list of AncillaryData elements associated with this item.
     #[serde(default, rename = "AncillaryData")]
     pub ancillary_data: ::std::vec::Vec<AncillaryDataType>,
 }
 ///Use for any other data associated with a named item.  May be used to include administrative data (e.g., version, CM or tags) or potentially any MIME type.  Data may be included or given as an href.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AncillaryDataType {
     ///Identifier for this Ancillary Data characteristic, feature, or data.
     #[serde(rename = "@name")]
@@ -442,7 +442,7 @@ impl AncillaryDataType {
     }
 }
 ///Identical to ANDedConditionsType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentAnDedConditionsType {
     ///Condition elements describe a test similar to the Comparison element except that the arguments/parameters used have additional flexibility for the compare.
     #[serde(rename = "Condition")]
@@ -455,7 +455,7 @@ pub enum ArgumentAnDedConditionsType {
     ),
 }
 ///A base schema type for describing an absolute time data type. Contains an absolute (to a known epoch) time.  Use the [ISO 8601] extended format CCYY-MM-DDThh:mm:ss where "CC" represents the century, "YY" the year, "MM" the month and "DD" the day, preceded by an optional leading "-" sign to indicate a negative number. If the sign is omitted, "+" is assumed. The letter "T" is the date/time separator and "hh", "mm", "ss" represent hour, minute and second respectively. Additional digits can be used to increase the precision of fractional seconds if desired i.e. the format ss.ss... with any number of digits after the decimal point is supported. See AbsoluteTimeParameterType and AbsoluteTimeArgumentType.  See AbsouteTimeParameterType, AbsoluteTimeArgumentType and BaseTimeDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentAbsoluteTimeDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -489,7 +489,7 @@ pub struct ArgumentAbsoluteTimeDataType {
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Identical to ArgumentRefEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentArgumentRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -515,7 +515,7 @@ pub struct ArgumentArgumentRefEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to ArrayParameterRefEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentArrayArgumentRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -531,7 +531,7 @@ pub struct ArgumentArrayArgumentRefEntryType {
     pub content: ::core::option::Option<ArgumentArrayArgumentRefEntryTypeContent>,
 }
 ///Identical to ArrayParameterRefEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentArrayArgumentRefEntryTypeContent {
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
@@ -561,7 +561,7 @@ impl ArgumentArrayArgumentRefEntryType {
     }
 }
 ///Identical to ArrayParameterRefEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentArrayParameterRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -577,7 +577,7 @@ pub struct ArgumentArrayParameterRefEntryType {
     pub content: ::core::option::Option<ArgumentArrayParameterRefEntryTypeContent>,
 }
 ///Identical to ArrayParameterRefEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentArrayParameterRefEntryTypeContent {
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
@@ -607,14 +607,14 @@ impl ArgumentArrayParameterRefEntryType {
     }
 }
 ///Argument Assignments specialize a MetaCommand or BlockMetaCommand when inheriting from another MetaCommand.  General argument values can be restricted to specific values to further specialize the MetaCommand.  Use it to "narrow" a MetaCommand from its base MetaCommand by specifying values of arguments for example, a power command may be narrowed to a "power on" command by assigning the value of an argument to "on".  See ArgumentAssignmentType and MetaCommandType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentAssignmentListType {
     ///Specialize this command definition when inheriting from a more general MetaCommand by restricting the specific values of otherwise general arguments.
     #[serde(default, rename = "ArgumentAssignment")]
     pub argument_assignment: ::std::vec::Vec<ArgumentAssignmentType>,
 }
 ///Describe an assignment of an argument with a calibrated/engineering value. See ArgumentAssignmentListType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentAssignmentType {
     ///The named argument from the base MetaCommand to assign/restrict with a value.
     #[serde(rename = "@argumentName")]
@@ -624,7 +624,7 @@ pub struct ArgumentAssignmentType {
     pub argument_value: super::xs::StringType,
 }
 ///Identical to BaseDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentBaseDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -639,7 +639,7 @@ pub struct ArgumentBaseDataType {
     pub content: ::std::vec::Vec<ArgumentBaseDataTypeContent>,
 }
 ///Identical to BaseDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentBaseDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -667,7 +667,7 @@ pub enum ArgumentBaseDataTypeContent {
     StringDataEncoding(ArgumentStringDataEncodingType),
 }
 ///Identical to BaseTimeDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentBaseTimeDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -698,7 +698,7 @@ pub struct ArgumentBaseTimeDataType {
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Identical to BinaryDataEncodingType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentBinaryDataEncodingType {
     ///Describes the bit ordering of the encoded value.
     #[serde(
@@ -742,7 +742,7 @@ impl ArgumentBinaryDataEncodingType {
     }
 }
 ///Identical to BinaryDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentBinaryDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -760,7 +760,7 @@ pub struct ArgumentBinaryDataType {
     pub content: ::std::vec::Vec<ArgumentBinaryDataTypeContent>,
 }
 ///Identical to BinaryDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentBinaryDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -788,7 +788,7 @@ pub enum ArgumentBinaryDataTypeContent {
     StringDataEncoding(ArgumentStringDataEncodingType),
 }
 ///Identical to BooleanDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentBooleanDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -818,7 +818,7 @@ pub struct ArgumentBooleanDataType {
     pub content: ::std::vec::Vec<ArgumentBooleanDataTypeContent>,
 }
 ///Identical to BooleanDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentBooleanDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -856,7 +856,7 @@ impl ArgumentBooleanDataType {
     }
 }
 ///Identical to BooleanExpressionType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentBooleanExpressionType {
     ///Condition elements describe a test similar to the Comparison element except that the arguments/parameters used have additional flexibility.
     #[serde(rename = "Condition")]
@@ -875,13 +875,13 @@ pub enum ArgumentBooleanExpressionType {
     ),
 }
 ///Identical to ComparisonCheckType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentComparisonCheckType {
     #[serde(rename = "$value")]
     pub content: [ArgumentComparisonCheckTypeContent; 3usize],
 }
 ///Identical to ComparisonCheckType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentComparisonCheckTypeContent {
     ///Left hand side parameter instance.
     #[serde(rename = "ParameterInstanceRef")]
@@ -897,14 +897,14 @@ pub enum ArgumentComparisonCheckTypeContent {
     Value(super::xs::StringType),
 }
 ///Identical to ComparisonListType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentComparisonListType {
     ///List of Comparison elements must all be true for the comparison to evaluate to true.
     #[serde(default, rename = "Comparison")]
     pub comparison: ::std::vec::Vec<ArgumentComparisonType>,
 }
 ///Identical to ComparisonType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentComparisonType {
     ///Comparison operator to use with equality being the common default.
     #[serde(
@@ -919,7 +919,7 @@ pub struct ArgumentComparisonType {
     pub content: ArgumentComparisonTypeContent,
 }
 ///Identical to ComparisonType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentComparisonTypeContent {
     ///This parameter instance is being compared to the value in the parent element using the comparison defined there also.
     #[serde(rename = "ParameterInstanceRef")]
@@ -935,7 +935,7 @@ impl ArgumentComparisonType {
     }
 }
 ///Identical to ContainerRefEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentContainerRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -961,7 +961,7 @@ pub struct ArgumentContainerRefEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to ContainerSegmentRefEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentContainerSegmentRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -991,13 +991,13 @@ pub struct ArgumentContainerSegmentRefEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to DimensionListType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentDimensionListType {
     #[serde(default, rename = "Dimension")]
     pub dimension: ::std::vec::Vec<ArgumentDimensionType>,
 }
 ///Identical to DimensionType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentDimensionType {
     ///zero based index
     #[serde(rename = "StartingIndex")]
@@ -1008,7 +1008,7 @@ pub struct ArgumentDimensionType {
     pub ending_index: ArgumentIntegerValueType,
 }
 ///Identical to DiscreteLookupListType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentDiscreteLookupListType {
     ///In the event that no lookup condition evaluates to true, then this value will be used.
     #[serde(rename = "@defaultValue")]
@@ -1018,7 +1018,7 @@ pub struct ArgumentDiscreteLookupListType {
     pub discrete_lookup: ::std::vec::Vec<ArgumentDiscreteLookupType>,
 }
 ///Identical to ArgumentDiscreteLookupType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentDiscreteLookupType {
     ///Value to use when the lookup conditions are true.
     #[serde(rename = "@value")]
@@ -1027,7 +1027,7 @@ pub struct ArgumentDiscreteLookupType {
     pub content: ArgumentDiscreteLookupTypeContent,
 }
 ///Identical to ArgumentDiscreteLookupType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentDiscreteLookupTypeContent {
     ///A simple comparison check involving a single test of an argument or parameter value.
     #[serde(rename = "Comparison")]
@@ -1043,7 +1043,7 @@ pub enum ArgumentDiscreteLookupTypeContent {
     CustomAlgorithm(ArgumentInputAlgorithmType),
 }
 ///Identical to DynamicValueType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentDynamicValueType {
     ///Retrieve the value by referencing the value of an Argument.
     #[serde(rename = "ArgumentInstanceRef")]
@@ -1056,7 +1056,7 @@ pub enum ArgumentDynamicValueType {
     LinearAdjustment(LinearAdjustmentType),
 }
 ///Identical to EnumeratedDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentEnumeratedDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -1074,7 +1074,7 @@ pub struct ArgumentEnumeratedDataType {
     pub content: ::std::vec::Vec<ArgumentEnumeratedDataTypeContent>,
 }
 ///Identical to EnumeratedDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentEnumeratedDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -1105,7 +1105,7 @@ pub enum ArgumentEnumeratedDataTypeContent {
     EnumerationList(EnumerationListType),
 }
 ///Identical to FixedValueEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentFixedValueEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -1138,7 +1138,7 @@ pub struct ArgumentFixedValueEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to FloatDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentFloatDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -1162,7 +1162,7 @@ pub struct ArgumentFloatDataType {
     pub content: ::std::vec::Vec<ArgumentFloatDataTypeContent>,
 }
 ///Identical to FloatDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentFloatDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -1199,7 +1199,7 @@ impl ArgumentFloatDataType {
     }
 }
 ///Identical to IndirectParameterRefEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentIndirectParameterRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -1227,7 +1227,7 @@ pub struct ArgumentIndirectParameterRefEntryType {
     pub parameter_instance: ParameterInstanceRefType,
 }
 ///Identical to InputAlgorithmType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentInputAlgorithmType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -1254,7 +1254,7 @@ pub struct ArgumentInputAlgorithmType {
     pub input_set: ::std::vec::Vec<ArgumentInputSetType>,
 }
 ///Identical to InputSetType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentInputSetType {
     ///Reference a parameter to serve as an input to the algorithm.
     #[serde(rename = "InputParameterInstanceRef")]
@@ -1267,7 +1267,7 @@ pub enum ArgumentInputSetType {
     Constant(ConstantType),
 }
 ///An argument instance is the name of an argument as the reference is always resolved locally to the metacommand.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentInstanceRefType {
     ///Give the name of the argument.  There is no path, this is a local reference.
     #[serde(rename = "@argumentRef")]
@@ -1286,7 +1286,7 @@ impl ArgumentInstanceRefType {
     }
 }
 ///Identical to IntegerDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentIntegerDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -1313,7 +1313,7 @@ pub struct ArgumentIntegerDataType {
     pub content: ::std::vec::Vec<ArgumentIntegerDataTypeContent>,
 }
 ///Identical to IntegerDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentIntegerDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -1354,7 +1354,7 @@ impl ArgumentIntegerDataType {
     }
 }
 ///Identical to IntegerValueType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentIntegerValueType {
     ///Use a fixed integer value.
     #[serde(rename = "FixedValue")]
@@ -1370,14 +1370,14 @@ pub enum ArgumentIntegerValueType {
     DiscreteLookupList(ArgumentDiscreteLookupListType),
 }
 ///Defines a list of Arguments for a command definition.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentListType {
     ///Defines an Argument for a command definition.  Arguments are local to the MetaCommand, BlockMetaCommand, and those that inherit from the definition.
     #[serde(default, rename = "Argument")]
     pub argument: ::std::vec::Vec<ArgumentType>,
 }
 ///Identical to LocationInContainerInBitsType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentLocationInContainerInBitsType {
     #[serde(
         default = "ArgumentLocationInContainerInBitsType::default_reference_location",
@@ -1388,7 +1388,7 @@ pub struct ArgumentLocationInContainerInBitsType {
     pub content: ArgumentLocationInContainerInBitsTypeContent,
 }
 ///Identical to LocationInContainerInBitsType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentLocationInContainerInBitsTypeContent {
     ///Use a fixed integer value.
     #[serde(rename = "FixedValue")]
@@ -1410,7 +1410,7 @@ impl ArgumentLocationInContainerInBitsType {
     }
 }
 ///Identical to MatchCriteriaType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentMatchCriteriaType {
     ///A simple comparison check involving a single test of an argument or parameter value.
     #[serde(rename = "Comparison")]
@@ -1426,7 +1426,7 @@ pub enum ArgumentMatchCriteriaType {
     CustomAlgorithm(ArgumentInputAlgorithmType),
 }
 ///Describe a value to set to a destination Parameter after completion of a commanding lifecycle step.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentMathOperationType {
     ///Use a constant in the calculation.
     #[serde(rename = "ValueOperand")]
@@ -1445,7 +1445,7 @@ pub enum ArgumentMathOperationType {
     ArgumentInstanceRefOperand(ArgumentInstanceRefType),
 }
 ///Identical to ORedConditionsType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentORedConditionsType {
     ///Condition elements describe a test similar to the Comparison element except that the arguments/parameters used have additional flexibility for the compare.
     #[serde(rename = "Condition")]
@@ -1458,7 +1458,7 @@ pub enum ArgumentORedConditionsType {
     ),
 }
 ///Identical to ParameterRefEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentParameterRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -1484,7 +1484,7 @@ pub struct ArgumentParameterRefEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to ParameterSegmentRefEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentParameterSegmentRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -1514,7 +1514,7 @@ pub struct ArgumentParameterSegmentRefEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Used to contain a relative time value.  Used to describe a relative time.  Normally used for time offsets.  A Relative time is expressed as PnYn MnDTnH nMnS, where nY represents the number of years, nM the number of months, nD the number of days, 'T' is the date/time separator, nH the number of hours, nM the number of minutes and nS the number of seconds. The number of seconds can include decimal digits to arbitrary precision.  For example, to indicate a duration of 1 year, 2 months, 3 days, 10 hours, and 30 minutes, one would write: P1Y2M3DT10H30M. One could also indicate a duration of minus 120 days as: -P120D.  An extension of Schema duration type.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentRelativeTimeDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -1547,7 +1547,7 @@ pub struct ArgumentRelativeTimeDataType {
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Identical to RepeatType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentRepeatType {
     ///Value (either fixed or dynamic) that contains the count of repeated structures.
     #[serde(rename = "Count")]
@@ -1560,14 +1560,14 @@ pub struct ArgumentRepeatType {
     pub offset: ::core::option::Option<ArgumentIntegerValueType>,
 }
 ///Defines a list of argument values that restrict a constraint from being realized in the commanding lifecycle.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentRestrictionListType {
     ///Specifies an argument value that causes this constraint to be realized.
     #[serde(default, rename = "ArgumentRestriction")]
     pub argument_restriction: ::std::vec::Vec<ArgumentAssignmentType>,
 }
 ///Identical to a SequenceEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentSequenceEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -1591,7 +1591,7 @@ pub struct ArgumentSequenceEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to StreamRefEntryType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentStreamSegmentEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -1621,7 +1621,7 @@ pub struct ArgumentStreamSegmentEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Identical to StringDataEncodingType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentStringDataEncodingType {
     ///Describes the bit ordering of the encoded value.
     #[serde(
@@ -1645,7 +1645,7 @@ pub struct ArgumentStringDataEncodingType {
     pub content: ::std::vec::Vec<ArgumentStringDataEncodingTypeContent>,
 }
 ///Identical to StringDataEncodingType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentStringDataEncodingTypeContent {
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(rename = "ErrorDetectCorrect")]
@@ -1675,7 +1675,7 @@ impl ArgumentStringDataEncodingType {
     }
 }
 ///Identical to StringDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentStringDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -1699,7 +1699,7 @@ pub struct ArgumentStringDataType {
     pub content: ::std::vec::Vec<ArgumentStringDataTypeContent>,
 }
 ///Identical to StringDataType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentStringDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -1729,7 +1729,7 @@ pub enum ArgumentStringDataTypeContent {
     SizeRangeInCharacters(IntegerRangeType),
 }
 ///An Argument has a name and can take on values with the underlying value type described by the ArgumentTypeRef. Describe the properties of a command argument referring to a data type (argument type). The bulk of properties associated with a command argument are in its argument type. The initial value specified here, overrides the initial value in the argument type. See BaseDataType, BaseTimeDataType and NameReferenceType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -1754,7 +1754,7 @@ pub struct ArgumentType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Describe an unordered collection of argument type definitions.  These types named for the engineering/calibrated type of the argument.  See BaseDataType and BaseTimeDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentTypeSetType {
     ///Describe an argument type that has an engineering/calibrated value in the form of a character string.
     #[serde(rename = "StringArgumentType")]
@@ -1788,7 +1788,7 @@ pub enum ArgumentTypeSetType {
     AggregateArgumentType(AggregateArgumentType),
 }
 ///Identical to VariableStringType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArgumentVariableStringType {
     ///The upper bound of the size of this string data type so that the implementation can reserve/allocate enough memory to capture all reported instances of the string.
     #[serde(rename = "@maxSizeInBits")]
@@ -1797,7 +1797,7 @@ pub struct ArgumentVariableStringType {
     pub content: ::std::vec::Vec<ArgumentVariableStringTypeContent>,
 }
 ///Identical to VariableStringType but supports argument instance references.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ArgumentVariableStringTypeContent {
     ///Determine the container size in bits by interrogating an instance of a parameter or argument.
     #[serde(rename = "DynamicValue")]
@@ -1816,7 +1816,7 @@ pub enum ArgumentVariableStringTypeContent {
     TerminationChar(super::xs::HexBinaryType),
 }
 ///Describe an array argument type.  The size and number of dimension are described here. See ArrayParameterRefEntryType, NameReferenceType and ArrayDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArrayArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -1844,7 +1844,7 @@ pub struct ArrayArgumentType {
     pub dimension_list: ArgumentDimensionListType,
 }
 ///A base schema type for describing an array data type.  The number of and size of each dimension is defined in its two child types. See NameReferenceType, ArrayArgumentType and ArrayParameterType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArrayDataTypeType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -1869,7 +1869,7 @@ pub struct ArrayDataTypeType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Describe an entry that is an array parameter. Specify the dimension sizes if you subsetting the array (the number of dimensions shall match the number defined in the parameter's type definition), otherwise the ones in the ParameterType are assumed.  See SequenceEntryType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArrayParameterRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -1880,7 +1880,7 @@ pub struct ArrayParameterRefEntryType {
     pub content: ::core::option::Option<ArrayParameterRefEntryTypeContent>,
 }
 ///Describe an entry that is an array parameter. Specify the dimension sizes if you subsetting the array (the number of dimensions shall match the number defined in the parameter's type definition), otherwise the ones in the ParameterType are assumed.  See SequenceEntryType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArrayParameterRefEntryTypeContent {
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
@@ -1907,7 +1907,7 @@ pub struct ArrayParameterRefEntryTypeContent {
     pub dimension_list: DimensionListType,
 }
 ///Describe an array parameter type.  The size and number of dimensions are described here. See ArrayParameterRefEntryType, NameReferenceType and ArrayDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ArrayParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -1935,7 +1935,7 @@ pub struct ArrayParameterType {
     pub dimension_list: DimensionListType,
 }
 ///Describe an unordered collection of authors.  See AuthorType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AuthorSetType {
     ///Contains information about an author, maintainer, or data source regarding this document.
     #[serde(default, rename = "Author")]
@@ -1944,7 +1944,7 @@ pub struct AuthorSetType {
 ///Type definition that describes the format of the contents of the Author element.
 pub type AuthorType = ::std::string::String;
 ///After searching for the frame sync marker for some number of bits, it may be desirable to invert the incoming data, and then look for frame sync.  In some cases this will require an external algorithm
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AutoInvertType {
     #[serde(
         default = "AutoInvertType::default_bad_frames_to_auto_invert",
@@ -1961,7 +1961,7 @@ impl AutoInvertType {
     }
 }
 ///Supplies an optional non-reference-able name and short description for alarms. Also includes an optional ancillary data for any special local flags, note that these may not necessarily transfer to another recipient of an instance document.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BaseAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -1973,7 +1973,7 @@ pub struct BaseAlarmType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Supplies an optional non-reference-able name and short description for calibrators.  Also includes an optional ancillary data for any special local flags, note that these may not necessarily transfer to another recipient of an instance document.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BaseCalibratorType {
     ///Optional name for this calibrator/algorithm
     #[serde(default, rename = "@name")]
@@ -1986,13 +1986,13 @@ pub struct BaseCalibratorType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///A base type for comparison related elements that improves the mapping produced by data binding tools.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BaseComparisonType;
 ///A base type for boolean expression related elements that improves the mapping produced by data binding tools.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BaseConditionsType;
 ///Describe a child/parent container inheritance relationship.  Describe constraints with RestrictionCriteria, conditions that must be true for this container to be an extension of the parent container.  A constraint can be used to convey the identifying features of the telemetry format such as the CCSDS application id or minor-frame id.  See RestrictionCriteriaType and SequenceContainerType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BaseContainerType {
     ///Reference to the container that this container extends.
     #[serde(rename = "@containerRef")]
@@ -2005,7 +2005,7 @@ pub struct BaseContainerType {
     pub restriction_criteria: ::core::option::Option<RestrictionCriteriaType>,
 }
 ///An abstract schema type used by within the schema to derive the other simple/primitive engineering form data types:  BooleanDataType, BinaryDataType, StringDataType, EnumeratedDataType, FloatDataType and IntegerDataType.  The encoding elements are optional because they describe the raw wire encoded form of the data type.  Encoding is only necessary when the type is telemetered in some form.  Local variables and derived typically do not require encoding.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BaseDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -2020,7 +2020,7 @@ pub struct BaseDataType {
     pub content: ::std::vec::Vec<BaseDataTypeContent>,
 }
 ///An abstract schema type used by within the schema to derive the other simple/primitive engineering form data types:  BooleanDataType, BinaryDataType, StringDataType, EnumeratedDataType, FloatDataType and IntegerDataType.  The encoding elements are optional because they describe the raw wire encoded form of the data type.  Encoding is only necessary when the type is telemetered in some form.  Local variables and derived typically do not require encoding.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BaseDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -2048,7 +2048,7 @@ pub enum BaseDataTypeContent {
     StringDataEncoding(StringDataEncodingType),
 }
 ///When specified, a BaseMetaCommand element identifies that this MetaCommand inherits (extends) another MetaCommand.  It's required ArgumentAssignmentList narrows or this command from the parent.  This is typically used when specializing a generic MetaCommand to a specific MetaCommand.  See MetaCommandType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BaseMetaCommandType {
     ///Reference to the MetaCommand definition that this MetaCommand extends.
     #[serde(rename = "@metaCommandRef")]
@@ -2058,7 +2058,7 @@ pub struct BaseMetaCommandType {
     pub argument_assignment_list: ::core::option::Option<ArgumentAssignmentListType>,
 }
 ///An abstract schema type used within the schema to derive other time based data types: RelativeTimeDataType and AbsoluteTimeDataType.  An absolute time data type is a telemetered source/destination data type.  A data encoding must be set.  An optional epoch may be set.  Time types are an exception to other primitives because, if the time data type is not telemetered, it still must have a data encoding set.  See DataEncodingType, AbsoluteTimeDataType and RelativeTimeDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BaseTimeDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -2089,10 +2089,10 @@ pub struct BaseTimeDataType {
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///A base type for the various triggers, purely to improve the mappings created by data binding compilers.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BaseTriggerType;
 ///Defines to type of update rates: perSecond and perContainerUpdate.  See RateInStreamType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BasisType {
     #[serde(rename = "perSecond")]
     PerSecond,
@@ -2100,7 +2100,7 @@ pub enum BasisType {
     PerContainerUpdate,
 }
 ///Describe alarm conditions specific to the binary data type, extends the basic AlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BinaryAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -2127,7 +2127,7 @@ pub struct BinaryAlarmType {
     pub content: ::std::vec::Vec<BinaryAlarmTypeContent>,
 }
 ///Describe alarm conditions specific to the binary data type, extends the basic AlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BinaryAlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -2153,7 +2153,7 @@ impl BinaryAlarmType {
     }
 }
 ///Defines a binary engineering/calibrated argument type (often called "blob type"). The binary data may be of fixed or variable length, and has an optional encoding and decoding algorithm that may be defined to transform the data between space and ground.  See BinaryDataEncodingType, IntegerValueType, InputAlgorithmType, and BinaryDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BinaryArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -2171,7 +2171,7 @@ pub struct BinaryArgumentType {
     pub content: ::std::vec::Vec<BinaryArgumentTypeContent>,
 }
 ///Defines a binary engineering/calibrated argument type (often called "blob type"). The binary data may be of fixed or variable length, and has an optional encoding and decoding algorithm that may be defined to transform the data between space and ground.  See BinaryDataEncodingType, IntegerValueType, InputAlgorithmType, and BinaryDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BinaryArgumentTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -2199,13 +2199,13 @@ pub enum BinaryArgumentTypeContent {
     StringDataEncoding(ArgumentStringDataEncodingType),
 }
 ///Describe an ordered collection of context binary alarms, duplicates are valid.  Process the contexts in list order.  See BinaryContextAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BinaryContextAlarmListType {
     ///A Context contains a new alarm definition and a context match.  The match takes precedence over any default alarm when the first in the overall list evaluates to true.  It is also possible the alarm definition is empty, in which case the context means no alarm defined when the match is true.
     #[serde(default, rename = "ContextAlarm")]
     pub context_alarm: ::std::vec::Vec<BinaryContextAlarmType>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BinaryContextAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -2231,7 +2231,7 @@ pub struct BinaryContextAlarmType {
     #[serde(rename = "$value")]
     pub content: ::std::vec::Vec<BinaryContextAlarmTypeContent>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BinaryContextAlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -2259,7 +2259,7 @@ impl BinaryContextAlarmType {
     }
 }
 ///Describe binary data that is unmolested in the decoding/encoding or cannot be represented in any of the other data encoding formats.  Optionally use the FromBinaryTransformAlgorithm and ToBinaryTransformAlgorithm element to describe the transformation process.  See InputAlgorithmType for the transformation structure.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BinaryDataEncodingType {
     ///Describes the bit ordering of the encoded value.
     #[serde(default = "BinaryDataEncodingType::default_bit_order", rename = "@bitOrder")]
@@ -2296,7 +2296,7 @@ impl BinaryDataEncodingType {
     }
 }
 ///A base schema type for describing a binary data engineering/calibrated type (often called "blob type"). The binary data may be of fixed or variable length, and has an optional encoding and decoding algorithm that may be defined to transform the data between space and ground.  See BaseDataType, BinaryParameterType and BinaryArgumentType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BinaryDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -2314,7 +2314,7 @@ pub struct BinaryDataType {
     pub content: ::std::vec::Vec<BinaryDataTypeContent>,
 }
 ///A base schema type for describing a binary data engineering/calibrated type (often called "blob type"). The binary data may be of fixed or variable length, and has an optional encoding and decoding algorithm that may be defined to transform the data between space and ground.  See BaseDataType, BinaryParameterType and BinaryArgumentType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BinaryDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -2342,7 +2342,7 @@ pub enum BinaryDataTypeContent {
     StringDataEncoding(StringDataEncodingType),
 }
 ///Describe a binary engineering/calibrated parameter type (sometimes called a "blob type"). It may be of fixed or variable length, and has an optional encoding and decoding algorithm that may be defined to transform the data between space and ground.  See BinaryDataEncodingType, IntegerValueType, InputAlgorithmType and BinaryDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BinaryParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -2360,7 +2360,7 @@ pub struct BinaryParameterType {
     pub content: ::std::vec::Vec<BinaryParameterTypeContent>,
 }
 ///Describe a binary engineering/calibrated parameter type (sometimes called a "blob type"). It may be of fixed or variable length, and has an optional encoding and decoding algorithm that may be defined to transform the data between space and ground.  See BinaryDataEncodingType, IntegerValueType, InputAlgorithmType and BinaryDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BinaryParameterTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -2396,7 +2396,7 @@ pub enum BinaryParameterTypeContent {
 ///A simple restriction on string for hexadecimal numbers.  Must be in 0b or 0B form.
 pub type BinaryType = ::std::string::String;
 ///Defines two bit-order types: most significant bit first and least significant bit first.  See DataEncodingType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BitOrderType {
     #[serde(rename = "leastSignificantBitFirst")]
     LeastSignificantBitFirst,
@@ -2404,7 +2404,7 @@ pub enum BitOrderType {
     MostSignificantBitFirst,
 }
 ///Describe an ordered grouping of MetaCommands into a list, duplicates are valid. The block contains argument values fully specified.  See MetaCommandStepListType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BlockMetaCommandType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -2426,7 +2426,7 @@ pub struct BlockMetaCommandType {
     pub meta_command_step_list: MetaCommandStepListType,
 }
 ///Alarm conditions for Boolean types
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BooleanAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -2453,7 +2453,7 @@ pub struct BooleanAlarmType {
     pub content: ::std::vec::Vec<BooleanAlarmTypeContent>,
 }
 ///Alarm conditions for Boolean types
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BooleanAlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -2479,7 +2479,7 @@ impl BooleanAlarmType {
     }
 }
 ///Defines a boolean argument type which has two values only: "True" (1) or "False" (0). The values one and zero may be mapped to a specific string using the attributes oneStringValue and zeroStringValue.  This type is a simplified form of the EnumeratedDataType.  See IntegerDataEncoding and BooleanDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BooleanArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -2509,7 +2509,7 @@ pub struct BooleanArgumentType {
     pub content: ::std::vec::Vec<BooleanArgumentTypeContent>,
 }
 ///Defines a boolean argument type which has two values only: "True" (1) or "False" (0). The values one and zero may be mapped to a specific string using the attributes oneStringValue and zeroStringValue.  This type is a simplified form of the EnumeratedDataType.  See IntegerDataEncoding and BooleanDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BooleanArgumentTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -2547,13 +2547,13 @@ impl BooleanArgumentType {
     }
 }
 ///Describe an ordered collection of context boolean alarms, duplicates are valid.  Process the contexts in list order.  See BooleanContextAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BooleanContextAlarmListType {
     ///A Context contains a new alarm definition and a context match.  The match takes precedence over any default alarm when the first in the overall list evaluates to true.  It is also possible the alarm definition is empty, in which case the context means no alarm defined when the match is true.
     #[serde(default, rename = "ContextAlarm")]
     pub context_alarm: ::std::vec::Vec<BooleanContextAlarmType>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BooleanContextAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -2579,7 +2579,7 @@ pub struct BooleanContextAlarmType {
     #[serde(rename = "$value")]
     pub content: ::std::vec::Vec<BooleanContextAlarmTypeContent>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BooleanContextAlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -2607,7 +2607,7 @@ impl BooleanContextAlarmType {
     }
 }
 ///A base schema type for describing a boolean data type which has two values only: "True" (1) or "False" (0). The values one and zero may be mapped to a specific string using the attributes oneStringValue and zeroStringValue.  This type is a simplified form of the EnumeratedDataType.  See BaseDataType, BooleanParameterType and BooleanArgumentType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BooleanDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -2637,7 +2637,7 @@ pub struct BooleanDataType {
     pub content: ::std::vec::Vec<BooleanDataTypeContent>,
 }
 ///A base schema type for describing a boolean data type which has two values only: "True" (1) or "False" (0). The values one and zero may be mapped to a specific string using the attributes oneStringValue and zeroStringValue.  This type is a simplified form of the EnumeratedDataType.  See BaseDataType, BooleanParameterType and BooleanArgumentType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BooleanDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -2675,7 +2675,7 @@ impl BooleanDataType {
     }
 }
 ///Holds an arbitrarily complex boolean expression
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BooleanExpressionType {
     ///Condition elements describe a test similar to the Comparison element except that the parameters used have additional flexibility.
     #[serde(rename = "Condition")]
@@ -2694,7 +2694,7 @@ pub enum BooleanExpressionType {
     ),
 }
 ///Describe a boolean parameter type which has two values only: "True" (1) or "False" (0). The values one and zero may be mapped to a specific string using the attributes oneStringValue and zeroStringValue.  This type is a simplified form of the EnumeratedDataType.  See IntegerDataEncoding and BooleanDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct BooleanParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -2724,7 +2724,7 @@ pub struct BooleanParameterType {
     pub content: ::std::vec::Vec<BooleanParameterTypeContent>,
 }
 ///Describe a boolean parameter type which has two values only: "True" (1) or "False" (0). The values one and zero may be mapped to a specific string using the attributes oneStringValue and zeroStringValue.  This type is a simplified form of the EnumeratedDataType.  See IntegerDataEncoding and BooleanDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum BooleanParameterTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -2770,7 +2770,7 @@ impl BooleanParameterType {
 ///Describe a byte order using a byte list. The list is viewed as representing memory, the first item in the list is address 0. For mostSignificantByteFirst/big endian, the high order byte is the first byte in the list and has the highest significance followed by the less significant bytes ending with the least significant byte. For leastSignificantByteFirst/little endian, the first byte starts with the least significant byte which is first in the least and ends at the highest significant byte. For example given the value 0x0A0B0C0D the following example orderings can be formed. For mostSignificantByteFirst/big endian the significances would be listed as 3 (0x0A), 2 (0x0B), 1 (0x0C), 0 (0x0D) with 3 being first in the list, and for leastSignificantByteFirst/little endian as 0 (0x0D), 1 (0x0C), 2 (0x0B), 3 (0x0A) with 0 being first in the list. See DataEncodingType.
 pub type ByteOrderArbitraryType = ::std::string::String;
 ///Common byte orderings: most significant byte first (also known as big endian) and least significant byte first (also known as little endian).
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ByteOrderCommonType {
     #[serde(rename = "mostSignificantByteFirst")]
     MostSignificantByteFirst,
@@ -2778,7 +2778,7 @@ pub enum ByteOrderCommonType {
     LeastSignificantByteFirst,
 }
 ///Describe a byte order: big/little or byte list.
-#[derive(Debug, Deserialize_enum_str)]
+#[derive(Clone, Debug, Deserialize_enum_str)]
 pub enum ByteOrderType {
     #[serde(rename = "mostSignificantByteFirst")]
     MostSignificantByteFirst,
@@ -2787,13 +2787,13 @@ pub enum ByteOrderType {
     #[serde(other)]
     String(::std::string::String),
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ByteType {
     #[serde(rename = "@byteSignificance")]
     pub byte_significance: NonNegativeLongType,
 }
 ///Cyclic Redundancy Check (CRC) definition. The polynomial coefficients for the CRC are defined as a truncated hex value.  The coefficient for the nth bit of an n-bit CRC will always be 1 and is not represented in the truncated hex value.  For example, the truncated hex value of CRC-32 (width=32 bits) used in the Ethernet specification is 0x04C11DB7, where each non-zero bit of the truncated hex represents a coefficient of 1 in the polynomial and the bit position represents the exponent. There may also be an initial remainder "InitRemainder" and a final XOR "FinalXOR" to fully specify the CRC.  reflectData and reflectRemainder may also be specified to reverse the bit order in the incoming data and/or the result.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CrcType {
     ///The width is the number of bits in the shift register, which is not necessarily the number of bits of the parameter holding the value.
     #[serde(rename = "@width")]
@@ -2855,7 +2855,7 @@ impl CrcType {
     }
 }
 ///Describe a calibrator to transform a source data type raw/uncalibrated value (e.g. an integer count from a spacecraft) to an engineering unit/calibrated value for users (e.g. a float).
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CalibratorType {
     ///Optional name for this calibrator/algorithm
     #[serde(default, rename = "@name")]
@@ -2867,7 +2867,7 @@ pub struct CalibratorType {
     pub content: ::std::vec::Vec<CalibratorTypeContent>,
 }
 ///Describe a calibrator to transform a source data type raw/uncalibrated value (e.g. an integer count from a spacecraft) to an engineering unit/calibrated value for users (e.g. a float).
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum CalibratorTypeContent {
     ///Optional additional ancillary information for this calibrator/algorithm
     #[serde(rename = "AncillaryDataSet")]
@@ -2883,7 +2883,7 @@ pub enum CalibratorTypeContent {
     MathOperationCalibrator(MathOperationCalibratorType),
 }
 ///Describe an alarm when the parameter value's rate-of-change is either too fast or too slow. The change may be with respect to time (the default) or with respect to samples (delta alarms). Use the changeType attribute to select the type: changePerSecond (time) or changePerSample (delta). The change may also be ether relative (as a percentage change) or absolute as set by the changeBasis attribute. (Delta alarms are typically absolute but percentage is conceivable). The alarm also requires the spanOfInterest in both samples and seconds to have passed before it is to trigger. For time based rate of change alarms, the time specified in spanOfInterestInSeconds is used to calculate the change. For sample based rate of change alarms, the change is calculated over the number of samples specified in spanOfInterestInSamples. A typical delta alarm would set: changeType=changePerSample, changeBasis=absoluteChange, spanOfInterestInSamples=1. A typical time based version would set: changeType=changePerSecond, changeBasis=percentageChange, and spaceOfInterestInSeconds=1. To set the ranges use maxInclusive, the following definition applies: | Normal.maxInclusive | = | Watch.maxInclusive | = | Warning.maxInclusive | = | Distress.maxInclusive | = | Critical.maxInclusive | = | Severe.maxInclusive |. And it is further assumed the absolute value of each range and sampled value it taken to evaluate the alarm. See NumericAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ChangeAlarmRangesType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -2958,7 +2958,7 @@ impl ChangeAlarmRangesType {
     }
 }
 ///Defines absoluteChange and percentageChange for use in rate of change alarms. Used by ChangeAlarmRangesType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ChangeBasisType {
     #[serde(rename = "absoluteChange")]
     AbsoluteChange,
@@ -2966,7 +2966,7 @@ pub enum ChangeBasisType {
     PercentageChange,
 }
 ///Defines a changePerSecond and changePerSample for use in rate of change alarms. Used by ChangeAlarmRangesType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ChangeSpanType {
     #[serde(rename = "changePerSecond")]
     ChangePerSecond,
@@ -2974,13 +2974,13 @@ pub enum ChangeSpanType {
     ChangePerSample,
 }
 ///Describe a change value used to test verification status. See CommandVerifierType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ChangeValueType {
     ///Value as a floating point number.
     #[serde(rename = "@value")]
     pub value: super::xs::DoubleType,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum CharacterWidthType {
     #[serde(rename = "8")]
     _8,
@@ -2990,7 +2990,7 @@ pub enum CharacterWidthType {
     _32,
 }
 ///Used by CommandVerifiers to limit the time allocated to check for the verification.  See CommandVerifierType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CheckWindowAlgorithmsType {
     #[serde(rename = "StartCheck")]
     pub start_check: InputAlgorithmType,
@@ -2998,7 +2998,7 @@ pub struct CheckWindowAlgorithmsType {
     pub stop_time: InputAlgorithmType,
 }
 ///Used by CommandVerifiers to limit the time allocated to check for the verification.  See CheckWindowAlgorithmsType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CheckWindowType {
     #[serde(default, rename = "@timeToStartChecking")]
     pub time_to_start_checking: ::core::option::Option<RelativeTimeType>,
@@ -3017,7 +3017,7 @@ impl CheckWindowType {
     }
 }
 ///Describe checksum or hash function definiton.  See ErrorDetectCorrectType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ChecksumType {
     ///An offset of non-zero may be specified to skip some bits against the reference position in the reference attribute.
     #[serde(
@@ -3052,7 +3052,7 @@ impl ChecksumType {
     }
 }
 ///Describe an entry list for a CommandContainer which is associated with a MetaCommand. The entry list for a MetaCommand CommandContainer element operates in a similar fashion as the entry list element for a SequenceContainer element.  It adds fixed value and argument entries to the entry list not present in sequence containers.  See MetaCommandType, CommandContainerType and EntryListType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum CommandContainerEntryListType {
     ///Specify a Parameter to be a part of this container layout definition.
     #[serde(rename = "ParameterRefEntry")]
@@ -3086,13 +3086,13 @@ pub enum CommandContainerEntryListType {
     FixedValueEntry(ArgumentFixedValueEntryType),
 }
 ///Contains an unordered Set of Command Containers
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CommandContainerSetType {
     #[serde(default, rename = "CommandContainer")]
     pub command_container: ::std::vec::Vec<SequenceContainerType>,
 }
 ///Describe a MetaCommand command container.  The command container may contain arguments, parameters, other basic containers, and fixed values.  Arguments are supplied by the user of a commanding application; parameters are supplied by the controlling system.  Parameters and arguments map source data types to encodings.   See MetaCommandType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CommandContainerType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -3125,7 +3125,7 @@ pub struct CommandContainerType {
     pub base_container: ::core::option::Option<BaseContainerType>,
 }
 ///Describe command related metadata. Items defined in this area may refer to items defined in TelemetryMetaData.  See TelemetryMetaDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CommandMetaDataType {
     ///A list of parameter types.
     #[serde(default, rename = "ParameterTypeSet")]
@@ -3156,7 +3156,7 @@ pub struct CommandMetaDataType {
     pub algorithm_set: ::std::vec::Vec<AlgorithmSetType>,
 }
 ///A command verifier is used to check that the command has been successfully executed. Command Verifiers may be either a Custom Algorithm or a Boolean Check or the presence of a Container for a relative change in the value of a Parameter.  The CheckWindow is a time period where the verification must test true to pass.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CommandVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -3168,7 +3168,7 @@ pub struct CommandVerifierType {
     pub content: ::std::vec::Vec<CommandVerifierTypeContent>,
 }
 ///A command verifier is used to check that the command has been successfully executed. Command Verifiers may be either a Custom Algorithm or a Boolean Check or the presence of a Container for a relative change in the value of a Parameter.  The CheckWindow is a time period where the verification must test true to pass.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum CommandVerifierTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -3208,13 +3208,13 @@ pub enum CommandVerifierTypeContent {
     ArgumentRestrictionList(ArgumentAssignmentListType),
 }
 ///Describe the comparison between the instance (value) of a parameter against either a specified value or another parameter instance.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ComparisonCheckType {
     #[serde(rename = "$value")]
     pub content: [ComparisonCheckTypeContent; 3usize],
 }
 ///Describe the comparison between the instance (value) of a parameter against either a specified value or another parameter instance.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ComparisonCheckTypeContent {
     ///Left hand side parameter instance.
     #[serde(rename = "ParameterInstanceRef")]
@@ -3227,14 +3227,14 @@ pub enum ComparisonCheckTypeContent {
     Value(super::xs::StringType),
 }
 ///All comparisons must be true
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ComparisonListType {
     ///List of Comparison elements must all be true for the comparison to evaluate to true.
     #[serde(default, rename = "Comparison")]
     pub comparison: ::std::vec::Vec<ComparisonType>,
 }
 ///Operators to use when testing a boolean condition for a validity check
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ComparisonOperatorsType {
     #[serde(rename = "==")]
     Eq,
@@ -3250,7 +3250,7 @@ pub enum ComparisonOperatorsType {
     Gte,
 }
 ///A simple ParameterInstanceRef to value comparison.  The string supplied in the value attribute needs to be converted to a type matching the Parameter being compared to.  For integer types it is base 10 form.  Floating point types may be specified in normal (100.0) or scientific (1.0e2) form.  The value is truncated  to use the least significant bits that match the bit size of the Parameter being compared to.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ComparisonType {
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
@@ -3286,7 +3286,7 @@ impl ComparisonType {
     }
 }
 ///A possible set of verifiers that all must be true for the command be considered completed.  Consider that some may not participate due to argument value restriction, if that element is used.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CompleteVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -3298,7 +3298,7 @@ pub struct CompleteVerifierType {
     pub content: ::std::vec::Vec<CompleteVerifierTypeContent>,
 }
 ///A possible set of verifiers that all must be true for the command be considered completed.  Consider that some may not participate due to argument value restriction, if that element is used.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum CompleteVerifierTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -3340,7 +3340,7 @@ pub enum CompleteVerifierTypeContent {
     ReturnParmRef(ParameterRefType),
 }
 ///Defines six levels: Normal, Watch, Warning, Distress, Critical and Severe, in that order of concern from least to most. These level definitions are used throughout the alarm definitions. An implementation should interpret these as best to match their uniqueness and provide documentation on how this standard maps to their implementation.  Not all are likely to be provided, with some either ignored, promoted or demoted to others, or warned on input.  There exist some reasonable usage recommendations in the user community.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ConcernLevelsType {
     ///The case of "normal" or "no concern level" is generally the default.  This value can be useful when describing an exception or disabling when the more typical case is a non-normal concern level.
     #[serde(rename = "normal")]
@@ -3362,7 +3362,7 @@ pub enum ConcernLevelsType {
     Severe,
 }
 ///Defines the criticality level of a command.  Criticality levels follow ISO 14950.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ConsequenceLevelType {
     ///Normal command.  Corresponds to ISO 14950 Level D telecommand criticality.
     #[serde(rename = "normal")]
@@ -3384,7 +3384,7 @@ pub enum ConsequenceLevelType {
     User2,
 }
 ///Names and provides a value for a constant input to the algorithm.  There are two attributes to Constant, constantName and value.  constantName is a variable name in the algorithm to be executed.  value is the value of the constant to be used.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ConstantType {
     ///Supply a name for the constant to be used to access this value from within the algorithm.
     #[serde(rename = "@constantName")]
@@ -3394,7 +3394,7 @@ pub struct ConstantType {
     pub value: super::xs::StringType,
 }
 ///Describe container binary data that is unmolested in the decoding/encoding or cannot be represented in any of the other data encoding formats. Optionally use the FromBinaryTransformAlgorithm and ToBinaryTransformAlgorithm element to describe the transformation process. See InputAlgorithmType for the transformation structure.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ContainerBinaryDataEncodingType {
     ///Describes the optional inclusion of an error detection and/or correction algorithm used with this container.
     #[serde(default, rename = "ErrorDetectCorrect")]
@@ -3414,7 +3414,7 @@ pub struct ContainerBinaryDataEncodingType {
     pub to_binary_transform_algorithm: ::core::option::Option<InputAlgorithmType>,
 }
 ///An entry that is simply a reference to another container.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ContainerRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -3442,20 +3442,20 @@ pub struct ContainerRefEntryType {
     #[serde(default, rename = "AncillaryDataSet")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ContainerRefSetType {
     #[serde(default, rename = "ContainerRef")]
     pub container_ref: ::std::vec::Vec<ContainerRefType>,
 }
 ///Holds a reference to a container
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ContainerRefType {
     ///name of container
     #[serde(rename = "@containerRef")]
     pub container_ref: NameReferenceWithPathType,
 }
 ///An entry that is only a portion of a container indicating that the entire container must be assembled from other container segments.   It is assumed that container segments happen sequentially in time, that is the first part of a container is first, however (and there's always a however), if this is not the case the order of this container segment may be supplied with the order attribute where the first segment order="0".  Each instance of a container cannot overlap in the overall sequence with another instance
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ContainerSegmentRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -3488,14 +3488,14 @@ pub struct ContainerSegmentRefEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Unordered Set of Containers
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ContainerSetType {
     ///SequenceContainers define sequences of parameters or other containers.
     #[serde(rename = "SequenceContainer")]
     SequenceContainer(SequenceContainerType),
 }
 ///An abstract block of data; used as the base type for more specific container types
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ContainerType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -3521,14 +3521,14 @@ pub struct ContainerType {
     pub binary_encoding: ::core::option::Option<ContainerBinaryDataEncodingType>,
 }
 ///Describe an ordered list of calibrators with a context match.  Useful when different calibrations must be used depending on a matching value.  The first context that matches determines which calibrator to use. See IntegerDataEncodingType and FloatDataEncodingType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ContextCalibratorListType {
     ///Describe a calibrator that depends on a matching value using a ContextMatch.  When the context matches for the calibrator, the default calibrator is overridden, if it exists.
     #[serde(default, rename = "ContextCalibrator")]
     pub context_calibrator: ::std::vec::Vec<ContextCalibratorType>,
 }
 ///Context calibrations are applied when the ContextMatch is true.  Context calibrators overide Default calibrators
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ContextCalibratorType {
     #[serde(rename = "ContextMatch")]
     #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
@@ -3537,7 +3537,7 @@ pub struct ContextCalibratorType {
     pub calibrator: CalibratorType,
 }
 ///A MatchCriteriaType used for Context selection.  It is possible that no match evaluates to true, which results in the default element being used.  It is also possible that a match can have an empty context change, in which case the default is replaced with nothing.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ContextMatchType {
     ///A simple comparison check involving a single test of a parameter value.
     #[serde(rename = "Comparison")]
@@ -3553,14 +3553,14 @@ pub enum ContextMatchType {
     CustomAlgorithm(InputAlgorithmType),
 }
 ///Describe an ordered list of ContextSignificance elements where the significance on the first context match to test true is used as the significance of the MetaCommand.  If there is a DefaultSignificance, it is overrideen by the matching context.  See ContextSignificantType and MetaCommandType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ContextSignificanceListType {
     ///A Context contains a different significance definition and a context match.  The match takes precedence over any default significance when the first in the overall list evaluates to true.
     #[serde(default, rename = "ContextSignificance")]
     pub context_significance: ::std::vec::Vec<ContextSignificanceType>,
 }
 ///Describe a significance level for a MetaCommand definition where the significance level depends on matching a context value.  See ContextMatchType and SignificanceType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ContextSignificanceType {
     ///Describe the context matching value and source that will enable the Significance listed in the Significance element.
     #[serde(rename = "ContextMatch")]
@@ -3571,7 +3571,7 @@ pub struct ContextSignificanceType {
     pub significance: SignificanceType,
 }
 ///Describe a custom, algorithmic alarm condition. The algorithm is assumed to return a boolean value: true or false. See AlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CustomAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -3586,7 +3586,7 @@ pub struct CustomAlarmType {
     pub input_algorithm: InputAlgorithmType,
 }
 ///A stream type where some level of custom processing (e.g. convolutional, encryption, compression) is performed.  Has a reference to external algorithms for encoding and decoding algorithms.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CustomStreamType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -3630,7 +3630,7 @@ impl CustomStreamType {
     }
 }
 ///Describes how a particular piece of data is sent or received from some non-native, off-platform device. (e.g. a spacecraft)
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct DataEncodingType {
     ///Describes the bit ordering of the encoded value.
     #[serde(default = "DataEncodingType::default_bit_order", rename = "@bitOrder")]
@@ -3654,7 +3654,7 @@ impl DataEncodingType {
     }
 }
 ///Defines an abstract schema type used as basis for NameDescriptionType and OptionalNameDescriptionType, includes an attribute for a short description and an element for a longer unbounded description.  This type also provides alias set and ancillary data set  See AliasSetType and AncillaryDataSetType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct DescriptionType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -3670,13 +3670,13 @@ pub struct DescriptionType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Where the Dimension list is in this form:  Array[1stDim][2ndDim][lastDim].  The last dimension is assumed to be the least significant - that is this dimension will cycle through its combination before the next to last dimension changes.  The order MUST ascend or the array will need to be broken out entry by entry.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct DimensionListType {
     #[serde(default, rename = "Dimension")]
     pub dimension: ::std::vec::Vec<DimensionType>,
 }
 ///For partial entries of an array, the starting and ending index for each dimension, OR the Size must be specified.  Indexes are zero based.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct DimensionType {
     ///zero based index
     #[serde(rename = "StartingIndex")]
@@ -3687,7 +3687,7 @@ pub struct DimensionType {
     pub ending_index: IntegerValueType,
 }
 ///Describe an ordered table of integer values and associated conditions, forming a lookup table. The list may have duplicates.  The table is evaluated from first to last, the first condition to be true returns the value associated with it.  See DiscreteLookupType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct DiscreteLookupListType {
     ///In the event that no lookup condition evaluates to true, then this value will be used.
     #[serde(rename = "@defaultValue")]
@@ -3697,7 +3697,7 @@ pub struct DiscreteLookupListType {
     pub discrete_lookup: ::std::vec::Vec<DiscreteLookupType>,
 }
 ///Describe a discrete value lookup and the value associated when the lookup evaluates to true.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct DiscreteLookupType {
     ///Value to use when the lookup conditions are true.
     #[serde(rename = "@value")]
@@ -3706,7 +3706,7 @@ pub struct DiscreteLookupType {
     pub content: DiscreteLookupTypeContent,
 }
 ///Describe a discrete value lookup and the value associated when the lookup evaluates to true.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum DiscreteLookupTypeContent {
     ///A simple comparison check involving a single test of a parameter value.
     #[serde(rename = "Comparison")]
@@ -3722,7 +3722,7 @@ pub enum DiscreteLookupTypeContent {
     CustomAlgorithm(InputAlgorithmType),
 }
 ///Uses a parameter instance to obtain the value.  The parameter value may be optionally adjusted by a Linear function or use a series of boolean expressions to lookup the value.  Anything more complex and a DynamicValue with a CustomAlgorithm may be used
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct DynamicValueType {
     ///Retrieve the value by referencing the value of a Parameter.
     #[serde(rename = "ParameterInstanceRef")]
@@ -3732,7 +3732,7 @@ pub struct DynamicValueType {
     pub linear_adjustment: ::core::option::Option<LinearAdjustmentType>,
 }
 ///Describe the data encoding for a time data type.  It includes the units and other attributes scale and offset.  Use scale and offset to describe a y=mx+b relationship (where m is the slope/scale and b is the intercept/offset) to make adjustments to the encoded time value so that it matches the time units.  For binary encoded time use transform algorithms to convert time data formats that are too difficult to describe in XTCE. See AbsoluteTimeDataType and RelativeTimeDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct EncodingType {
     ///Time units, with the default being in seconds.
     #[serde(default = "EncodingType::default_units", rename = "@units")]
@@ -3747,7 +3747,7 @@ pub struct EncodingType {
     pub content: EncodingTypeContent,
 }
 ///Describe the data encoding for a time data type.  It includes the units and other attributes scale and offset.  Use scale and offset to describe a y=mx+b relationship (where m is the slope/scale and b is the intercept/offset) to make adjustments to the encoded time value so that it matches the time units.  For binary encoded time use transform algorithms to convert time data formats that are too difficult to describe in XTCE. See AbsoluteTimeDataType and RelativeTimeDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum EncodingTypeContent {
     ///Binary encoding is typically a "pass through" raw encoding form where one of the more common encodings is not required for the parameter.  A custom transformation capability is available if needed.
     #[serde(rename = "BinaryDataEncoding")]
@@ -3777,7 +3777,7 @@ impl EncodingType {
     }
 }
 ///Contains an ordered list of Entries.  Used in Sequence Container
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum EntryListType {
     ///Specify a Parameter to be a part of this container layout definition.
     #[serde(rename = "ParameterRefEntry")]
@@ -3802,7 +3802,7 @@ pub enum EntryListType {
     ArrayParameterRefEntry(ArrayParameterRefEntryType),
 }
 ///Describes an enumerated argument type.  The enumeration list consists of label/value pairs. See EnumerationListType, IntegerDataEncodingType and EnumeratedDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct EnumeratedArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -3820,7 +3820,7 @@ pub struct EnumeratedArgumentType {
     pub content: ::std::vec::Vec<EnumeratedArgumentTypeContent>,
 }
 ///Describes an enumerated argument type.  The enumeration list consists of label/value pairs. See EnumerationListType, IntegerDataEncodingType and EnumeratedDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum EnumeratedArgumentTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -3851,7 +3851,7 @@ pub enum EnumeratedArgumentTypeContent {
     EnumerationList(EnumerationListType),
 }
 ///Describes an enumerated parameter type.  The enumeration list consists of label/value pairs. See EnumerationListType, EnumeratedParameterType and EnumeratedArgumentType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct EnumeratedDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -3869,7 +3869,7 @@ pub struct EnumeratedDataType {
     pub content: ::std::vec::Vec<EnumeratedDataTypeContent>,
 }
 ///Describes an enumerated parameter type.  The enumeration list consists of label/value pairs. See EnumerationListType, EnumeratedParameterType and EnumeratedArgumentType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum EnumeratedDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -3900,7 +3900,7 @@ pub enum EnumeratedDataTypeContent {
     EnumerationList(EnumerationListType),
 }
 ///Describe an enumerated parameter type.  The enumeration list consists of label/value pairs. See EnumerationListType, IntegerDataEncodingType and EnumeratedDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct EnumeratedParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -3918,7 +3918,7 @@ pub struct EnumeratedParameterType {
     pub content: ::std::vec::Vec<EnumeratedParameterTypeContent>,
 }
 ///Describe an enumerated parameter type.  The enumeration list consists of label/value pairs. See EnumerationListType, IntegerDataEncodingType and EnumeratedDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum EnumeratedParameterTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -3955,7 +3955,7 @@ pub enum EnumeratedParameterTypeContent {
     ContextAlarmList(EnumerationContextAlarmListType),
 }
 ///Describe an alarm level and its enumeration label to trigger from. See EnumeratedAlarmType and EnumeratedParameterType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct EnumerationAlarmLevelType {
     ///Defines six levels: Normal, Watch, Warning, Distress, Critical and Severe. Typical implementations color the "normal" level as green, "warning" level as yellow, and "critical" level as red. In the case of enumeration alarms, the "normal" is assumed by implementations to be any label not otherwise in an alarm state.
     #[serde(rename = "@alarmLevel")]
@@ -3964,14 +3964,14 @@ pub struct EnumerationAlarmLevelType {
     #[serde(rename = "@enumerationLabel")]
     pub enumeration_label: super::xs::StringType,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct EnumerationAlarmListType {
     ///Describe an alarm state for an enumeration label where the label is engineer/calibrated value. Note that labels may represent multiple raw/uncalbrated values.
     #[serde(default, rename = "EnumerationAlarm")]
     pub enumeration_alarm: ::std::vec::Vec<EnumerationAlarmLevelType>,
 }
 ///Describe alarm conditions specific to the enumeration data type, extends the basic AlarmType with an EnumerationAlarmList. The alarms are described using the label (engineering/calibrated value) of the enumerated parameter. Enumeration labels may represent several raw/uncalibrated values, so as a result, a single alarm definition here may represent multiple raw values in the enumerated parameter. It is not necessary to define an alarm for raw/uncalibrated values that do not map to an enumeration. Implementations should implicitly define this as an alarm case, of which the manifestation of that is program/implementation specific. See EnumeratedParameterType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct EnumerationAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -4004,7 +4004,7 @@ pub struct EnumerationAlarmType {
     pub content: ::std::vec::Vec<EnumerationAlarmTypeContent>,
 }
 ///Describe alarm conditions specific to the enumeration data type, extends the basic AlarmType with an EnumerationAlarmList. The alarms are described using the label (engineering/calibrated value) of the enumerated parameter. Enumeration labels may represent several raw/uncalibrated values, so as a result, a single alarm definition here may represent multiple raw values in the enumerated parameter. It is not necessary to define an alarm for raw/uncalibrated values that do not map to an enumeration. Implementations should implicitly define this as an alarm case, of which the manifestation of that is program/implementation specific. See EnumeratedParameterType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum EnumerationAlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -4037,14 +4037,14 @@ impl EnumerationAlarmType {
     }
 }
 ///Describe an ordered collection of context enumeration alarms, duplicates are valid. Process the contexts in list order. See EnumerationContextAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct EnumerationContextAlarmListType {
     ///A Context contains a new alarm definition and a context match.  The match takes precedence over any default alarm when the first in the overall list evaluates to true.  It is also possible the alarm definition is empty, in which case the context means no alarm defined when the match is true.
     #[serde(default, rename = "ContextAlarm")]
     pub context_alarm: ::std::vec::Vec<EnumerationContextAlarmType>,
 }
 ///Describe a context that when true the alarm condition may be evaluated. See ContextMatchType and EnumerationAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct EnumerationContextAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -4080,7 +4080,7 @@ pub struct EnumerationContextAlarmType {
     pub content: ::std::vec::Vec<EnumerationContextAlarmTypeContent>,
 }
 ///Describe a context that when true the alarm condition may be evaluated. See ContextMatchType and EnumerationAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum EnumerationContextAlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -4115,13 +4115,13 @@ impl EnumerationContextAlarmType {
         ConcernLevelsType::Normal
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct EnumerationListType {
     #[serde(default, rename = "Enumeration")]
     pub enumeration: ::std::vec::Vec<ValueEnumerationType>,
 }
 ///Union values of common epoch definitions for document convenience.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum EpochTimeEnumsType {
     #[serde(rename = "TAI")]
     Tai,
@@ -4133,7 +4133,7 @@ pub enum EpochTimeEnumsType {
     Gps,
 }
 ///Epochs may be specified as an xs date where time is implied to be 00:00:00, xs dateTime, or string enumeration of common epochs.  The enumerations are TAI (used by CCSDS and others), J2000, UNIX (also known as POSIX), and GPS.
-#[derive(Debug, Deserialize_enum_str)]
+#[derive(Clone, Debug, Deserialize_enum_str)]
 pub enum EpochType {
     #[serde(rename = "TAI")]
     Tai,
@@ -4147,7 +4147,7 @@ pub enum EpochType {
     String(::std::string::String),
 }
 ///Describe CRC, Checksum, Parity, or XOR for error detection and correction algorithm calculation.  See CRCType, ChecksumType, ParityType, and XORType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ErrorDetectCorrectType {
     ///Describe checksum or hash function applied to all or part of this container definition.
     #[serde(rename = "Checksum")]
@@ -4163,7 +4163,7 @@ pub enum ErrorDetectCorrectType {
     Parity(ParityType),
 }
 ///A verifier that indicates that the command is being executed.  An optional Element indicates how far along the command has progressed either as a fixed value or an (possibly scaled) ParameterInstance value.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ExecutionVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -4175,7 +4175,7 @@ pub struct ExecutionVerifierType {
     pub content: ::std::vec::Vec<ExecutionVerifierTypeContent>,
 }
 ///A verifier that indicates that the command is being executed.  An optional Element indicates how far along the command has progressed either as a fixed value or an (possibly scaled) ParameterInstance value.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ExecutionVerifierTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -4220,13 +4220,13 @@ pub enum ExecutionVerifierTypeContent {
 pub type ExpandedNameReferenceNoPathType = ::std::string::String;
 ///Defines a reference that can include a path to a named object where array and aggregate are possible.  The named must be of schema type NameType.  All name references use a Unix style file system name format where the SpaceSystem names form a path in the SpaceSystem tree. The following characters are reserved for the path: '/', '..' and '.' (multiple consecutive '/'s are treated as one).  The path portion is similar to the directory path used in file system names and the path characters have similar meaning (e.g., SimpleSat/Bus/EPDS/BatteryOne/Voltage). There are three overall forms for name references:  absolute path, relative path and just the name.  The first two forms are called qualified name references; the last form is called an unqualified name reference.  The unqualified form refers to an item in the SpaceSystem the reference is used in.  The unqualified form refers to an item in the SpaceSystem the reference is used in.  All name references must resolve to a named item (i.e. no dangling name references).  This is used by the ParameterRef variations.
 pub type ExpandedNameReferenceWithPathType = ::std::string::String;
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ExternalAlgorithmSetType {
     #[serde(default, rename = "ExternalAlgorithm")]
     pub external_algorithm: ::std::vec::Vec<ExternalAlgorithmType>,
 }
 ///This is the external algorithm.  Multiple entries are provided so that the same database may be used for multiple implementation s
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ExternalAlgorithmType {
     #[serde(rename = "@implementationName")]
     pub implementation_name: super::xs::StringType,
@@ -4234,7 +4234,7 @@ pub struct ExternalAlgorithmType {
     pub algorithm_location: super::xs::StringType,
 }
 ///When true, indicates that the command failed.  timeToWait is how long to wait for the FailedVerifier to test true.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct FailedVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -4246,7 +4246,7 @@ pub struct FailedVerifierType {
     pub content: ::std::vec::Vec<FailedVerifierTypeContent>,
 }
 ///When true, indicates that the command failed.  timeToWait is how long to wait for the FailedVerifier to test true.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum FailedVerifierTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -4288,7 +4288,7 @@ pub enum FailedVerifierTypeContent {
     ReturnParmRef(ParameterRefType),
 }
 ///For streams that contain a series of frames with a fixed frame length where the frames are found by looking for a marker in the data.  This marker is sometimes called the frame sync pattern and sometimes the Asynchronous Sync Marker (ASM).  This marker need not be contiguous although it usually is.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct FixedFrameStreamType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -4314,7 +4314,7 @@ pub struct FixedFrameStreamType {
     pub content: ::std::vec::Vec<FixedFrameStreamTypeContent>,
 }
 ///For streams that contain a series of frames with a fixed frame length where the frames are found by looking for a marker in the data.  This marker is sometimes called the frame sync pattern and sometimes the Asynchronous Sync Marker (ASM).  This marker need not be contiguous although it usually is.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum FixedFrameStreamTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -4351,7 +4351,7 @@ impl FixedFrameStreamType {
     }
 }
 ///Describe a sync pattern and an optional reference to an algorithm used to invert the stream if the frame sync pattern is not found. See FixedFrameStreamType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct FixedFrameSyncStrategyType {
     #[serde(
         default = "FixedFrameSyncStrategyType::default_verify_to_lock_good_frames",
@@ -4390,12 +4390,12 @@ impl FixedFrameSyncStrategyType {
     }
 }
 ///A simple union type combining integer, octal, binary, and hexadecimal types
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum FixedIntegerValueType {
     I32(::core::primitive::i32),
     String(::std::string::String),
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum FlagBitType {
     #[serde(rename = "zeros")]
     Zeros,
@@ -4403,7 +4403,7 @@ pub enum FlagBitType {
     Ones,
 }
 ///The pattern of bits used to look for frame synchronization.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct FlagType {
     #[serde(default = "FlagType::default_flag_size_in_bits", rename = "@flagSizeInBits")]
     pub flag_size_in_bits: PositiveLongType,
@@ -4421,7 +4421,7 @@ impl FlagType {
     }
 }
 ///Describe a floating point argument type.  Several encodings are supported.  Calibrated integer to float relationships should be described with this data type. Use the data encoding to define calibrators.  Joins integer as one of the numerics. See FloatDataEncodingType, IntegerDataEncodingType and FloatDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct FloatArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -4442,7 +4442,7 @@ pub struct FloatArgumentType {
     pub content: ::std::vec::Vec<FloatArgumentTypeContent>,
 }
 ///Describe a floating point argument type.  Several encodings are supported.  Calibrated integer to float relationships should be described with this data type. Use the data encoding to define calibrators.  Joins integer as one of the numerics. See FloatDataEncodingType, IntegerDataEncodingType and FloatDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum FloatArgumentTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -4482,7 +4482,7 @@ impl FloatArgumentType {
     }
 }
 ///For common encodings of floating point data
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct FloatDataEncodingType {
     ///Describes the bit ordering of the encoded value.
     #[serde(default = "FloatDataEncodingType::default_bit_order", rename = "@bitOrder")]
@@ -4535,7 +4535,7 @@ impl FloatDataEncodingType {
     }
 }
 ///A base schema type for describing a floating point engineering/calibrated data type. Several encodings are supported.  Calibrated integer to float relationships should be described with this data type. Use the data encoding to define calibrators.  Joins integer as one of the numerics. See BaseDataType, FloatParameterType and FloatArgumentType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct FloatDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -4556,7 +4556,7 @@ pub struct FloatDataType {
     pub content: ::std::vec::Vec<FloatDataTypeContent>,
 }
 ///A base schema type for describing a floating point engineering/calibrated data type. Several encodings are supported.  Calibrated integer to float relationships should be described with this data type. Use the data encoding to define calibrators.  Joins integer as one of the numerics. See BaseDataType, FloatParameterType and FloatArgumentType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum FloatDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -4595,7 +4595,7 @@ impl FloatDataType {
         FloatSizeInBitsType::_32
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum FloatEncodingSizeInBitsType {
     ///At the time of this writing, 16 bit encoding size is only valid in cases of IEEE754 and vendor specific MILSTD_1750A variation that is not a part of the standard.  This is not meant to preclude use in the event that future floating point formats may also define this value.
     #[serde(rename = "16")]
@@ -4619,7 +4619,7 @@ pub enum FloatEncodingSizeInBitsType {
     #[serde(rename = "128")]
     _128,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum FloatEncodingType {
     #[serde(rename = "IEEE754_1985")]
     Ieee7541985,
@@ -4635,7 +4635,7 @@ pub enum FloatEncodingType {
     Ti,
 }
 ///Describe a floating point parameter type.  Several encodings are supported.  Calibrated integer to float relationships should be described with this data type. Use the data encoding to define calibrators.  Joins integer as one of the numerics. See FloatDataEncodingType, IntegerDataEncodingType and FloatDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct FloatParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -4659,7 +4659,7 @@ pub struct FloatParameterType {
     pub content: ::std::vec::Vec<FloatParameterTypeContent>,
 }
 ///Describe a floating point parameter type.  Several encodings are supported.  Calibrated integer to float relationships should be described with this data type. Use the data encoding to define calibrators.  Joins integer as one of the numerics. See FloatDataEncodingType, IntegerDataEncodingType and FloatDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum FloatParameterTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -4705,7 +4705,7 @@ impl FloatParameterType {
     }
 }
 ///Describe a floating point based range, several types of ranges are supported -- one sided and two sided, inclusive or exclusive.  It would not make sense to set two mins or maxes. Used in a number of locations related to ranges: ValidFloatRangeSetType or AlarmRangeType for example.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct FloatRangeType {
     ///Minimum decimal/real number value including itself.
     #[serde(default, rename = "@minInclusive")]
@@ -4720,7 +4720,7 @@ pub struct FloatRangeType {
     #[serde(default, rename = "@maxExclusive")]
     pub max_exclusive: ::core::option::Option<super::xs::DoubleType>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum FloatSizeInBitsType {
     #[serde(rename = "32")]
     _32,
@@ -4729,7 +4729,7 @@ pub enum FloatSizeInBitsType {
     #[serde(rename = "128")]
     _128,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum FloatingPointNotationType {
     #[serde(rename = "normal")]
     Normal,
@@ -4739,7 +4739,7 @@ pub enum FloatingPointNotationType {
     Engineering,
 }
 ///The top level type definition for all data streams that are frame based.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct FrameStreamType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -4757,7 +4757,7 @@ pub struct FrameStreamType {
     pub content: ::std::vec::Vec<FrameStreamTypeContent>,
 }
 ///The top level type definition for all data streams that are frame based.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum FrameStreamTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -4788,7 +4788,7 @@ impl FrameStreamType {
     }
 }
 ///Schema for a Header record.  A header contains general information about the system or subsystem.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct HeaderType {
     ///This attribute contains an optional version descriptor for this document.
     #[serde(default, rename = "@version")]
@@ -4824,7 +4824,7 @@ impl HeaderType {
 ///A simple restriction on string for hexadecimal numbers.  Must be in 0x or 0X form.
 pub type HexadecimalType = ::std::string::String;
 ///Describe an unordered collection of History elements.  Usage is user defined.  See HistoryType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct HistorySetType {
     ///Contains a history record related to the evolution of this document.
     #[serde(default, rename = "History")]
@@ -4832,7 +4832,7 @@ pub struct HistorySetType {
 }
 pub type HistoryType = ::std::string::String;
 ///An entry whose name is given by the value of a ParamameterInstance.  This entry may be used to implement dwell telemetry streams.  The value of the parameter in ParameterInstance must use either the name of the Parameter or its alias.  If it's an alias name, the alias namespace is supplied as an attribute.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct IndirectParameterRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -4863,7 +4863,7 @@ pub struct IndirectParameterRefEntryType {
     pub parameter_instance: ParameterInstanceRefType,
 }
 ///A set of labeled inputs is added to the SimpleAlgorithmType
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct InputAlgorithmType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -4890,7 +4890,7 @@ pub struct InputAlgorithmType {
     pub input_set: ::std::vec::Vec<InputSetType>,
 }
 ///A set of labeled outputs are added to the SimpleInputAlgorithmType
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct InputOutputAlgorithmType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -4927,7 +4927,7 @@ impl InputOutputAlgorithmType {
     }
 }
 ///Input output algorithm is extended with a set of labeled triggers. See InputOutputAlgorithmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct InputOutputTriggerAlgorithmType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -4975,7 +4975,7 @@ impl InputOutputTriggerAlgorithmType {
     }
 }
 ///Names an input parameter to the algorithm.  There are two attributes to InputParm, inputName and parameterName. parameterName is a parameter reference name for a parameter that will be used in this algorithm.  inputName is an optional "friendly" name for the input parameter.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct InputParameterInstanceRefType {
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
@@ -5002,7 +5002,7 @@ impl InputParameterInstanceRefType {
         true
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum InputSetType {
     ///Reference a parameter to serve as an input to the algorithm.
     #[serde(rename = "InputParameterInstanceRef")]
@@ -5012,7 +5012,7 @@ pub enum InputSetType {
     Constant(ConstantType),
 }
 ///Describes an integer argument type. Several encodings supported.  Calibrated integer to integer relationships should be described with this data type. Use the integer data encoding to define calibrators. Joins float as one of the numerics. See IntegerDataEncoding and IntegerDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct IntegerArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -5039,7 +5039,7 @@ pub struct IntegerArgumentType {
     pub content: ::std::vec::Vec<IntegerArgumentTypeContent>,
 }
 ///Describes an integer argument type. Several encodings supported.  Calibrated integer to integer relationships should be described with this data type. Use the integer data encoding to define calibrators. Joins float as one of the numerics. See IntegerDataEncoding and IntegerDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum IntegerArgumentTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -5083,7 +5083,7 @@ impl IntegerArgumentType {
     }
 }
 ///For all major encodings of integer data
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct IntegerDataEncodingType {
     ///Describes the bit ordering of the encoded value.
     #[serde(
@@ -5139,7 +5139,7 @@ impl IntegerDataEncodingType {
     }
 }
 ///Describe an integer engineering/calibrated data type. Several encodings are supported.  See BaseDataType, IntegerParameterType and IntegerArgumentType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct IntegerDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -5163,7 +5163,7 @@ pub struct IntegerDataType {
     pub content: ::std::vec::Vec<IntegerDataTypeContent>,
 }
 ///Describe an integer engineering/calibrated data type. Several encodings are supported.  See BaseDataType, IntegerParameterType and IntegerArgumentType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum IntegerDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -5206,7 +5206,7 @@ impl IntegerDataType {
         true
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum IntegerEncodingType {
     #[serde(rename = "unsigned")]
     Unsigned,
@@ -5222,7 +5222,7 @@ pub enum IntegerEncodingType {
     PackedBcd,
 }
 ///Describe an integer parameter type. Several are supported. Calibrated integer to integer relationships should be described with this data type. Use the integer data encoding to define calibrators. Joins float as one of the numerics. See IntegerDataEncoding and IntegerDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct IntegerParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -5249,7 +5249,7 @@ pub struct IntegerParameterType {
     pub content: ::std::vec::Vec<IntegerParameterTypeContent>,
 }
 ///Describe an integer parameter type. Several are supported. Calibrated integer to integer relationships should be described with this data type. Use the integer data encoding to define calibrators. Joins float as one of the numerics. See IntegerDataEncoding and IntegerDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum IntegerParameterTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -5299,7 +5299,7 @@ impl IntegerParameterType {
     }
 }
 ///Describe an integral based range: minInclusive and maxInclusive. Used in a number of locations related to ranges: ValidIntegerRangeSetType for example.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct IntegerRangeType {
     ///Minimum integer value including itself.
     #[serde(default, rename = "@minInclusive")]
@@ -5309,7 +5309,7 @@ pub struct IntegerRangeType {
     pub max_inclusive: ::core::option::Option<super::xs::LongType>,
 }
 ///Contains an Integer value; value may be provided directly or via the value in a parameter.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum IntegerValueType {
     ///Use a fixed integer value.
     #[serde(rename = "FixedValue")]
@@ -5322,7 +5322,7 @@ pub enum IntegerValueType {
     DiscreteLookupList(DiscreteLookupListType),
 }
 ///Describe a type of constraint on the next command, rather than this command. Interlocks apply only to the next command.  An interlock will block successive commands until this command has reached a certain stage of verifier.  Interlocks are scoped to a SpaceSystem basis:  they by default apply to the SpaceSystem the MetaCommand is defined in but this may be overridden.  See MetaCommandType and VerifierSetType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct InterlockType {
     ///The name of a SpaceSystem this Interlock applies to.  By default, it only applies to the SpaceSystem that contains this MetaCommand.
     #[serde(default, rename = "@scopeToSpaceSystem")]
@@ -5351,7 +5351,7 @@ impl InterlockType {
     }
 }
 ///Like PASCAL strings, the size of the string is given as an integer at the start of the string.  SizeTag must be an unsigned Integer
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct LeadingSizeType {
     #[serde(
         default = "LeadingSizeType::default_size_in_bits_of_size_tag",
@@ -5366,7 +5366,7 @@ impl LeadingSizeType {
     }
 }
 ///A slope and intercept may be applied to scale or shift the value of the parameter in the dynamic value.  The default of slope=1 and intercept=0 results in no change to the value.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct LinearAdjustmentType {
     #[serde(default = "LinearAdjustmentType::default_slope", rename = "@slope")]
     pub slope: super::xs::DoubleType,
@@ -5384,7 +5384,7 @@ impl LinearAdjustmentType {
     }
 }
 ///Describe the absolute or relative bit location of an entry in a container.  The "referenceLocation" attribute specifies the starting bit anchor.  If no referenceLocation value is given, the entry is assumed to begin at the first bit position after the previous entry.  Each container starts at bit 0, thus "containerStart" is an offset from 0.  Negative container start bits are before the container and are implementation dependent - these should be flagged as likely errors.  "containerEnd" is given as a positive offset from the end of the container, thus a container end of 0 is exactly at the end of the container.  Negative container end addresses are after the container and are implementation dependent - these should be flagged as likely errors.  Positive "previouEntry" values are offsets from the previous entry - zero (0) is the default which means it follows contiguously from the last occupied bit of the previous entry.  A value of one means it is offset 1-bit from the previous entry, and a value of negative 1 (-1) means it overlaps the previous entry by one bit, and so forth. The "nextEntry" attribute value is proposed for deprecation and should be avoided.  See SequenceEntryType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct LocationInContainerInBitsType {
     ///Defines the relative reference used to interpret the start bit position.  The default is 0 bits from the end of the previousEntry, which makes the entry contiguous.
     #[serde(
@@ -5396,7 +5396,7 @@ pub struct LocationInContainerInBitsType {
     pub content: LocationInContainerInBitsTypeContent,
 }
 ///Describe the absolute or relative bit location of an entry in a container.  The "referenceLocation" attribute specifies the starting bit anchor.  If no referenceLocation value is given, the entry is assumed to begin at the first bit position after the previous entry.  Each container starts at bit 0, thus "containerStart" is an offset from 0.  Negative container start bits are before the container and are implementation dependent - these should be flagged as likely errors.  "containerEnd" is given as a positive offset from the end of the container, thus a container end of 0 is exactly at the end of the container.  Negative container end addresses are after the container and are implementation dependent - these should be flagged as likely errors.  Positive "previouEntry" values are offsets from the previous entry - zero (0) is the default which means it follows contiguously from the last occupied bit of the previous entry.  A value of one means it is offset 1-bit from the previous entry, and a value of negative 1 (-1) means it overlaps the previous entry by one bit, and so forth. The "nextEntry" attribute value is proposed for deprecation and should be avoided.  See SequenceEntryType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum LocationInContainerInBitsTypeContent {
     ///Use a fixed integer value.
     #[serde(rename = "FixedValue")]
@@ -5417,7 +5417,7 @@ impl LocationInContainerInBitsType {
 ///The Long Description is intended to be used for explanatory descriptions of the object and may include HTML markup.  Long Descriptions are of unbounded length
 pub type LongDescriptionType = ::std::string::String;
 ///Contains either a simple Comparison, a ComparisonList, an arbitrarily complex BooleanExpression or an escape to an externally defined algorithm
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum MatchCriteriaType {
     ///A simple comparison check involving a single test of a parameter value.
     #[serde(rename = "Comparison")]
@@ -5433,7 +5433,7 @@ pub enum MatchCriteriaType {
     CustomAlgorithm(InputAlgorithmType),
 }
 ///Describe a postfix (Reverse Polish Notation (RPN)) notation based mathmatical equations. See MathOperationType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MathAlgorithmType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -5455,7 +5455,7 @@ pub struct MathAlgorithmType {
     pub math_operation: TriggeredMathOperationType,
 }
 ///Describe a mathematical function for calibration where the mathematical function is defined using the MathOperationType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MathOperationCalibratorType {
     ///Optional name for this calibrator/algorithm
     #[serde(default, rename = "@name")]
@@ -5467,7 +5467,7 @@ pub struct MathOperationCalibratorType {
     pub content: ::std::vec::Vec<MathOperationCalibratorTypeContent>,
 }
 ///Describe a mathematical function for calibration where the mathematical function is defined using the MathOperationType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum MathOperationCalibratorTypeContent {
     ///Optional additional ancillary information for this calibrator/algorithm
     #[serde(rename = "AncillaryDataSet")]
@@ -5486,7 +5486,7 @@ pub enum MathOperationCalibratorTypeContent {
     ParameterInstanceRefOperand(ParameterInstanceRefType),
 }
 ///Postfix (aka Reverse Polish Notation (RPN)) notation is used to describe mathmatical equations. It uses a stack where operands (either fixed values or ParameterInstances) are pushed onto the stack from first to last in the XML. As the operators are specified, each pops off operands as it evaluates them, and pushes the result back onto the stack. In this case postfix is used to avoid having to specify parenthesis. To convert from infix to postfix, use Dijkstra's "shunting yard" algorithm.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MathOperationType {
     ///Optional name for this calibrator/algorithm
     #[serde(default, rename = "@name")]
@@ -5498,7 +5498,7 @@ pub struct MathOperationType {
     pub content: ::std::vec::Vec<MathOperationTypeContent>,
 }
 ///Postfix (aka Reverse Polish Notation (RPN)) notation is used to describe mathmatical equations. It uses a stack where operands (either fixed values or ParameterInstances) are pushed onto the stack from first to last in the XML. As the operators are specified, each pops off operands as it evaluates them, and pushes the result back onto the stack. In this case postfix is used to avoid having to specify parenthesis. To convert from infix to postfix, use Dijkstra's "shunting yard" algorithm.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum MathOperationTypeContent {
     ///Optional additional ancillary information for this calibrator/algorithm
     #[serde(rename = "AncillaryDataSet")]
@@ -5517,7 +5517,7 @@ pub enum MathOperationTypeContent {
     ParameterInstanceRefOperand(ParameterInstanceRefType),
 }
 ///Mathematical operators used in the math operation.  Behavior of each operator on the stack is described using notation (before -- after), where "before" represents the stack before execution of the operator and "after" represent the stack after execution.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum MathOperatorsType {
     ///addition (x1 x2 -- x1+x2)
     #[serde(rename = "+")]
@@ -5554,7 +5554,7 @@ pub enum MathOperatorsType {
     _1X,
     ///factorial (x -- x!)
     #[serde(rename = "x!")]
-    X,
+    Factorial,
     ///tangent (x -- tan(x)) radians
     #[serde(rename = "tan")]
     Tan,
@@ -5668,13 +5668,13 @@ pub enum MathOperatorsType {
     BitwiseNot,
 }
 ///Order is important only if the name of the AggregateParameter or Aggregate Argument is directly referenced in SequenceContainers.  In this case the members are assued to be added sequentially (in the order listed here) into the Container.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MemberListType {
     #[serde(default, rename = "Member")]
     pub member: ::std::vec::Vec<MemberType>,
 }
 ///Describe a member field in an AggregateDataType. Each member has a name and a type reference to a data type for the aggregate member name.  If this aggregate is a Parameter aggregate, then the typeRef is a parameter type reference.  If this aggregate is an Argument aggregate, then the typeRef is an argument type reference.  References to an array data type is currently not supported. Circular references are not allowed.  See MemberListType. AggregateParameterType and AggregateArgumentType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MemberType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -5697,19 +5697,19 @@ pub struct MemberType {
     #[serde(default, rename = "AncillaryDataSet")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MessageRefSetType {
     #[serde(default, rename = "MessageRef")]
     pub message_ref: ::std::vec::Vec<MessageRefType>,
 }
 ///Holds a reference to a message
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MessageRefType {
     ///name of message
     #[serde(rename = "@messageRef")]
     pub message_ref: NameReferenceWithPathType,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MessageSetType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -5729,7 +5729,7 @@ pub struct MessageSetType {
     #[serde(default, rename = "Message")]
     pub message: ::std::vec::Vec<MessageType>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MessageType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -5754,7 +5754,7 @@ pub struct MessageType {
     pub container_ref: ContainerRefType,
 }
 ///Describes an unordered collection of command definitions.  Duplicates are invalid based on the name attribute of MetaCommand and BlockMetaCommand.  See MetaCommandType and BlockMetaCommandType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum MetaCommandSetType {
     ///All atomic commands to be sent on this mission are listed here.  In addition this area has verification and validation information.
     #[serde(rename = "MetaCommand")]
@@ -5767,14 +5767,14 @@ pub enum MetaCommandSetType {
     BlockMetaCommand(BlockMetaCommandType),
 }
 ///Describe the list of MetaCommand definitions that form the block command.  Contains an ordered list of MetaCommandSteps where each step is a MetaCommand with associated arguments, duplicates are valid.  See BlockMetaCommandType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MetaCommandStepListType {
     ///A MetaCommand with specific specified argument values to include in the BlockMetaCommand.
     #[serde(default, rename = "MetaCommandStep")]
     pub meta_command_step: ::std::vec::Vec<MetaCommandStepType>,
 }
 ///Describe a MetaCommand step, consisting MetaCommand reference and argument list. See MetaCommandStepListType and NameReferenceType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MetaCommandStepType {
     #[serde(rename = "@metaCommandRef")]
     pub meta_command_ref: NameReferenceWithPathType,
@@ -5782,7 +5782,7 @@ pub struct MetaCommandStepType {
     pub argument_assignment_list: ::core::option::Option<ArgumentAssignmentListType>,
 }
 ///Describe a command which consists of an abstract portion (MetaCommand) and an optional packaging portion (MetaCommand CommandContainer).  An argument list is provided. MetaCommand may extend other MetaCommands and their CommandContainer may extend other CommandContainer or SequenceContainers.  A MetaCommand's CommandContainer is private except as referred to in BaseMetaCommand (they are not visible to other containers and cannot be used in an entry list). MetaCommands may also define various other behavioral aspects of a command such as command verifiers.  See CommandContainerType, ArgumentListType, BaseMetaCommandType and BaseContainerType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MetaCommandType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -5847,7 +5847,7 @@ impl MetaCommandType {
     }
 }
 ///The alarm multi-range element type permits users to define multiple alarm ranges in a sequence that goes beyond the more typical "inside" and "outside" range definitions. It can be thought of as a "barber pole" definition.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct MultiRangeType {
     ///Minimum decimal/real number value including itself.
     #[serde(default, rename = "@minInclusive")]
@@ -5875,7 +5875,7 @@ impl MultiRangeType {
     }
 }
 ///Defines a base schema type definition used by many other schema types throughout schema.  Use it to describe a name with optional descriptions, aliases, and ancillary data.  See NameType, LongDescriptionType, ShortDescriptionType, AliasSetType and AncillaryDataSetType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct NameDescriptionType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -5902,7 +5902,7 @@ pub type NameType = ::std::string::String;
 ///XTCE-specific replacement for xtce:NonNegativeLongType which more cleanly maps to native data types.
 pub type NonNegativeLongType = ::core::primitive::i64;
 ///Contains an unordered collection of Notes.  Usage is user defined.  See NoteType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct NoteSetType {
     ///Contains a program defined technical note regarding this document.
     #[serde(default, rename = "Note")]
@@ -5910,7 +5910,7 @@ pub struct NoteSetType {
 }
 pub type NoteType = ::std::string::String;
 ///This type describes how a numeric value should be represented in engineering/calibrated form.  The defaults reflect the most common form.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct NumberFormatType {
     ///Describes how the engineering/calibrated value of this number should be displayed with respect to the radix.  Default is base 10.
     #[serde(default = "NumberFormatType::default_number_base", rename = "@numberBase")]
@@ -6006,7 +6006,7 @@ impl NumberFormatType {
     }
 }
 ///Describe alarm conditions specific to the numeric data types, extends the basic AlarmType with StaticAlarmRanges and ChangeAlarmRanges. See FloatParameterType and IntegerParameterType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct NumericAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -6033,7 +6033,7 @@ pub struct NumericAlarmType {
     pub content: ::std::vec::Vec<NumericAlarmTypeContent>,
 }
 ///Describe alarm conditions specific to the numeric data types, extends the basic AlarmType with StaticAlarmRanges and ChangeAlarmRanges. See FloatParameterType and IntegerParameterType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum NumericAlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -6068,14 +6068,14 @@ impl NumericAlarmType {
     }
 }
 ///An ordered collection of numeric alarms associated with a context. A context is an alarm definition on a parameter which is valid only in the case of a test on the value of other parameters. Process the contexts in list order. Used by both FloatParameterType and IntegerParameterType. See NumericContextAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct NumericContextAlarmListType {
     ///A Context contains a new alarm definition and a context match.  The match takes precedence over any default alarm when the first in the overall list evaluates to true.  It is also possible the alarm definition is empty, in which case the context means no alarm defined when the match is true.
     #[serde(default, rename = "ContextAlarm")]
     pub context_alarm: ::std::vec::Vec<NumericContextAlarmType>,
 }
 ///Describe a parameter dependent context, that when evaluates to true, enables the use of this alarm definition. See ContextMatchType and NumericAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct NumericContextAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -6102,7 +6102,7 @@ pub struct NumericContextAlarmType {
     pub content: ::std::vec::Vec<NumericContextAlarmTypeContent>,
 }
 ///Describe a parameter dependent context, that when evaluates to true, enables the use of this alarm definition. See ContextMatchType and NumericAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum NumericContextAlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -6140,7 +6140,7 @@ impl NumericContextAlarmType {
     }
 }
 ///Describe two or more conditions that are logically ored together. Conditions may be a mix of Condition and ANDedCondition.   See ORedConditionType and BooleanExpressionType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ORedConditionsType {
     ///Condition elements describe a test similar to the Comparison element except that the parameters used have additional flexibility for the compare.
     #[serde(rename = "Condition")]
@@ -6155,28 +6155,28 @@ pub enum ORedConditionsType {
 ///A simple restriction on string for hexadecimal numbers.  Must be in 0o or 0O form.
 pub type OctalType = ::std::string::String;
 ///Describe a reference to container that triggers an event when the telemetry container referred to is updated (processed).  See TriggerSetType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct OnContainerUpdateTriggerType {
     ///Reference to the Container whose update/receipt triggers this algorithm to evaluate.
     #[serde(rename = "@containerRef")]
     pub container_ref: NameReferenceWithPathType,
 }
 ///Describe a reference to parameter that triggers an event when the telemetry parameter referred to is updated (processed) with a new value.  See TriggerSetType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct OnParameterUpdateTriggerType {
     ///Reference to the Parameter whose update triggers this algorithm to evaluate.
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
 }
 ///Describe a periodic time basis to trigger an event.  See TriggerSetType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct OnPeriodicRateTriggerType {
     ///The periodic rate in time in which this algorithm is triggered to evaluate.
     #[serde(rename = "@fireRateInSeconds")]
     pub fire_rate_in_seconds: super::xs::DoubleType,
 }
 ///The type definition used by most elements that have an optional name with optional descriptions.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct OptionalNameDescriptionType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -6195,20 +6195,20 @@ pub struct OptionalNameDescriptionType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Names an output parameter to the algorithm.  There are two attributes to OutputParm, outputName and parameterName. parameterName is a parameter reference name for a parameter that will be updated by this algorithm.  outputName is an optional "friendly" name for the output parameter.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct OutputParameterRefType {
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
     #[serde(default, rename = "@outputName")]
     pub output_name: ::core::option::Option<super::xs::StringType>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct OutputSetType {
     #[serde(default, rename = "OutputParameterRef")]
     pub output_parameter_ref: ::std::vec::Vec<OutputParameterRefType>,
 }
 ///A PCM Stream Type is the high level definition for all Pulse Code Modulated (PCM) (i.e., binary) streams.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct PcmStreamType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -6242,7 +6242,7 @@ impl PcmStreamType {
         false
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum PcmType {
     #[serde(rename = "NRZL")]
     Nrzl,
@@ -6258,7 +6258,7 @@ pub enum PcmType {
     BiPhaseS,
 }
 ///A reference to an instance of a Parameter.   Used when the value of a parameter is required for a calculation or as an index value.  A positive value for instance is forward in time, a negative value for count is backward in time, a 0 value for count means use the current value of the parameter or the first value in a container.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ParameterInstanceRefType {
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
@@ -6284,7 +6284,7 @@ impl ParameterInstanceRefType {
     }
 }
 ///Describes extended properties/attributes of Parameter definitions.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ParameterPropertiesType {
     ///This attribute describes the nature of the source entity for which this parameter receives a value.  Implementations assign different attributes/properties internally to a parameter based on the anticipated data source.
     #[serde(default, rename = "@dataSource")]
@@ -6328,7 +6328,7 @@ impl ParameterPropertiesType {
     }
 }
 ///An entry that is a single Parameter
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ParameterRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -6357,13 +6357,13 @@ pub struct ParameterRefEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///A reference to a Parameter. Uses Unix-like naming across the SpaceSystem Tree (e.g., SimpleSat/Bus/EPDS/BatteryOne/Voltage).  To reference an individual member of an array use the zero based bracket notation commonly used in languages like C, C++, and Java.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ParameterRefType {
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
 }
 ///An entry that is only a portion of a parameter value indicating that the entire parameter value must be assembled from other parameter segments.   It is assumed that parameter segments happen sequentially in time, that is the first part if a telemetry parameter first, however (and there's always a however), if this is not the case the order of this parameter segment may be supplied with the order attribute where the first segment order="0".
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ParameterSegmentRefEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -6396,7 +6396,7 @@ pub struct ParameterSegmentRefEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Describe an unordered collection of parameters where duplicates defined by the Parameter name attribute are invalid. The ParameterSet exists in both the TelemetryMetaData and the CommandMetaData element so that each may be built independently but from a single namespace.  See TelemetryMetaDataType and CommandMetaDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ParameterSetType {
     ///Defines a named and typed Parameter.
     #[serde(rename = "Parameter")]
@@ -6406,13 +6406,13 @@ pub enum ParameterSetType {
     ParameterRef(ParameterRefType),
 }
 ///Parameters that are set with a new value after the command has been sent.  Appended to the Base Command list
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ParameterToSetListType {
     #[serde(default, rename = "ParameterToSet")]
     pub parameter_to_set: ::std::vec::Vec<ParameterToSetType>,
 }
 ///Sets a Parameter to a new value (either from a derivation or explicitly) after the command has been verified (all verifications have passed).
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ParameterToSetType {
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
@@ -6426,7 +6426,7 @@ pub struct ParameterToSetType {
     pub content: ParameterToSetTypeContent,
 }
 ///Sets a Parameter to a new value (either from a derivation or explicitly) after the command has been verified (all verifications have passed).
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ParameterToSetTypeContent {
     ///Specify a simple algorithm to use to set the target Parameter value.  See ArgumentMathOperationType.
     #[serde(rename = "Derivation")]
@@ -6445,7 +6445,7 @@ impl ParameterToSetType {
     }
 }
 ///Will suspend all Alarms associated with this Parameter for the given suspense time after the given verifier
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ParameterToSuspendAlarmsOnType {
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
@@ -6464,7 +6464,7 @@ impl ParameterToSuspendAlarmsOnType {
     }
 }
 ///Describe the properties of a telemetry parameter, including its data type (parameter type). The bulk of properties associated with a telemetry parameter are in its parameter type. The initial value specified here, overrides the initial value in the parameter type. A parameter may be local, in which case its parameter type would have no data encodings. Ideally such a definition would also set data source in parameter properties to "local" but the syntax does not enforce this. See BaseDataType, BaseTimeDataType, and NameReferenceType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -6492,7 +6492,7 @@ pub struct ParameterType {
     pub parameter_properties: ::core::option::Option<ParameterPropertiesType>,
 }
 ///Describe an unordered collection of parameter type definitions.  These types named for the engineering/calibrated type of the parameter.  See BaseDataType and BaseTimeDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ParameterTypeSetType {
     ///Describe a parameter type that has an engineering/calibrated value in the form of a character string.
     #[serde(rename = "StringParameterType")]
@@ -6526,7 +6526,7 @@ pub enum ParameterTypeSetType {
     AggregateParameterType(AggregateParameterType),
 }
 ///A parameter change in value or specified delta change in value.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ParameterValueChangeType {
     #[serde(rename = "ParameterRef")]
     pub parameter_ref: ParameterRefType,
@@ -6534,12 +6534,12 @@ pub struct ParameterValueChangeType {
     pub change: ChangeValueType,
 }
 ///Sometimes it is necessary to suspend alarms - particularly 'change' alarms for commands that will change the value of a Parameter
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ParametersToSuspendAlarmsOnSetType {
     #[serde(default, rename = "ParameterToSuspendAlarmsOn")]
     pub parameter_to_suspend_alarms_on: ::std::vec::Vec<ParameterToSuspendAlarmsOnType>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ParityFormType {
     #[serde(rename = "Even")]
     Even,
@@ -6547,7 +6547,7 @@ pub enum ParityFormType {
     Odd,
 }
 ///Describe the parity value.  See ErrorDetectCorrectType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ParityType {
     ///The parity form.
     #[serde(rename = "@type")]
@@ -6576,7 +6576,7 @@ impl ParityType {
     }
 }
 ///Describe a percentage complete that is fixed from 0 to 100, or as value from a parameter. See ExecutionVerifierType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum PercentCompleteType {
     ///0 to 100 percent
     #[serde(rename = "FixedValue")]
@@ -6586,7 +6586,7 @@ pub enum PercentCompleteType {
     DynamicValue(DynamicValueType),
 }
 ///One or more physical addresses may be associated with each Parameter.  Examples of physical addresses include a location on the spacecraft or a location on a data collection bus.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct PhysicalAddressSetType {
     ///Contains the address (e.g., channel information) required to process the spacecraft telemetry streams. May be an onboard  id, a mux address, or a physical location.
     ///Contains the address (channel information) required to process the spacecraft telemetry streams
@@ -6594,7 +6594,7 @@ pub struct PhysicalAddressSetType {
     pub physical_address: ::std::vec::Vec<PhysicalAddressType>,
 }
 ///Describe the physical address(s) that this parameter is collected from.  Examples of physical addresses include a memory location on the spacecraft or a location on a data collection bus, with the source identified with a descriptive name for the region of memory, such as RAM, Flash, EEPROM, and other possibilities that can be adapted for program specific usage.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct PhysicalAddressType {
     ///A descriptive name for the location, such as a memory type, where this address is located.
     #[serde(default, rename = "@sourceName")]
@@ -6607,7 +6607,7 @@ pub struct PhysicalAddressType {
     pub sub_address: ::core::option::Option<::std::boxed::Box<PhysicalAddressType>>,
 }
 ///Describe a polynomial equation for calibration. This is a calibration type where a curve in a raw vs calibrated plane is described using a set of polynomial coefficients.  Raw values are converted to calibrated values by finding a position on the curve corresponding to the raw value. The first coefficient belongs with the X^0 term, the next coefficient belongs to the X^1 term and so on. See CalibratorType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct PolynomialCalibratorType {
     ///Optional name for this calibrator/algorithm
     #[serde(default, rename = "@name")]
@@ -6625,7 +6625,7 @@ pub struct PolynomialCalibratorType {
 ///XTCE-specific replacement for xtce:PositiveLongType which more cleanly maps to native data types.
 pub type PositiveLongType = ::core::primitive::i64;
 ///A verifer that means the command is scheduled for execution by the destination.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct QueuedVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -6637,7 +6637,7 @@ pub struct QueuedVerifierType {
     pub content: ::std::vec::Vec<QueuedVerifierTypeContent>,
 }
 ///A verifer that means the command is scheduled for execution by the destination.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum QueuedVerifierTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -6677,7 +6677,7 @@ pub enum QueuedVerifierTypeContent {
     ArgumentRestrictionList(ArgumentAssignmentListType),
 }
 ///Specifies the number base
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum RadixType {
     #[serde(rename = "Decimal")]
     Decimal,
@@ -6689,20 +6689,20 @@ pub enum RadixType {
     Binary,
 }
 ///Defines inside and outside enumerated terms, where the term outside means the range is (-inf,  minimum) and (maximum, inf) -- that is a range where acceptable values must be less than the minimum and greater than the maximum, and the term inside means the range is (minimum, maximum) -- that is acceptable values are between the minimum and maximum (either the min or max may be inclusive or exclusive).
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum RangeFormType {
     #[serde(rename = "outside")]
     Outside,
     #[serde(rename = "inside")]
     Inside,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct RateInStreamSetType {
     #[serde(default, rename = "RateInStream")]
     pub rate_in_stream: ::std::vec::Vec<RateInStreamWithStreamNameType>,
 }
 ///Define the expected appearance (rate) of a container in a stream where the rate is defined on either a perSecond or perContainer update basis.  Many programs and platforms have variable reporting rates for containers and these can be commanded.  As a result, this element is only useful to some users and generally does not affect the processing of the received containers themselves.  See ContainerType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct RateInStreamType {
     ///The measurement unit basis for the minimum and maximum appearance count values.
     #[serde(default = "RateInStreamType::default_basis", rename = "@basis")]
@@ -6721,7 +6721,7 @@ impl RateInStreamType {
     }
 }
 ///Define the expected appearance (rate) of a container in a named stream where the rate is defined on either a perSecond or perContainer update basis.  Many programs and platforms have variable reporting rates for containers and these can be commanded.  As a result, this element is only useful to some users and generally does not affect the processing of the received containers themselves.  See ContainerType and RateInStreamType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct RateInStreamWithStreamNameType {
     ///The measurement unit basis for the minimum and maximum appearance count values.
     #[serde(
@@ -6746,7 +6746,7 @@ impl RateInStreamWithStreamNameType {
     }
 }
 ///A verifier that simply means the destination has received the command.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ReceivedVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -6758,7 +6758,7 @@ pub struct ReceivedVerifierType {
     pub content: ::std::vec::Vec<ReceivedVerifierTypeContent>,
 }
 ///A verifier that simply means the destination has received the command.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ReceivedVerifierTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -6798,7 +6798,7 @@ pub enum ReceivedVerifierTypeContent {
     ArgumentRestrictionList(ArgumentAssignmentListType),
 }
 ///The location may be relative to the start of the container (containerStart), relative to the end of the previous entry (previousEntry), relative to the end of the container (containerEnd), or relative to the entry that follows this one (nextEntry). If going forward (containerStart and previousEntry) then the location refers to the start of the									Entry. If going backwards (containerEnd and nextEntry) then, the location refers to the end of the entry.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ReferenceLocationType {
     #[serde(rename = "containerStart")]
     ContainerStart,
@@ -6809,7 +6809,7 @@ pub enum ReferenceLocationType {
     #[serde(rename = "nextEntry")]
     NextEntry,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ReferencePointType {
     #[serde(rename = "start")]
     Start,
@@ -6817,7 +6817,7 @@ pub enum ReferencePointType {
     End,
 }
 ///Most time values are relative to another time e.g. seconds are relative to minutes, minutes are relative to hours.  This type is used to describe this relationship starting with the least significant time Parameter to and progressing to the most significant time parameter.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ReferenceTimeType {
     #[serde(rename = "OffsetFrom")]
     OffsetFrom(ParameterInstanceRefType),
@@ -6826,7 +6826,7 @@ pub enum ReferenceTimeType {
     Epoch(EpochType),
 }
 ///Describes a relative time argument type. Relative time parameters are time offsets (e.g. 10 second, 1.24 milliseconds, etc.) See IntegerDataEncodingType, FloatDataEncoding and RelativeTimeDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct RelativeTimeArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -6859,7 +6859,7 @@ pub struct RelativeTimeArgumentType {
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Used to contain a relative time value.  Used to describe a relative time.  Normally used for time offsets.  A Relative time is expressed as PnYn MnDTnH nMnS, where nY represents the number of years, nM the number of months, nD the number of days, 'T' is the date/time separator, nH the number of hours, nM the number of minutes and nS the number of seconds. The number of seconds can include decimal digits to arbitrary precision.  For example, to indicate a duration of 1 year, 2 months, 3 days, 10 hours, and 30 minutes, one would write: P1Y2M3DT10H30M. One could also indicate a duration of minus 120 days as: -P120D.  An extension of Schema duration type.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct RelativeTimeDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -6892,7 +6892,7 @@ pub struct RelativeTimeDataType {
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Describes a relative time parameter type. Relative time parameters are time offsets (e.g. 10 second, 1.24 milliseconds, etc.) See IntegerDataEncodingType, FloatDataEncoding and RelativeTimeDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct RelativeTimeParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -6933,7 +6933,7 @@ pub struct RelativeTimeParameterType {
 ///Used to describe a relative time.  Normally used for time offsets.  A Relative time is expressed as PnYn MnDTnH nMnS, where nY represents the number of years, nM the number of months, nD the number of days, 'T' is the date/time separator, nH the number of hours, nM the number of minutes and nS the number of seconds. The number of seconds can include decimal digits to arbitrary precision.  For example, to indicate a duration of 1 year, 2 months, 3 days, 10 hours, and 30 minutes, one would write: P1Y2M3DT10H30M. One could also indicate a duration of minus 120 days as: -P120D.  An extension of Schema duration type.
 pub type RelativeTimeType = ::std::string::String;
 ///Contains elements that describe how an Entry is identically repeated. This includes a Count of the number of appearances and an optional Offset in bits that may occur between appearances. A Count of 1 indicates no repetition. The Offset default is 0 when not specified.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct RepeatType {
     ///Value (either fixed or dynamic) that contains the count of appearances for an Entry. The value must be positive where 1 is the same as not specifying a RepeatEntry element at all.
     #[serde(rename = "Count")]
@@ -6947,7 +6947,7 @@ pub struct RepeatType {
     pub offset: ::core::option::Option<IntegerValueType>,
 }
 ///Define one or more conditions (constraints) for container inheritance. A container is instantiable if its constraints are true.  Constraint conditions may be a comparison, a list of comparisons, a boolean expression, or a graph of containers that are instantiable (if all containers are instantiable the condition is true).  See BaseContainerType, ComparisonType, ComparisonListType, BooleanExpressionType and NextContainerType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum RestrictionCriteriaType {
     ///A simple comparison check involving a single test of a parameter value.
     #[serde(rename = "Comparison")]
@@ -6966,7 +6966,7 @@ pub enum RestrictionCriteriaType {
     NextContainer(::core::option::Option<ContainerRefType>),
 }
 ///Sent from range means the command has been transmitted to the spacecraft by the network that connects the ground system to the spacecraft.  Typically, this verifier would come from something other than the spacecraft, such as a modem or front end processor.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SentFromRangeVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -6978,7 +6978,7 @@ pub struct SentFromRangeVerifierType {
     pub content: ::std::vec::Vec<SentFromRangeVerifierTypeContent>,
 }
 ///Sent from range means the command has been transmitted to the spacecraft by the network that connects the ground system to the spacecraft.  Typically, this verifier would come from something other than the spacecraft, such as a modem or front end processor.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum SentFromRangeVerifierTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -7018,7 +7018,7 @@ pub enum SentFromRangeVerifierTypeContent {
     ArgumentRestrictionList(ArgumentAssignmentListType),
 }
 ///Describes the binary layout/packing of data and also related properties, including an entry list of parameters, parameter segments, array parameters, stream segments, containers, and container segments.  Sequence containers may extend other sequence containers (see BaseContainerType).   The parent container's entries are placed before the entries in the child container forming one entry list.  An inheritance chain may be formed using this mechanism, but only one entry list is being created.  Sequence containers may be marked as "abstract", when this occurs an instance of it cannot itself be created.  The idle pattern is part of any unallocated space in the container.  See EntryListType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SequenceContainerType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -7070,7 +7070,7 @@ impl SequenceContainerType {
     }
 }
 ///Defines an abstract schema type used to create other entry types. Describe an entry's location in the container (See LocationInContainerInBitsType). The location may be fixed or dynamic, absolute or relative. Entries may be included depending on the value of a condition (See IncludeConditionType), and entries may also repeat (see RepeatEntryType). The entry's IncludeCondition resolves to true, it is fully-resolved when its size is computable after RepeatEntry has been accounted for and then offset by LocationInContainer. See EntryListType, IncludeConditionType, RepeatEntryType and LocationInContainerInBitsType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SequenceEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -7097,19 +7097,19 @@ pub struct SequenceEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///A reference to a Service
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ServiceRefType {
     #[serde(rename = "@serviceRef")]
     pub service_ref: NameReferenceWithPathType,
 }
 ///A service is a logical grouping of container and/or messages.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ServiceSetType {
     #[serde(default, rename = "Service")]
     pub service: ::std::vec::Vec<ServiceType>,
 }
 ///Holds a set of services, logical groups of containers  OR messages (not both).
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ServiceType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -7121,7 +7121,7 @@ pub struct ServiceType {
     pub content: ::std::vec::Vec<ServiceTypeContent>,
 }
 ///Holds a set of services, logical groups of containers  OR messages (not both).
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ServiceTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -7140,7 +7140,7 @@ pub enum ServiceTypeContent {
 ///It is strongly recommended that the short description be kept under 80 characters in length
 pub type ShortDescriptionType = ::std::string::String;
 ///Significance provides some cautionary information about the potential consequence of each MetaCommand.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SignificanceType {
     ///If none is supplied, then the current SpaceSystem is assumed to be the one at risk by the issuance of this command
     #[serde(default, rename = "@spaceSystemAtRisk")]
@@ -7160,7 +7160,7 @@ impl SignificanceType {
     }
 }
 ///The simplest form of algorithm, a SimpleAlgorithmType contains an area for a free-form pseudo code description of the algorithm plus a Set of references to external algorithms.  External algorithms are usually unique to a ground system type.   Multiple external algorithms are possible because XTCE documents may be used across multiple ground systems.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SimpleAlgorithmType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -7182,7 +7182,7 @@ pub struct SimpleAlgorithmType {
     #[serde(default, rename = "ExternalAlgorithmSet")]
     pub external_algorithm_set: ::core::option::Option<ExternalAlgorithmSetType>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SizeInBitsType {
     ///This is the simplest case of a string data type where the encoding size of the string does not change.
     #[serde(rename = "Fixed")]
@@ -7198,7 +7198,7 @@ pub type SpaceSystem = SpaceSystemNotNil;
 ///The top-level SpaceSystem is the root element for the set of metadata necessary to monitor and command a space device, such as a satellite.  A SpaceSystem defines a namespace.  Metadata areas include:  packets/minor frames layout, telemetry, calibration, alarm, algorithms, streams and commands.  A SpaceSystem may have child SpaceSystems, forming a SpaceSystem tree. See SpaceSystemType.
 pub type SpaceSystemNotNil = SpaceSystemType;
 ///SpaceSystem is a collection of SpaceSystem(s) including space assets, ground assets, multi-satellite systems and sub-systems.  A SpaceSystem is the root element for the set of data necessary to monitor and command an arbitrary space device - this includes the binary decomposition the data streams going into and out of a device.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SpaceSystemType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -7252,7 +7252,7 @@ impl SpaceSystemType {
     }
 }
 ///Describe a spline function for calibration using a set of at least 2 points.  Raw values are converted to calibrated values by finding a position on the line corresponding to the raw value.  The line may be interpolated and/or extrapolated as needed. The interpolation order may be specified for all the points and overridden on individual points.  The algorithm triggers on the input parameter. See CalibratorType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SplineCalibratorType {
     ///Optional name for this calibrator/algorithm
     #[serde(default, rename = "@name")]
@@ -7287,7 +7287,7 @@ impl SplineCalibratorType {
     }
 }
 ///A spline, or piecewise defined function, is a set on points from which a curve may be drawn to interpolate raw to calibrated values
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SplinePointType {
     ///The order of a SplineCalibrator refers to the interpolation function.  Order 0 is a flat line from the defined point (inclusive) to the next point (exclusive).  Order 1 is linear interpolation between two points.  Order 2 is quadratic fit and requires at least 3 points (unusual case).  This order is generally not needed, but may be used to override the interpolation order for this point.
     #[serde(default = "SplinePointType::default_order", rename = "@order")]
@@ -7306,14 +7306,14 @@ impl SplinePointType {
     }
 }
 ///Holds a reference to a stream
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct StreamRefType {
     ///name of reference stream
     #[serde(rename = "@streamRef")]
     pub stream_ref: NameReferenceWithPathType,
 }
 ///An entry that is a portion of a stream (streams are by definition, assumed continuous)   It is assumed that stream segments happen sequentially in time, that is the first part if a steam first, however, if this is not the case the order of the stream segments may be supplied with the order attribute where the first segment order="0".
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct StreamSegmentEntryType {
     ///Optional short description for this entry element.
     #[serde(default, rename = "@shortDescription")]
@@ -7346,7 +7346,7 @@ pub struct StreamSegmentEntryType {
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
 }
 ///Contains an unordered set of Streams.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum StreamSetType {
     #[serde(rename = "FixedFrameStream")]
     FixedFrameStream(FixedFrameStreamType),
@@ -7356,7 +7356,7 @@ pub enum StreamSetType {
     CustomStream(CustomStreamType),
 }
 ///Describe a string alarm condition based on matching a regular expression.  The level and regular expression are described.  The specific implementation of the regular expression syntax is not specified in the schema at this time.  See StringAlarmListType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct StringAlarmLevelType {
     #[serde(rename = "@alarmLevel")]
     pub alarm_level: ConcernLevelsType,
@@ -7364,13 +7364,13 @@ pub struct StringAlarmLevelType {
     pub match_pattern: super::xs::StringType,
 }
 ///Describe an ordered collection of string alarms, where duplicates are valid. Evaluate the alarms in list order. The first to evaluate to true takes precedence.  See StringAlarmLevelType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct StringAlarmListType {
     #[serde(default, rename = "StringAlarm")]
     pub string_alarm: ::std::vec::Vec<StringAlarmLevelType>,
 }
 ///Describe alarms specific to the string data type, extends the basic AlarmType, while adding a StringAlarmList and defaultAlarmLevel attribute. The string alarm list is evaluated in list order. See ConcernsLevelsType and StringAlarmListType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct StringAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -7402,7 +7402,7 @@ pub struct StringAlarmType {
     pub content: ::std::vec::Vec<StringAlarmTypeContent>,
 }
 ///Describe alarms specific to the string data type, extends the basic AlarmType, while adding a StringAlarmList and defaultAlarmLevel attribute. The string alarm list is evaluated in list order. See ConcernsLevelsType and StringAlarmListType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum StringAlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -7434,7 +7434,7 @@ impl StringAlarmType {
     }
 }
 ///Describes a string parameter type. Three forms are supported: fixed length, variable length and variable length using a prefix. See StringDataEncodingType and StringDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct StringArgumentType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -7458,7 +7458,7 @@ pub struct StringArgumentType {
     pub content: ::std::vec::Vec<StringArgumentTypeContent>,
 }
 ///Describes a string parameter type. Three forms are supported: fixed length, variable length and variable length using a prefix. See StringDataEncodingType and StringDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum StringArgumentTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -7488,14 +7488,14 @@ pub enum StringArgumentTypeContent {
     SizeRangeInCharacters(IntegerRangeType),
 }
 ///Describe an ordered collection of context string alarms, duplicates are valid. Process the contexts in list order. See StringContextAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct StringContextAlarmListType {
     ///A Context contains a new alarm definition and a context match.  The match takes precedence over any default alarm when the first in the overall list evaluates to true.  It is also possible the alarm definition is empty, in which case the context means no alarm defined when the match is true.
     #[serde(default, rename = "ContextAlarm")]
     pub context_alarm: ::std::vec::Vec<StringContextAlarmType>,
 }
 ///Describe a context that when true the alarm may be evaluated.  See ContextMatchType and StringAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct StringContextAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -7527,7 +7527,7 @@ pub struct StringContextAlarmType {
     pub content: ::std::vec::Vec<StringContextAlarmTypeContent>,
 }
 ///Describe a context that when true the alarm may be evaluated.  See ContextMatchType and StringAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum StringContextAlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -7561,7 +7561,7 @@ impl StringContextAlarmType {
     }
 }
 ///Describe common encodings of string data: UTF-8 and UTF-16. See StringDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct StringDataEncodingType {
     ///Describes the bit ordering of the encoded value.
     #[serde(default = "StringDataEncodingType::default_bit_order", rename = "@bitOrder")]
@@ -7579,7 +7579,7 @@ pub struct StringDataEncodingType {
     pub content: ::std::vec::Vec<StringDataEncodingTypeContent>,
 }
 ///Describe common encodings of string data: UTF-8 and UTF-16. See StringDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum StringDataEncodingTypeContent {
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(rename = "ErrorDetectCorrect")]
@@ -7609,7 +7609,7 @@ impl StringDataEncodingType {
     }
 }
 ///Defines a base schema type for StringParameterType and StringArgumentType, adding initial value, restriction pattern, character width, and size range in characters.  The initial value if set is the initial value of all instances of the child types.  The restriction pattern is a regular expression enforcing the string value to this pattern.  The character width is on the local data type side.  And the size range in character restricts the character set.  For telemetered values, if the restriction pattern of size range in character is not met, the item is invalid. See BaseDataType, StringParameterType, StringArgumentType, CharacterWidthType and IntegerRangeType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct StringDataType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -7633,7 +7633,7 @@ pub struct StringDataType {
     pub content: ::std::vec::Vec<StringDataTypeContent>,
 }
 ///Defines a base schema type for StringParameterType and StringArgumentType, adding initial value, restriction pattern, character width, and size range in characters.  The initial value if set is the initial value of all instances of the child types.  The restriction pattern is a regular expression enforcing the string value to this pattern.  The character width is on the local data type side.  And the size range in character restricts the character set.  For telemetered values, if the restriction pattern of size range in character is not met, the item is invalid. See BaseDataType, StringParameterType, StringArgumentType, CharacterWidthType and IntegerRangeType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum StringDataTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -7664,7 +7664,7 @@ pub enum StringDataTypeContent {
     SizeRangeInCharacters(IntegerRangeType),
 }
 ///Defines string encodings.  US-ASCII (7-bit), ISO-8859-1 (8-bit Extended ASCII), Windows-1252 (8-bit Extended ASCII), UTF-8 (Unicode), UTF-16 (Unicode with Byte Order Mark), UTF-16LE (Unicode Little Endian), UTF-16BE (Unicode Big Endian).  See StringDataEncodingType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum StringEncodingType {
     #[serde(rename = "US-ASCII")]
     UsAscii,
@@ -7694,7 +7694,7 @@ pub enum StringEncodingType {
     Utf32Be,
 }
 ///Describes a string parameter type. Three forms are supported: fixed length, variable length and variable length using a prefix. See StringDataEncodingType and StringDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct StringParameterType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -7718,7 +7718,7 @@ pub struct StringParameterType {
     pub content: ::std::vec::Vec<StringParameterTypeContent>,
 }
 ///Describes a string parameter type. Three forms are supported: fixed length, variable length and variable length using a prefix. See StringDataEncodingType and StringDataType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum StringParameterTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -7755,7 +7755,7 @@ pub enum StringParameterTypeContent {
     ContextAlarmList(StringContextAlarmListType),
 }
 ///The pattern of bits used to look for frame synchronization.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SyncPatternType {
     ///CCSDS ASM for non-turbocoded frames = 1acffc1d
     #[serde(rename = "@pattern")]
@@ -7781,7 +7781,7 @@ impl SyncPatternType {
     }
 }
 ///A Sync Strategy specifies the strategy on how to find frames within a stream of PCM data.  The sync strategy is based upon a state machine that begins in the 'Search' state until the first sync marker is found.  Then it goes into the 'Verify' state until a specified number of successive good sync markers are found.  Then, the state machine goes into the 'Lock' state, in the 'Lock' state frames are considered good.  Should a sync marker be missed in the 'Lock' state, the state machine will transition into the 'Check' state, if the next sync marker is where it's expected within a specified number of frames, then the state machine will transition back to the 'Lock' state, it not it will transition back to 'Search'.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SyncStrategyType {
     #[serde(
         default = "SyncStrategyType::default_verify_to_lock_good_frames",
@@ -7817,7 +7817,7 @@ impl SyncStrategyType {
     }
 }
 ///The type attribute represents what from a space enterprise this SpaceSystem element represents.  See the enumerations for specific details.  Unknown is the default for backwards compatibility, though it should be avoided in newer documents.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum SystemTypeType {
     ///An form of asset monitored and/or controlled by the enterprise that may participate in a larger group and may be subdivided into internal components.
     #[serde(rename = "asset")]
@@ -7833,7 +7833,7 @@ pub enum SystemTypeType {
     Unknown,
 }
 ///A telemetered Parameter is one that will have values in telemetry. A derived Parameter is one that is calculated, usually by an Algorithm. A constant Parameter is one that is used as a constant in the system (e.g. a vehicle id). A local Parameter is one that is used purely by the software locally (e.g. a ground command counter). A ground Parameter is one that is generated by an asset which is not the spacecraft.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum TelemetryDataSourceType {
     #[serde(rename = "telemetered")]
     Telemetered,
@@ -7847,7 +7847,7 @@ pub enum TelemetryDataSourceType {
     Ground,
 }
 ///All the data about telemetry is contained in TelemetryMetaData
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TelemetryMetaDataType {
     ///A list of parameter types
     #[serde(default, rename = "ParameterTypeSet")]
@@ -7872,7 +7872,7 @@ pub struct TelemetryMetaDataType {
     pub algorithm_set: ::std::vec::Vec<AlgorithmSetType>,
 }
 ///A term in a polynomial expression.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TermType {
     ///The coefficient in a single term of a polynomial expression.
     #[serde(rename = "@coefficient")]
@@ -7881,7 +7881,7 @@ pub struct TermType {
     #[serde(rename = "@exponent")]
     pub exponent: NonNegativeLongType,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TimeAlarmRangesType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -7924,7 +7924,7 @@ impl TimeAlarmRangesType {
     }
 }
 ///Alarms associated with time data types
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TimeAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -7951,7 +7951,7 @@ pub struct TimeAlarmType {
     pub content: ::std::vec::Vec<TimeAlarmTypeContent>,
 }
 ///Alarms associated with time data types
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum TimeAlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -7983,7 +7983,7 @@ impl TimeAlarmType {
     }
 }
 ///Describes a time association consisting of an instance of an absolute time parameter (parameterRef) and this entry.  Because telemetry parameter instances are oftentimes "time-tagged" with a timing signal either provided on the ground or on the space system.  This data element allows one to specify which of possibly many AbsoluteTimeParameters to use to "time-tag" parameter instances with.  See AbsoluteTimeParameterType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TimeAssociationType {
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
@@ -8026,7 +8026,7 @@ impl TimeAssociationType {
     }
 }
 ///Time units the time association decimal value is in.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum TimeAssociationUnitType {
     #[serde(rename = "seconds")]
     Seconds,
@@ -8050,14 +8050,14 @@ pub enum TimeAssociationUnitType {
     Years,
 }
 ///An ordered collection of temporal alarms associated with a context. A context is an alarm definition on a parameter which is valid only in the case of a test on the value of other parameters. Process the contexts in list order. See TimeContextAlarmType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TimeContextAlarmListType {
     ///A Context contains a new alarm definition and a context match.  The match takes precedence over any default alarm when the first in the overall list evaluates to true.  It is also possible the alarm definition is empty, in which case the context means no alarm defined when the match is true.
     #[serde(default, rename = "ContextAlarm")]
     pub context_alarm: ::std::vec::Vec<TimeContextAlarmType>,
 }
 ///Context alarms are applied when the ContextMatch is true.  Context alarms override Default alarms
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TimeContextAlarmType {
     ///The alarm definition may be named.
     #[serde(default, rename = "@name")]
@@ -8084,7 +8084,7 @@ pub struct TimeContextAlarmType {
     pub content: ::std::vec::Vec<TimeContextAlarmTypeContent>,
 }
 ///Context alarms are applied when the ContextMatch is true.  Context alarms override Default alarms
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum TimeContextAlarmTypeContent {
     #[serde(rename = "AncillaryDataSet")]
     AncillaryDataSet(AncillaryDataSetType),
@@ -8118,7 +8118,7 @@ impl TimeContextAlarmType {
     }
 }
 ///Base time unit of measure.  It is best practice to avoid days, months, and years due to ambiguity involving leap seconds and leap days.  If these are used, the system should document how the leaps are handled.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum TimeUnitsType {
     #[serde(rename = "seconds")]
     Seconds,
@@ -8141,21 +8141,21 @@ pub enum TimeUnitsType {
     #[serde(rename = "years")]
     Years,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum TimeWindowIsRelativeToType {
     #[serde(rename = "commandRelease")]
     CommandRelease,
     #[serde(rename = "timeLastVerifierPassed")]
     TimeLastVerifierPassed,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ToStringType {
     ///This element describes how a numeric value should be represented in engineering/calibrated form.  The defaults reflect the most common form.
     #[serde(rename = "NumberFormat")]
     pub number_format: NumberFormatType,
 }
 ///Transferred to range means the command has been received to the network that connects the ground system to the spacecraft.  Typically, this verifier would come from something other than the spacecraft, such as a modem or front end processor.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TransferredToRangeVerifierType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -8167,7 +8167,7 @@ pub struct TransferredToRangeVerifierType {
     pub content: ::std::vec::Vec<TransferredToRangeVerifierTypeContent>,
 }
 ///Transferred to range means the command has been received to the network that connects the ground system to the spacecraft.  Typically, this verifier would come from something other than the spacecraft, such as a modem or front end processor.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum TransferredToRangeVerifierTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -8207,14 +8207,14 @@ pub enum TransferredToRangeVerifierTypeContent {
     ArgumentRestrictionList(ArgumentAssignmentListType),
 }
 ///Appended to the TramsmissionConstraint List of the base command.  Constraints are checked in order.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TransmissionConstraintListType {
     ///A constraint that potentially blocks transmission of this command based on parameter values for all instances or optionally limited to only when specified argument values are used in the command.
     #[serde(default, rename = "TransmissionConstraint")]
     pub transmission_constraint: ::std::vec::Vec<TransmissionConstraintType>,
 }
 ///A CommandTransmission constraint is used to check that the command can be run in the current operating mode and may block the transmission of the command if the constraint condition is true.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TransmissionConstraintType {
     ///Pause during timeOut, fail when the timeout passes
     #[serde(default, rename = "@timeOut")]
@@ -8229,7 +8229,7 @@ pub struct TransmissionConstraintType {
     pub content: ::core::option::Option<TransmissionConstraintTypeContent>,
 }
 ///A CommandTransmission constraint is used to check that the command can be run in the current operating mode and may block the transmission of the command if the constraint condition is true.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum TransmissionConstraintTypeContent {
     ///A simple comparison check involving a single test of a parameter value.
     #[serde(rename = "Comparison")]
@@ -8254,7 +8254,7 @@ impl TransmissionConstraintType {
     }
 }
 ///A trigger is used to initiate the processing of some algorithm.  A trigger may be based on an update of a Parameter, receipt of a Container, or on a time basis.  Triggers may also have a maximum rate that limits how often the trigger can be invoked.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TriggerSetType {
     ///Triggers may optionally be named.
     #[serde(default, rename = "@name")]
@@ -8266,7 +8266,7 @@ pub struct TriggerSetType {
     pub content: ::std::vec::Vec<TriggerSetTypeContent>,
 }
 ///A trigger is used to initiate the processing of some algorithm.  A trigger may be based on an update of a Parameter, receipt of a Container, or on a time basis.  Triggers may also have a maximum rate that limits how often the trigger can be invoked.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum TriggerSetTypeContent {
     ///This element instructs the trigger to invoke the algorithm evaluation when a Parameter update is received.
     #[serde(rename = "OnParameterUpdateTrigger")]
@@ -8284,7 +8284,7 @@ impl TriggerSetType {
         1i64
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct TriggeredMathOperationType {
     ///Optional name for this calibrator/algorithm
     #[serde(default, rename = "@name")]
@@ -8297,7 +8297,7 @@ pub struct TriggeredMathOperationType {
     #[serde(rename = "$value")]
     pub content: ::std::vec::Vec<TriggeredMathOperationTypeContent>,
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum TriggeredMathOperationTypeContent {
     ///Optional additional ancillary information for this calibrator/algorithm
     #[serde(rename = "AncillaryDataSet")]
@@ -8318,7 +8318,7 @@ pub enum TriggeredMathOperationTypeContent {
     TriggerSet(TriggerSetType),
 }
 ///Defines enumerated values to categorize a unit associated with a telemetered value.  Typically the unit refers to the calibrated (engineering) value.  In some cases the unit may be associated with the uncalibrated or raw values.  Uncalibrated and raw here are typically synonymous, but there are exceptions.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum UnitFormType {
     ///The unit of measure for this value refers to the engineer/calibrated value.
     #[serde(rename = "calibrated")]
@@ -8331,14 +8331,14 @@ pub enum UnitFormType {
     Raw,
 }
 ///Describe an ordered collection of units that form a unit-expression.  Units may be described for both calibrated/engineering values and also potentially uncalibrated/raw values.  See UnitType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct UnitSetType {
     ///Describe the exponent, factor, form, and description for a unit.  The attributes are optional because different programs use this element in different ways, depending on vendor support.
     #[serde(default, rename = "Unit")]
     pub unit: ::std::vec::Vec<UnitType>,
 }
 ///Describe the exponent, factor, form, and description for a unit.  The unit itself is in element Unit in UnitSet.  See UnitSetType.  The attributes are optional because different programs use this element in different ways, depending on vendor support.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct UnitType {
     ///Optional attribute used in conjunction with the "factor" attribute where some programs choose to specify the unit definition with these machine processable algebraic features.  For example, a unit text of "meters" may have a "power" attribute of 2, resulting "meters squared" as the actual unit.  This is not commonly used.  The most common method for "meters squared" is to use the text content of the Unit element in a form like "m^2".
     #[serde(default = "UnitType::default_power", rename = "@power")]
@@ -8370,7 +8370,7 @@ impl UnitType {
     }
 }
 ///Numerical ranges that define the universe of valid values for this argument.  A single range is the most common, although it is possible to define multiple ranges when the valid values are not contiguous.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ValidFloatRangeSetType {
     ///By default and general recommendation, the valid range is specified in engineering/calibrated values, although this can be adjusted.
     #[serde(
@@ -8389,7 +8389,7 @@ impl ValidFloatRangeSetType {
     }
 }
 ///Numerical ranges that define the universe of valid values for this argument.  A single range is the most common, although it is possible to define multiple ranges when the valid values are not contiguous.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ValidIntegerRangeSetType {
     ///By default and general recommendation, the valid range is specified in engineering/calibrated values, although this can be adjusted.
     #[serde(
@@ -8407,7 +8407,7 @@ impl ValidIntegerRangeSetType {
         true
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ValidationStatusType {
     #[serde(rename = "Unknown")]
     Unknown,
@@ -8425,7 +8425,7 @@ pub enum ValidationStatusType {
     Withdrawn,
 }
 ///Describe a value and an associated string label, see EnumerationListType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ValueEnumerationType {
     ///Numeric raw/uncalibrated value to associate with a string enumeration label.
     #[serde(rename = "@value")]
@@ -8441,7 +8441,7 @@ pub struct ValueEnumerationType {
     pub short_description: ::core::option::Option<ShortDescriptionType>,
 }
 ///For streams that contain a series of frames with a variable frame length where the frames are found by looking for a series of one's or zero's (usually one's).  The series is called the flag.   in the PCM stream that are usually made to be illegal in the PCM stream by zero or one bit insertion.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct VariableFrameStreamType {
     ///Optional short description to be used for explanation of this item.  It is recommended that the short description be kept under 80 characters in length.
     #[serde(default, rename = "@shortDescription")]
@@ -8459,7 +8459,7 @@ pub struct VariableFrameStreamType {
     pub content: ::std::vec::Vec<VariableFrameStreamTypeContent>,
 }
 ///For streams that contain a series of frames with a variable frame length where the frames are found by looking for a series of one's or zero's (usually one's).  The series is called the flag.   in the PCM stream that are usually made to be illegal in the PCM stream by zero or one bit insertion.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum VariableFrameStreamTypeContent {
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(rename = "LongDescription")]
@@ -8491,7 +8491,7 @@ impl VariableFrameStreamType {
         false
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct VariableFrameSyncStrategyType {
     #[serde(
         default = "VariableFrameSyncStrategyType::default_verify_to_lock_good_frames",
@@ -8529,7 +8529,7 @@ impl VariableFrameSyncStrategyType {
     }
 }
 ///Describe a variable string whose length may change between samples.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct VariableStringType {
     ///The upper bound of the size of this string data type so that the implementation can reserve/allocate enough memory to capture all reported instances of the string.
     #[serde(rename = "@maxSizeInBits")]
@@ -8538,7 +8538,7 @@ pub struct VariableStringType {
     pub content: ::std::vec::Vec<VariableStringTypeContent>,
 }
 ///Describe a variable string whose length may change between samples.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum VariableStringTypeContent {
     ///Determine the container size in bits by interrogating an instance of a parameter.
     #[serde(rename = "DynamicValue")]
@@ -8554,7 +8554,7 @@ pub enum VariableStringTypeContent {
     TerminationChar(super::xs::HexBinaryType),
 }
 ///An enumerated list of verifier types
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum VerifierEnumerationType {
     #[serde(rename = "release")]
     Release,
@@ -8576,7 +8576,7 @@ pub enum VerifierEnumerationType {
     Failed,
 }
 ///Describe a collection of unordered verifiers.  A command verifier is a conditional check on the telemetry from a SpaceSystem that that provides positive indication on the processing state of a command.  There are eight different verifiers each associated with different states in command processing: TransferredToRange, TransferredFromRange, Received, Accepted, Queued, Execution, Complete, and Failed.  There may be multiple "complete" and "execution" verifiers. If the MetaCommand is part of an inheritance relation (BaseMetaCommand), the "complete" and "execution" verifier sets are appended to any defined in the parent MetaCommand. All others will override a verifier defined in a BaseMetaCommand.  Duplicate verifiers in the list of CompleteVerifiers and ExecutionVerifiers before and after appending to the verifiers in BaseMetaCommand should be avoided. See MetaCommandType and BaseMetaCommandType for additional information.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct VerifierSetType {
     ///Transferred to range means the command has been received to the network that connects the ground system to the spacecraft.  Typically, this verifier would come from something other than the spacecraft, such as a modem or front end processor.
     #[serde(default, rename = "TransferredToRangeVerifier")]
@@ -8606,7 +8606,7 @@ pub struct VerifierSetType {
     pub failed_verifier: ::core::option::Option<FailedVerifierType>,
 }
 ///Describe an exclusive or (XOR) checksum definition. See ErrorDetectCorrectType.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct XorType {
     ///An offset of non-zero may be specified to skip some bits against the reference position in the reference attribute.
     #[serde(
@@ -8631,7 +8631,7 @@ impl XorType {
         ReferencePointType::Start
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub enum ChecksumTypeNameType {
     #[serde(rename = "unix_sum")]
     UnixSum,
@@ -8671,7 +8671,7 @@ pub type IntegerDataTypeValidRange = IntegerDataTypeValidRangeElementType;
 pub type PercentCompleteTypeFixedValue = PercentCompleteTypeFixedValueElementType;
 ///This is the simplest case of a string data type where the encoding size of the string does not change.
 pub type SizeInBitsTypeFixed = SizeInBitsTypeFixedElementType;
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct FloatDataTypeValidRangeElementType {
     ///Minimum decimal/real number value including itself.
     #[serde(default, rename = "@minInclusive")]
@@ -8698,7 +8698,7 @@ impl FloatDataTypeValidRangeElementType {
         true
     }
 }
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct IntegerDataTypeValidRangeElementType {
     ///Minimum integer value including itself.
     #[serde(default, rename = "@minInclusive")]
@@ -8720,7 +8720,7 @@ impl IntegerDataTypeValidRangeElementType {
     }
 }
 pub type PercentCompleteTypeFixedValueElementType = ::core::primitive::f64;
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SizeInBitsTypeFixedElementType {
     ///Size in bits of this string data type for both the memory allocation in the implementing software and also the size in bits for this parameter when it appears in a container.
     #[serde(rename = "FixedValue")]

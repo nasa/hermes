@@ -58,7 +58,8 @@ mod codegen {
             )
             .with_renderer_flags(RendererFlags::all())
             .with_render_step(XtceRenderAddOtherUsingsConfig)
-            .with_serde_quick_xml();
+            .with_serde_quick_xml()
+            .with_derive(vec!["Debug", "Clone"]);
 
         config.generator.text_type = "::std::string::String".to_string();
 
@@ -656,6 +657,7 @@ mod codegen {
                 "||" => "Or".to_string(),
                 "!" => "Not".to_string(),
                 "~" => "BitwiseNot".to_string(),
+                "x!" => "Factorial".to_string(),
                 _ => self.default.format_variant_name(s),
             };
 
@@ -690,6 +692,10 @@ mod codegen {
                         // To support this type of enum we need to use a different serde derive
                         // The standard derive doesn't support putting the rest of the string into the 'other' variant
                         item.derive = xsd_parser::models::data::ConfigValue::Overwrite(vec![
+                            IdentPath::from_ident(proc_macro2::Ident::new(
+                                "Clone",
+                                proc_macro2::Span::call_site(),
+                            )),
                             IdentPath::from_ident(proc_macro2::Ident::new(
                                 "Debug",
                                 proc_macro2::Span::call_site(),
