@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{Error, IntegerValue, ParameterInstanceRef, ParameterRef, Result};
+use crate::{Error, IntegerValue, ParameterInstanceRef, ParameterRef, Result, Value};
 
 #[derive(Clone, Debug)]
 pub struct Item {
@@ -31,9 +31,9 @@ pub enum BooleanExpression {
     ///Condition elements describe a test similar to the Comparison element except that the parameters used have additional flexibility.
     Condition(ComparisonCheck),
     ///This element describes tests similar to the ComparisonList element except that the parameters used are more flexible.
-    AndCondition(Vec<AndCondition>),
+    AndConditions(Vec<BooleanExpression>),
     ///This element describes tests similar to the ComparisonList element except that the parameters used are more flexible.
-    OrCondition(Vec<OrCondition>),
+    OrConditions(Vec<BooleanExpression>),
 }
 
 #[derive(Clone, Debug)]
@@ -44,26 +44,9 @@ pub struct ComparisonCheck {
 }
 
 #[derive(Clone, Debug)]
-pub enum AndCondition {
-    ///Condition elements describe a test similar to the Comparison element except that the parameters used have additional flexibility for the compare.
-    Condition(ComparisonCheck),
-    ///This element describes tests similar to the ComparisonList element except that the parameters used are more flexible and the and/or for multiple checks can be specified.
-    ORedConditions(Vec<OrCondition>),
-}
-
-///Describe two or more conditions that are logically ored together. Conditions may be a mix of Condition and ANDedCondition.   See ORedConditionType and BooleanExpressionType.
-#[derive(Clone, Debug)]
-pub enum OrCondition {
-    ///Condition elements describe a test similar to the Comparison element except that the parameters used have additional flexibility for the compare.
-    Condition(ComparisonCheck),
-    ///This element describes tests similar to the ComparisonList element except that the parameters used are more flexible and the and/or for multiple checks can be specified.
-    AndCondition(Vec<AndCondition>),
-}
-
-#[derive(Clone, Debug)]
 pub enum ParameterRefOrValue {
     ParameterInstanceRef(ParameterInstanceRef),
-    Value(String),
+    Value(Value),
 }
 
 ///A simple ParameterInstanceRef to value comparison.  The string supplied in the value attribute needs to be converted to a type matching the Parameter being compared to.  For integer types it is base 10 form.  Floating point types may be specified in normal (100.0) or scientific (1.0e2) form.  The value is truncated  to use the least significant bits that match the bit size of the Parameter being compared to.
@@ -72,7 +55,7 @@ pub struct Comparison {
     pub parameter_ref: ParameterInstanceRef,
     ///Operator to use for the comparison with the common equality operator as the default.
     pub comparison_operator: hermes_xtce::ComparisonOperatorsType,
-    pub value: String,
+    pub value: Value,
 }
 
 #[derive(Clone, Debug)]

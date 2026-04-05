@@ -4,6 +4,8 @@ pub use schema::xtce::*;
 
 pub mod serde_helpers;
 
+mod helpers;
+
 use std::io::BufRead;
 
 use quick_xml::DeError;

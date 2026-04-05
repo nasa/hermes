@@ -65,8 +65,12 @@ impl MissionDatabase {
         let root_name = sorted_names[0].clone();
 
         // Construct containers in dependency order
-        let telemetry_containers =
-            construct_containers(unresolved_containers, sorted_names, dependencies)?;
+        let telemetry_containers = construct_containers(
+            unresolved_containers,
+            sorted_names,
+            dependencies,
+            &telemetry_parameters,
+        )?;
 
         let telemetry_root = telemetry_containers.get(&root_name).unwrap();
 

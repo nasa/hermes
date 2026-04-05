@@ -197,7 +197,18 @@ pub struct EnumeratedType {
 pub struct EnumerationEntry {
     pub label: String,
     pub value: i64,
-    pub short_description: Option<String>,
+}
+
+impl PartialEq for EnumerationEntry {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
+}
+
+impl PartialOrd for EnumerationEntry {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.value.partial_cmp(&other.value)
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -399,6 +410,12 @@ impl Value {
             Type::Aggregate(_) => Err(Error::NotImplemented("Aggregate value parsing")),
         }
     }
+}
+
+/// Public wrapper for parsing a string value based on a parameter type.
+/// Used when loading restriction criteria comparisons from XTCE.
+pub(crate) fn parse_value_from_string(s: &str, ty: &Type) -> Result<Value> {
+    Value::parse(ty, s)
 }
 
 pub(crate) fn convert_parameter_type_set(xml: &hermes_xtce::ParameterTypeSetType) -> Result<Type> {
@@ -709,7 +726,6 @@ fn convert_enumerated_parameter_type(
                 .map(|e| EnumerationEntry {
                     label: e.label.clone(),
                     value: e.value,
-                    short_description: e.short_description.clone(),
                 })
                 .collect()
         })

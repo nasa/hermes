@@ -1,5 +1,7 @@
 use thiserror::Error;
 
+use crate::Value;
+
 /// Result type alias for hermes-data operations
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -32,4 +34,7 @@ pub enum Error {
 
     #[error("Operation Not Implemented: {0}")]
     NotImplemented(&'static str),
+
+    #[error("Invalid comparison '{0}' between values: {1}, {2}")]
+    InvalidComparison(hermes_xtce::ComparisonOperatorsType, Value, Value)
 }

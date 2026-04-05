@@ -1,6 +1,7 @@
 use crate::bit_vec::BitVec;
 use crate::*;
 use hermes_xtce::IntegerEncodingType;
+use tracing::warn;
 
 #[derive(Clone, Debug)]
 pub struct ParameterValue {
@@ -14,19 +15,14 @@ pub struct ParameterValue {
     pub start_bit: usize,
     /// The last bit this value resides in the parent container
     pub end_bit: usize,
-    /// Time this value was received and decoded
-    pub reception_time: std::time::SystemTime,
-    // Time this value was generated on-board converted from raw counts
-    // pub generation_time: Option<std::time::SystemTime>,
-    // Time in the native representation on the spacecraft
-    // pub sclk_time: Time,
 }
 
 struct Context<'a> {
     db: &'a MissionDatabase,
     data: BitVec<'a>,
     position: usize,
-    parameters: &'a mut HashMap<String, Vec<ParameterValue>>,
+    containers: Vec<Rc<SequenceContainer>>,
+    parameters: HashMap<String, Vec<ParameterValue>>,
 }
 
 impl<'a> Context<'a> {
@@ -63,8 +59,12 @@ impl<'a> Context<'a> {
         }
     }
 
+    fn get_parameter_instance(&self, r: &ParameterInstanceRef) -> Result<&ParameterValue> {
+        self.get_parameter_value(&r.parameter)
+    }
+
     fn get_parameter_instance_num(&self, r: &ParameterInstanceRef) -> Result<f64> {
-        let value = self.get_parameter_value(&r.parameter)?;
+        let value = self.get_parameter_instance(&r)?;
         if r.use_calibrated_value
             && let Some(v) = value.calibrated_value
         {
@@ -318,9 +318,6 @@ impl Entry {
                     parameter: prm.clone(),
                     start_bit: start_location,
                     end_bit: end_location,
-                    reception_time: std::time::SystemTime::now(),
-                    // generation_time: todo!(),
-                    // sclk_time: todo!(),
                 };
 
                 ctx.add_parameter(pv);
@@ -355,29 +352,232 @@ impl Entry {
     }
 }
 
+fn builtin_comparison<T: PartialEq + PartialOrd>(
+    op: &hermes_xtce::ComparisonOperatorsType,
+    l: T,
+    r: T,
+) -> bool {
+    use hermes_xtce::ComparisonOperatorsType::*;
+    match op {
+        Eq => l == r,
+        Neq => l != r,
+        Lt => l < r,
+        Lte => l <= r,
+        Gt => l > r,
+        Gte => l >= r,
+    }
+}
+
+fn comparison(
+    op: &hermes_xtce::ComparisonOperatorsType,
+    left: &Value,
+    right: &Value,
+) -> Result<bool> {
+    match (&left, &right) {
+        // All the simple comparisons
+        // If their type matches, compare them directly, if not, upcast to the nearest common type
+        (Value::Float(l), Value::Float(r)) => Ok(builtin_comparison(&op, *l, *r)),
+        (Value::UnsignedInteger(l), Value::UnsignedInteger(r)) => {
+            Ok(builtin_comparison(&op, *l, *r))
+        }
+        (Value::SignedInteger(l), Value::SignedInteger(r)) => Ok(builtin_comparison(&op, *l, *r)),
+        // Float with signed ints
+        (Value::Float(l), Value::SignedInteger(r)) => Ok(builtin_comparison(&op, *l, *r as f64)),
+        (Value::SignedInteger(l), Value::Float(r)) => Ok(builtin_comparison(&op, *l as f64, *r)),
+        // Float with unsigned ints
+        (Value::Float(l), Value::UnsignedInteger(r)) => Ok(builtin_comparison(&op, *l, *r as f64)),
+        (Value::UnsignedInteger(l), Value::Float(r)) => Ok(builtin_comparison(&op, *l as f64, *r)),
+        // Unsigned ints with signed ints
+        (Value::SignedInteger(l), Value::UnsignedInteger(r)) => {
+            Ok(builtin_comparison(&op, *l, *r as i64))
+        }
+        (Value::UnsignedInteger(l), Value::SignedInteger(r)) => {
+            Ok(builtin_comparison(&op, *l as i64, *r))
+        }
+
+        // The rest of the comparisons are non-permissive
+        // Left and right types must match
+        (Value::String(l), Value::String(r)) => Ok(builtin_comparison(op, l, r)),
+        (Value::Boolean(l), Value::Boolean(r)) => Ok(builtin_comparison(op, l, r)),
+        (Value::Enumerated(l), Value::Enumerated(r)) => Ok(builtin_comparison(op, l, r)),
+
+        // TODO(tumbar) We can probably implement more comparisons
+        (_, _) => Err(Error::InvalidComparison(
+            op.clone(),
+            left.clone(),
+            right.clone(),
+        )), // (Value::Array(l), Value::Array(r)) => {
+            //     if l.len() != r.len() || *op != hermes_xtce::ComparisonOperatorsType::Eq {
+            //         Err(Error::InvalidComparison(
+            //             op.clone(),
+            //             left.clone(),
+            //             right.clone(),
+            //         ))
+            //     } else {
+            //         Ok(l.iter()
+            //             .zip(r)
+            //             .all(|(l, r)| comparison(&hermes_xtce::ComparisonOperatorsType::Eq, left, right)))
+            //     }
+            // }
+    }
+}
+
+impl Comparison {
+    fn evaluate(&self, ctx: &Context) -> Result<bool> {
+        let left = {
+            let left = ctx.get_parameter_instance(&self.parameter_ref)?;
+            if self.parameter_ref.use_calibrated_value
+                && let Some(cv) = left.calibrated_value
+            {
+                Value::Float(cv)
+            } else {
+                left.raw_value.clone()
+            }
+        };
+
+        comparison(&self.comparison_operator, &left, &self.value)
+    }
+}
+
+impl ComparisonCheck {
+    fn evaluate(&self, ctx: &Context) -> Result<bool> {
+        let left = {
+            let left = ctx.get_parameter_instance(&self.left)?;
+            if self.left.use_calibrated_value
+                && let Some(cv) = left.calibrated_value
+            {
+                Value::Float(cv)
+            } else {
+                left.raw_value.clone()
+            }
+        };
+
+        let right = {
+            match &self.right {
+                ParameterRefOrValue::ParameterInstanceRef(parameter_instance_ref) => {
+                    let rv = ctx.get_parameter_instance(&self.left)?;
+                    if parameter_instance_ref.use_calibrated_value
+                        && let Some(cv) = rv.calibrated_value
+                    {
+                        Value::Float(cv)
+                    } else {
+                        rv.raw_value.clone()
+                    }
+                }
+                ParameterRefOrValue::Value(value) => value.clone(),
+            }
+        };
+
+        comparison(&self.operator, &left, &right)
+    }
+}
+
+impl BooleanExpression {
+    fn evaluate(&self, ctx: &Context) -> Result<bool> {
+        match self {
+            BooleanExpression::Condition(comparison_check) => comparison_check.evaluate(ctx),
+            BooleanExpression::AndConditions(and_conditions) => {
+                for v in and_conditions {
+                    if !v.evaluate(ctx)? {
+                        return Ok(false);
+                    }
+                }
+
+                Ok(true)
+            }
+            BooleanExpression::OrConditions(or_conditions) => {
+                for v in or_conditions {
+                    if v.evaluate(ctx)? {
+                        return Ok(true);
+                    }
+                }
+
+                Ok(false)
+            }
+        }
+    }
+}
+
+impl RestrictionCriteria {
+    fn evaluate(&self, ctx: &Context) -> bool {
+        match self {
+            RestrictionCriteria::Comparison(comparison) => match comparison.evaluate(ctx) {
+                Ok(v) => v,
+                Err(err) => {
+                    warn!(err = %err, "Failed to perform evaluation");
+                    false
+                }
+            },
+            RestrictionCriteria::ComparisonList(comparisons) => {
+                comparisons.iter().all(|c| match c.evaluate(ctx) {
+                    Ok(v) => v,
+                    Err(err) => {
+                        warn!(err = %err, "Failed to perform evaluation");
+                        false
+                    }
+                })
+            }
+            RestrictionCriteria::BooleanExpression(boolean_expression) => {
+                match boolean_expression.evaluate(ctx) {
+                    Ok(v) => v,
+                    Err(err) => {
+                        warn!(err = %err, "Failed to perform evaluation");
+                        false
+                    }
+                }
+            }
+        }
+    }
+}
+
 impl SequenceContainer {
-    fn deserialize(&self, ctx: &mut Context) -> Result<()> {}
+    fn deserialize(&self, ctx: &mut Context) -> Result<()> {
+        for entry in &self.entry_list {
+            entry.deserialize(ctx)?;
+        }
+
+        if self.abstract_ {
+            // This is not a real container
+            // Look for a child container that fits the match criteria
+            for (rc, child) in &self.children {
+                if rc.evaluate(ctx) {
+                    ctx.containers.push(child.clone());
+                    child.deserialize(ctx)?;
+                    break;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
+pub struct Packet {
+    pub raw: Vec<u8>,
+    pub containers: Vec<Rc<SequenceContainer>>,
+    pub parameters: HashMap<String, Vec<ParameterValue>>,
 }
 
 impl MissionDatabase {
     pub fn deserialize(&self, data: Vec<u8>) -> Result<Packet> {
-        unimplemented!();
-        // let mut ctx = DeserializationContext {
-        //     db: self,
-        //     data: &data,
-        //     last_entry_bit: 0,
-        //     parameters: Default::default(),
-        // };
-        //
-        // let root = &self.telemetry_root;
-        // for entry in &root.entry_list {
-        //     entry.deserialize(&mut ctx)?;
-        // }
-        //
-        // Ok(Packet {
-        //     raw: data,
-        //     container: root.clone(),
-        //     parameters: vec![],
-        // })
+        let root = &self.telemetry_root;
+        let (parameters, containers) = {
+            let mut ctx = Context {
+                db: self,
+                data: BitVec::new(&data, 0),
+                position: 0,
+                parameters: Default::default(),
+                containers: vec![root.clone()],
+            };
+
+            root.deserialize(&mut ctx)?;
+            (ctx.parameters, ctx.containers)
+        };
+
+        Ok(Packet {
+            raw: data,
+            containers,
+            parameters,
+        })
     }
 }

@@ -1,8 +1,7 @@
 use crate::container::SequenceContainer;
 use crate::{
-    AndCondition, BooleanExpression, Comparison, ComparisonCheck, Error, OrCondition,
-    ParameterInstanceRef, ParameterRef, ParameterRefOrValue, RelativeTime, RestrictionCriteria,
-    Result,
+    BooleanExpression, Comparison, ComparisonCheck, Error, ParameterInstanceRef, ParameterRef,
+    ParameterRefOrValue, RelativeTime, RestrictionCriteria, Result,
 };
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -552,20 +551,23 @@ pub(crate) fn build_dependency_graph(
 
 fn convert_restriction_criteria(
     xml: &hermes_xtce::RestrictionCriteriaType,
+    parameters: &HashMap<String, Rc<crate::Parameter>>,
 ) -> Result<RestrictionCriteria> {
     use hermes_xtce::RestrictionCriteriaType as X;
     match xml {
-        X::Comparison(comp) => Ok(RestrictionCriteria::Comparison(convert_comparison(comp)?)),
+        X::Comparison(comp) => Ok(RestrictionCriteria::Comparison(convert_comparison(
+            comp, parameters,
+        )?)),
         X::ComparisonList(list) => {
             let comparisons = list
                 .comparison
                 .iter()
-                .map(convert_comparison)
+                .map(|c| convert_comparison(c, parameters))
                 .collect::<Result<Vec<_>>>()?;
             Ok(RestrictionCriteria::ComparisonList(comparisons))
         }
         X::BooleanExpression(expr) => Ok(RestrictionCriteria::BooleanExpression(
-            convert_boolean_expression(expr)?,
+            convert_boolean_expression(expr, parameters)?,
         )),
         X::CustomAlgorithm(_) => Err(Error::NotImplemented(
             "CustomAlgorithm in RestrictionCriteria",
@@ -576,32 +578,10 @@ fn convert_restriction_criteria(
     }
 }
 
-fn convert_boolean_expression(
-    xml: &hermes_xtce::BooleanExpressionType,
-) -> Result<BooleanExpression> {
-    use hermes_xtce::BooleanExpressionType as X;
-    match xml {
-        X::Condition(cond) => Ok(BooleanExpression::Condition(convert_comparison_check(
-            cond,
-        )?)),
-        X::AnDedConditions(ands) => {
-            let conditions = ands
-                .iter()
-                .map(convert_and_condition)
-                .collect::<Result<Vec<_>>>()?;
-            Ok(BooleanExpression::AndCondition(conditions))
-        }
-        X::ORedConditions(ors) => {
-            let conditions = ors
-                .iter()
-                .map(convert_or_condition)
-                .collect::<Result<Vec<_>>>()?;
-            Ok(BooleanExpression::OrCondition(conditions))
-        }
-    }
-}
-
-fn convert_comparison_check(xml: &hermes_xtce::ComparisonCheckType) -> Result<ComparisonCheck> {
+fn convert_comparison_check(
+    xml: &hermes_xtce::ComparisonCheckType,
+    parameters: &HashMap<String, Rc<crate::Parameter>>,
+) -> Result<ComparisonCheck> {
     use hermes_xtce::ComparisonCheckTypeContent as C;
 
     // The content array has exactly 3 elements:
@@ -631,7 +611,18 @@ fn convert_comparison_check(xml: &hermes_xtce::ComparisonCheckType) -> Result<Co
         C::ParameterInstanceRef(param_ref) => {
             ParameterRefOrValue::ParameterInstanceRef(convert_parameter_instance_ref(param_ref)?)
         }
-        C::Value(val) => ParameterRefOrValue::Value(val.clone()),
+        C::Value(val) => {
+            // Parse the value based on the left parameter's type
+            let parameter = parameters.get(&left.parameter.0).ok_or_else(|| {
+                Error::InvalidXtce(format!(
+                    "Parameter '{}' referenced in comparison check not found",
+                    left.parameter.0
+                ))
+            })?;
+
+            let value = crate::types::parse_value_from_string(val, &parameter.type_)?;
+            ParameterRefOrValue::Value(value)
+        }
         _ => {
             return Err(Error::InvalidXtce(
                 "ComparisonCheck third element must be Value or ParameterInstanceRef".to_string(),
@@ -646,42 +637,99 @@ fn convert_comparison_check(xml: &hermes_xtce::ComparisonCheckType) -> Result<Co
     })
 }
 
-fn convert_and_condition(xml: &hermes_xtce::AnDedConditionsType) -> Result<AndCondition> {
+/// Convert an ANDed condition from XTCE to BooleanExpression.
+/// Each element in AnDedConditions can be either a Condition or nested ORedConditions.
+fn convert_anded_condition(
+    xml: &hermes_xtce::AnDedConditionsType,
+    parameters: &HashMap<String, Rc<crate::Parameter>>,
+) -> Result<BooleanExpression> {
     use hermes_xtce::AnDedConditionsType as X;
     match xml {
-        X::Condition(cond) => Ok(AndCondition::Condition(convert_comparison_check(cond)?)),
+        X::Condition(cond) => Ok(BooleanExpression::Condition(convert_comparison_check(
+            cond, parameters,
+        )?)),
         X::ORedConditions(ors) => {
             let conditions = ors
                 .iter()
-                .map(convert_or_condition)
+                .map(|c| convert_ored_condition(c, parameters))
                 .collect::<Result<Vec<_>>>()?;
-            Ok(AndCondition::ORedConditions(conditions))
+            Ok(BooleanExpression::OrConditions(conditions))
         }
     }
 }
 
-fn convert_or_condition(xml: &hermes_xtce::ORedConditionsType) -> Result<OrCondition> {
+/// Convert an ORed condition from XTCE to BooleanExpression.
+/// Each element in ORedConditions can be either a Condition or nested AnDedConditions.
+fn convert_ored_condition(
+    xml: &hermes_xtce::ORedConditionsType,
+    parameters: &HashMap<String, Rc<crate::Parameter>>,
+) -> Result<BooleanExpression> {
     use hermes_xtce::ORedConditionsType as X;
     match xml {
-        X::Condition(cond) => Ok(OrCondition::Condition(convert_comparison_check(cond)?)),
+        X::Condition(cond) => Ok(BooleanExpression::Condition(convert_comparison_check(
+            cond, parameters,
+        )?)),
         X::AnDedConditions(ands) => {
             let conditions = ands
                 .iter()
-                .map(convert_and_condition)
+                .map(|c| convert_anded_condition(c, parameters))
                 .collect::<Result<Vec<_>>>()?;
-            Ok(OrCondition::AndCondition(conditions))
+            Ok(BooleanExpression::AndConditions(conditions))
         }
     }
 }
 
-fn convert_comparison(xml: &hermes_xtce::ComparisonType) -> Result<Comparison> {
+fn convert_boolean_expression(
+    xml: &hermes_xtce::BooleanExpressionType,
+    parameters: &HashMap<String, Rc<crate::Parameter>>,
+) -> Result<BooleanExpression> {
+    use hermes_xtce::BooleanExpressionType as X;
+    match xml {
+        X::Condition(cond) => Ok(BooleanExpression::Condition(convert_comparison_check(
+            cond, parameters,
+        )?)),
+        X::AnDedConditions(ands) => {
+            let conditions = ands
+                .iter()
+                .map(|c| convert_anded_condition(c, parameters))
+                .collect::<Result<Vec<_>>>()?;
+            Ok(BooleanExpression::AndConditions(conditions))
+        }
+        X::ORedConditions(ors) => {
+            let conditions = ors
+                .iter()
+                .map(|c| convert_ored_condition(c, parameters))
+                .collect::<Result<Vec<_>>>()?;
+            Ok(BooleanExpression::OrConditions(conditions))
+        }
+    }
+}
+
+fn convert_comparison(
+    xml: &hermes_xtce::ComparisonType,
+    parameters: &HashMap<String, Rc<crate::Parameter>>,
+) -> Result<Comparison> {
+    let param_ref = convert_parameter_instance_ref(&hermes_xtce::ParameterInstanceRefType {
+        parameter_ref: xml.parameter_ref.clone(),
+        instance: xml.instance,
+        use_calibrated_value: xml.use_calibrated_value,
+    })?;
+
+    // Look up the parameter to get its type
+    let parameter = parameters.get(&param_ref.parameter.0).ok_or_else(|| {
+        Error::InvalidXtce(format!(
+            "Parameter '{}' referenced in comparison not found",
+            param_ref.parameter.0
+        ))
+    })?;
+
+    // Parse the value based on the parameter's type
+    let value = crate::types::parse_value_from_string(&xml.value, &parameter.type_)?;
+
     Ok(Comparison {
-        parameter_ref: ParameterInstanceRef {
-            parameter: ParameterRef(xml.parameter_ref.clone()),
-            use_calibrated_value: xml.use_calibrated_value,
-        },
+        parameter_ref: param_ref,
         comparison_operator: xml.comparison_operator.clone(),
-        value: xml.value.clone(),
+        value,
     })
 }
 
@@ -691,6 +739,7 @@ pub(crate) fn construct_containers(
     unresolved: HashMap<String, UnresolvedContainer>,
     sorted_names: Vec<String>,
     dependencies: HashMap<String, String>,
+    parameters: &HashMap<String, Rc<crate::Parameter>>,
 ) -> Result<HashMap<String, Rc<SequenceContainer>>> {
     // Build reverse mapping: parent -> [(child_name, restriction_criteria)]
     let mut parent_to_children: HashMap<String, Vec<(String, RestrictionCriteria)>> =
@@ -708,7 +757,7 @@ pub(crate) fn construct_containers(
             base_container
                 .restriction_criteria
                 .as_ref()
-                .map(convert_restriction_criteria)
+                .map(|rc| convert_restriction_criteria(rc, parameters))
                 .transpose()?
         } else {
             None
