@@ -4,7 +4,7 @@ use crate::{
     ParameterRefOrValue, RelativeTime, RestrictionCriteria, Result,
 };
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 use std::time::Duration;
 
 /// Constructs a fully qualified name by joining a path and name.
@@ -319,12 +319,12 @@ fn get_parameter_type_name(param_type: &hermes_xtce::ParameterTypeSetType) -> &s
 pub(crate) fn construct_parameter_types_pass1(
     unresolved: HashMap<String, UnresolvedParameterType>,
 ) -> Result<(
-    HashMap<String, Rc<crate::Type>>,
+    HashMap<String, Arc<crate::Type>>,
     Vec<(String, UnresolvedParameterType)>, // deferred binary types
     Vec<(String, UnresolvedParameterType)>, // deferred array types
     Vec<(String, UnresolvedParameterType)>, // deferred aggregate types
 )> {
-    let mut completed: HashMap<String, Rc<crate::Type>> = HashMap::new();
+    let mut completed: HashMap<String, Arc<crate::Type>> = HashMap::new();
     let mut deferred_binary_types: Vec<(String, UnresolvedParameterType)> = Vec::new();
     let mut deferred_array_types: Vec<(String, UnresolvedParameterType)> = Vec::new();
     let mut deferred_aggregate_types: Vec<(String, UnresolvedParameterType)> = Vec::new();
@@ -345,7 +345,7 @@ pub(crate) fn construct_parameter_types_pass1(
             // Convert all other types immediately
             _ => match crate::types::convert_parameter_type_set(&unresolved_type.xml) {
                 Ok(type_) => {
-                    completed.insert(qualified_name, Rc::new(type_));
+                    completed.insert(qualified_name, Arc::new(type_));
                 }
                 Err(Error::NotImplemented(_)) => {
                     unreachable!("These types should be deferred")
@@ -369,7 +369,7 @@ pub(crate) fn construct_parameter_types_pass1(
 /// Pass 2: Construct Aggregate types (after simple types are available)
 pub(crate) fn construct_parameter_types_pass2_aggregates(
     deferred_aggregate_types: Vec<(String, UnresolvedParameterType)>,
-    completed: &mut HashMap<String, Rc<crate::Type>>,
+    completed: &mut HashMap<String, Arc<crate::Type>>,
 ) -> Result<()> {
     for (qualified_name, unresolved_type) in deferred_aggregate_types {
         match crate::types::convert_parameter_type_set_with_context(
@@ -378,7 +378,7 @@ pub(crate) fn construct_parameter_types_pass2_aggregates(
             &completed,
         ) {
             Ok(type_) => {
-                completed.insert(qualified_name, Rc::new(type_));
+                completed.insert(qualified_name, Arc::new(type_));
             }
             Err(Error::NotImplemented(msg)) => {
                 tracing::warn!(
@@ -403,8 +403,8 @@ pub(crate) fn construct_parameter_types_pass2_aggregates(
 pub(crate) fn construct_parameter_types_pass3_binary_array(
     deferred_binary_types: Vec<(String, UnresolvedParameterType)>,
     deferred_array_types: Vec<(String, UnresolvedParameterType)>,
-    types: &mut HashMap<String, Rc<crate::Type>>,
-    parameters: &HashMap<String, Rc<crate::Parameter>>,
+    types: &mut HashMap<String, Arc<crate::Type>>,
+    parameters: &HashMap<String, Arc<crate::Parameter>>,
 ) -> Result<()> {
     // Construct binary types first
     for (qualified_name, unresolved_type) in deferred_binary_types {
@@ -415,7 +415,7 @@ pub(crate) fn construct_parameter_types_pass3_binary_array(
             parameters,
         ) {
             Ok(type_) => {
-                types.insert(qualified_name, Rc::new(type_));
+                types.insert(qualified_name, Arc::new(type_));
             }
             Err(e) => {
                 tracing::warn!(
@@ -436,7 +436,7 @@ pub(crate) fn construct_parameter_types_pass3_binary_array(
             parameters,
         ) {
             Ok(type_) => {
-                types.insert(qualified_name, Rc::new(type_));
+                types.insert(qualified_name, Arc::new(type_));
             }
             Err(e) => {
                 tracing::warn!("Failed to construct array type '{}': {}", qualified_name, e);
@@ -451,12 +451,12 @@ pub(crate) fn construct_parameter_types_pass3_binary_array(
 /// Returns completed parameters and a list of unresolved parameters (whose types don't exist yet).
 pub(crate) fn construct_parameters(
     unresolved: HashMap<String, UnresolvedParameter>,
-    parameter_types: &HashMap<String, Rc<crate::Type>>,
+    parameter_types: &HashMap<String, Arc<crate::Type>>,
 ) -> (
-    HashMap<String, Rc<crate::Parameter>>,
+    HashMap<String, Arc<crate::Parameter>>,
     HashMap<String, UnresolvedParameter>,
 ) {
-    let mut completed: HashMap<String, Rc<crate::Parameter>> = HashMap::new();
+    let mut completed: HashMap<String, Arc<crate::Parameter>> = HashMap::new();
     let mut still_unresolved: HashMap<String, UnresolvedParameter> = HashMap::new();
 
     for (qualified_name, unresolved_param) in unresolved {
@@ -480,7 +480,7 @@ pub(crate) fn construct_parameters(
                         properties: unresolved_param.xml.parameter_properties.clone(),
                     };
 
-                    completed.insert(qualified_name, Rc::new(parameter));
+                    completed.insert(qualified_name, Arc::new(parameter));
                 } else {
                     // Type not available yet - defer
                     still_unresolved.insert(qualified_name, unresolved_param);
@@ -499,8 +499,8 @@ pub(crate) fn construct_parameters(
 /// Construct remaining parameters after all types are available.
 pub(crate) fn construct_remaining_parameters(
     unresolved: HashMap<String, UnresolvedParameter>,
-    parameter_types: &HashMap<String, Rc<crate::Type>>,
-    completed: &mut HashMap<String, Rc<crate::Parameter>>,
+    parameter_types: &HashMap<String, Arc<crate::Type>>,
+    completed: &mut HashMap<String, Arc<crate::Parameter>>,
 ) -> Result<()> {
     for (qualified_name, unresolved_param) in unresolved {
         // Try to resolve parameter type reference
@@ -532,7 +532,7 @@ pub(crate) fn construct_remaining_parameters(
                     properties: unresolved_param.xml.parameter_properties.clone(),
                 };
 
-                completed.insert(qualified_name, Rc::new(parameter));
+                completed.insert(qualified_name, Arc::new(parameter));
             }
             Err(_) => {
                 // Skip parameters that reference unsupported or missing types
@@ -552,7 +552,7 @@ pub(crate) fn construct_remaining_parameters(
 pub(crate) fn resolve_parameter_type_name(
     current_path: &str,
     type_ref: &str,
-    parameter_types: &HashMap<String, Rc<crate::Type>>,
+    parameter_types: &HashMap<String, Arc<crate::Type>>,
 ) -> Result<String> {
     resolve_reference_with_upward_search(
         current_path,
@@ -697,7 +697,7 @@ fn get_member_type<'a>(
 fn convert_restriction_criteria(
     xml: &hermes_xtce::RestrictionCriteriaType,
     space_system_path: &str,
-    parameters: &HashMap<String, Rc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<crate::Parameter>>,
 ) -> Result<RestrictionCriteria> {
     use hermes_xtce::RestrictionCriteriaType as X;
     match xml {
@@ -729,7 +729,7 @@ fn convert_restriction_criteria(
 fn convert_comparison_check(
     xml: &hermes_xtce::ComparisonCheckType,
     space_system_path: &str,
-    parameters: &HashMap<String, Rc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<crate::Parameter>>,
 ) -> Result<ComparisonCheck> {
     use hermes_xtce::ComparisonCheckTypeContent as C;
 
@@ -817,7 +817,7 @@ fn convert_comparison_check(
 fn convert_anded_condition(
     xml: &hermes_xtce::AnDedConditionsType,
     space_system_path: &str,
-    parameters: &HashMap<String, Rc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<crate::Parameter>>,
 ) -> Result<BooleanExpression> {
     use hermes_xtce::AnDedConditionsType as X;
     match xml {
@@ -841,7 +841,7 @@ fn convert_anded_condition(
 fn convert_ored_condition(
     xml: &hermes_xtce::ORedConditionsType,
     space_system_path: &str,
-    parameters: &HashMap<String, Rc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<crate::Parameter>>,
 ) -> Result<BooleanExpression> {
     use hermes_xtce::ORedConditionsType as X;
     match xml {
@@ -863,7 +863,7 @@ fn convert_ored_condition(
 fn convert_boolean_expression(
     xml: &hermes_xtce::BooleanExpressionType,
     space_system_path: &str,
-    parameters: &HashMap<String, Rc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<crate::Parameter>>,
 ) -> Result<BooleanExpression> {
     use hermes_xtce::BooleanExpressionType as X;
     match xml {
@@ -892,7 +892,7 @@ fn convert_boolean_expression(
 fn convert_comparison(
     xml: &hermes_xtce::ComparisonType,
     space_system_path: &str,
-    parameters: &HashMap<String, Rc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<crate::Parameter>>,
 ) -> Result<Comparison> {
     // Resolve the parameter reference to a fully qualified name
     let (resolved_param_ref, member_path) =
@@ -933,8 +933,8 @@ pub(crate) fn construct_containers(
     unresolved: HashMap<String, UnresolvedContainer>,
     sorted_names: Vec<String>,
     dependencies: HashMap<String, String>,
-    parameters: &HashMap<String, Rc<crate::Parameter>>,
-) -> Result<HashMap<String, Rc<SequenceContainer>>> {
+    parameters: &HashMap<String, Arc<crate::Parameter>>,
+) -> Result<HashMap<String, Arc<SequenceContainer>>> {
     // Build reverse mapping: parent -> [(child_name, restriction_criteria)]
     let mut parent_to_children: HashMap<String, Vec<(String, RestrictionCriteria)>> =
         HashMap::new();
@@ -977,7 +977,7 @@ pub(crate) fn construct_containers(
         }
     }
 
-    let mut completed: HashMap<String, Rc<SequenceContainer>> = HashMap::new();
+    let mut completed: HashMap<String, Arc<SequenceContainer>> = HashMap::new();
 
     // Process containers in reverse topological order (children first, then parents)
     for qualified_name in sorted_names.into_iter().rev() {
@@ -1014,7 +1014,7 @@ pub(crate) fn construct_containers(
             }
         }
 
-        completed.insert(qualified_name, Rc::new(container));
+        completed.insert(qualified_name, Arc::new(container));
     }
 
     Ok(completed)
@@ -1087,7 +1087,7 @@ pub(crate) fn parse_hex_binary(s: &str) -> Result<Vec<u8>> {
 pub(crate) fn convert_integer_value(
     xml: &hermes_xtce::IntegerValueType,
     space_system_path: &str,
-    parameters: &HashMap<String, Rc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<crate::Parameter>>,
 ) -> Result<crate::IntegerValue> {
     use hermes_xtce::IntegerValueType as X;
 
@@ -1187,7 +1187,7 @@ fn validate_member_path(
 pub(crate) fn resolve_parameter_ref(
     space_system_path: &str,
     param_ref: &str,
-    parameters: &HashMap<String, Rc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<crate::Parameter>>,
 ) -> Result<(String, Option<Vec<String>>)> {
     // First, try to resolve the entire reference as a parameter name
     // This handles hierarchical paths like "CdhCore/version/CustomVersion02"

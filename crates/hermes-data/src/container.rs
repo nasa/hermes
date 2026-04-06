@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{Error, IntegerValue, ParameterInstanceRef, ParameterRef, Result, Value};
 
@@ -112,7 +112,7 @@ pub struct SequenceContainer {
     pub entry_list: Vec<Entry>,
 
     /// References to child sequence containers
-    pub children: Vec<(RestrictionCriteria, Rc<SequenceContainer>)>,
+    pub children: Vec<(RestrictionCriteria, Arc<SequenceContainer>)>,
 }
 
 impl SequenceContainer {
@@ -124,7 +124,7 @@ impl SequenceContainer {
         xml: hermes_xtce::SequenceContainerType,
         qualified_name: String,
         space_system_path: &str,
-        parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+        parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
         containers: &std::collections::HashMap<String, crate::util::UnresolvedContainer>,
     ) -> Result<SequenceContainer> {
         // Convert size_in_bits if specified via binary encoding
@@ -164,7 +164,7 @@ impl SequenceContainer {
 fn convert_location_in_bits(
     loc: Option<hermes_xtce::LocationInContainerInBitsType>,
     space_system_path: &str,
-    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+    parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
 ) -> Result<LocationInContainerInBits> {
     Ok(loc
         .as_ref()
@@ -179,7 +179,7 @@ fn convert_location_in_bits(
 fn convert_entry(
     xml: hermes_xtce::EntryListType,
     space_system_path: &str,
-    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+    parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
     containers: &std::collections::HashMap<String, crate::util::UnresolvedContainer>,
 ) -> Result<Entry> {
     use hermes_xtce::EntryListType as X;
@@ -273,7 +273,7 @@ fn convert_entry(
 fn convert_location_in_container_in_bits(
     xml: &hermes_xtce::LocationInContainerInBitsType,
     space_system_path: &str,
-    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+    parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
 ) -> Result<LocationInContainerInBits> {
     use hermes_xtce::{LocationInContainerInBitsTypeContent as C, ReferenceLocationType as R};
 
@@ -335,7 +335,7 @@ fn convert_location_in_container_in_bits(
 fn convert_repeat(
     xml: &hermes_xtce::RepeatType,
     space_system_path: &str,
-    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+    parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
 ) -> Result<Repeat> {
     let count = crate::util::convert_integer_value(&xml.count, space_system_path, parameters)?;
     let offset = xml

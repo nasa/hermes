@@ -3,36 +3,57 @@ mod calibrator;
 mod container;
 mod deserialize;
 mod error;
+mod framing;
 mod parameter;
 mod types;
 mod util;
 
 pub use calibrator::*;
 pub use container::*;
+pub use deserialize::*;
 pub use error::{Error, Result};
+pub use framing::*;
 pub use parameter::*;
 pub use types::*;
+
 use util::*;
 
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// The mission database is a resolved form of the XTCE definition which
 /// places XTCE definitions into more favorable data structures
 pub struct MissionDatabase {
-    // command_parameter_types: HashMap<String, Rc<Type>>,
-    // command_parameters: HashMap<String, Rc<Parameter>>,
-    // command_argument_types: HashMap<String, Rc<Type>>,
-    // command_arguments: HashMap<String, Rc<Argument>>,
-    // command_containers: HashMap<String, Rc<SequenceContainer>>,
-    // commands: HashMap<String, Rc<MetaCommandType>>,
-    telemetry_root: Rc<SequenceContainer>,
-    telemetry_parameter_types: HashMap<String, Rc<Type>>,
-    telemetry_parameters: HashMap<String, Rc<Parameter>>,
-    telemetry_containers: HashMap<String, Rc<SequenceContainer>>,
+    // command_parameter_types: HashMap<String, Arc<Type>>,
+    // command_parameters: HashMap<String, Arc<Parameter>>,
+    // command_argument_types: HashMap<String, Arc<Type>>,
+    // command_arguments: HashMap<String, Arc<Argument>>,
+    // command_containers: HashMap<String, Arc<SequenceContainer>>,
+    // commands: HashMap<String, Arc<MetaCommandType>>,
+    telemetry_root: Arc<SequenceContainer>,
+    telemetry_parameter_types: HashMap<String, Arc<Type>>,
+    telemetry_parameters: HashMap<String, Arc<Parameter>>,
+    telemetry_containers: HashMap<String, Arc<SequenceContainer>>,
 }
 
+// Compile-time checks to ensure MissionDatabase is thread-safe
+const _: () = {
+    const fn assert_send<T: Send>() {}
+    const fn assert_sync<T: Sync>() {}
+    let _ = assert_send::<MissionDatabase>;
+    let _ = assert_sync::<MissionDatabase>;
+};
+
 impl MissionDatabase {
+    pub fn new_from_xtce_str(xtce: &str) -> Result<Self> {
+        let schema = match hermes_xtce::from_str(xtce) {
+            Ok(schema) => schema,
+            Err(err) => return Err(Error::InvalidXtce(format!("Failed to parse XTCE: {}", err))),
+        };
+
+        Self::new(&schema)
+    }
+
     pub fn new(schema: &hermes_xtce::SpaceSystem) -> Result<Self> {
         let root_path = format!("/{}", schema.name);
 
@@ -110,31 +131,31 @@ impl MissionDatabase {
         })
     }
 
-    pub fn telemetry_root(&self) -> &Rc<SequenceContainer> {
+    pub fn telemetry_root(&self) -> &Arc<SequenceContainer> {
         &self.telemetry_root
     }
 
-    pub fn get_telemetry(&self, name: &str) -> Option<&Rc<Parameter>> {
+    pub fn get_telemetry(&self, name: &str) -> Option<&Arc<Parameter>> {
         self.telemetry_parameters.get(name)
     }
 
-    pub fn all_telemetry(&self) -> &HashMap<String, Rc<Parameter>> {
+    pub fn all_telemetry(&self) -> &HashMap<String, Arc<Parameter>> {
         &self.telemetry_parameters
     }
 
-    pub fn get_telemetry_parameter_type(&self, name: &str) -> Option<&Rc<Type>> {
+    pub fn get_telemetry_parameter_type(&self, name: &str) -> Option<&Arc<Type>> {
         self.telemetry_parameter_types.get(name)
     }
 
-    pub fn all_telemetry_parameter_types(&self) -> &HashMap<String, Rc<Type>> {
+    pub fn all_telemetry_parameter_types(&self) -> &HashMap<String, Arc<Type>> {
         &self.telemetry_parameter_types
     }
 
-    pub fn get_telemetry_container(&self, name: &str) -> Option<&Rc<SequenceContainer>> {
+    pub fn get_telemetry_container(&self, name: &str) -> Option<&Arc<SequenceContainer>> {
         self.telemetry_containers.get(name)
     }
 
-    pub fn all_telemetry_containers(&self) -> &HashMap<String, Rc<SequenceContainer>> {
+    pub fn all_telemetry_containers(&self) -> &HashMap<String, Arc<SequenceContainer>> {
         &self.telemetry_containers
     }
 }
