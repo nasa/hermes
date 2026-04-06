@@ -1,4 +1,4 @@
-use crate::container::SequenceContainer;
+use crate::container::SequenceContainerType;
 use crate::{
     BooleanExpression, Comparison, ComparisonCheck, Error, ParameterInstanceRef, ParameterRef,
     ParameterRefOrValue, RelativeTime, RestrictionCriteria, Result,
@@ -934,7 +934,7 @@ pub(crate) fn construct_containers(
     sorted_names: Vec<String>,
     dependencies: HashMap<String, String>,
     parameters: &HashMap<String, Arc<crate::Parameter>>,
-) -> Result<HashMap<String, Arc<SequenceContainer>>> {
+) -> Result<HashMap<String, Arc<SequenceContainerType>>> {
     // Build reverse mapping: parent -> [(child_name, restriction_criteria)]
     let mut parent_to_children: HashMap<String, Vec<(String, RestrictionCriteria)>> =
         HashMap::new();
@@ -977,7 +977,7 @@ pub(crate) fn construct_containers(
         }
     }
 
-    let mut completed: HashMap<String, Arc<SequenceContainer>> = HashMap::new();
+    let mut completed: HashMap<String, Arc<SequenceContainerType>> = HashMap::new();
 
     // Process containers in reverse topological order (children first, then parents)
     for qualified_name in sorted_names.into_iter().rev() {
@@ -989,7 +989,7 @@ pub(crate) fn construct_containers(
         })?;
 
         // Create the container with parameter and container reference resolution
-        let mut container = SequenceContainer::new(
+        let mut container = SequenceContainerType::new(
             unresolved_container.xml.clone(),
             qualified_name.clone(),
             &unresolved_container.space_system_path,

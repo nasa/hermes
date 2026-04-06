@@ -82,7 +82,7 @@ pub struct Repeat {
 }
 
 #[derive(Clone, Debug)]
-pub struct Entry {
+pub struct EntryType {
     pub kind: EntryKind,
     pub repeat: Option<Repeat>,
     pub include_condition: Option<hermes_xtce::MatchCriteriaType>,
@@ -101,7 +101,7 @@ pub enum EntryKind {
 pub struct ContainerRef(pub String);
 
 #[derive(Clone, Debug)]
-pub struct SequenceContainer {
+pub struct SequenceContainerType {
     pub head: Item,
     pub abstract_: bool,
 
@@ -109,13 +109,13 @@ pub struct SequenceContainer {
     pub size_in_bits: Option<IntegerValue>,
 
     ///List of item entries to pack/encode into this container definition.
-    pub entry_list: Vec<Entry>,
+    pub entry_list: Vec<EntryType>,
 
     /// References to child sequence containers
-    pub children: Vec<(RestrictionCriteria, Arc<SequenceContainer>)>,
+    pub children: Vec<(RestrictionCriteria, Arc<SequenceContainerType>)>,
 }
 
-impl SequenceContainer {
+impl SequenceContainerType {
     /// Create a new SequenceContainer without parent/child relationships.
     ///
     /// This constructor is used during the first pass of container construction.
@@ -126,7 +126,7 @@ impl SequenceContainer {
         space_system_path: &str,
         parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
         containers: &std::collections::HashMap<String, crate::util::UnresolvedContainer>,
-    ) -> Result<SequenceContainer> {
+    ) -> Result<SequenceContainerType> {
         // Convert size_in_bits if specified via binary encoding
         let size_in_bits = if let Some(encoding) = &xml.binary_encoding {
             encoding
@@ -145,7 +145,7 @@ impl SequenceContainer {
             .map(|e| convert_entry(e, space_system_path, parameters, containers))
             .collect::<Result<Vec<_>>>()?;
 
-        Ok(SequenceContainer {
+        Ok(SequenceContainerType {
             head: Item {
                 name: xml.name.clone(),
                 qualified_name,
@@ -181,7 +181,7 @@ fn convert_entry(
     space_system_path: &str,
     parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
     containers: &std::collections::HashMap<String, crate::util::UnresolvedContainer>,
-) -> Result<Entry> {
+) -> Result<EntryType> {
     use hermes_xtce::EntryListType as X;
 
     match xml {
@@ -215,7 +215,7 @@ fn convert_entry(
                 )));
             }
 
-            Ok(Entry {
+            Ok(EntryType {
                 kind: EntryKind::ParameterRefEntry(ParameterRef {
                     name: resolved_param_ref,
                     member_path: None,
@@ -251,7 +251,7 @@ fn convert_entry(
                 containers,
             )?;
 
-            Ok(Entry {
+            Ok(EntryType {
                 kind: EntryKind::ContainerRefEntry(ContainerRef(resolved_container_ref)),
                 repeat,
                 include_condition: container_entry.include_condition.clone(),

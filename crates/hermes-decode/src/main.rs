@@ -1,11 +1,13 @@
+mod app;
 mod link;
 mod packets;
+mod terminal;
+mod ui;
+mod widgets;
 
 use crate::link::Link;
 use crate::packets::process_packets;
 use clap::{Parser, ValueEnum};
-use hermes_data::ParameterValue;
-use std::fmt::Display;
 use std::fs;
 use std::sync::Arc;
 use tracing::{error, info};
@@ -53,20 +55,6 @@ fn main() {
     }
 }
 
-struct ParameterValueWrapper<'a>(&'a ParameterValue);
-impl<'a> Display for ParameterValueWrapper<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.0.parameter.head.qualified_name)?;
-        f.write_fmt(format_args!(" raw={}", self.0.raw_value))?;
-
-        if let Some(calibrated_value) = self.0.calibrated_value {
-            f.write_fmt(format_args!(", calibrated={}", calibrated_value))?;
-        }
-
-        Ok(())
-    }
-}
-
 impl TryFrom<&Args> for Link {
     type Error = anyhow::Error;
 
@@ -91,18 +79,11 @@ fn main_result(args: &Args) -> anyhow::Result<()> {
     )?);
 
     let mdb_c = mdb.clone();
+
     let (tx, rx) = std::sync::mpsc::channel();
     let deserialize_thread = std::thread::spawn(move || process_packets(mdb_c.clone(), link, tx));
 
-    for pkt in rx {
-        let container_name = pkt.containers.last().unwrap().head.qualified_name.clone();
-        info!(name = %container_name, "Packet Received");
-        for prms in pkt.parameters.values() {
-            for prm in prms {
-                eprintln!("{}", ParameterValueWrapper(prm));
-            }
-        }
-    }
+    terminal::run(rx)?;
 
     match deserialize_thread.join() {
         Ok(_) => Ok(()),
