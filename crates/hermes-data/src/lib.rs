@@ -30,10 +30,10 @@ pub struct MissionDatabase {
     // command_arguments: HashMap<String, Arc<Argument>>,
     // command_containers: HashMap<String, Arc<SequenceContainer>>,
     // commands: HashMap<String, Arc<MetaCommandType>>,
-    telemetry_root: Arc<SequenceContainer>,
+    telemetry_root: Arc<SequenceContainerType>,
     telemetry_parameter_types: HashMap<String, Arc<Type>>,
     telemetry_parameters: HashMap<String, Arc<Parameter>>,
-    telemetry_containers: HashMap<String, Arc<SequenceContainer>>,
+    telemetry_containers: HashMap<String, Arc<SequenceContainerType>>,
 }
 
 // Compile-time checks to ensure MissionDatabase is thread-safe
@@ -131,7 +131,7 @@ impl MissionDatabase {
         })
     }
 
-    pub fn telemetry_root(&self) -> &Arc<SequenceContainer> {
+    pub fn telemetry_root(&self) -> &Arc<SequenceContainerType> {
         &self.telemetry_root
     }
 
@@ -151,11 +151,11 @@ impl MissionDatabase {
         &self.telemetry_parameter_types
     }
 
-    pub fn get_telemetry_container(&self, name: &str) -> Option<&Arc<SequenceContainer>> {
+    pub fn get_telemetry_container(&self, name: &str) -> Option<&Arc<SequenceContainerType>> {
         self.telemetry_containers.get(name)
     }
 
-    pub fn all_telemetry_containers(&self) -> &HashMap<String, Arc<SequenceContainer>> {
+    pub fn all_telemetry_containers(&self) -> &HashMap<String, Arc<SequenceContainerType>> {
         &self.telemetry_containers
     }
 }
