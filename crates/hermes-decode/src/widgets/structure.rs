@@ -54,12 +54,12 @@ impl StructureEntry {
         }
     }
 
-    fn len(&self) -> usize {
-        match self {
-            StructureEntry::Container { .. } => 1,
-            StructureEntry::Parameter { .. } => 2,
-        }
-    }
+    // fn len(&self) -> usize {
+    //     match self {
+    //         StructureEntry::Container { .. } => 1,
+    //         StructureEntry::Parameter { .. } => 2,
+    //     }
+    // }
 }
 
 enum DepthSpan {
@@ -71,9 +71,9 @@ enum DepthSpan {
 impl<'a> Into<Span<'a>> for DepthSpan {
     fn into(self) -> Span<'a> {
         match self {
-            DepthSpan::Container(_) => Span::raw("┌"),
-            DepthSpan::Parameter(_) => Span::raw("├ "),
-            DepthSpan::ParameterContinue(_) => Span::raw("│   "),
+            DepthSpan::Container(depth) => Span::raw(" ".repeat(depth as usize) + "┌"),
+            DepthSpan::Parameter(depth) => Span::raw(" ".repeat(depth as usize) + "├ "),
+            DepthSpan::ParameterContinue(depth) => Span::raw(" ".repeat(depth as usize) + "│   "),
         }
     }
 }
