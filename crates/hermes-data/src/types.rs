@@ -370,7 +370,7 @@ impl std::fmt::Display for Value {
             Value::String(s) => f.write_fmt(format_args!("\"{}\"", s)),
             Value::Boolean(b) => f.write_str(if *b { "true" } else { "false" }),
             Value::Binary(b) => f.write_fmt(format_args!("{:?}", b)),
-            Value::Enumerated(e) => f.write_fmt(format_args!("{:?}", e)),
+            Value::Enumerated(e) => f.write_fmt(format_args!("{}({})", e.label, e.value)),
             Value::AbsoluteTime(t) => write!(f, "{}ns", t.ns),
             Value::RelativeTime(rt) => match rt {
                 RelativeTime::Forward(d) => write!(f, "+{:?}", d),
@@ -489,7 +489,7 @@ pub(crate) fn convert_parameter_type_set(xml: &hermes_xtce::ParameterTypeSetType
 pub(crate) fn convert_parameter_type_set_with_context(
     xml: &hermes_xtce::ParameterTypeSetType,
     space_system_path: &str,
-    available_types: &std::collections::HashMap<String, std::rc::Rc<Type>>,
+    available_types: &std::collections::HashMap<String, std::sync::Arc<Type>>,
 ) -> Result<Type> {
     match xml {
         hermes_xtce::ParameterTypeSetType::AggregateParameterType(t) => Ok(Type::Aggregate(
@@ -505,8 +505,8 @@ pub(crate) fn convert_parameter_type_set_with_context(
 pub(crate) fn convert_parameter_type_set_with_parameters(
     xml: &hermes_xtce::ParameterTypeSetType,
     space_system_path: &str,
-    available_types: &std::collections::HashMap<String, std::rc::Rc<Type>>,
-    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+    available_types: &std::collections::HashMap<String, std::sync::Arc<Type>>,
+    parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
 ) -> Result<Type> {
     match xml {
         hermes_xtce::ParameterTypeSetType::BinaryParameterType(t) => Ok(Type::Binary(
@@ -844,7 +844,7 @@ fn convert_enumerated_parameter_type(
 fn convert_binary_parameter_type(
     xml: &hermes_xtce::BinaryParameterType,
     space_system_path: &str,
-    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+    parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
 ) -> Result<BinaryType> {
     // Extract encoding information from content
     let encoding = xml
@@ -995,8 +995,8 @@ fn convert_relative_time_parameter_type(
 fn convert_array_parameter_type(
     xml: &hermes_xtce::ArrayParameterType,
     space_system_path: &str,
-    available_types: &std::collections::HashMap<String, std::rc::Rc<Type>>,
-    parameters: &std::collections::HashMap<String, std::rc::Rc<crate::Parameter>>,
+    available_types: &std::collections::HashMap<String, std::sync::Arc<Type>>,
+    parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
 ) -> Result<ArrayType> {
     // Resolve the element type reference
     let resolved_type_name = crate::util::resolve_parameter_type_name(
@@ -1045,7 +1045,7 @@ fn convert_array_parameter_type(
 fn convert_aggregate_parameter_type(
     xml: &hermes_xtce::AggregateParameterType,
     space_system_path: &str,
-    available_types: &std::collections::HashMap<String, std::rc::Rc<Type>>,
+    available_types: &std::collections::HashMap<String, std::sync::Arc<Type>>,
 ) -> Result<AggregateType> {
     // Convert all members
     let members: Result<Vec<Member>> = xml

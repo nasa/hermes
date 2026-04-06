@@ -1,0 +1,12 @@
+[package]
+name = "hermes-decode"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]
+clap = { version = "4.6.0", features = ["derive"] }
+hermes-data = { path = "../hermes-data" }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+anyhow = "1.0.102"

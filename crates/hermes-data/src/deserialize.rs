@@ -1,6 +1,7 @@
 use crate::bit_vec::BitVec;
 use crate::*;
 use hermes_xtce::IntegerEncodingType;
+use std::sync::Arc;
 use tracing::warn;
 
 #[derive(Clone, Debug)]
@@ -10,7 +11,7 @@ pub struct ParameterValue {
     /// The value after calibration has been applied (EU)
     pub calibrated_value: Option<f64>,
     /// The parameter this value refers to
-    pub parameter: Rc<Parameter>,
+    pub parameter: Arc<Parameter>,
     /// The first bit this value resides in the parent container
     pub start_bit: usize,
     /// The last bit this value resides in the parent container
@@ -21,7 +22,7 @@ struct Context<'a> {
     db: &'a MissionDatabase,
     data: BitVec<'a>,
     position: usize,
-    containers: Vec<Rc<SequenceContainer>>,
+    containers: Vec<Arc<SequenceContainer>>,
     parameters: HashMap<String, Vec<ParameterValue>>,
 }
 
@@ -309,9 +310,12 @@ impl AggregateType {
 
 impl EnumeratedType {
     fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
-        let Value::SignedInteger(raw) = self.encoding.deserialize(ctx)? else {
-            unreachable!()
+        let raw = match self.encoding.deserialize(ctx)? {
+            Value::SignedInteger(v) => v,
+            Value::UnsignedInteger(v) => v as i64,
+            _ => unreachable!(),
         };
+
         match self.enumeration_list.iter().find_map(|item| {
             if item.value == raw {
                 Some(Value::Enumerated(item.clone().into()))
@@ -325,18 +329,46 @@ impl EnumeratedType {
     }
 }
 
-// impl ArrayType {
-//     fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
-//         let mut members = Vec::new();
-//         let mut current = &mut members;
-//
-//         for dim in &self.dimensions {
-//
-//         }
-//
-//         Ok(Value::Array(members))
-//     }
-// }
+impl ArrayType {
+    fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
+        let mut dims = Vec::new();
+        for dim in &self.dimensions {
+            let start = dim.starting_index.get(ctx)?;
+            let end = dim.ending_index.get(ctx)?;
+            dims.push(end - start + 1);
+        }
+
+        let total: i64 = dims.iter().product();
+
+        let mut flat = Vec::new();
+        for _ in 0..total {
+            flat.push(self.element_type.deserialize(ctx)?);
+        }
+
+        // TODO Figure out how to handle multi-dimensional arrays
+        Ok(Value::Array(flat))
+    }
+}
+
+impl AbsoluteTimeType {
+    fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
+        // TODO(tumbar) Convert this to an absolute time type
+        match &self.encoding {
+            TimeEncoding::Integer(ty) => ty.deserialize(ctx),
+            TimeEncoding::String(ty) => ty.deserialize(ctx),
+        }
+    }
+}
+
+impl RelativeTimeType {
+    fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
+        // TODO(tumbar) Convert this to an relative time type
+        match &self.encoding {
+            TimeEncoding::Integer(ty) => ty.deserialize(ctx),
+            TimeEncoding::String(ty) => ty.deserialize(ctx),
+        }
+    }
+}
 
 impl Type {
     fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
@@ -348,9 +380,9 @@ impl Type {
             Type::Binary(ty) => ty.deserialize(ctx),
             Type::Aggregate(ty) => ty.deserialize(ctx),
             Type::Enumerated(ty) => ty.deserialize(ctx),
-            Type::AbsoluteTime(_) => todo!("Absolute time type not yet implemented"),
-            Type::RelativeTime(_) => todo!("Relative time type not yet implemented"),
-            Type::Array(_) => todo!("Array type not yet implemented"),
+            Type::AbsoluteTime(ty) => ty.deserialize(ctx),
+            Type::RelativeTime(ty) => ty.deserialize(ctx),
+            Type::Array(ty) => ty.deserialize(ctx),
         }
     }
 
@@ -593,7 +625,7 @@ impl SequenceContainer {
 
 pub struct Packet {
     pub raw: Vec<u8>,
-    pub containers: Vec<Rc<SequenceContainer>>,
+    pub containers: Vec<Arc<SequenceContainer>>,
     pub parameters: HashMap<String, Vec<ParameterValue>>,
 }
 
@@ -603,7 +635,7 @@ impl MissionDatabase {
         let (parameters, containers) = {
             let mut ctx = Context {
                 db: self,
-                data: BitVec::new(&data, 0),
+                data: BitVec::from_bytes(&data),
                 position: 0,
                 parameters: Default::default(),
                 containers: vec![root.clone()],

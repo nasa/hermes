@@ -1,12 +1,12 @@
 use crate::Type;
 use crate::container::Item;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug)]
 pub struct Parameter {
     pub head: Item,
     /// Data type of this parameter
-    pub type_: Rc<Type>,
+    pub type_: Arc<Type>,
     ///Describes extended properties/attributes of Parameter definitions.
     pub properties: Option<hermes_xtce::ParameterPropertiesType>,
 }
@@ -14,5 +14,5 @@ pub struct Parameter {
 #[derive(Clone, Debug)]
 pub struct Argument {
     pub head: Item,
-    pub type_: Rc<Type>,
+    pub type_: Arc<Type>,
 }

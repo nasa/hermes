@@ -5,7 +5,6 @@ edition.workspace = true
 authors.workspace = true
 
 [dependencies]
-ygw = "0.8.0"
 hermes-pb = { path = "../hermes-pb" }
 hermes-server = { path = "../hermes-server" }
 yamcs-http = { path = "../yamcs-http", features = ["websocket"] }
@@ -19,4 +18,3 @@ base64 = "0.22"
 clap = { version = "4", features = ["derive"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-tokio-util = "0.7.18"

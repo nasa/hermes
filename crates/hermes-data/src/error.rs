@@ -40,4 +40,7 @@ pub enum Error {
 
     #[error("Invalid comparison '{0}' between values: {1}, {2}")]
     InvalidComparison(hermes_xtce::ComparisonOperatorsType, Value, Value),
+    
+    #[error("Mismatching checksum, computed {0}, received {1}")]
+    ChecksumMismatch(u16, u16)
 }

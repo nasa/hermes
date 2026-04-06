@@ -17,14 +17,13 @@ use crate::ByteOrder;
 /// Little endian:
 /// `BBBBAAAA CCCCBBBB`
 ///
-pub(crate) struct BitVec<'a> {
+pub struct BitVec<'a> {
     buffer: &'a [u8],
-    offset: usize,
 }
 
 impl<'a> BitVec<'a> {
-    pub(crate) fn new(buffer: &'a [u8], offset: usize) -> Self {
-        Self { buffer, offset }
+    pub fn from_bytes(buffer: &'a [u8]) -> Self {
+        Self { buffer }
     }
 
     fn get_be(&self, bit_offset: usize, bit_size: usize) -> u64 {
@@ -103,15 +102,15 @@ impl<'a> BitVec<'a> {
         result
     }
 
-    pub(crate) fn get(&self, bit_offset: usize, bit_size: usize, order: ByteOrder) -> u64 {
+    pub fn get(&self, bit_offset: usize, bit_size: usize, order: ByteOrder) -> u64 {
         match order {
-            ByteOrder::LittleEndian => self.get_le(bit_offset + self.offset, bit_size),
-            ByteOrder::BigEndian => self.get_be(bit_offset + self.offset, bit_size),
+            ByteOrder::LittleEndian => self.get_le(bit_offset, bit_size),
+            ByteOrder::BigEndian => self.get_be(bit_offset, bit_size),
         }
     }
 
-    pub(crate) fn read(&self, bit_offset: usize, num_bytes: usize) -> Vec<u8> {
-        let bit_offset = bit_offset + self.offset;
+    pub fn read(&self, bit_offset: usize, num_bytes: usize) -> Vec<u8> {
+        let bit_offset = bit_offset;
 
         // Nominally we will never need to do any shifts since strings should be aligned to 8-bits
         let shift = bit_offset % 8;
@@ -126,10 +125,7 @@ impl<'a> BitVec<'a> {
                 .collect()
         } else {
             // No shift needed, return the data (fast)
-            (start..(start + num_bytes))
-                .into_iter()
-                .map(|i| self.buffer[i])
-                .collect()
+            self.buffer[start..(start + num_bytes)].to_vec()
         }
     }
 }
@@ -140,12 +136,12 @@ mod tests {
 
     #[test]
     fn test_big_endian() {
-        let v = BitVec::new(&[0b1010_0011, 0b1100_1111], 0);
+        let v = BitVec::from_bytes(&[0b1010_0011, 0b1100_1111]);
         assert_eq!(v.get_be(0, 4), 0b1010);
         assert_eq!(v.get_be(4, 8), 0b0011_1100);
         assert_eq!(v.get_be(12, 4), 0b1111);
 
-        let v = BitVec::new(&[0b1011_0011, 0b1110_0101, 0b0110_0011, 0b1111_0000], 0);
+        let v = BitVec::from_bytes(&[0b1011_0011, 0b1110_0101, 0b0110_0011, 0b1111_0000]);
         assert_eq!(v.get_be(0, 3), 0b101);
         assert_eq!(v.get_be(3, 10), 0b10_0111_1100);
         assert_eq!(v.get_be(13, 19), 0b101_0110_0011_1111_0000);
@@ -153,12 +149,12 @@ mod tests {
 
     #[test]
     fn test_little_endian() {
-        let v = BitVec::new(&[0b1010_0011, 0b1100_1111], 0);
+        let v = BitVec::from_bytes(&[0b1010_0011, 0b1100_1111]);
         assert_eq!(v.get_le(0, 4), 0b0011);
         assert_eq!(v.get_le(4, 8), 0b1111_1010);
         assert_eq!(v.get_le(12, 4), 0b1100);
 
-        let v = BitVec::new(&[0b1011_0011, 0b1110_0101, 0b0110_0011, 0b1111_0000], 0);
+        let v = BitVec::from_bytes(&[0b1011_0011, 0b1110_0101, 0b0110_0011, 0b1111_0000]);
         assert_eq!(v.get_le(0, 3), 0b011);
         assert_eq!(v.get_le(3, 10), 0b00_10110110);
         assert_eq!(v.get_le(13, 19), 0b111_1000_0011_0001_1111);
