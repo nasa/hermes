@@ -57,7 +57,7 @@ pub struct Packet {
 }
 
 impl MissionDatabase {
-    pub fn deserialize(&self, data: Vec<u8>) -> crate::Result<Packet> {
+    pub fn deserialize(&self, data: &[u8]) -> crate::Result<Packet> {
         let now = Instant::now();
         let root = &self.telemetry_root;
 
@@ -68,9 +68,6 @@ impl MissionDatabase {
         root.deserialize(&mut ctx)?;
         ctx.finish_container_entry(vec![], self.telemetry_root.clone());
 
-        // FIXME(tumbar) This is not very clean, fix it up
-        let mut packet = ctx.finish(now);
-        packet.raw = data;
-        Ok(packet)
+        ctx.finish(now)
     }
 }

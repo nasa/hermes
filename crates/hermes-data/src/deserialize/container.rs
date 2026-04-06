@@ -73,7 +73,6 @@ impl SequenceContainerType {
                     child.deserialize(ctx)?;
 
                     ctx.finish_container_entry(parent, child.clone());
-                    ctx.set_packet_name(child.head.name.clone());
                     break;
                 }
             }

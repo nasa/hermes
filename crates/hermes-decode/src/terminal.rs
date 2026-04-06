@@ -3,7 +3,7 @@ use crate::ui;
 use anyhow::Result;
 use hermes_data::Packet;
 use ratatui::backend::{Backend, CrosstermBackend};
-use ratatui::crossterm::event::{DisableMouseCapture, EnableMouseCapture, KeyCode, KeyModifiers};
+use ratatui::crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
 };
@@ -18,7 +18,7 @@ pub fn run(packets: Receiver<Packet>) -> Result<()> {
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
@@ -26,7 +26,7 @@ pub fn run(packets: Receiver<Packet>) -> Result<()> {
     panic::set_hook(Box::new(move |panic_info| {
         // Restore terminal state before printing the panic message
         let mut stdout = io::stdout();
-        execute!(stdout, LeaveAlternateScreen, DisableMouseCapture).unwrap();
+        execute!(stdout, LeaveAlternateScreen).unwrap();
         disable_raw_mode().unwrap();
 
         // Call the default hook to print the standard panic message/stack trace
@@ -39,11 +39,7 @@ pub fn run(packets: Receiver<Packet>) -> Result<()> {
 
     // restore terminal
     disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
+    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
     terminal.show_cursor()?;
 
     if let Err(err) = app_result {

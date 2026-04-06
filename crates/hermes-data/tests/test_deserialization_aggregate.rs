@@ -87,7 +87,7 @@ fn test_deserialize_with_aggregate_member_restriction() {
 
     let data = vec![0x00, 0x54, 0x24, 0x68, 0xAC, 0xF0];
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify the aggregate parameter was deserialized
     let packet_id = packet
@@ -207,7 +207,7 @@ fn test_deserialize_with_aggregate_and_condition() {
     // Header: Version=1 (001), Type=5 (00101) = 0b001_00101 = 0x25
     let data = vec![0x25, 0xAB]; // Header + Data
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize packet");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize packet");
 
     let header = packet
         .parameters
@@ -289,7 +289,7 @@ fn test_deserialize_aggregate_nested_members() {
     // Create packet data: ID=0x01, Inner.X=0x02, Inner.Y=0x03
     let data = vec![0x01, 0x02, 0x03];
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     let outer = packet
         .parameters

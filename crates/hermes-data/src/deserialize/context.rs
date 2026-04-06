@@ -1,7 +1,8 @@
 use crate::bit_vec::BitVec;
 use crate::{
     ByteOrder, Entry, Error, MissionDatabase, Packet, Parameter, ParameterInstanceRef,
-    ParameterRef, ParameterValue, SequenceContainer, SequenceContainerType, Value, VariableSize,
+    ParameterRef, ParameterValue, Result, SequenceContainer, SequenceContainerType, Value,
+    VariableSize,
 };
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -11,7 +12,7 @@ pub(crate) struct Context<'a> {
     pub db: &'a MissionDatabase,
     data: BitVec<'a>,
     position: usize,
-    packet_name: String,
+    packet_name: Option<String>,
     parameters: HashMap<String, Vec<Arc<ParameterValue>>>,
     entry_start: Vec<usize>,
     entries: Vec<Entry>,
@@ -23,27 +24,36 @@ impl<'a> Context<'a> {
             db,
             data,
             position: 0,
-            packet_name: "".to_string(),
+            packet_name: None,
             parameters: Default::default(),
             entry_start: vec![0],
             entries: vec![],
         }
     }
 
-    pub(crate) fn finish(mut self, ert: Instant) -> Packet {
+    pub(crate) fn finish(mut self, ert: Instant) -> Result<Packet> {
         assert_eq!(self.entries.len(), 1);
 
         let root = match self.entries.pop().unwrap() {
             Entry::Container(c) => c,
-            Entry::Parameter(_) => panic!("Root entry should be a container")
+            Entry::Parameter(_) => panic!("Root entry should be a container"),
         };
 
-        Packet {
-            name: self.packet_name,
-            raw: Vec::new(),
-            parameters: self.parameters,
-            root,
-            ert,
+        let len = if root.end_bit % 8 == 0 {
+            root.end_bit / 8
+        } else {
+            root.end_bit / 8 + 1
+        };
+
+        match self.packet_name {
+            None => Err(Error::NotAPacket(len)),
+            Some(name) => Ok(Packet {
+                name,
+                raw: self.data.read(0, len),
+                parameters: self.parameters,
+                root,
+                ert,
+            }),
         }
     }
 
@@ -97,6 +107,10 @@ impl<'a> Context<'a> {
         let start_bit = self.entry_start.pop().unwrap();
         let end_bit = self.position;
 
+        if !container.abstract_ {
+            self.packet_name = Some(container.head.name.clone());
+        }
+
         self.entries
             .push(Entry::Container(Arc::new(SequenceContainer {
                 start_bit,
@@ -104,10 +118,6 @@ impl<'a> Context<'a> {
                 container,
                 entries,
             })));
-    }
-
-    pub(crate) fn set_packet_name(&mut self, name: String) {
-        self.packet_name = name;
     }
 
     pub(crate) fn get_position(&self) -> usize {
@@ -118,12 +128,16 @@ impl<'a> Context<'a> {
         self.position = position;
     }
 
-    pub(crate) fn get_bits(&mut self, num_bits: usize, order: ByteOrder) -> u64 {
+    pub(crate) fn get_bits(&mut self, num_bits: usize, order: ByteOrder) -> Result<u64> {
         assert!(num_bits <= 64, "Invalid bit count {}", num_bits);
 
-        let r = self.data.get(self.position, num_bits, order);
-        self.position += num_bits;
-        r
+        if (self.position + num_bits) / 8 + 1 >= self.data.len() {
+            Err(Error::Eos)
+        } else {
+            let r = self.data.get(self.position, num_bits, order);
+            self.position += num_bits;
+            Ok(r)
+        }
     }
 
     pub(crate) fn get_data(&mut self, num_bytes: usize) -> Vec<u8> {
@@ -132,7 +146,7 @@ impl<'a> Context<'a> {
         r
     }
 
-    pub(crate) fn get_parameter_value(&self, r: &ParameterRef) -> crate::Result<&ParameterValue> {
+    pub(crate) fn get_parameter_value(&self, r: &ParameterRef) -> Result<&ParameterValue> {
         // r.name should already be a fully qualified name after loading
         match self.parameters.get(&r.name) {
             None => Err(Error::ParameterNotFound(r.name.to_string())),
@@ -140,7 +154,7 @@ impl<'a> Context<'a> {
         }
     }
 
-    pub(crate) fn get_parameter_instance(&self, r: &ParameterInstanceRef) -> crate::Result<Value> {
+    pub(crate) fn get_parameter_instance(&self, r: &ParameterInstanceRef) -> Result<Value> {
         let param_value = self.get_parameter_value(&r.parameter)?;
 
         // If there's a member path, navigate to the member value
@@ -179,10 +193,7 @@ impl<'a> Context<'a> {
         }
     }
 
-    pub(crate) fn get_parameter_instance_num(
-        &self,
-        r: &ParameterInstanceRef,
-    ) -> crate::Result<f64> {
+    pub(crate) fn get_parameter_instance_num(&self, r: &ParameterInstanceRef) -> Result<f64> {
         let value = self.get_parameter_instance(&r)?;
         match &value {
             Value::UnsignedInteger(v) => Ok(*v as f64),
@@ -195,7 +206,7 @@ impl<'a> Context<'a> {
         }
     }
 
-    pub(crate) fn read_variable_size(&mut self, r: &VariableSize) -> crate::Result<Vec<u8>> {
+    pub(crate) fn read_variable_size(&mut self, r: &VariableSize) -> Result<Vec<u8>> {
         match r {
             VariableSize::Fixed(size) => Ok(self.get_data(*size)),
             VariableSize::DynamicParameterRef(ref_) => {
@@ -226,7 +237,7 @@ impl<'a> Context<'a> {
                         break;
                     }
 
-                    let c = self.get_bits(8, ByteOrder::BigEndian) as u8;
+                    let c = self.get_bits(8, ByteOrder::BigEndian)? as u8;
                     if c == *chr {
                         break;
                     } else {

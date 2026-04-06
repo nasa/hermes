@@ -24,13 +24,27 @@ pub fn process_packets(
             }
         };
 
-        match mdb.deserialize(tm.payload) {
-            Ok(packet) => match out.send(packet) {
-                Ok(_) => {}
-                Err(_) => break,
-            },
-            Err(err) => {
-                warn!("Failed to deserialize packet: {}", err);
+        let mut payload: &[u8] = &tm.payload;
+        while payload.len() > 0 {
+            match mdb.deserialize(payload) {
+                Ok(packet) => {
+                    payload = &payload[packet.raw.len()..];
+                    match out.send(packet) {
+                        Ok(_) => {}
+                        Err(_) => return Ok(()),
+                    }
+                }
+                Err(hermes_data::Error::Eos) => {
+                    // Not a problem
+                    break;
+                }
+                Err(hermes_data::Error::NotAPacket(len)) => {
+                    // Idle data
+                    payload = &payload[len..];
+                }
+                Err(err) => {
+                    warn!("Failed to deserialize packet: {}", err);
+                }
             }
         }
     }

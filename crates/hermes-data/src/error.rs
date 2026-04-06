@@ -35,12 +35,18 @@ pub enum Error {
     #[error("No enumerated entry for {0} found")]
     EnumeratedEntryNotFound(i64),
 
+    #[error("End of stream")]
+    Eos,
+
+    #[error("Not a packet")]
+    NotAPacket(usize),
+
     #[error("Operation Not Implemented: {0}")]
     NotImplemented(&'static str),
 
     #[error("Invalid comparison '{0}' between values: {1}, {2}")]
     InvalidComparison(hermes_xtce::ComparisonOperatorsType, Value, Value),
-    
+
     #[error("Mismatching checksum, computed {0}, received {1}")]
-    ChecksumMismatch(u16, u16)
+    ChecksumMismatch(u16, u16),
 }

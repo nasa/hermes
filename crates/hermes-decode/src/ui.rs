@@ -48,7 +48,12 @@ pub fn render(frame: &mut Frame, app: &mut App) {
         &mut app.selected_packet,
     );
 
-    if let Some(packet) = r_packets.get(app.selected_packet.offset()) {
+    if let Some(packet) = app
+        .selected_packet
+        .selected()
+        .map(|index| r_packets.get(index))
+        .flatten()
+    {
         let structure_block = Block::bordered()
             .title(Line::styled(
                 " Packet Structure ",
