@@ -25,7 +25,7 @@ impl IntegerValue {
 
 impl IntegerType {
     pub(crate) fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
-        let r = ctx.get_bits(self.size_in_bits as usize, self.byte_order);
+        let r = ctx.get_bits(self.size_in_bits as usize, self.byte_order)?;
         match (&self.encoding, self.signed) {
             (IntegerEncodingType::Unsigned, _) => Ok(Value::UnsignedInteger(r)),
             (IntegerEncodingType::SignMagnitude, true) => {
@@ -86,12 +86,12 @@ impl FloatType {
     pub(crate) fn deserialize(&self, ctx: &mut Context) -> Result<Value> {
         match self.size_in_bits {
             FloatSize::F32 => {
-                let raw = ctx.get_bits(32, self.byte_order) as u32;
+                let raw = ctx.get_bits(32, self.byte_order)? as u32;
                 let f: f32 = f32::from_bits(raw);
                 Ok(Value::Float(f as f64))
             }
             FloatSize::F64 => {
-                let raw = ctx.get_bits(64, self.byte_order);
+                let raw = ctx.get_bits(64, self.byte_order)?;
                 Ok(Value::Float(f64::from_bits(raw)))
             }
         }

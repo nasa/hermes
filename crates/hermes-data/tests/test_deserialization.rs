@@ -60,7 +60,7 @@ fn test_deserialize_unsigned_integers() {
     // Create test data: U8=0x42, U16=0x1234, U32=0x12345678
     let data = vec![0x42, 0x12, 0x34, 0x12, 0x34, 0x56, 0x78];
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify Field1 (U8)
     let field1 = packet
@@ -123,7 +123,7 @@ fn test_deserialize_signed_integers_twos_complement() {
     // Create test data: I8=42, I8=-10, I16=-1000
     let data = vec![42, 0xF6, 0xFC, 0x18]; // -10 = 0xF6, -1000 = 0xFC18
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify Positive
     let positive = packet
@@ -185,7 +185,7 @@ fn test_deserialize_floats() {
     ]
     .concat();
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify Temperature
     let temperature = packet
@@ -227,7 +227,7 @@ fn test_deserialize_boolean_integer_encoding() {
     // Create test data: Flag1=true (1), Flag2=false (0)
     let data = vec![1, 0];
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify Flag1
     let flag1 = packet
@@ -273,7 +273,7 @@ fn test_deserialize_string_fixed_size() {
     // Create test data: "Hello" padded to 8 bytes
     let data = b"Hello\0\0\0".to_vec();
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify Message
     let message = packet
@@ -310,7 +310,7 @@ fn test_deserialize_string_leading_size() {
     let mut data = vec![0x00, 0x05]; // length = 5 bytes
     data.extend_from_slice(b"World");
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify DynamicMessage
     let message = packet
@@ -344,7 +344,7 @@ fn test_deserialize_string_termination_char() {
     // Create test data: "Test\0" (null-terminated)
     let data = b"Test\0".to_vec();
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify CString
     let cstring = packet
@@ -379,7 +379,7 @@ fn test_deserialize_binary_fixed_size() {
     let data = vec![0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08];
 
     let packet = mdb
-        .deserialize(data.clone())
+        .deserialize(&data)
         .expect("Failed to deserialize");
 
     // Verify RawData
@@ -415,7 +415,7 @@ fn test_deserialize_little_endian() {
     // Create test data: U16=0x1234 (LE), U32=0x12345678 (LE)
     let data = vec![0x34, 0x12, 0x78, 0x56, 0x34, 0x12];
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify Value16
     let value16 = packet
@@ -471,7 +471,7 @@ fn test_deserialize_bit_fields() {
     // Binary: 101 11010 1100 0011 = 10111010 11000011 = 0xBA 0xC3
     let data = vec![0b10111010, 0b11000011];
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify Field1 (3 bits = 0b101 = 5)
     let field1 = packet
@@ -538,7 +538,7 @@ fn test_deserialize_with_calibration() {
     // Create test data: raw value = 1000, calibrated should be 1000 * 0.1 - 50 = 50.0
     let data = vec![0x03, 0xE8]; // 1000 in big endian
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify Temperature
     let temperature = packet
@@ -607,7 +607,7 @@ fn test_deserialize_repeat_entry() {
     // Create test data: Count=3, then three U16 values: 0x1111, 0x2222, 0x3333
     let data = vec![0x03, 0x11, 0x11, 0x22, 0x22, 0x33, 0x33];
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify Count
     let count = packet
@@ -661,7 +661,7 @@ fn test_deserialize_parameter_bit_positions() {
 
     let data = vec![0x12, 0x34];
 
-    let packet = mdb.deserialize(data).expect("Failed to deserialize");
+    let packet = mdb.deserialize(&data).expect("Failed to deserialize");
 
     // Verify Field1 bit positions
     let field1 = packet

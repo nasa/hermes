@@ -22,6 +22,10 @@ pub struct BitVec<'a> {
 }
 
 impl<'a> BitVec<'a> {
+    pub fn len(&self) -> usize {
+        self.buffer.len()
+    }
+
     pub fn from_bytes(buffer: &'a [u8]) -> Self {
         Self { buffer }
     }
