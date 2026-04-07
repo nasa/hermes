@@ -7,6 +7,7 @@ mod framing;
 mod parameter;
 mod types;
 mod util;
+mod xtce;
 
 pub use calibrator::*;
 pub use container::*;
@@ -16,7 +17,7 @@ pub use framing::*;
 pub use parameter::*;
 pub use types::*;
 
-use util::*;
+use xtce::*;
 
 use std::collections::HashMap;
 use std::sync::Arc;

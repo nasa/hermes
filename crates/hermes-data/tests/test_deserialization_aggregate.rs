@@ -207,7 +207,9 @@ fn test_deserialize_with_aggregate_and_condition() {
     // Header: Version=1 (001), Type=5 (00101) = 0b001_00101 = 0x25
     let data = vec![0x25, 0xAB]; // Header + Data
 
-    let packet = mdb.deserialize(&data).expect("Failed to deserialize packet");
+    let packet = mdb
+        .deserialize(&data)
+        .expect("Failed to deserialize packet");
 
     let header = packet
         .parameters
