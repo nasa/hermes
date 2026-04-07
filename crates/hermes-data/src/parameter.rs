@@ -1,5 +1,5 @@
-use crate::Type;
 use crate::container::Item;
+use crate::Type;
 use std::sync::Arc;
 
 #[derive(Clone, Debug)]
