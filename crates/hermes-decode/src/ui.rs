@@ -40,10 +40,9 @@ pub fn render(frame: &mut Frame, app: &mut App) {
     };
 
     let now = Instant::now();
-    let r_packets: Vec<_> = app.packets.iter().rev().collect();
 
     frame.render_stateful_widget(
-        packet_list(&r_packets, app, now),
+        packet_list(&app.packets, app, now),
         layout.packet_list,
         &mut app.selected_packet,
     );
@@ -51,7 +50,7 @@ pub fn render(frame: &mut Frame, app: &mut App) {
     if let Some(packet) = app
         .selected_packet
         .selected()
-        .map(|index| r_packets.get(index))
+        .map(|index| app.packets.get(index))
         .flatten()
     {
         let structure_block = Block::bordered()
@@ -102,7 +101,7 @@ pub struct SelectedBits {
     pub end_bit: usize,
 }
 
-fn packet_list<'a>(packets: &'a Vec<&Packet>, app: &App, now: Instant) -> List<'a> {
+fn packet_list<'a>(packets: &'a Vec<Packet>, app: &App, now: Instant) -> List<'a> {
     List::new(packets.iter().map(|packet| packet_list_item(packet, now)))
         .block(
             Block::bordered()
