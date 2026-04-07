@@ -116,12 +116,11 @@ impl App {
                 }
             };
 
-            self.selected_packet.select_next();
             self.packets.push(packet);
         }
 
-        if self.follow_latest {
-            self.selected_packet.select(Some(0));
+        if self.follow_latest && self.packets.len() > 0 {
+            self.selected_packet.select(Some(self.packets.len() - 1));
         }
 
         // Update the telemetry table with the latest channel values
