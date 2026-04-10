@@ -1,7 +1,6 @@
 /// Functions for traversing the XTCE SpaceSystem tree and collecting items
 use std::collections::HashMap;
 
-
 use super::utils::make_qualified_name;
 
 /// Intermediate structure holding a container during Pass 1 before dependencies are resolved

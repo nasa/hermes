@@ -29,9 +29,6 @@ fn test_load_fprime_xtce_full() {
             tm.parameter_type_set.len(),
         );
 
-        println!(
-            "  - Found {} containers",
-            tm.container_set.len()
-        )
+        println!("  - Found {} containers", tm.container_set.len())
     }
 }

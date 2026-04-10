@@ -2,7 +2,7 @@ use crate::link::Link;
 use anyhow::Result;
 use hermes_data::de::Packet;
 use hermes_data::{MissionDatabase, TmFrame};
-use std::sync::{mpsc, Arc};
+use std::sync::{Arc, mpsc};
 use tracing::warn;
 
 pub fn process_packets(

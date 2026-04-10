@@ -1,5 +1,10 @@
 use crate::util::parse_hex_binary;
-use crate::{AbsoluteTimeType, AggregateType, ArrayType, BinaryType, BooleanEncoding, BooleanType, ByteOrder, Calibrator, Dimension, EnumeratedType, EnumerationEntry, Error, FloatType, IntegerType, IntegerValue, Member, Parameter, RelativeTimeType, Result, StringType, TimeEncoding, TimeSystem, Type, VariableSize};
+use crate::{
+    AbsoluteTimeType, AggregateType, ArrayType, BinaryType, BooleanEncoding, BooleanType,
+    ByteOrder, Calibrator, Dimension, EnumeratedType, EnumerationEntry, Error, FloatType,
+    IntegerType, IntegerValue, Member, Parameter, RelativeTimeType, Result, StringType,
+    TimeEncoding, TimeSystem, Type, VariableSize,
+};
 
 pub(crate) fn convert_parameter_type_set(xml: &hermes_xtce::ParameterTypeSetType) -> Result<Type> {
     match xml {

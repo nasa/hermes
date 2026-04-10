@@ -11,7 +11,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing subscriber
     tracing_subscriber::fmt::init();
 
-    let base_url = std::env::var("YAMCS_URL").unwrap_or_else(|_| "http://localhost:8090".to_string());
+    let base_url =
+        std::env::var("YAMCS_URL").unwrap_or_else(|_| "http://localhost:8090".to_string());
 
     // Get auth token from environment variable
     let token = std::env::var("YAMCS_TOKEN").ok();

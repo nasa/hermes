@@ -2,18 +2,17 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-
 use super::collection::{UnresolvedContainer, UnresolvedParameter, UnresolvedParameterType};
 use super::conversion::convert_restriction_criteria;
 use super::resolution::{resolve_container_reference, resolve_parameter_type_name};
 use crate::de::{RestrictionCriteria, SequenceContainerType};
-use crate::{Item, Parameter};
 use crate::xtce::container::convert_entry;
 use crate::xtce::types::{
     convert_parameter_type_set, convert_parameter_type_set_with_context,
     convert_parameter_type_set_with_parameters,
 };
 use crate::{Error, Result};
+use crate::{Item, Parameter};
 
 /// Construct parameter types in multiple passes:
 /// Pass 1: Simple types (int, float, string, bool, enum, time) - no dependencies
@@ -70,35 +69,68 @@ pub(crate) fn construct_parameter_types_pass1(
 }
 
 /// Pass 2: Construct Aggregate types (after simple types are available)
+/// This uses multi-pass construction to handle dependencies between aggregate types.
 pub(crate) fn construct_parameter_types_pass2_aggregates(
     deferred_aggregate_types: Vec<(String, UnresolvedParameterType)>,
     completed: &mut HashMap<String, Arc<crate::Type>>,
 ) -> Result<()> {
-    for (qualified_name, unresolved_type) in deferred_aggregate_types {
-        match convert_parameter_type_set_with_context(
-            &unresolved_type.xml,
-            &unresolved_type.space_system_path,
-            &completed,
-        ) {
-            Ok(type_) => {
-                completed.insert(qualified_name, Arc::new(type_));
-            }
-            Err(Error::NotImplemented(msg)) => {
-                tracing::warn!(
-                    "Skipping unsupported parameter type '{}': {}",
-                    qualified_name,
-                    msg
-                );
-            }
-            Err(e) => {
-                tracing::warn!(
-                    "Failed to construct aggregate type '{}': {}",
-                    qualified_name,
-                    e
-                );
+    let mut remaining = deferred_aggregate_types;
+    let mut failed_permanently = Vec::new();
+
+    // Keep trying until we make no more progress
+    while !remaining.is_empty() {
+        let mut still_deferred = Vec::new();
+        let mut made_progress = false;
+
+        for (qualified_name, unresolved_type) in remaining {
+            match convert_parameter_type_set_with_context(
+                &unresolved_type.xml,
+                &unresolved_type.space_system_path,
+                &completed,
+            ) {
+                Ok(type_) => {
+                    completed.insert(qualified_name, Arc::new(type_));
+                    made_progress = true;
+                }
+                Err(Error::NotImplemented(msg)) => {
+                    // These are permanently unsupported types
+                    tracing::warn!(
+                        "Skipping unsupported parameter type '{}': {}",
+                        qualified_name,
+                        msg
+                    );
+                    failed_permanently.push(qualified_name);
+                }
+                Err(Error::InvalidXtce(ref msg)) if msg.contains("not found") => {
+                    // This is likely a missing dependency - defer for next pass
+                    still_deferred.push((qualified_name, unresolved_type));
+                }
+                Err(e) => {
+                    // Other errors should be logged but not retried
+                    tracing::warn!(
+                        "Failed to construct aggregate type '{}': {}",
+                        qualified_name,
+                        e
+                    );
+                    failed_permanently.push(qualified_name);
+                }
             }
         }
+
+        // If we didn't make progress and still have deferred types, they must have unresolvable dependencies
+        if !made_progress && !still_deferred.is_empty() {
+            for (qualified_name, _) in still_deferred {
+                tracing::warn!(
+                    "Failed to construct aggregate type '{}': unresolvable type dependencies",
+                    qualified_name
+                );
+            }
+            break;
+        }
+
+        remaining = still_deferred;
     }
+
     Ok(())
 }
 

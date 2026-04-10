@@ -1,5 +1,6 @@
 use crate::de::Context;
 use crate::de::ParameterRefOrValue;
+use crate::error::InvalidComparison;
 use crate::{Error, ParameterInstanceRef, Value};
 use tracing::warn;
 
@@ -89,23 +90,23 @@ fn comparison(
         (Value::Enumerated(l), Value::Enumerated(r)) => Ok(builtin_comparison(op, l, r)),
 
         // TODO(tumbar) We can probably implement more comparisons
-        (_, _) => Err(Error::InvalidComparison(
-            op.clone(),
-            left.clone(),
-            right.clone(),
-        )), // (Value::Array(l), Value::Array(r)) => {
-            //     if l.len() != r.len() || *op != hermes_xtce::ComparisonOperatorsType::Eq {
-            //         Err(Error::InvalidComparison(
-            //             op.clone(),
-            //             left.clone(),
-            //             right.clone(),
-            //         ))
-            //     } else {
-            //         Ok(l.iter()
-            //             .zip(r)
-            //             .all(|(l, r)| comparison(&hermes_xtce::ComparisonOperatorsType::Eq, left, right)))
-            //     }
-            // }
+        (_, _) => Err(Error::InvalidComparison(Box::new(InvalidComparison {
+            op: op.clone(),
+            left: left.clone(),
+            right: right.clone(),
+        }))), // (Value::Array(l), Value::Array(r)) => {
+              //     if l.len() != r.len() || *op != hermes_xtce::ComparisonOperatorsType::Eq {
+              //         Err(Error::InvalidComparison(
+              //             op.clone(),
+              //             left.clone(),
+              //             right.clone(),
+              //         ))
+              //     } else {
+              //         Ok(l.iter()
+              //             .zip(r)
+              //             .all(|(l, r)| comparison(&hermes_xtce::ComparisonOperatorsType::Eq, left, right)))
+              //     }
+              // }
     }
 }
 

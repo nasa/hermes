@@ -131,7 +131,11 @@ impl<'a> Context<'a> {
     pub(crate) fn get_bits(&mut self, num_bits: usize, order: ByteOrder) -> Result<u64> {
         assert!(num_bits <= 64, "Invalid bit count {}", num_bits);
 
-        if (self.position + num_bits) / 8 + 1 >= self.data.len() {
+        let end_pos = self.position + num_bits;
+
+        if (end_pos % 8 == 0) && (end_pos / 8) > self.data.len() {
+            Err(Error::Eos)
+        } else if (end_pos % 8 > 0) && (end_pos / 8) >= self.data.len() {
             Err(Error::Eos)
         } else {
             let r = self.data.get(self.position, num_bits, order);

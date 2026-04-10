@@ -19,9 +19,7 @@ where
 }
 
 /// Deserialize `Option<Enum>` from XML content using $value wrapper pattern.
-pub fn deserialize_optional_enum_content<'de, D, T>(
-    deserializer: D,
-) -> Result<Option<T>, D::Error>
+pub fn deserialize_optional_enum_content<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
 where
     D: Deserializer<'de>,
     T: Deserialize<'de>,

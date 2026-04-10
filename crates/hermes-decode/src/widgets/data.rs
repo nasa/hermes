@@ -97,8 +97,7 @@ impl<'a> StatefulWidget for DataWidgetInner<'a> {
                     if start_bit >= selected_bits.start_bit && end_bit <= selected_bits.end_bit {
                         // This byte is a full subset of the selected region
                         Style::default().fg(Color::White).bg(Color::LightMagenta)
-                    } else if start_bit < selected_bits.end_bit
-                        && selected_bits.start_bit < end_bit
+                    } else if start_bit < selected_bits.end_bit && selected_bits.start_bit < end_bit
                     {
                         // There is _some_ overlap
                         Style::default().fg(Color::White).bg(Color::Magenta)

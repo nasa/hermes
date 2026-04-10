@@ -1,23 +1,15 @@
 use serde::{Deserialize, Serialize};
 
 /// Authentication method for YAMCS connection
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum AuthMethod {
     /// No authentication
+    #[default]
     None,
     /// JWT/Bearer token authentication
     AccessToken(String),
     /// Client certificate authentication
-    ClientCert {
-        cert_path: String,
-        key_path: String,
-    },
-}
-
-impl Default for AuthMethod {
-    fn default() -> Self {
-        AuthMethod::None
-    }
+    ClientCert { cert_path: String, key_path: String },
 }
 
 /// Authentication information from YAMCS server

@@ -16,7 +16,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
     // Create a client (change URL to match your YAMCS server)
-    let base_url = std::env::var("YAMCS_URL").unwrap_or_else(|_| "http://localhost:8090".to_string());
+    let base_url =
+        std::env::var("YAMCS_URL").unwrap_or_else(|_| "http://localhost:8090".to_string());
     tracing::info!("Connecting to YAMCS at {}", base_url);
 
     let client = YamcsClient::new(&base_url)?;
@@ -30,7 +31,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             tracing::info!("Git revision: {}", info.revision);
             tracing::info!("Installed plugins:");
             for plugin in info.plugins {
-                tracing::info!("  - {} v{} ({})", plugin.name, plugin.version, plugin.vendor);
+                tracing::info!(
+                    "  - {} v{} ({})",
+                    plugin.name,
+                    plugin.version,
+                    plugin.vendor
+                );
             }
         }
         Err(e) => {
@@ -42,12 +48,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("=== Authentication Information ===");
     match client.get_auth_info().await {
         Ok(auth_info) => {
-            tracing::info!("Authentication required: {}", auth_info.require_authentication);
+            tracing::info!(
+                "Authentication required: {}",
+                auth_info.require_authentication
+            );
             tracing::info!("SPNEGO enabled: {}", auth_info.spnego);
             if let Some(openid) = auth_info.openid {
                 tracing::info!("OpenID Connect available:");
                 tracing::info!("  Client ID: {}", openid.client_id);
-                tracing::info!("  Authorization endpoint: {}", openid.authorization_endpoint);
+                tracing::info!(
+                    "  Authorization endpoint: {}",
+                    openid.authorization_endpoint
+                );
                 tracing::info!("  Scope: {}", openid.scope);
             }
         }
@@ -66,9 +78,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             tracing::info!("Available processors: {}", sys_info.available_processors);
             tracing::info!("Uptime: {} ms", sys_info.uptime);
 
-            let heap_usage_pct = (sys_info.used_heap_memory as f64 / sys_info.max_heap_memory as f64) * 100.0;
+            let heap_usage_pct =
+                (sys_info.used_heap_memory as f64 / sys_info.max_heap_memory as f64) * 100.0;
             tracing::info!("Memory:");
-            tracing::info!("  Heap: {} / {} MB ({:.1}%)",
+            tracing::info!(
+                "  Heap: {} / {} MB ({:.1}%)",
                 sys_info.used_heap_memory / 1024 / 1024,
                 sys_info.max_heap_memory / 1024 / 1024,
                 heap_usage_pct
@@ -107,7 +121,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(YamcsError::HttpStatus { status: 401, .. }) => {
             tracing::warn!("Not authenticated - user information not available");
-            tracing::info!("To authenticate, use AuthMethod::AccessToken or set up client certificates");
+            tracing::info!(
+                "To authenticate, use AuthMethod::AccessToken or set up client certificates"
+            );
         }
         Err(e) => {
             tracing::error!("Failed to get user info: {}", e);

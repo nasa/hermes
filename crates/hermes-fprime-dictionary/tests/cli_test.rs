@@ -111,7 +111,7 @@ fn test_cli_converts_dictionary() {
     // Verify format string was parsed into fragments
     let format = evt.format.as_ref().expect("No format");
     assert_eq!(format.original, "Critical error: {d}");
-    assert!(format.fragments.len() > 0);
+    assert!(!format.fragments.is_empty());
 
     // Verify telemetry
     assert_eq!(ns.telemetry.len(), 1);
@@ -166,7 +166,9 @@ fn test_lib_and_binary_produce_same_output() {
     // Parse using library
     let lib_dict = parse_fprime_json_dictionary(test_json).expect("Library parse failed");
     let mut lib_buf = Vec::new();
-    lib_dict.encode(&mut lib_buf).expect("Library encode failed");
+    lib_dict
+        .encode(&mut lib_buf)
+        .expect("Library encode failed");
 
     // Parse using binary
     let temp_dir = std::env::temp_dir();

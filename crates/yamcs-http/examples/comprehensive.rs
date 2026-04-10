@@ -106,10 +106,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(page) => {
             if let Some(params) = page.parameters {
                 for param in &params {
-                    tracing::info!(
-                        "   - {} ({:?})",
-                        param.qualified_name, param.data_source
-                    );
+                    tracing::info!("   - {} ({:?})", param.qualified_name, param.data_source);
                 }
             }
             tracing::info!("   Total: {}", page.total_size);
@@ -133,15 +130,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(page) => {
             if let Some(commands) = page.commands {
                 for cmd in &commands {
-                    let abstract_str = if cmd.is_abstract {
-                        " (abstract)"
-                    } else {
-                        ""
-                    };
-                    tracing::info!(
-                        "   - {}{}",
-                        cmd.qualified_name, abstract_str
-                    );
+                    let abstract_str = if cmd.is_abstract { " (abstract)" } else { "" };
+                    tracing::info!("   - {}{}", cmd.qualified_name, abstract_str);
                 }
             }
             tracing::info!("   Total: {}", page.total_size);
@@ -156,7 +146,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             for proc in &processors {
                 tracing::info!(
                     "   - {} (type: {}, commanding: {})",
-                    proc.name, proc.processor_type, proc.has_commanding
+                    proc.name,
+                    proc.processor_type,
+                    proc.has_commanding
                 );
             }
         }
@@ -182,7 +174,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             for event in &events {
                 tracing::info!(
                     "   [{:?}] {}: {}",
-                    event.severity, event.source, event.message
+                    event.severity,
+                    event.source,
+                    event.message
                 );
             }
         }
@@ -191,7 +185,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 9. Alarms
     tracing::info!("\n9. Active Alarms:");
-    match client.get_active_alarms(&instance, &processor, &GetAlarmsOptions::default()).await {
+    match client
+        .get_active_alarms(&instance, &processor, &GetAlarmsOptions::default())
+        .await
+    {
         Ok(alarms) => {
             if alarms.is_empty() {
                 tracing::info!("   No active alarms");
@@ -199,7 +196,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 for alarm in &alarms {
                     tracing::info!(
                         "   [{:?}] {} - seq: {}",
-                        alarm.severity, alarm.id.name, alarm.seq_num
+                        alarm.severity,
+                        alarm.id.name,
+                        alarm.seq_num
                     );
                 }
             }
@@ -209,20 +208,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 10. Global Alarm Status
     tracing::info!("\n10. Global Alarm Status:");
-    match client
-        .get_global_alarm_status(&instance, &processor)
-        .await
-    {
+    match client.get_global_alarm_status(&instance, &processor).await {
         Ok(status) => {
-            tracing::info!("   Unacknowledged: {} (active: {})",
+            tracing::info!(
+                "   Unacknowledged: {} (active: {})",
                 status.unacknowledged_count,
                 status.unacknowledged_active
             );
-            tracing::info!("   Acknowledged: {} (active: {})",
+            tracing::info!(
+                "   Acknowledged: {} (active: {})",
                 status.acknowledged_count,
                 status.acknowledged_active
             );
-            tracing::info!("   Shelved: {} (active: {})",
+            tracing::info!(
+                "   Shelved: {} (active: {})",
                 status.shelved_count,
                 status.shelved_active
             );
@@ -249,7 +248,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 for cmd in &commands {
                     tracing::info!(
                         "   - {} (seq: {}, origin: {})",
-                        cmd.command_name, cmd.sequence_number, cmd.origin
+                        cmd.command_name,
+                        cmd.sequence_number,
+                        cmd.origin
                     );
                 }
             } else {
@@ -261,7 +262,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tracing::info!("\n=== Example Complete ===");
     tracing::info!("\nTip: Set YAMCS_TOKEN environment variable for authenticated access");
-    tracing::info!("Tip: Set YAMCS_INSTANCE and YAMCS_PROCESSOR to target specific instance/processor");
+    tracing::info!(
+        "Tip: Set YAMCS_INSTANCE and YAMCS_PROCESSOR to target specific instance/processor"
+    );
 
     Ok(())
 }

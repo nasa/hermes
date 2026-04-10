@@ -36,46 +36,30 @@ impl NamedObjectId {
 pub enum Value {
     /// Aggregate (struct-like) value
     #[serde(rename_all = "camelCase")]
-    Aggregate {
-        aggregate_value: AggregateValue,
-    },
+    Aggregate { aggregate_value: AggregateValue },
     /// Array of values
     #[serde(rename_all = "camelCase")]
-    Array {
-        array_value: Vec<Value>,
-    },
+    Array { array_value: Vec<Value> },
     /// Binary data (base64 encoded)
     #[serde(rename_all = "camelCase")]
-    Binary {
-        binary_value: String,
-    },
+    Binary { binary_value: String },
     /// Boolean value
     #[serde(rename_all = "camelCase")]
-    Boolean {
-        boolean_value: bool,
-    },
+    Boolean { boolean_value: bool },
     /// 64-bit floating point
     #[serde(rename_all = "camelCase")]
-    Double {
-        double_value: f64,
-    },
+    Double { double_value: f64 },
     /// Enumerated value (string label)
     #[serde(rename_all = "camelCase")]
-    Enumerated {
-        string_value: String,
-    },
+    Enumerated { string_value: String },
     /// 32-bit floating point
     #[serde(rename_all = "camelCase")]
-    Float {
-        float_value: f32,
-    },
+    Float { float_value: f32 },
     /// No value
     None,
     /// Signed 32-bit integer
     #[serde(rename_all = "camelCase")]
-    Sint32 {
-        sint32_value: i32,
-    },
+    Sint32 { sint32_value: i32 },
     /// Signed 64-bit integer
     #[serde(rename_all = "camelCase")]
     Sint64 {
@@ -84,9 +68,7 @@ pub enum Value {
     },
     /// String value
     #[serde(rename_all = "camelCase")]
-    String {
-        string_value: String,
-    },
+    String { string_value: String },
     /// Timestamp (microseconds since Unix epoch)
     #[serde(rename_all = "camelCase")]
     Timestamp {
@@ -95,14 +77,10 @@ pub enum Value {
     },
     /// Unsigned 32-bit integer
     #[serde(rename_all = "camelCase")]
-    Uint32 {
-        uint32_value: u32,
-    },
+    Uint32 { uint32_value: u32 },
     /// Unsigned 64-bit integer
     #[serde(rename_all = "camelCase")]
-    Uint64 {
-        uint64_value: u64,
-    },
+    Uint64 { uint64_value: u64 },
 }
 
 /// Aggregate (struct-like) value containing named fields
@@ -136,7 +114,9 @@ pub enum MonitoringResult {
 impl Value {
     /// Create a boolean value
     pub fn boolean(value: bool) -> Self {
-        Value::Boolean { boolean_value: value }
+        Value::Boolean {
+            boolean_value: value,
+        }
     }
 
     /// Create a string value
@@ -148,7 +128,9 @@ impl Value {
 
     /// Create a double value
     pub fn double(value: f64) -> Self {
-        Value::Double { double_value: value }
+        Value::Double {
+            double_value: value,
+        }
     }
 
     /// Create a float value
@@ -158,27 +140,37 @@ impl Value {
 
     /// Create a signed 32-bit integer value
     pub fn sint32(value: i32) -> Self {
-        Value::Sint32 { sint32_value: value }
+        Value::Sint32 {
+            sint32_value: value,
+        }
     }
 
     /// Create a signed 64-bit integer value
     pub fn sint64(value: i64) -> Self {
-        Value::Sint64 { sint64_value: value }
+        Value::Sint64 {
+            sint64_value: value,
+        }
     }
 
     /// Create an unsigned 32-bit integer value
     pub fn uint32(value: u32) -> Self {
-        Value::Uint32 { uint32_value: value }
+        Value::Uint32 {
+            uint32_value: value,
+        }
     }
 
     /// Create an unsigned 64-bit integer value
     pub fn uint64(value: u64) -> Self {
-        Value::Uint64 { uint64_value: value }
+        Value::Uint64 {
+            uint64_value: value,
+        }
     }
 
     /// Create a timestamp value
     pub fn timestamp(value: i64) -> Self {
-        Value::Timestamp { timestamp_value: value }
+        Value::Timestamp {
+            timestamp_value: value,
+        }
     }
 
     /// Create a binary value (base64 encoded)
@@ -190,7 +182,9 @@ impl Value {
 
     /// Create an array value
     pub fn array(values: Vec<Value>) -> Self {
-        Value::Array { array_value: values }
+        Value::Array {
+            array_value: values,
+        }
     }
 }
 

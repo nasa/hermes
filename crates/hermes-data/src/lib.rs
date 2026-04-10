@@ -3,16 +3,16 @@ mod command;
 pub mod de;
 mod error;
 mod framing;
+mod item;
 mod types;
 mod util;
 mod xtce;
-mod item;
 
 pub use calibrator::*;
 pub use error::{Error, Result};
 pub use framing::*;
-pub use types::*;
 pub use item::*;
+pub use types::*;
 
 use std::collections::HashMap;
 use std::sync::Arc;
