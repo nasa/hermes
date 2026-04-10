@@ -68,10 +68,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Create the service
-    let service = YamcsApiService::new(
-        yamcs_client,
-        args.yamcs_processor.clone(),
-    );
+    let service = YamcsApiService::new(yamcs_client, args.yamcs_processor.clone());
 
     // Parse bind address
     let addr: SocketAddr = args.bind_addr.parse().map_err(|e| {

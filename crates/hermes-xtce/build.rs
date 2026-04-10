@@ -15,15 +15,15 @@ mod codegen {
     use std::env::var;
     use std::fs::write;
     use std::path::{Path, PathBuf};
+    use xsd_parser::SubModules;
     use xsd_parser::config::{RenderStepConfig, RendererFlags};
+    use xsd_parser::models::Naming as NamingImpl;
     use xsd_parser::models::code::IdentPath;
     use xsd_parser::models::data::{ComplexData, DataTypeVariant};
-    use xsd_parser::models::Naming as NamingImpl;
     use xsd_parser::traits::Naming;
-    use xsd_parser::SubModules;
     use xsd_parser::{
-        exec_generator_with_ident_cache, exec_interpreter_with_ident_cache, exec_optimizer, exec_parser,
-        exec_render, Config, DataTypes,
+        Config, DataTypes, exec_generator_with_ident_cache, exec_interpreter_with_ident_cache,
+        exec_optimizer, exec_parser, exec_render,
     };
 
     use anyhow::{Context, Error};
@@ -84,7 +84,7 @@ mod codegen {
 
         // Write the generated code to the module directory specified by Cargo.
         let target_dir = cargo_dir.join("src/schema");
-        let directory: &Path = &target_dir.as_ref();
+        let directory: &Path = target_dir.as_ref();
         modules
             .write_to_files_with(|module, path: &Path| -> Result<(), Error> {
                 let filename = if module.modules.is_empty() {
@@ -119,19 +119,17 @@ mod codegen {
 
     fn fix_non_optional_attributes(data_types: &mut DataTypes) {
         for (_, type_) in &mut data_types.items {
-            match &mut type_.variant {
-                DataTypeVariant::Complex(ComplexData::Struct {
-                    type_: struct_type, ..
-                }) => {
-                    for attr in &mut struct_type.attributes {
-                        if attr.meta.use_ == AttributeUseType::Required {
-                            attr.is_option = false;
-                        }
-                        // Note: skip_serializing_if attributes are no longer added
-                        // since serialization support has been removed
+            if let DataTypeVariant::Complex(ComplexData::Struct {
+                type_: struct_type, ..
+            }) = &mut type_.variant
+            {
+                for attr in &mut struct_type.attributes {
+                    if attr.meta.use_ == AttributeUseType::Required {
+                        attr.is_option = false;
                     }
+                    // Note: skip_serializing_if attributes are no longer added
+                    // since serialization support has been removed
                 }
-                _ => {}
             }
         }
     }
@@ -143,10 +141,10 @@ mod codegen {
         let trimmed = type_string.trim();
 
         // Find the last occurrence of '<' and first occurrence of '>' after it
-        if let Some(start) = trimmed.rfind('<') {
-            if let Some(end) = trimmed[start..].find('>') {
-                return trimmed[start + 1..start + end].trim();
-            }
+        if let Some(start) = trimmed.rfind('<')
+            && let Some(end) = trimmed[start..].find('>')
+        {
+            return trimmed[start + 1..start + end].trim();
         }
 
         // If no angle brackets, return the whole string
@@ -156,9 +154,9 @@ mod codegen {
     /// Add deserialize_with attributes to generated code for proper enum deserialization.
     fn fix_enum_content_in_parsed_file(file: &mut syn::File) {
         use quote::ToTokens;
+        use std::collections::HashSet;
         use syn::visit_mut::{self, VisitMut};
         use syn::{Field, ItemEnum, ItemStruct};
-        use std::collections::HashSet;
 
         struct EnumCollector {
             enum_names: HashSet<String>,
@@ -210,7 +208,8 @@ mod codegen {
                 }
 
                 // Add custom deserializers for enum content fields
-                if self.enum_names.contains(base_type) && !has_value_rename && !has_attribute_rename {
+                if self.enum_names.contains(base_type) && !has_value_rename && !has_attribute_rename
+                {
                     let helper_path = if is_option {
                         "crate::serde_helpers::deserialize_optional_enum_content"
                     } else if is_vec {
@@ -242,9 +241,9 @@ mod codegen {
     /// This removes unnecessary indirection for structs that only contain a Vec in a "content" field
     fn optimize_single_field_wrappers(file: &mut syn::File) {
         use quote::ToTokens;
+        use std::collections::HashMap;
         use syn::visit_mut::{self, VisitMut};
         use syn::{Field, Item, ItemStruct, Type, TypePath};
-        use std::collections::HashMap;
 
         /// Collect all single-field wrapper structs
         struct WrapperCollector {
@@ -253,17 +252,14 @@ mod codegen {
 
         impl WrapperCollector {
             fn is_vec_type(&self, ty: &Type) -> Option<Type> {
-                if let Type::Path(TypePath { path, .. }) = ty {
-                    if path.segments.len() >= 2 {
-                        let last = &path.segments.last()?;
-                        if last.ident == "Vec" {
-                            if let syn::PathArguments::AngleBracketed(args) = &last.arguments {
-                                if let Some(syn::GenericArgument::Type(inner)) = args.args.first() {
-                                    return Some(inner.clone());
-                                }
-                            }
-                        }
-                    }
+                if let Type::Path(TypePath { path, .. }) = ty
+                    && path.segments.len() >= 2
+                    && let Some(last) = path.segments.last()
+                    && last.ident == "Vec"
+                    && let syn::PathArguments::AngleBracketed(args) = &last.arguments
+                    && let Some(syn::GenericArgument::Type(inner)) = args.args.first()
+                {
+                    return Some(inner.clone());
                 }
                 None
             }
@@ -287,15 +283,17 @@ mod codegen {
                     if fields.named.len() == 1 {
                         let field = fields.named.first().unwrap();
                         // Check if field is named "content" and is a Vec
-                        if field.ident.as_ref().map(|i| i == "content").unwrap_or(false) {
-                            if let Some(_inner_type) = self.is_vec_type(&field.ty) {
-                                // Check if it has the $value rename attribute
-                                if self.has_value_rename(field) {
-                                    let struct_name = node.ident.to_string();
-                                    // Store the full Vec type
-                                    self.wrappers.insert(struct_name, field.ty.clone());
-                                }
-                            }
+                        if field
+                            .ident
+                            .as_ref()
+                            .map(|i| i == "content")
+                            .unwrap_or(false)
+                            && let Some(_inner_type) = self.is_vec_type(&field.ty)
+                            && self.has_value_rename(field)
+                        {
+                            let struct_name = node.ident.to_string();
+                            // Store the full Vec type
+                            self.wrappers.insert(struct_name, field.ty.clone());
                         }
                     }
                 }
@@ -310,18 +308,15 @@ mod codegen {
 
         impl FieldReplacer {
             fn extract_option_inner(&self, ty: &Type) -> Option<String> {
-                if let Type::Path(TypePath { path, .. }) = ty {
-                    if let Some(last) = path.segments.last() {
-                        if last.ident == "Option" {
-                            if let syn::PathArguments::AngleBracketed(args) = &last.arguments {
-                                if let Some(syn::GenericArgument::Type(Type::Path(inner_path))) = args.args.first() {
-                                    if let Some(inner_seg) = inner_path.path.segments.last() {
-                                        return Some(inner_seg.ident.to_string());
-                                    }
-                                }
-                            }
-                        }
-                    }
+                if let Type::Path(TypePath { path, .. }) = ty
+                    && let Some(last) = path.segments.last()
+                    && last.ident == "Option"
+                    && let syn::PathArguments::AngleBracketed(args) = &last.arguments
+                    && let Some(syn::GenericArgument::Type(Type::Path(inner_path))) =
+                        args.args.first()
+                    && let Some(inner_seg) = inner_path.path.segments.last()
+                {
+                    return Some(inner_seg.ident.to_string());
                 }
                 None
             }
@@ -392,14 +387,14 @@ mod codegen {
 
             fn visit_type_mut(&mut self, ty: &mut Type) {
                 // Also check for direct type references (e.g., in enum variants)
-                if let Type::Path(TypePath { path, .. }) = ty {
-                    if let Some(last) = path.segments.last() {
-                        let type_name = last.ident.to_string();
-                        if let Some(vec_type) = self.wrappers.get(&type_name) {
-                            // Replace direct wrapper type reference with Vec type
-                            *ty = vec_type.clone();
-                            return; // Don't recurse after replacement
-                        }
+                if let Type::Path(TypePath { path, .. }) = ty
+                    && let Some(last) = path.segments.last()
+                {
+                    let type_name = last.ident.to_string();
+                    if let Some(vec_type) = self.wrappers.get(&type_name) {
+                        // Replace direct wrapper type reference with Vec type
+                        *ty = vec_type.clone();
+                        return; // Don't recurse after replacement
                     }
                 }
                 visit_mut::visit_type_mut(self, ty);
@@ -452,7 +447,8 @@ mod codegen {
                     if type_name.ends_with("Content") {
                         let base_name = &type_name[..type_name.len() - 7];
                         if self.wrappers.contains_key(base_name) {
-                            last_segment.ident = syn::Ident::new(base_name, last_segment.ident.span());
+                            last_segment.ident =
+                                syn::Ident::new(base_name, last_segment.ident.span());
                         }
                     }
                 }
@@ -572,22 +568,24 @@ mod codegen {
 
         // Also remove the Serialize import from the serde use statement
         for item in &mut file.items {
-            if let syn::Item::Use(use_item) = item {
-                if let syn::UseTree::Path(use_path) = &mut use_item.tree {
-                    // Remove Serialize from serde::{Deserialize, Serialize}
-                    if use_path.ident == "serde" {
-                        if let syn::UseTree::Group(ref mut group) = *use_path.tree {
-                            // Filter out Serialize from the serde import group
-                            group.items = group.items.clone().into_iter().filter(|item| {
-                                if let syn::UseTree::Name(name) = item {
-                                    name.ident != "Serialize"
-                                } else {
-                                    true
-                                }
-                            }).collect();
+            if let syn::Item::Use(use_item) = item
+                && let syn::UseTree::Path(use_path) = &mut use_item.tree
+                && use_path.ident == "serde"
+                && let syn::UseTree::Group(ref mut group) = *use_path.tree
+            {
+                // Filter out Serialize from the serde import group
+                group.items = group
+                    .items
+                    .clone()
+                    .into_iter()
+                    .filter(|item| {
+                        if let syn::UseTree::Name(name) = item {
+                            name.ident != "Serialize"
+                        } else {
+                            true
                         }
-                    }
-                }
+                    })
+                    .collect();
             }
         }
     }
@@ -676,43 +674,39 @@ mod codegen {
     fn fix_other_unit_variant(data_types: &mut DataTypes<'_>) -> bool {
         let mut found_other_variant = false;
         for (_, item) in &mut data_types.items {
-            match &mut item.variant {
-                DataTypeVariant::Enumeration(enumeration_data) => {
-                    // Check if there is an 'other' variant in this enum
-                    // The 'other' variant needs to be placed at the end of the variant list
-                    let mut variants: Vec<_> =
-                        std::mem::replace(&mut enumeration_data.variants, vec![]);
+            if let DataTypeVariant::Enumeration(enumeration_data) = &mut item.variant {
+                // Check if there is an 'other' variant in this enum
+                // The 'other' variant needs to be placed at the end of the variant list
+                let mut variants: Vec<_> = std::mem::take(&mut enumeration_data.variants);
 
-                    if let Some(other_variant_idx) =
-                        variants.iter().position(|v| v.meta.type_.is_some())
-                    {
-                        let other_variant = variants.remove(other_variant_idx);
-                        variants.push(other_variant);
+                if let Some(other_variant_idx) =
+                    variants.iter().position(|v| v.meta.type_.is_some())
+                {
+                    let other_variant = variants.remove(other_variant_idx);
+                    variants.push(other_variant);
 
-                        // To support this type of enum we need to use a different serde derive
-                        // The standard derive doesn't support putting the rest of the string into the 'other' variant
-                        item.derive = xsd_parser::models::data::ConfigValue::Overwrite(vec![
-                            IdentPath::from_ident(proc_macro2::Ident::new(
-                                "Clone",
-                                proc_macro2::Span::call_site(),
-                            )),
-                            IdentPath::from_ident(proc_macro2::Ident::new(
-                                "Debug",
-                                proc_macro2::Span::call_site(),
-                            )),
-                            IdentPath::from_ident(proc_macro2::Ident::new(
-                                "Deserialize_enum_str",
-                                proc_macro2::Span::call_site(),
-                            )),
-                        ]);
+                    // To support this type of enum we need to use a different serde derive
+                    // The standard derive doesn't support putting the rest of the string into the 'other' variant
+                    item.derive = xsd_parser::models::data::ConfigValue::Overwrite(vec![
+                        IdentPath::from_ident(proc_macro2::Ident::new(
+                            "Clone",
+                            proc_macro2::Span::call_site(),
+                        )),
+                        IdentPath::from_ident(proc_macro2::Ident::new(
+                            "Debug",
+                            proc_macro2::Span::call_site(),
+                        )),
+                        IdentPath::from_ident(proc_macro2::Ident::new(
+                            "Deserialize_enum_str",
+                            proc_macro2::Span::call_site(),
+                        )),
+                    ]);
 
-                        // We are using a custom derive, we must include it
-                        found_other_variant = true;
-                    }
-
-                    enumeration_data.variants = variants;
+                    // We are using a custom derive, we must include it
+                    found_other_variant = true;
                 }
-                _ => {}
+
+                enumeration_data.variants = variants;
             }
         }
 
@@ -744,14 +738,12 @@ mod codegen {
             if let DataTypeVariant::Enumeration(enumeration_data) = &ctx.data.variant {
                 // Check if there is an 'other' variant in this enum
                 // We need to add a using statement for their traits
-                if let Some(_) = enumeration_data
+                if enumeration_data
                     .variants
                     .iter()
-                    .find(|v| v.meta.type_.is_some())
+                    .any(|v| v.meta.type_.is_some())
                 {
-                    ctx.add_usings(vec![
-                        "serde_enum_str::Deserialize_enum_str",
-                    ]);
+                    ctx.add_usings(vec!["serde_enum_str::Deserialize_enum_str"]);
                 }
             }
         }

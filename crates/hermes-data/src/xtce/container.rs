@@ -1,7 +1,7 @@
+use crate::Parameter;
 use crate::de::{
     ContainerRef, EntryKind, EntryType, LocationInContainerInBits, ReferenceLocation, Repeat,
 };
-use crate::Parameter;
 
 use crate::{Error, IntegerValue, ParameterInstanceRef, ParameterRef};
 

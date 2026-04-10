@@ -176,8 +176,8 @@ fn test_deserialize_floats() {
     let mdb = MissionDatabase::new(&space_system).expect("Failed to create MissionDatabase");
 
     // Create test data: F32=3.14159, F64=2.718281828
-    let temp_f32: f32 = 3.14159;
-    let pressure_f64: f64 = 2.718281828;
+    let temp_f32: f32 = std::f32::consts::PI;
+    let pressure_f64: f64 = std::f64::consts::E;
 
     let data = [
         temp_f32.to_be_bytes().as_slice(),
@@ -193,7 +193,7 @@ fn test_deserialize_floats() {
         .get("/TestSystem/Temperature")
         .expect("Temperature not found");
     match &temperature[0].raw_value {
-        Value::Float(v) => assert!((*v - 3.14159).abs() < 0.0001),
+        Value::Float(v) => assert!((*v - std::f64::consts::PI).abs() < 0.0001),
         _ => panic!("Expected Float"),
     }
 
@@ -203,7 +203,7 @@ fn test_deserialize_floats() {
         .get("/TestSystem/Pressure")
         .expect("Pressure not found");
     match &pressure[0].raw_value {
-        Value::Float(v) => assert!((*v - 2.718281828).abs() < 0.0000001),
+        Value::Float(v) => assert!((*v - std::f64::consts::E).abs() < 0.0000001),
         _ => panic!("Expected Float"),
     }
 }
@@ -235,7 +235,7 @@ fn test_deserialize_boolean_integer_encoding() {
         .get("/TestSystem/Flag1")
         .expect("Flag1 not found");
     match &flag1[0].raw_value {
-        Value::Boolean(v) => assert_eq!(*v, true),
+        Value::Boolean(v) => assert!(*v),
         _ => panic!("Expected Boolean"),
     }
 
@@ -245,7 +245,7 @@ fn test_deserialize_boolean_integer_encoding() {
         .get("/TestSystem/Flag2")
         .expect("Flag2 not found");
     match &flag2[0].raw_value {
-        Value::Boolean(v) => assert_eq!(*v, false),
+        Value::Boolean(v) => assert!(!*v),
         _ => panic!("Expected Boolean"),
     }
 }

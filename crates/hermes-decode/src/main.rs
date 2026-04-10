@@ -11,7 +11,7 @@ use clap::{Parser, ValueEnum};
 use std::fs;
 use std::sync::Arc;
 use tracing::{error, info};
-use tracing_subscriber::{fmt, EnvFilter};
+use tracing_subscriber::{EnvFilter, fmt};
 
 #[derive(Clone, Default, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 enum LinkArg {

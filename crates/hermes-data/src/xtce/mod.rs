@@ -17,7 +17,7 @@ mod utils;
 
 // Re-export public types and functions
 pub(crate) use collection::{
-    collect_containers, collect_parameter_types, collect_parameters, UnresolvedContainer,
+    UnresolvedContainer, collect_containers, collect_parameter_types, collect_parameters,
 };
 pub(crate) use construction::{
     build_dependency_graph, construct_containers, construct_parameter_types_pass1,

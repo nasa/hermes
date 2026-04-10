@@ -2,11 +2,10 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-
+use crate::Parameter;
 use crate::de::{
     BooleanExpression, Comparison, ComparisonCheck, ParameterRefOrValue, RestrictionCriteria,
 };
-use crate::Parameter;
 
 use crate::{Error, ParameterInstanceRef, ParameterRef, Result, Value};
 

@@ -69,9 +69,9 @@ enum DepthSpan {
     ParameterContinue(u16),
 }
 
-impl<'a> Into<Span<'a>> for DepthSpan {
-    fn into(self) -> Span<'a> {
-        match self {
+impl<'a> From<DepthSpan> for Span<'a> {
+    fn from(other: DepthSpan) -> Span<'a> {
+        match other {
             DepthSpan::Container(depth) => Span::raw(" ".repeat(depth as usize) + "┌"),
             DepthSpan::Parameter(depth) => Span::raw(" ".repeat(depth as usize) + "├ "),
             DepthSpan::ParameterContinue(depth) => Span::raw(" ".repeat(depth as usize) + "│   "),
@@ -79,9 +79,9 @@ impl<'a> Into<Span<'a>> for DepthSpan {
     }
 }
 
-impl<'a> Into<Text<'a>> for StructureEntry {
-    fn into(self) -> Text<'a> {
-        match self {
+impl<'a> From<StructureEntry> for Text<'a> {
+    fn from(other: StructureEntry) -> Text<'a> {
+        match other {
             StructureEntry::Container {
                 namespace,
                 name,
@@ -113,8 +113,7 @@ impl<'a> Into<Text<'a>> for StructureEntry {
                     DepthSpan::ParameterContinue(depth).into(),
                     Span::raw(value),
                 ]),
-            ])
-            .into(),
+            ]),
         }
     }
 }
@@ -131,7 +130,7 @@ impl<'a> StructureWidget<'a> {
         Self { root }
     }
 
-    fn render_container<'r>(container: &Arc<SequenceContainer>, depth: u16) -> Vec<StructureEntry> {
+    fn render_container(container: &Arc<SequenceContainer>, depth: u16) -> Vec<StructureEntry> {
         let qual_name = &container.container.head.qualified_name;
         let name = &container.container.head.name;
         let namespace = namespace_of(qual_name);
@@ -159,7 +158,7 @@ impl<'a> StructureWidget<'a> {
         entries
     }
 
-    fn render_parameter<'r>(parameter: &Arc<ParameterValue>, depth: u16) -> StructureEntry {
+    fn render_parameter(parameter: &Arc<ParameterValue>, depth: u16) -> StructureEntry {
         let qual_name = &parameter.parameter.head.qualified_name;
         let name = &parameter.parameter.head.name;
         let namespace = namespace_of(qual_name);
@@ -207,19 +206,14 @@ impl<'a> StatefulWidget for StructureWidget<'a> {
     fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
         let out = Self::render_container(self.root, 0);
 
-        if let Some(entry) = state
-            .list_state
-            .selected()
-            .map(|index| out.get(index))
-            .flatten()
-        {
+        if let Some(entry) = state.list_state.selected().and_then(|index| out.get(index)) {
             state.selected_bits = Some(entry.bits())
         } else {
             state.selected_bits = None
         }
 
         StatefulWidget::render(
-            List::new(out.into_iter()).highlight_symbol("*"),
+            List::new(out).highlight_symbol("*"),
             area,
             buf,
             &mut state.list_state,

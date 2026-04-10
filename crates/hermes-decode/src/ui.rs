@@ -1,11 +1,11 @@
 use crate::app::{App, Tab};
 use hermes_data::de::Packet;
+use ratatui::Frame;
 use ratatui::layout::*;
 use ratatui::prelude::Style;
 use ratatui::style::Color;
 use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::*;
-use ratatui::Frame;
 use std::time::Instant;
 
 use crate::widgets;

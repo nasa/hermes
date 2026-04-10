@@ -69,6 +69,9 @@ pub enum ConnectionState {
     Reconnecting,
 }
 
+/// Frame loss callback type
+type FrameLossCallback = Arc<Mutex<Option<Box<dyn Fn() + Send + Sync>>>>;
+
 /// WebSocket client for YAMCS real-time subscriptions
 pub struct WebSocketClient {
     base_url: String,
@@ -77,7 +80,7 @@ pub struct WebSocketClient {
     pending_requests: Arc<Mutex<HashMap<u32, PendingRequest>>>,
     request_sequence: Arc<Mutex<u32>>,
     tx: Arc<Mutex<Option<mpsc::UnboundedSender<ClientMessage>>>>,
-    frame_loss_callback: Arc<Mutex<Option<Box<dyn Fn() + Send + Sync>>>>,
+    frame_loss_callback: FrameLossCallback,
 }
 
 impl WebSocketClient {
@@ -425,7 +428,7 @@ impl WebSocketClient {
             message_type: request_type.into(),
             id: Some(request_id),
             call: None,
-            options: serde_json::to_value(options).map_err(|e| YamcsError::JsonSerialization(e))?,
+            options: serde_json::to_value(options).map_err(YamcsError::JsonSerialization)?,
         };
 
         debug!(
@@ -505,7 +508,7 @@ impl WebSocketClient {
         R: for<'de> Deserialize<'de>,
     {
         let (call_id, value) = self.request(request_type, options).await?;
-        let data = serde_json::from_value(value).map_err(|e| YamcsError::JsonSerialization(e))?;
+        let data = serde_json::from_value(value).map_err(YamcsError::JsonSerialization)?;
         Ok((call_id, data))
     }
 

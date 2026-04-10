@@ -2,13 +2,13 @@ use crate::app::App;
 use crate::ui;
 use anyhow::Result;
 use hermes_data::de::Packet;
+use ratatui::Terminal;
 use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::crossterm::terminal::{
-    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
+    EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
 };
 use ratatui::crossterm::{event, execute};
-use ratatui::Terminal;
 use std::error::Error;
 use std::sync::mpsc::Receiver;
 use std::time::{Duration, Instant};

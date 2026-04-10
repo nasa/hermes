@@ -357,20 +357,19 @@ pub fn parse_fprime_json_dictionary(raw_json: &str) -> Result<Dictionary, Dictio
     }
 
     // Extract SpacecraftId from constants if present
-    if let Some(constants) = json.constants {
-        if let Some(scid) = constants
+    if let Some(constants) = json.constants
+        && let Some(scid) = constants
             .iter()
             .find(|c| c.qualified_name == "ComCfg.SpacecraftId")
-        {
-            if let Some(value) = scid.value.as_f64() {
-                out.metadata
-                    .insert("SpacecraftId".to_string(), value.to_string());
-            } else {
-                return Err(DictionaryError::InvalidSpacecraftId(format!(
-                    "{:?}",
-                    scid.value
-                )));
-            }
+    {
+        if let Some(value) = scid.value.as_f64() {
+            out.metadata
+                .insert("SpacecraftId".to_string(), value.to_string());
+        } else {
+            return Err(DictionaryError::InvalidSpacecraftId(format!(
+                "{:?}",
+                scid.value
+            )));
         }
     }
 

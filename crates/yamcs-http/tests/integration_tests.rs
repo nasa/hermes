@@ -156,20 +156,20 @@ async fn test_get_space_system() {
         .await
         .expect("Failed to get space systems");
 
-    if let Some(systems) = &space_systems.space_systems {
-        if let Some(first_ss) = systems.first() {
-            let ss = client
-                .get_space_system(&instance, &first_ss.qualified_name)
-                .await
-                .expect("Failed to get space system");
+    if let Some(systems) = &space_systems.space_systems
+        && let Some(first_ss) = systems.first()
+    {
+        let ss = client
+            .get_space_system(&instance, &first_ss.qualified_name)
+            .await
+            .expect("Failed to get space system");
 
-            // Note: YAMCS doesn't always return qualifiedName in the response
-            // so we check the name instead if qualifiedName is empty
-            if !ss.qualified_name.is_empty() {
-                assert_eq!(ss.qualified_name, first_ss.qualified_name);
-            }
-            println!("Space system: {}", ss.name);
+        // Note: YAMCS doesn't always return qualifiedName in the response
+        // so we check the name instead if qualifiedName is empty
+        if !ss.qualified_name.is_empty() {
+            assert_eq!(ss.qualified_name, first_ss.qualified_name);
         }
+        println!("Space system: {}", ss.name);
     }
 }
 
@@ -228,16 +228,16 @@ async fn test_get_parameter() {
         .await
         .expect("Failed to get parameters");
 
-    if let Some(parameters) = &params.parameters {
-        if let Some(first_param) = parameters.first() {
-            let param = client
-                .get_parameter(&instance, &first_param.qualified_name)
-                .await
-                .expect("Failed to get parameter");
+    if let Some(parameters) = &params.parameters
+        && let Some(first_param) = parameters.first()
+    {
+        let param = client
+            .get_parameter(&instance, &first_param.qualified_name)
+            .await
+            .expect("Failed to get parameter");
 
-            assert_eq!(param.qualified_name, first_param.qualified_name);
-            println!("Parameter: {}", param.name);
-        }
+        assert_eq!(param.qualified_name, first_param.qualified_name);
+        println!("Parameter: {}", param.name);
     }
 }
 
@@ -288,16 +288,16 @@ async fn test_get_parameter_type() {
         .await
         .expect("Failed to get parameter types");
 
-    if let Some(parameter_types) = &types.parameter_types {
-        if let Some(first_type) = parameter_types.first() {
-            let ptype = client
-                .get_parameter_type(&instance, &first_type.qualified_name)
-                .await
-                .expect("Failed to get parameter type");
+    if let Some(parameter_types) = &types.parameter_types
+        && let Some(first_type) = parameter_types.first()
+    {
+        let ptype = client
+            .get_parameter_type(&instance, &first_type.qualified_name)
+            .await
+            .expect("Failed to get parameter type");
 
-            assert_eq!(ptype.qualified_name, first_type.qualified_name);
-            println!("Parameter type: {}", ptype.name);
-        }
+        assert_eq!(ptype.qualified_name, first_type.qualified_name);
+        println!("Parameter type: {}", ptype.name);
     }
 }
 
@@ -350,16 +350,16 @@ async fn test_get_command() {
         .await
         .expect("Failed to get commands");
 
-    if let Some(cmd_list) = &commands.commands {
-        if let Some(first_cmd) = cmd_list.first() {
-            let cmd = client
-                .get_command(&instance, &first_cmd.qualified_name)
-                .await
-                .expect("Failed to get command");
+    if let Some(cmd_list) = &commands.commands
+        && let Some(first_cmd) = cmd_list.first()
+    {
+        let cmd = client
+            .get_command(&instance, &first_cmd.qualified_name)
+            .await
+            .expect("Failed to get command");
 
-            assert_eq!(cmd.qualified_name, first_cmd.qualified_name);
-            println!("Command: {}", cmd.name);
-        }
+        assert_eq!(cmd.qualified_name, first_cmd.qualified_name);
+        println!("Command: {}", cmd.name);
     }
 }
 
@@ -408,16 +408,16 @@ async fn test_get_container() {
         .await
         .expect("Failed to get containers");
 
-    if let Some(container_list) = &containers.containers {
-        if let Some(first_container) = container_list.first() {
-            let container = client
-                .get_container(&instance, &first_container.qualified_name)
-                .await
-                .expect("Failed to get container");
+    if let Some(container_list) = &containers.containers
+        && let Some(first_container) = container_list.first()
+    {
+        let container = client
+            .get_container(&instance, &first_container.qualified_name)
+            .await
+            .expect("Failed to get container");
 
-            assert_eq!(container.qualified_name, first_container.qualified_name);
-            println!("Container: {}", container.name);
-        }
+        assert_eq!(container.qualified_name, first_container.qualified_name);
+        println!("Container: {}", container.name);
     }
 }
 
@@ -468,16 +468,16 @@ async fn test_get_algorithm() {
         .await
         .expect("Failed to get algorithms");
 
-    if let Some(algo_list) = &algorithms.algorithms {
-        if let Some(first_algo) = algo_list.first() {
-            let algo = client
-                .get_algorithm(&instance, &first_algo.qualified_name)
-                .await
-                .expect("Failed to get algorithm");
+    if let Some(algo_list) = &algorithms.algorithms
+        && let Some(first_algo) = algo_list.first()
+    {
+        let algo = client
+            .get_algorithm(&instance, &first_algo.qualified_name)
+            .await
+            .expect("Failed to get algorithm");
 
-            assert_eq!(algo.qualified_name, first_algo.qualified_name);
-            println!("Algorithm: {}", algo.name);
-        }
+        assert_eq!(algo.qualified_name, first_algo.qualified_name);
+        println!("Algorithm: {}", algo.name);
     }
 }
 
@@ -548,30 +548,30 @@ async fn test_get_parameter_values() {
         .await
         .expect("Failed to get parameters");
 
-    if let Some(parameters) = &params.parameters {
-        if let Some(first_param) = parameters.first() {
-            let value_options = monitoring::GetParameterValuesOptions {
-                start: None,
-                stop: None,
-                pos: None,
-                limit: Some(10),
-                norepeat: None,
-                format: None,
-                source: None,
-                order: None,
-            };
+    if let Some(parameters) = &params.parameters
+        && let Some(first_param) = parameters.first()
+    {
+        let value_options = monitoring::GetParameterValuesOptions {
+            start: None,
+            stop: None,
+            pos: None,
+            limit: Some(10),
+            norepeat: None,
+            format: None,
+            source: None,
+            order: None,
+        };
 
-            let values = client
-                .get_parameter_values(&instance, &first_param.qualified_name, &value_options)
-                .await
-                .expect("Failed to get parameter values");
+        let values = client
+            .get_parameter_values(&instance, &first_param.qualified_name, &value_options)
+            .await
+            .expect("Failed to get parameter values");
 
-            println!(
-                "Found {} values for parameter {}",
-                values.len(),
-                first_param.name
-            );
-        }
+        println!(
+            "Found {} values for parameter {}",
+            values.len(),
+            first_param.name
+        );
     }
 }
 
@@ -598,28 +598,28 @@ async fn test_get_parameter_samples() {
         .await
         .expect("Failed to get parameters");
 
-    if let Some(parameters) = &params.parameters {
-        if let Some(first_param) = parameters.first() {
-            let sample_options = monitoring::GetParameterSamplesOptions {
-                start: None,
-                stop: None,
-                count: Some(10),
-                gap_time: None,
-                source: None,
-                order: None,
-            };
+    if let Some(parameters) = &params.parameters
+        && let Some(first_param) = parameters.first()
+    {
+        let sample_options = monitoring::GetParameterSamplesOptions {
+            start: None,
+            stop: None,
+            count: Some(10),
+            gap_time: None,
+            source: None,
+            order: None,
+        };
 
-            let samples = client
-                .get_parameter_samples(&instance, &first_param.qualified_name, &sample_options)
-                .await
-                .expect("Failed to get parameter samples");
+        let samples = client
+            .get_parameter_samples(&instance, &first_param.qualified_name, &sample_options)
+            .await
+            .expect("Failed to get parameter samples");
 
-            println!(
-                "Found {} samples for parameter {}",
-                samples.len(),
-                first_param.name
-            );
-        }
+        println!(
+            "Found {} samples for parameter {}",
+            samples.len(),
+            first_param.name
+        );
     }
 }
 
@@ -646,29 +646,29 @@ async fn test_get_parameter_ranges() {
         .await
         .expect("Failed to get parameters");
 
-    if let Some(parameters) = &params.parameters {
-        if let Some(first_param) = parameters.first() {
-            let range_options = monitoring::GetParameterRangesOptions {
-                start: None,
-                stop: None,
-                min_gap: None,
-                max_gap: None,
-                min_range: None,
-                max_values: Some(10),
-                source: None,
-            };
+    if let Some(parameters) = &params.parameters
+        && let Some(first_param) = parameters.first()
+    {
+        let range_options = monitoring::GetParameterRangesOptions {
+            start: None,
+            stop: None,
+            min_gap: None,
+            max_gap: None,
+            min_range: None,
+            max_values: Some(10),
+            source: None,
+        };
 
-            let ranges = client
-                .get_parameter_ranges(&instance, &first_param.qualified_name, &range_options)
-                .await
-                .expect("Failed to get parameter ranges");
+        let ranges = client
+            .get_parameter_ranges(&instance, &first_param.qualified_name, &range_options)
+            .await
+            .expect("Failed to get parameter ranges");
 
-            println!(
-                "Found {} ranges for parameter {}",
-                ranges.len(),
-                first_param.name
-            );
-        }
+        println!(
+            "Found {} ranges for parameter {}",
+            ranges.len(),
+            first_param.name
+        );
     }
 }
 
@@ -939,39 +939,38 @@ async fn test_subscribe_parameters() {
         .await
         .expect("Failed to get parameters");
 
-    if let Some(parameters) = &params.parameters {
-        if let Some(first_param) = parameters.first() {
-            let mut rx = ws_client
-                .subscribe::<_, monitoring::SubscribeParametersData>(
-                    "parameters",
-                    serde_json::json!({
-                        "instance": instance,
-                        "processor": processor,
-                        "id": [{"name": first_param.qualified_name}],
-                        "abortOnInvalid": false,
-                        "updateOnExpiration": false,
-                        "sendFromCache": true
-                    }),
-                )
-                .await
-                .expect("Failed to subscribe to parameters");
+    if let Some(parameters) = &params.parameters
+        && let Some(first_param) = parameters.first()
+    {
+        let mut rx = ws_client
+            .subscribe::<_, monitoring::SubscribeParametersData>(
+                "parameters",
+                serde_json::json!({
+                    "instance": instance,
+                    "processor": processor,
+                    "id": [{"name": first_param.qualified_name}],
+                    "abortOnInvalid": false,
+                    "updateOnExpiration": false,
+                    "sendFromCache": true
+                }),
+            )
+            .await
+            .expect("Failed to subscribe to parameters");
 
-            // Try to receive at least one update (with timeout)
-            let result = timeout(Duration::from_secs(5), rx.recv()).await;
-            match result {
-                Ok(Some(data)) => {
-                    println!(
-                        "Received parameter data: mapping count = {}",
-                        data.mapping.len()
-                    );
-                    assert!(true, "Successfully received parameter subscription data");
-                }
-                Ok(None) => {
-                    println!("Subscription channel closed");
-                }
-                Err(_) => {
-                    println!("Timeout waiting for parameter updates (this is OK if no live data)");
-                }
+        // Try to receive at least one update (with timeout)
+        let result = timeout(Duration::from_secs(5), rx.recv()).await;
+        match result {
+            Ok(Some(data)) => {
+                println!(
+                    "Received parameter data: mapping count = {}",
+                    data.mapping.len()
+                );
+            }
+            Ok(None) => {
+                println!("Subscription channel closed");
+            }
+            Err(_) => {
+                println!("Timeout waiting for parameter updates (this is OK if no live data)");
             }
         }
     }
@@ -1055,7 +1054,6 @@ async fn test_subscribe_alarms() {
     match result {
         Ok(Some(alarm)) => {
             println!("Received alarm: {:?}", alarm.id);
-            assert!(true, "Successfully received alarm subscription data");
         }
         Ok(None) => {
             println!("Alarm subscription channel closed");
@@ -1091,7 +1089,6 @@ async fn test_subscribe_time() {
     match result {
         Ok(Some(time_data)) => {
             println!("Received time data: {:?}", time_data);
-            assert!(true, "Successfully received time subscription data");
         }
         Ok(None) => {
             println!("Time subscription channel closed");
@@ -1158,5 +1155,4 @@ async fn test_subscribe_multiple_streams() {
     println!("Time subscription active: {}", time_result.is_ok());
 
     // Test passes if we can create multiple subscriptions without errors
-    assert!(true, "Multiple subscriptions created successfully");
 }
