@@ -1,5 +1,5 @@
 use crate::app::{App, Tab};
-use hermes_data::Packet;
+use hermes_data::de::Packet;
 use ratatui::layout::*;
 use ratatui::prelude::Style;
 use ratatui::style::Color;

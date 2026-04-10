@@ -3,10 +3,12 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 
-use crate::{
-    BooleanExpression, Comparison, ComparisonCheck, Error, ParameterInstanceRef, ParameterRef,
-    ParameterRefOrValue, RestrictionCriteria, Result, Value,
+use crate::de::{
+    BooleanExpression, Comparison, ComparisonCheck, ParameterRefOrValue, RestrictionCriteria,
 };
+use crate::Parameter;
+
+use crate::{Error, ParameterInstanceRef, ParameterRef, Result, Value};
 
 use super::resolution::resolve_parameter_ref;
 
@@ -14,7 +16,7 @@ use super::resolution::resolve_parameter_ref;
 /// If member_path is None, returns the parameter's type.
 /// If member_path is Some, navigates through the aggregate structure and returns the member's type.
 fn get_member_type<'a>(
-    parameter: &'a crate::Parameter,
+    parameter: &'a Parameter,
     member_path: &Option<Vec<String>>,
 ) -> Result<&'a crate::Type> {
     match member_path {
@@ -54,7 +56,7 @@ fn get_member_type<'a>(
 pub(crate) fn convert_restriction_criteria(
     xml: &hermes_xtce::RestrictionCriteriaType,
     space_system_path: &str,
-    parameters: &HashMap<String, Arc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<Parameter>>,
 ) -> Result<RestrictionCriteria> {
     use hermes_xtce::RestrictionCriteriaType as X;
     match xml {
@@ -86,7 +88,7 @@ pub(crate) fn convert_restriction_criteria(
 fn convert_comparison_check(
     xml: &hermes_xtce::ComparisonCheckType,
     space_system_path: &str,
-    parameters: &HashMap<String, Arc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<Parameter>>,
 ) -> Result<ComparisonCheck> {
     use hermes_xtce::ComparisonCheckTypeContent as C;
 
@@ -174,7 +176,7 @@ fn convert_comparison_check(
 fn convert_anded_condition(
     xml: &hermes_xtce::AnDedConditionsType,
     space_system_path: &str,
-    parameters: &HashMap<String, Arc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<Parameter>>,
 ) -> Result<BooleanExpression> {
     use hermes_xtce::AnDedConditionsType as X;
     match xml {
@@ -198,7 +200,7 @@ fn convert_anded_condition(
 fn convert_ored_condition(
     xml: &hermes_xtce::ORedConditionsType,
     space_system_path: &str,
-    parameters: &HashMap<String, Arc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<Parameter>>,
 ) -> Result<BooleanExpression> {
     use hermes_xtce::ORedConditionsType as X;
     match xml {
@@ -220,7 +222,7 @@ fn convert_ored_condition(
 fn convert_boolean_expression(
     xml: &hermes_xtce::BooleanExpressionType,
     space_system_path: &str,
-    parameters: &HashMap<String, Arc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<Parameter>>,
 ) -> Result<BooleanExpression> {
     use hermes_xtce::BooleanExpressionType as X;
     match xml {
@@ -249,7 +251,7 @@ fn convert_boolean_expression(
 fn convert_comparison(
     xml: &hermes_xtce::ComparisonType,
     space_system_path: &str,
-    parameters: &HashMap<String, Arc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<Parameter>>,
 ) -> Result<Comparison> {
     // Resolve the parameter reference to a fully qualified name
     let (resolved_param_ref, member_path) =
@@ -289,7 +291,7 @@ fn convert_comparison(
 pub(crate) fn convert_integer_value(
     xml: &hermes_xtce::IntegerValueType,
     space_system_path: &str,
-    parameters: &HashMap<String, Arc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<Parameter>>,
 ) -> Result<crate::IntegerValue> {
     use hermes_xtce::IntegerValueType as X;
 

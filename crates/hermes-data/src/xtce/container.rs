@@ -1,13 +1,16 @@
-use crate::{
-    ContainerRef, EntryKind, EntryType, Error, IntegerValue, LocationInContainerInBits,
-    ParameterInstanceRef, ParameterRef, ReferenceLocation, Repeat,
+use crate::de::{
+    ContainerRef, EntryKind, EntryType, LocationInContainerInBits, ReferenceLocation, Repeat,
 };
+use crate::Parameter;
+
+use crate::{Error, IntegerValue, ParameterInstanceRef, ParameterRef};
+
 use std::sync::Arc;
 
 fn convert_location_in_bits(
     loc: Option<hermes_xtce::LocationInContainerInBitsType>,
     space_system_path: &str,
-    parameters: &std::collections::HashMap<String, Arc<crate::Parameter>>,
+    parameters: &std::collections::HashMap<String, Arc<Parameter>>,
 ) -> crate::Result<LocationInContainerInBits> {
     Ok(loc
         .as_ref()
@@ -22,7 +25,7 @@ fn convert_location_in_bits(
 pub(crate) fn convert_entry(
     xml: hermes_xtce::EntryListType,
     space_system_path: &str,
-    parameters: &std::collections::HashMap<String, Arc<crate::Parameter>>,
+    parameters: &std::collections::HashMap<String, Arc<Parameter>>,
     containers: &std::collections::HashMap<String, crate::xtce::UnresolvedContainer>,
 ) -> crate::Result<EntryType> {
     use hermes_xtce::EntryListType as X;
@@ -116,7 +119,7 @@ pub(crate) fn convert_entry(
 fn convert_location_in_container_in_bits(
     xml: &hermes_xtce::LocationInContainerInBitsType,
     space_system_path: &str,
-    parameters: &std::collections::HashMap<String, Arc<crate::Parameter>>,
+    parameters: &std::collections::HashMap<String, Arc<Parameter>>,
 ) -> crate::Result<LocationInContainerInBits> {
     use hermes_xtce::{LocationInContainerInBitsTypeContent as C, ReferenceLocationType as R};
 
@@ -178,7 +181,7 @@ fn convert_location_in_container_in_bits(
 fn convert_repeat(
     xml: &hermes_xtce::RepeatType,
     space_system_path: &str,
-    parameters: &std::collections::HashMap<String, Arc<crate::Parameter>>,
+    parameters: &std::collections::HashMap<String, Arc<Parameter>>,
 ) -> crate::Result<Repeat> {
     let count = crate::xtce::convert_integer_value(&xml.count, space_system_path, parameters)?;
     let offset = xml

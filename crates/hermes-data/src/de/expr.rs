@@ -1,9 +1,43 @@
-use crate::deserialize::Context;
-use crate::{
-    BooleanExpression, Comparison, ComparisonCheck, Error, ParameterRefOrValue,
-    RestrictionCriteria, Value,
-};
+use crate::de::Context;
+use crate::de::ParameterRefOrValue;
+use crate::{Error, ParameterInstanceRef, Value};
 use tracing::warn;
+
+#[derive(Clone, Debug)]
+pub enum BooleanExpression {
+    ///Condition elements describe a test similar to the Comparison element except that the parameters used have additional flexibility.
+    Condition(ComparisonCheck),
+    ///This element describes tests similar to the ComparisonList element except that the parameters used are more flexible.
+    AndConditions(Vec<BooleanExpression>),
+    ///This element describes tests similar to the ComparisonList element except that the parameters used are more flexible.
+    OrConditions(Vec<BooleanExpression>),
+}
+
+#[derive(Clone, Debug)]
+pub struct ComparisonCheck {
+    pub left: ParameterInstanceRef,
+    pub operator: hermes_xtce::ComparisonOperatorsType,
+    pub right: ParameterRefOrValue,
+}
+
+///A simple ParameterInstanceRef to value comparison.  The string supplied in the value attribute needs to be converted to a type matching the Parameter being compared to.  For integer types it is base 10 form.  Floating point types may be specified in normal (100.0) or scientific (1.0e2) form.  The value is truncated  to use the least significant bits that match the bit size of the Parameter being compared to.
+#[derive(Clone, Debug)]
+pub struct Comparison {
+    pub parameter_ref: ParameterInstanceRef,
+    ///Operator to use for the comparison with the common equality operator as the default.
+    pub comparison_operator: hermes_xtce::ComparisonOperatorsType,
+    pub value: Value,
+}
+
+#[derive(Clone, Debug)]
+pub enum RestrictionCriteria {
+    ///A simple comparison check involving a single test of a parameter value.
+    Comparison(Comparison),
+    ///A series of simple comparison checks with an implicit 'and' in that they all must be true for the overall condition to be true.
+    ComparisonList(Vec<Comparison>),
+    ///Verification is a boolean expression of conditions.
+    BooleanExpression(BooleanExpression),
+}
 
 fn builtin_comparison<T: PartialEq + PartialOrd>(
     op: &hermes_xtce::ComparisonOperatorsType,

@@ -1,3 +1,4 @@
+use crate::de::*;
 use crate::*;
 use hermes_xtce::IntegerEncodingType;
 

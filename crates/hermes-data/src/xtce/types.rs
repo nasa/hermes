@@ -1,10 +1,5 @@
 use crate::util::parse_hex_binary;
-use crate::{
-    AbsoluteTimeType, AggregateType, ArrayType, BinaryType, BooleanEncoding, BooleanType,
-    ByteOrder, Calibrator, Dimension, EnumeratedType, EnumerationEntry, Error, FloatType,
-    IntegerType, IntegerValue, Member, RelativeTimeType, Result, StringType, TimeEncoding,
-    TimeSystem, Type, VariableSize,
-};
+use crate::{AbsoluteTimeType, AggregateType, ArrayType, BinaryType, BooleanEncoding, BooleanType, ByteOrder, Calibrator, Dimension, EnumeratedType, EnumerationEntry, Error, FloatType, IntegerType, IntegerValue, Member, Parameter, RelativeTimeType, Result, StringType, TimeEncoding, TimeSystem, Type, VariableSize};
 
 pub(crate) fn convert_parameter_type_set(xml: &hermes_xtce::ParameterTypeSetType) -> Result<Type> {
     match xml {
@@ -68,7 +63,7 @@ pub(crate) fn convert_parameter_type_set_with_parameters(
     xml: &hermes_xtce::ParameterTypeSetType,
     space_system_path: &str,
     available_types: &std::collections::HashMap<String, std::sync::Arc<Type>>,
-    parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
+    parameters: &std::collections::HashMap<String, std::sync::Arc<Parameter>>,
 ) -> Result<Type> {
     match xml {
         hermes_xtce::ParameterTypeSetType::BinaryParameterType(t) => Ok(Type::Binary(
@@ -406,7 +401,7 @@ fn convert_enumerated_parameter_type(
 fn convert_binary_parameter_type(
     xml: &hermes_xtce::BinaryParameterType,
     space_system_path: &str,
-    parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
+    parameters: &std::collections::HashMap<String, std::sync::Arc<Parameter>>,
 ) -> Result<BinaryType> {
     // Extract encoding information from content
     let encoding = xml
@@ -558,7 +553,7 @@ fn convert_array_parameter_type(
     xml: &hermes_xtce::ArrayParameterType,
     space_system_path: &str,
     available_types: &std::collections::HashMap<String, std::sync::Arc<Type>>,
-    parameters: &std::collections::HashMap<String, std::sync::Arc<crate::Parameter>>,
+    parameters: &std::collections::HashMap<String, std::sync::Arc<Parameter>>,
 ) -> Result<ArrayType> {
     // Resolve the element type reference
     let resolved_type_name = crate::xtce::resolve_parameter_type_name(

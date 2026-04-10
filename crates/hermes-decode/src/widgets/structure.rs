@@ -1,5 +1,6 @@
 use crate::ui::SelectedBits;
-use hermes_data::{Entry, FloatSize, ParameterValue, SequenceContainer, Type};
+use hermes_data::de::{Entry, ParameterValue, SequenceContainer};
+use hermes_data::{FloatSize, Type};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::prelude::{Color, Line, Span, StatefulWidget, Style, Text};

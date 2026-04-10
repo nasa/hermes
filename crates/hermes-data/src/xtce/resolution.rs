@@ -1,3 +1,4 @@
+use crate::Parameter;
 /// Functions for resolving XTCE name references and lookups
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -114,7 +115,7 @@ pub(crate) fn resolve_parameter_type_name(
 /// Validate that a member path exists within an aggregate type.
 /// Returns an error if the path is invalid or doesn't exist.
 fn validate_member_path(
-    parameter: &crate::Parameter,
+    parameter: &Parameter,
     member_path: &[String],
     full_ref: &str,
 ) -> Result<()> {
@@ -169,7 +170,7 @@ fn validate_member_path(
 pub(crate) fn resolve_parameter_ref(
     space_system_path: &str,
     param_ref: &str,
-    parameters: &HashMap<String, Arc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<Parameter>>,
 ) -> Result<(String, Option<Vec<String>>)> {
     // First, try to resolve the entire reference as a parameter name
     // This handles hierarchical paths like "CdhCore/version/CustomVersion02"

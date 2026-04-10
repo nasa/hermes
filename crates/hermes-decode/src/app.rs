@@ -1,5 +1,6 @@
 use crate::widgets::StructureWidgetState;
-use hermes_data::{Packet, Value};
+use hermes_data::{Value};
+use hermes_data::de::Packet;
 use ratatui::widgets::ListState;
 use std::collections::HashMap;
 use std::sync::mpsc::{Receiver, TryRecvError};
