@@ -42,9 +42,7 @@ pub struct AbsoluteTimeArgumentType {
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///A base schema type for describing an absolute time data type. Contains an absolute (to a known epoch) time.  Use the [ISO 8601] extended format CCYY-MM-DDThh:mm:ss where "CC" represents the century, "YY" the year, "MM" the month and "DD" the day, preceded by an optional leading "-" sign to indicate a negative number. If the sign is omitted, "+" is assumed. The letter "T" is the date/time separator and "hh", "mm", "ss" represent hour, minute and second respectively. Additional digits can be used to increase the precision of fractional seconds if desired i.e. the format ss.ss... with any number of digits after the decimal point is supported. See AbsoluteTimeParameterType and AbsoluteTimeArgumentType.  See AbsouteTimeParameterType, AbsoluteTimeArgumentType and BaseTimeDataType.
@@ -76,9 +74,7 @@ pub struct AbsoluteTimeDataType {
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Describe an absolute time parameter type relative to a known epoch (such as TAI).  The string representation of this time should use the [ISO 8601] extended format CCYY-MM-DDThh:mm:ss where "CC" represents the century, "YY" the year, "MM" the month and "DD" the day, preceded by an optional leading "-" sign to indicate a negative number. If the sign is omitted, "+" is assumed. The letter "T" is the date/time separator and "hh", "mm", "ss" represent hour, minute and second respectively. Additional digits can be used to increase the precision of fractional seconds if desired i.e. the format ss.ss... with any number of digits after the decimal point is supported.  See TAIType, IntegerDataEncoding and AbsoluteTimeDataType.
@@ -110,9 +106,7 @@ pub struct AbsoluteTimeParameterType {
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///A verifier that means the destination has accepted the command.
@@ -247,33 +241,23 @@ pub struct AggregateParameterType {
 pub struct AlarmConditionsType {
     ///An alarm state of least concern.  Considered to be below the most commonly used Warning level.
     #[serde(default, rename = "WatchAlarm")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub watch_alarm: ::core::option::Option<MatchCriteriaType>,
     ///An alarm state of concern that represents the most commonly used minimum concern level for many software applications.
     #[serde(default, rename = "WarningAlarm")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub warning_alarm: ::core::option::Option<MatchCriteriaType>,
     ///An alarm state of concern in between the most commonly used Warning and Critical levels.
     #[serde(default, rename = "DistressAlarm")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub distress_alarm: ::core::option::Option<MatchCriteriaType>,
     ///An alarm state of concern that represents the most commonly used maximum concern level for many software applications.
     #[serde(default, rename = "CriticalAlarm")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub critical_alarm: ::core::option::Option<MatchCriteriaType>,
     ///An alarm state of highest concern.  Considered to be above the most commonly used Critical level.
     #[serde(default, rename = "SevereAlarm")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub severe_alarm: ::core::option::Option<MatchCriteriaType>,
 }
 ///Describe any number of alarm ranges, each with its own level (normal, warning, watch, distress, critical, severe) and range form (inside -- (min,max), [min,max), (min, max], [min, max], or outside -- (-inf, min) or (-inf,min] and [max, +inf) or (max,+inf). Ranges may overlap, be disjoint and so forth. Ranges within the value spectrum non-specified are non-normal. The most severe range level of value within the ranges is the level of the alarm. Range values are in calibrated engineering units. See FloatRangeType.
@@ -337,10 +321,16 @@ pub struct AlarmType {
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The number of successive instances that meet the alarm conditions for the alarm to trigger. The default is 1.
-    #[serde(default = "AlarmType::default_min_violations", rename = "@minViolations")]
+    #[serde(
+        default = "AlarmType::default_min_violations",
+        rename = "@minViolations"
+    )]
     pub min_violations: PositiveLongType,
     ///Optionally specify the number of successive instances that do not meet the alarm conditions to leave the alarm state. If this attribute is not specified, it is treated as being equal to minViolations (symmetric).
-    #[serde(default = "AlarmType::default_min_conformance", rename = "@minConformance")]
+    #[serde(
+        default = "AlarmType::default_min_conformance",
+        rename = "@minConformance"
+    )]
     pub min_conformance: PositiveLongType,
     ///The initial state of this alarm definition as delivered.  When true, this leaves the alarm definition empty for the parameter and also short circuits the remaining context matches and the default so no alarm is active on the parameter.
     #[serde(default = "AlarmType::default_disabled", rename = "@disabled")]
@@ -483,9 +473,7 @@ pub struct ArgumentAbsoluteTimeDataType {
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Identical to ArgumentRefEntryType but supports argument instance references.
@@ -498,17 +486,14 @@ pub struct ArgumentArgumentRefEntryType {
     pub argument_ref: ExpandedNameReferenceNoPathType,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        ArgumentLocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits:
+        ::core::option::Option<ArgumentLocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
@@ -535,17 +520,14 @@ pub struct ArgumentArrayArgumentRefEntryType {
 pub struct ArgumentArrayArgumentRefEntryTypeContent {
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        ArgumentLocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits:
+        ::core::option::Option<ArgumentLocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
@@ -581,17 +563,14 @@ pub struct ArgumentArrayParameterRefEntryType {
 pub struct ArgumentArrayParameterRefEntryTypeContent {
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        ArgumentLocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits:
+        ::core::option::Option<ArgumentLocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
@@ -692,9 +671,7 @@ pub struct ArgumentBaseTimeDataType {
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Identical to BinaryDataEncodingType but supports argument instance references.
@@ -722,14 +699,10 @@ pub struct ArgumentBinaryDataEncodingType {
     pub size_in_bits: ArgumentIntegerValueType,
     ///Used to convert binary data to an application data type
     #[serde(default, rename = "FromBinaryTransformAlgorithm")]
-    pub from_binary_transform_algorithm: ::core::option::Option<
-        ArgumentInputAlgorithmType,
-    >,
+    pub from_binary_transform_algorithm: ::core::option::Option<ArgumentInputAlgorithmType>,
     ///Used to convert binary data from an application data type to binary data
     #[serde(default, rename = "ToBinaryTransformAlgorithm")]
-    pub to_binary_transform_algorithm: ::core::option::Option<
-        ArgumentInputAlgorithmType,
-    >,
+    pub to_binary_transform_algorithm: ::core::option::Option<ArgumentInputAlgorithmType>,
 }
 impl ArgumentBinaryDataEncodingType {
     #[must_use]
@@ -944,17 +917,14 @@ pub struct ArgumentContainerRefEntryType {
     pub container_ref: NameReferenceWithPathType,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        ArgumentLocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits:
+        ::core::option::Option<ArgumentLocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
@@ -974,17 +944,14 @@ pub struct ArgumentContainerSegmentRefEntryType {
     pub size_in_bits: PositiveLongType,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        ArgumentLocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits:
+        ::core::option::Option<ArgumentLocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
@@ -1121,17 +1088,14 @@ pub struct ArgumentFixedValueEntryType {
     pub size_in_bits: PositiveLongType,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        ArgumentLocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits:
+        ::core::option::Option<ArgumentLocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
@@ -1208,17 +1172,14 @@ pub struct ArgumentIndirectParameterRefEntryType {
     pub alias_name_space: ::core::option::Option<super::xs::StringType>,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        ArgumentLocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits:
+        ::core::option::Option<ArgumentLocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
@@ -1307,7 +1268,10 @@ pub struct ArgumentIntegerDataType {
     )]
     pub size_in_bits: PositiveLongType,
     ///Flag indicating if the engineering/calibrated data type used should support signed representation.  This should not be confused with the encoding type for the raw value.  The default is true.
-    #[serde(default = "ArgumentIntegerDataType::default_signed", rename = "@signed")]
+    #[serde(
+        default = "ArgumentIntegerDataType::default_signed",
+        rename = "@signed"
+    )]
     pub signed: super::xs::BooleanType,
     #[serde(default, rename = "$value")]
     pub content: ::std::vec::Vec<ArgumentIntegerDataTypeContent>,
@@ -1467,17 +1431,14 @@ pub struct ArgumentParameterRefEntryType {
     pub parameter_ref: ExpandedNameReferenceWithPathType,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        ArgumentLocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits:
+        ::core::option::Option<ArgumentLocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
@@ -1497,17 +1458,14 @@ pub struct ArgumentParameterSegmentRefEntryType {
     pub size_in_bits: PositiveLongType,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        ArgumentLocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits:
+        ::core::option::Option<ArgumentLocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
@@ -1541,9 +1499,7 @@ pub struct ArgumentRelativeTimeDataType {
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Identical to RepeatType but supports argument instance references.
@@ -1554,9 +1510,7 @@ pub struct ArgumentRepeatType {
     #[serde(deserialize_with = "crate::serde_helpers::deserialize_enum_content")]
     pub count: ArgumentIntegerValueType,
     #[serde(default, rename = "Offset")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub offset: ::core::option::Option<ArgumentIntegerValueType>,
 }
 ///Defines a list of argument values that restrict a constraint from being realized in the commanding lifecycle.
@@ -1574,17 +1528,14 @@ pub struct ArgumentSequenceEntryType {
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        ArgumentLocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits:
+        ::core::option::Option<ArgumentLocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
@@ -1604,17 +1555,14 @@ pub struct ArgumentStreamSegmentEntryType {
     pub size_in_bits: PositiveLongType,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        ArgumentLocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits:
+        ::core::option::Option<ArgumentLocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<ArgumentRepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<ArgumentMatchCriteriaType>,
     ///Ancillary data associated with this entry.
     #[serde(default, rename = "AncillaryDataSet")]
@@ -1884,17 +1832,13 @@ pub struct ArrayParameterRefEntryType {
 pub struct ArrayParameterRefEntryTypeContent {
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        LocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits: ::core::option::Option<LocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
@@ -1999,9 +1943,7 @@ pub struct BaseContainerType {
     pub container_ref: NameReferenceWithPathType,
     ///Contains the conditions that must evaluate to true in order for this container to be an extension of the parent container.
     #[serde(default, rename = "RestrictionCriteria")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub restriction_criteria: ::core::option::Option<RestrictionCriteriaType>,
 }
 ///An abstract schema type used by within the schema to derive the other simple/primitive engineering form data types:  BooleanDataType, BinaryDataType, StringDataType, EnumeratedDataType, FloatDataType and IntegerDataType.  The encoding elements are optional because they describe the raw wire encoded form of the data type.  Encoding is only necessary when the type is telemetered in some form.  Local variables and derived typically do not require encoding.
@@ -2083,9 +2025,7 @@ pub struct BaseTimeDataType {
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///A base type for the various triggers, purely to improve the mappings created by data binding compilers.
@@ -2226,7 +2166,10 @@ pub struct BinaryContextAlarmType {
     )]
     pub min_conformance: PositiveLongType,
     ///The initial state of this alarm definition as delivered.  When true, this leaves the alarm definition empty for the parameter and also short circuits the remaining context matches and the default so no alarm is active on the parameter.
-    #[serde(default = "BinaryContextAlarmType::default_disabled", rename = "@disabled")]
+    #[serde(
+        default = "BinaryContextAlarmType::default_disabled",
+        rename = "@disabled"
+    )]
     pub disabled: super::xs::BooleanType,
     #[serde(rename = "$value")]
     pub content: ::std::vec::Vec<BinaryContextAlarmTypeContent>,
@@ -2262,7 +2205,10 @@ impl BinaryContextAlarmType {
 #[derive(Clone, Debug, Deserialize)]
 pub struct BinaryDataEncodingType {
     ///Describes the bit ordering of the encoded value.
-    #[serde(default = "BinaryDataEncodingType::default_bit_order", rename = "@bitOrder")]
+    #[serde(
+        default = "BinaryDataEncodingType::default_bit_order",
+        rename = "@bitOrder"
+    )]
     pub bit_order: BitOrderType,
     ///Describes the endianness of the encoded value.
     #[serde(
@@ -2574,7 +2520,10 @@ pub struct BooleanContextAlarmType {
     )]
     pub min_conformance: PositiveLongType,
     ///The initial state of this alarm definition as delivered.  When true, this leaves the alarm definition empty for the parameter and also short circuits the remaining context matches and the default so no alarm is active on the parameter.
-    #[serde(default = "BooleanContextAlarmType::default_disabled", rename = "@disabled")]
+    #[serde(
+        default = "BooleanContextAlarmType::default_disabled",
+        rename = "@disabled"
+    )]
     pub disabled: super::xs::BooleanType,
     #[serde(rename = "$value")]
     pub content: ::std::vec::Vec<BooleanContextAlarmTypeContent>,
@@ -3402,9 +3351,7 @@ pub struct ContainerBinaryDataEncodingType {
     pub error_detect_correct: ::std::vec::Vec<ErrorDetectCorrectType>,
     ///Number of bits this container occupies on the stream being encoded/decoded.  This is only needed to "force" the bit length of the container to be a fixed value.  In most cases, the entry list would define the size of the container.
     #[serde(default, rename = "SizeInBits")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub size_in_bits: ::core::option::Option<IntegerValueType>,
     ///Used to convert binary data to an application data type.
     #[serde(default, rename = "FromBinaryTransformAlgorithm")]
@@ -3423,17 +3370,13 @@ pub struct ContainerRefEntryType {
     pub container_ref: NameReferenceWithPathType,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        LocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits: ::core::option::Option<LocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
@@ -3468,17 +3411,13 @@ pub struct ContainerSegmentRefEntryType {
     pub size_in_bits: PositiveLongType,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        LocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits: ::core::option::Option<LocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
@@ -3636,7 +3575,10 @@ pub struct DataEncodingType {
     #[serde(default = "DataEncodingType::default_bit_order", rename = "@bitOrder")]
     pub bit_order: BitOrderType,
     ///Describes the endianness of the encoded value.
-    #[serde(default = "DataEncodingType::default_byte_order", rename = "@byteOrder")]
+    #[serde(
+        default = "DataEncodingType::default_byte_order",
+        rename = "@byteOrder"
+    )]
     pub byte_order: ByteOrderType,
     ///DEPRECATED: Use the ErrorDetectCorrect element in the container elements instead.
     #[serde(default, rename = "ErrorDetectCorrect")]
@@ -3992,7 +3934,10 @@ pub struct EnumerationAlarmType {
     )]
     pub min_conformance: PositiveLongType,
     ///The initial state of this alarm definition as delivered.  When true, this leaves the alarm definition empty for the parameter and also short circuits the remaining context matches and the default so no alarm is active on the parameter.
-    #[serde(default = "EnumerationAlarmType::default_disabled", rename = "@disabled")]
+    #[serde(
+        default = "EnumerationAlarmType::default_disabled",
+        rename = "@disabled"
+    )]
     pub disabled: super::xs::BooleanType,
     ///Alarm state name for when no enumeration alarms evaluate to true. This defaults to "normal", which is almost always the case. Setting it to another alarm state permits a form of "inverted logic" where the alarm list can specify the normal states instead of the alarm states.
     #[serde(
@@ -4298,9 +4243,15 @@ pub struct FixedFrameStreamType {
     pub name: NameType,
     #[serde(default, rename = "@bitRateInBPS")]
     pub bit_rate_in_bps: ::core::option::Option<super::xs::DoubleType>,
-    #[serde(default = "FixedFrameStreamType::default_pcm_type", rename = "@pcmType")]
+    #[serde(
+        default = "FixedFrameStreamType::default_pcm_type",
+        rename = "@pcmType"
+    )]
     pub pcm_type: PcmType,
-    #[serde(default = "FixedFrameStreamType::default_inverted", rename = "@inverted")]
+    #[serde(
+        default = "FixedFrameStreamType::default_inverted",
+        rename = "@inverted"
+    )]
     pub inverted: super::xs::BooleanType,
     ///Allowed slip (in bits) in either direction for the sync pattern
     #[serde(
@@ -4405,7 +4356,10 @@ pub enum FlagBitType {
 ///The pattern of bits used to look for frame synchronization.
 #[derive(Clone, Debug, Deserialize)]
 pub struct FlagType {
-    #[serde(default = "FlagType::default_flag_size_in_bits", rename = "@flagSizeInBits")]
+    #[serde(
+        default = "FlagType::default_flag_size_in_bits",
+        rename = "@flagSizeInBits"
+    )]
     pub flag_size_in_bits: PositiveLongType,
     #[serde(default = "FlagType::default_flag_bit_type", rename = "@flagBitType")]
     pub flag_bit_type: FlagBitType,
@@ -4436,7 +4390,10 @@ pub struct FloatArgumentType {
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DoubleType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally.  Generally this can be determined by examination of the space required to capture the full range of the encoding, but it is not always clear when calibrators are in use.  A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible values.
-    #[serde(default = "FloatArgumentType::default_size_in_bits", rename = "@sizeInBits")]
+    #[serde(
+        default = "FloatArgumentType::default_size_in_bits",
+        rename = "@sizeInBits"
+    )]
     pub size_in_bits: FloatSizeInBitsType,
     #[serde(default, rename = "$value")]
     pub content: ::std::vec::Vec<FloatArgumentTypeContent>,
@@ -4485,7 +4442,10 @@ impl FloatArgumentType {
 #[derive(Clone, Debug, Deserialize)]
 pub struct FloatDataEncodingType {
     ///Describes the bit ordering of the encoded value.
-    #[serde(default = "FloatDataEncodingType::default_bit_order", rename = "@bitOrder")]
+    #[serde(
+        default = "FloatDataEncodingType::default_bit_order",
+        rename = "@bitOrder"
+    )]
     pub bit_order: BitOrderType,
     ///Describes the endianness of the encoded value.
     #[serde(
@@ -4494,7 +4454,10 @@ pub struct FloatDataEncodingType {
     )]
     pub byte_order: ByteOrderType,
     ///Specifies real/decimal numeric value to raw encoding method, with the default being "IEEE754_1985".
-    #[serde(default = "FloatDataEncodingType::default_encoding", rename = "@encoding")]
+    #[serde(
+        default = "FloatDataEncodingType::default_encoding",
+        rename = "@encoding"
+    )]
     pub encoding: FloatEncodingType,
     ///Number of bits to use for the float raw encoding method, with 32 being the default.  Not every number of bits is valid for each encoding method.
     #[serde(
@@ -4550,7 +4513,10 @@ pub struct FloatDataType {
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::DoubleType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally.  Generally this can be determined by examination of the space required to capture the full range of the encoding, but it is not always clear when calibrators are in use.  A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible values.
-    #[serde(default = "FloatDataType::default_size_in_bits", rename = "@sizeInBits")]
+    #[serde(
+        default = "FloatDataType::default_size_in_bits",
+        rename = "@sizeInBits"
+    )]
     pub size_in_bits: FloatSizeInBitsType,
     #[serde(default, rename = "$value")]
     pub content: ::std::vec::Vec<FloatDataTypeContent>,
@@ -4797,7 +4763,10 @@ pub struct HeaderType {
     #[serde(default, rename = "@date")]
     pub date: ::core::option::Option<super::xs::StringType>,
     ///This attribute contains optional classification status for use by programs for which that is applicable.
-    #[serde(default = "HeaderType::default_classification", rename = "@classification")]
+    #[serde(
+        default = "HeaderType::default_classification",
+        rename = "@classification"
+    )]
     pub classification: super::xs::StringType,
     ///This attribute contains an optional additional instructions attribute to be interpreted by programs that use this attribute.
     #[serde(default, rename = "@classificationInstructions")]
@@ -4841,17 +4810,13 @@ pub struct IndirectParameterRefEntryType {
     pub alias_name_space: ::core::option::Option<super::xs::StringType>,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        LocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits: ::core::option::Option<LocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
@@ -4898,7 +4863,10 @@ pub struct InputOutputAlgorithmType {
     ///The name of this defined item.  See NameType for restriction information.
     #[serde(rename = "@name")]
     pub name: NameType,
-    #[serde(default = "InputOutputAlgorithmType::default_thread", rename = "@thread")]
+    #[serde(
+        default = "InputOutputAlgorithmType::default_thread",
+        rename = "@thread"
+    )]
     pub thread: super::xs::BooleanType,
     ///Optional long form description to be used for explanatory descriptions of this item and may include HTML markup using CDATA.  Long Descriptions are of unbounded length.
     #[serde(default, rename = "LongDescription")]
@@ -5098,7 +5066,10 @@ pub struct IntegerDataEncodingType {
     )]
     pub byte_order: ByteOrderType,
     ///Specifies integer numeric value to raw encoding method, with the default being "unsigned".
-    #[serde(default = "IntegerDataEncodingType::default_encoding", rename = "@encoding")]
+    #[serde(
+        default = "IntegerDataEncodingType::default_encoding",
+        rename = "@encoding"
+    )]
     pub encoding: IntegerEncodingType,
     ///Number of bits to use for the raw encoding, with 8 being the default.
     #[serde(
@@ -5154,7 +5125,10 @@ pub struct IntegerDataType {
     #[serde(default, rename = "@initialValue")]
     pub initial_value: ::core::option::Option<super::xs::LongType>,
     ///Optional hint to the implementation about the size of the engineering/calibrated data type to use internally.  Generally this can be determined by examination of the space required to capture the full range of the encoding, but it is not always clear when calibrators are in use.  A tolerant implementation will endeavor to always make sufficient size engineering data types to capture the entire range of possible values.
-    #[serde(default = "IntegerDataType::default_size_in_bits", rename = "@sizeInBits")]
+    #[serde(
+        default = "IntegerDataType::default_size_in_bits",
+        rename = "@sizeInBits"
+    )]
     pub size_in_bits: PositiveLongType,
     ///Flag indicating if the engineering/calibrated data type used should support signed representation.  This should not be confused with the encoding type for the raw value.  The default is true.
     #[serde(default = "IntegerDataType::default_signed", rename = "@signed")]
@@ -5337,7 +5311,10 @@ pub struct InterlockType {
     #[serde(default, rename = "@verificationProgressPercentage")]
     pub verification_progress_percentage: ::core::option::Option<super::xs::DoubleType>,
     ///A flag that indicates that under special circumstances, this Interlock can be suspended.
-    #[serde(default = "InterlockType::default_suspendable", rename = "@suspendable")]
+    #[serde(
+        default = "InterlockType::default_suspendable",
+        rename = "@suspendable"
+    )]
     pub suspendable: super::xs::BooleanType,
 }
 impl InterlockType {
@@ -5370,7 +5347,10 @@ impl LeadingSizeType {
 pub struct LinearAdjustmentType {
     #[serde(default = "LinearAdjustmentType::default_slope", rename = "@slope")]
     pub slope: super::xs::DoubleType,
-    #[serde(default = "LinearAdjustmentType::default_intercept", rename = "@intercept")]
+    #[serde(
+        default = "LinearAdjustmentType::default_intercept",
+        rename = "@intercept"
+    )]
     pub intercept: super::xs::DoubleType,
 }
 impl LinearAdjustmentType {
@@ -5816,9 +5796,7 @@ pub struct MetaCommandType {
     pub command_container: ::core::option::Option<CommandContainerType>,
     ///List of constraints to check when sending this command.
     #[serde(default, rename = "TransmissionConstraintList")]
-    pub transmission_constraint_list: ::core::option::Option<
-        TransmissionConstraintListType,
-    >,
+    pub transmission_constraint_list: ::core::option::Option<TransmissionConstraintListType>,
     ///Some Command and Control Systems may require special user access or confirmations before transmitting commands with certain levels.  The level is inherited from the Base MetaCommand.
     #[serde(default, rename = "DefaultSignificance")]
     pub default_significance: ::core::option::Option<SignificanceType>,
@@ -5836,9 +5814,8 @@ pub struct MetaCommandType {
     pub parameter_to_set_list: ::core::option::Option<ParameterToSetListType>,
     ///List of parameters to suspend alarm processing/detection upon completion of sending this command.
     #[serde(default, rename = "ParametersToSuspendAlarmsOnSet")]
-    pub parameters_to_suspend_alarms_on_set: ::core::option::Option<
-        ParametersToSuspendAlarmsOnSetType,
-    >,
+    pub parameters_to_suspend_alarms_on_set:
+        ::core::option::Option<ParametersToSuspendAlarmsOnSetType>,
 }
 impl MetaCommandType {
     #[must_use]
@@ -5913,7 +5890,10 @@ pub type NoteType = ::std::string::String;
 #[derive(Clone, Debug, Deserialize)]
 pub struct NumberFormatType {
     ///Describes how the engineering/calibrated value of this number should be displayed with respect to the radix.  Default is base 10.
-    #[serde(default = "NumberFormatType::default_number_base", rename = "@numberBase")]
+    #[serde(
+        default = "NumberFormatType::default_number_base",
+        rename = "@numberBase"
+    )]
     pub number_base: RadixType,
     ///Describes how the engineering/calibrated value of this number should be displayed with respect to the minimum number of fractional digits.  The default is 0.
     #[serde(
@@ -6096,7 +6076,10 @@ pub struct NumericContextAlarmType {
     )]
     pub min_conformance: PositiveLongType,
     ///The initial state of this alarm definition as delivered.  When true, this leaves the alarm definition empty for the parameter and also short circuits the remaining context matches and the default so no alarm is active on the parameter.
-    #[serde(default = "NumericContextAlarmType::default_disabled", rename = "@disabled")]
+    #[serde(
+        default = "NumericContextAlarmType::default_disabled",
+        rename = "@disabled"
+    )]
     pub disabled: super::xs::BooleanType,
     #[serde(rename = "$value")]
     pub content: ::std::vec::Vec<NumericContextAlarmTypeContent>,
@@ -6306,9 +6289,7 @@ pub struct ParameterPropertiesType {
     pub system_name: ::core::option::Option<super::xs::StringType>,
     ///Optional condition that must be true for this Parameter to be valid.
     #[serde(default, rename = "ValidityCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub validity_condition: ::core::option::Option<MatchCriteriaType>,
     ///When present, this set of elements describes physical address location(s) of the parameter where it is stored.  Typically this is on the data source, although that is not constrained by this schema.
     #[serde(default, rename = "PhysicalAddressSet")]
@@ -6337,17 +6318,13 @@ pub struct ParameterRefEntryType {
     pub parameter_ref: ExpandedNameReferenceWithPathType,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        LocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits: ::core::option::Option<LocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
@@ -6376,17 +6353,13 @@ pub struct ParameterSegmentRefEntryType {
     pub size_in_bits: PositiveLongType,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        LocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits: ::core::option::Option<LocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
@@ -6853,9 +6826,7 @@ pub struct RelativeTimeArgumentType {
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Used to contain a relative time value.  Used to describe a relative time.  Normally used for time offsets.  A Relative time is expressed as PnYn MnDTnH nMnS, where nY represents the number of years, nM the number of months, nD the number of days, 'T' is the date/time separator, nH the number of hours, nM the number of minutes and nS the number of seconds. The number of seconds can include decimal digits to arbitrary precision.  For example, to indicate a duration of 1 year, 2 months, 3 days, 10 hours, and 30 minutes, one would write: P1Y2M3DT10H30M. One could also indicate a duration of minus 120 days as: -P120D.  An extension of Schema duration type.
@@ -6886,9 +6857,7 @@ pub struct RelativeTimeDataType {
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
 }
 ///Describes a relative time parameter type. Relative time parameters are time offsets (e.g. 10 second, 1.24 milliseconds, etc.) See IntegerDataEncodingType, FloatDataEncoding and RelativeTimeDataType.
@@ -6919,9 +6888,7 @@ pub struct RelativeTimeParameterType {
     pub encoding: ::core::option::Option<EncodingType>,
     ///Describes origin (epoch or reference) of this time type.
     #[serde(default, rename = "ReferenceTime")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub reference_time: ::core::option::Option<ReferenceTimeType>,
     ///Default alarm definitions are those which do not adjust definition logic based on the value of other parameters.  Other parameters may participate in the determination of an alarm condition for this parameter, but the definition logic of the alarm on this parameter is constant.  If the alarming logic on this parameter changes based on the value of other parameters, then it is a ContextAlarm and belongs in the ContextAlarmList element.
     #[serde(default, rename = "DefaultAlarm")]
@@ -6941,9 +6908,7 @@ pub struct RepeatType {
     pub count: IntegerValueType,
     ///Value (either fixed or dynamic) that contains an optional offset in bits between repeats of the Entry. The default is 0, which is contiguous. The value must be 0 or positive. Empty offset after the last repeat count is not implicitly reserved, so the parent EntryList should consider if these are occupied bits when placing the next Entry.
     #[serde(default, rename = "Offset")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub offset: ::core::option::Option<IntegerValueType>,
 }
 ///Define one or more conditions (constraints) for container inheritance. A container is instantiable if its constraints are true.  Constraint conditions may be a comparison, a list of comparisons, a boolean expression, or a graph of containers that are instantiable (if all containers are instantiable the condition is true).  See BaseContainerType, ComparisonType, ComparisonListType, BooleanExpressionType and NextContainerType.
@@ -7027,7 +6992,10 @@ pub struct SequenceContainerType {
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Abstract container definitions that are not instantiated, rather only used as bases to inherit from to create specialized container definitions.
-    #[serde(default = "SequenceContainerType::default_abstract_", rename = "@abstract")]
+    #[serde(
+        default = "SequenceContainerType::default_abstract_",
+        rename = "@abstract"
+    )]
     pub abstract_: super::xs::BooleanType,
     ///The idle pattern is part of any unallocated space in the container.  This is uncommon.
     #[serde(
@@ -7077,17 +7045,13 @@ pub struct SequenceEntryType {
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        LocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits: ::core::option::Option<LocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
@@ -7207,7 +7171,10 @@ pub struct SpaceSystemType {
     #[serde(rename = "@name")]
     pub name: NameType,
     ///Type of the space system.  Represents what from a space enterprise this SpaceSystem element represents.  See the individual enumeration descriptions in SystemTypeType.
-    #[serde(default = "SpaceSystemType::default_system_type", rename = "@systemType")]
+    #[serde(
+        default = "SpaceSystemType::default_system_type",
+        rename = "@systemType"
+    )]
     pub system_type: SystemTypeType,
     ///Broad name for the type of asset, such as spacecraft, aircraft, device, or any other that makes sense for the system.
     #[serde(default = "SpaceSystemType::default_asset_type", rename = "@assetType")]
@@ -7326,17 +7293,13 @@ pub struct StreamSegmentEntryType {
     pub size_in_bits: PositiveLongType,
     ///The start bit 0 position for each container is local to the container, but does include space occupied by inherited containers.  When a container is "included", as opposed to inherited, then the interpreting implementation takes into account the start bit position of the referring container when finally assembling the start bits for the post-processed entry content.  The default start bit for any entry is 0 bits from the previous entry, making the content contiguous when this element is not used.
     #[serde(default, rename = "LocationInContainerInBits")]
-    pub location_in_container_in_bits: ::core::option::Option<
-        LocationInContainerInBitsType,
-    >,
+    pub location_in_container_in_bits: ::core::option::Option<LocationInContainerInBitsType>,
     ///May be used when this entry repeats itself in the sequence container.  When an entry repeats, it effectively specifies that the same entry is reported more than once in the container and has the same physical meaning.  This should not be construed to be equivalent to arrays.
     #[serde(default, rename = "RepeatEntry")]
     pub repeat_entry: ::core::option::Option<RepeatType>,
     ///This entry will only be included in the sequence when this condition is true, otherwise it is always included.  When the include condition evaluates to false, it is as if the entry does not exist such that any start bit interpretations cannot take into account the space that would have been occupied if this included condition were true.
     #[serde(default, rename = "IncludeCondition")]
-    #[serde(
-        deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content"
-    )]
+    #[serde(deserialize_with = "crate::serde_helpers::deserialize_optional_enum_content")]
     pub include_condition: ::core::option::Option<MatchCriteriaType>,
     ///Optional timing information associated with this entry.
     #[serde(default, rename = "TimeAssociation")]
@@ -7516,7 +7479,10 @@ pub struct StringContextAlarmType {
     )]
     pub min_conformance: PositiveLongType,
     ///The initial state of this alarm definition as delivered.  When true, this leaves the alarm definition empty for the parameter and also short circuits the remaining context matches and the default so no alarm is active on the parameter.
-    #[serde(default = "StringContextAlarmType::default_disabled", rename = "@disabled")]
+    #[serde(
+        default = "StringContextAlarmType::default_disabled",
+        rename = "@disabled"
+    )]
     pub disabled: super::xs::BooleanType,
     #[serde(
         default = "StringContextAlarmType::default_default_alarm_level",
@@ -7564,7 +7530,10 @@ impl StringContextAlarmType {
 #[derive(Clone, Debug, Deserialize)]
 pub struct StringDataEncodingType {
     ///Describes the bit ordering of the encoded value.
-    #[serde(default = "StringDataEncodingType::default_bit_order", rename = "@bitOrder")]
+    #[serde(
+        default = "StringDataEncodingType::default_bit_order",
+        rename = "@bitOrder"
+    )]
     pub bit_order: BitOrderType,
     ///Describes the endianness of the encoded value.
     #[serde(
@@ -7573,7 +7542,10 @@ pub struct StringDataEncodingType {
     )]
     pub byte_order: ByteOrderType,
     ///The character set encoding of this string data type.
-    #[serde(default = "StringDataEncodingType::default_encoding", rename = "@encoding")]
+    #[serde(
+        default = "StringDataEncodingType::default_encoding",
+        rename = "@encoding"
+    )]
     pub encoding: StringEncodingType,
     #[serde(rename = "$value")]
     pub content: ::std::vec::Vec<StringDataEncodingTypeContent>,
@@ -7890,10 +7862,16 @@ pub struct TimeAlarmRangesType {
     #[serde(default, rename = "@shortDescription")]
     pub short_description: ::core::option::Option<ShortDescriptionType>,
     ///A value of outside specifies that the most severe range is outside all the other ranges: -severe -critical -distress -warning -watch normal +watch +warning +distress +critical +severe.  This means each min, max pair are a range: (-inf, min) or (-inf, min], and [max, inf) or (max, inf).  However a value of inside "inverts" these bands: -normal -watch -warning -distress -critical severe +critical +distress +warning +watch, +normal.  This means each min, max pair form a range of (min, max) or [min, max) or (min, max] or [min, max]. The most common form used is "outside" and it is the default.  The set notation used defines parenthesis as exclusive and square brackets as inclusive.
-    #[serde(default = "TimeAlarmRangesType::default_range_form", rename = "@rangeForm")]
+    #[serde(
+        default = "TimeAlarmRangesType::default_range_form",
+        rename = "@rangeForm"
+    )]
     pub range_form: RangeFormType,
     ///Time units, with the default being in seconds.
-    #[serde(default = "TimeAlarmRangesType::default_time_units", rename = "@timeUnits")]
+    #[serde(
+        default = "TimeAlarmRangesType::default_time_units",
+        rename = "@timeUnits"
+    )]
     pub time_units: TimeUnitsType,
     #[serde(default, rename = "AncillaryDataSet")]
     pub ancillary_data_set: ::core::option::Option<AncillaryDataSetType>,
@@ -7987,7 +7965,10 @@ impl TimeAlarmType {
 pub struct TimeAssociationType {
     #[serde(rename = "@parameterRef")]
     pub parameter_ref: ExpandedNameReferenceWithPathType,
-    #[serde(default = "TimeAssociationType::default_instance", rename = "@instance")]
+    #[serde(
+        default = "TimeAssociationType::default_instance",
+        rename = "@instance"
+    )]
     pub instance: super::xs::LongType,
     #[serde(
         default = "TimeAssociationType::default_use_calibrated_value",
@@ -8078,7 +8059,10 @@ pub struct TimeContextAlarmType {
     )]
     pub min_conformance: PositiveLongType,
     ///The initial state of this alarm definition as delivered.  When true, this leaves the alarm definition empty for the parameter and also short circuits the remaining context matches and the default so no alarm is active on the parameter.
-    #[serde(default = "TimeContextAlarmType::default_disabled", rename = "@disabled")]
+    #[serde(
+        default = "TimeContextAlarmType::default_disabled",
+        rename = "@disabled"
+    )]
     pub disabled: super::xs::BooleanType,
     #[serde(rename = "$value")]
     pub content: ::std::vec::Vec<TimeContextAlarmTypeContent>,
@@ -8260,7 +8244,10 @@ pub struct TriggerSetType {
     #[serde(default, rename = "@name")]
     pub name: ::core::option::Option<super::xs::StringType>,
     ///This attribute is a maximum rate that constrains how quickly this trigger may evaluate the algorithm to avoid flooding the implementation.  The default is once per second.  Setting to 0 results in no maximum.
-    #[serde(default = "TriggerSetType::default_trigger_rate", rename = "@triggerRate")]
+    #[serde(
+        default = "TriggerSetType::default_trigger_rate",
+        rename = "@triggerRate"
+    )]
     pub trigger_rate: NonNegativeLongType,
     #[serde(rename = "$value")]
     pub content: ::std::vec::Vec<TriggerSetTypeContent>,
@@ -8451,9 +8438,15 @@ pub struct VariableFrameStreamType {
     pub name: NameType,
     #[serde(default, rename = "@bitRateInBPS")]
     pub bit_rate_in_bps: ::core::option::Option<super::xs::DoubleType>,
-    #[serde(default = "VariableFrameStreamType::default_pcm_type", rename = "@pcmType")]
+    #[serde(
+        default = "VariableFrameStreamType::default_pcm_type",
+        rename = "@pcmType"
+    )]
     pub pcm_type: PcmType,
-    #[serde(default = "VariableFrameStreamType::default_inverted", rename = "@inverted")]
+    #[serde(
+        default = "VariableFrameStreamType::default_inverted",
+        rename = "@inverted"
+    )]
     pub inverted: super::xs::BooleanType,
     #[serde(rename = "$value")]
     pub content: ::std::vec::Vec<VariableFrameStreamTypeContent>,
@@ -8580,9 +8573,7 @@ pub enum VerifierEnumerationType {
 pub struct VerifierSetType {
     ///Transferred to range means the command has been received to the network that connects the ground system to the spacecraft.  Typically, this verifier would come from something other than the spacecraft, such as a modem or front end processor.
     #[serde(default, rename = "TransferredToRangeVerifier")]
-    pub transferred_to_range_verifier: ::core::option::Option<
-        TransferredToRangeVerifierType,
-    >,
+    pub transferred_to_range_verifier: ::core::option::Option<TransferredToRangeVerifierType>,
     ///Sent from range means the command has been transmitted to the spacecraft by the network that connects the ground system to the spacecraft.  Typically, this verifier would come from something other than the spacecraft, such as a modem or front end processor.
     #[serde(default, rename = "SentFromRangeVerifier")]
     pub sent_from_range_verifier: ::core::option::Option<SentFromRangeVerifierType>,

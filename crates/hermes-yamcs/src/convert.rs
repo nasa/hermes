@@ -175,10 +175,8 @@ pub fn yamcs_param_to_hermes(
 
     // Build telemetry reference
     let telem_ref = TelemetryRef {
-        id: param.numeric_id as i32,
-        name: param_name.clone(),
-        component: param.id.namespace.clone().unwrap_or_default(),
-        dictionary: String::new(),
+        instance_id: String::new(), // TODO: populate from YAMCS instance
+        qualified_name: param_name.clone(),
     };
 
     let telemetry = Telemetry {

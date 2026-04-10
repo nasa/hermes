@@ -36,6 +36,12 @@ jobs:
           toolchain: ${{ matrix.rust }}
           components: rustfmt, clippy
 
+      - name: Install Protocol Buffers Compiler
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "25.x"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Cache cargo registry
         uses: actions/cache@v4
         with:
@@ -60,15 +66,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-build-target-
 
+      - name: Build all crates
+        run: cargo build --workspace --all-features --verbose
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 
       - name: Run clippy
         run: cargo clippy --all-targets --all-features --no-deps -- -W clippy::all
         continue-on-error: true
-
-      - name: Build all crates
-        run: cargo build --workspace --all-features --verbose
 
       - name: Run unit tests
         run: cargo test --workspace --all-features --lib --verbose
@@ -89,6 +95,12 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Protocol Buffers Compiler
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "25.x"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install cargo-tarpaulin
         run: cargo install cargo-tarpaulin

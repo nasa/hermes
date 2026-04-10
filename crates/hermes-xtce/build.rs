@@ -97,7 +97,8 @@ mod codegen {
                 module.to_code(&mut code, SubModules::Files);
                 let unformatted_code = code.to_string();
 
-                match syn::parse_file(&unformatted_code) {
+                // Post-process the code and format with prettyplease (which preserves /// comments)
+                let formatted_code = match syn::parse_file(&unformatted_code) {
                     Ok(mut parsed) => {
                         // Post-process to add deserialize_with for enum content fields
                         fix_enum_content_in_parsed_file(&mut parsed);
@@ -105,9 +106,39 @@ mod codegen {
                         optimize_single_field_wrappers(&mut parsed);
                         // Remove Serialize derives to disable serialization functionality
                         remove_serialize_derives(&mut parsed);
-                        write(filename, prettyplease::unparse(&parsed))?
+                        // Use prettyplease which preserves /// style doc comments
+                        prettyplease::unparse(&parsed)
                     }
-                    Err(_) => write(filename, &unformatted_code)?,
+                    Err(_) => unformatted_code,
+                };
+
+                // Write the file (formatted by prettyplease, but may not match rustfmt exactly)
+                write(&filename, &formatted_code)?;
+
+                // Run rustfmt to ensure formatting matches rustfmt's rules exactly
+                // This preserves the /// comments from prettyplease but adjusts other formatting
+                let rustfmt = std::env::var("RUSTFMT").unwrap_or_else(|_| "rustfmt".to_string());
+                let result = std::process::Command::new(&rustfmt)
+                    .arg("--edition")
+                    .arg("2024")
+                    .arg(&filename)
+                    .output();
+
+                match result {
+                    Ok(output) => {
+                        if !output.status.success() {
+                            eprintln!("Warning: rustfmt failed on {}", filename.display());
+                            eprintln!("  stdout: {}", String::from_utf8_lossy(&output.stdout));
+                            eprintln!("  stderr: {}", String::from_utf8_lossy(&output.stderr));
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("Warning: Could not run rustfmt ({}): {}", rustfmt, e);
+                        eprintln!(
+                            "  Generated code in {} may not match rustfmt formatting",
+                            filename.display()
+                        );
+                    }
                 }
 
                 Ok(())
