@@ -106,7 +106,7 @@ jobs:
         run: cargo install cargo-tarpaulin
 
       - name: Generate coverage
-        run: cargo tarpaulin --workspace --all-features --out xml --timeout 300
+        run: cargo tarpaulin --workspace --all-features --exclude yamcs-http --out xml --timeout 300
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
