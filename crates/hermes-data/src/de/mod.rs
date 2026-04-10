@@ -1,12 +1,15 @@
+mod bit_vec;
 mod container;
 mod context;
 mod deserialize;
+
 mod expr;
 
+use crate::{MissionDatabase, Parameter, Value};
+pub use bit_vec::*;
+pub use container::*;
 pub(crate) use context::*;
-
-use crate::bit_vec::BitVec;
-use crate::{MissionDatabase, Parameter, SequenceContainerType, Value};
+pub use expr::*;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;

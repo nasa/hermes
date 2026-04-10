@@ -6,13 +6,14 @@ use std::sync::Arc;
 use super::collection::{UnresolvedContainer, UnresolvedParameter, UnresolvedParameterType};
 use super::conversion::convert_restriction_criteria;
 use super::resolution::{resolve_container_reference, resolve_parameter_type_name};
-use crate::container::SequenceContainerType;
+use crate::de::{RestrictionCriteria, SequenceContainerType};
+use crate::{Item, Parameter};
 use crate::xtce::container::convert_entry;
 use crate::xtce::types::{
     convert_parameter_type_set, convert_parameter_type_set_with_context,
     convert_parameter_type_set_with_parameters,
 };
-use crate::{Error, Item, Result};
+use crate::{Error, Result};
 
 /// Construct parameter types in multiple passes:
 /// Pass 1: Simple types (int, float, string, bool, enum, time) - no dependencies
@@ -106,7 +107,7 @@ pub(crate) fn construct_parameter_types_pass3_binary_array(
     deferred_binary_types: Vec<(String, UnresolvedParameterType)>,
     deferred_array_types: Vec<(String, UnresolvedParameterType)>,
     types: &mut HashMap<String, Arc<crate::Type>>,
-    parameters: &HashMap<String, Arc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<Parameter>>,
 ) -> Result<()> {
     // Construct binary types first
     for (qualified_name, unresolved_type) in deferred_binary_types {
@@ -155,10 +156,10 @@ pub(crate) fn construct_parameters(
     unresolved: HashMap<String, UnresolvedParameter>,
     parameter_types: &HashMap<String, Arc<crate::Type>>,
 ) -> (
-    HashMap<String, Arc<crate::Parameter>>,
+    HashMap<String, Arc<Parameter>>,
     HashMap<String, UnresolvedParameter>,
 ) {
-    let mut completed: HashMap<String, Arc<crate::Parameter>> = HashMap::new();
+    let mut completed: HashMap<String, Arc<Parameter>> = HashMap::new();
     let mut still_unresolved: HashMap<String, UnresolvedParameter> = HashMap::new();
 
     for (qualified_name, unresolved_param) in unresolved {
@@ -170,7 +171,7 @@ pub(crate) fn construct_parameters(
         ) {
             Ok(resolved_type_name) => {
                 if let Some(type_) = parameter_types.get(&resolved_type_name) {
-                    let parameter = crate::Parameter {
+                    let parameter = Parameter {
                         head: Item {
                             name: unresolved_param.xml.name.clone(),
                             qualified_name: qualified_name.clone(),
@@ -202,7 +203,7 @@ pub(crate) fn construct_parameters(
 pub(crate) fn construct_remaining_parameters(
     unresolved: HashMap<String, UnresolvedParameter>,
     parameter_types: &HashMap<String, Arc<crate::Type>>,
-    completed: &mut HashMap<String, Arc<crate::Parameter>>,
+    completed: &mut HashMap<String, Arc<Parameter>>,
 ) -> Result<()> {
     for (qualified_name, unresolved_param) in unresolved {
         // Try to resolve parameter type reference
@@ -222,7 +223,7 @@ pub(crate) fn construct_remaining_parameters(
                     })?
                     .clone();
 
-                let parameter = crate::Parameter {
+                let parameter = Parameter {
                     head: Item {
                         name: unresolved_param.xml.name.clone(),
                         qualified_name: qualified_name.clone(),
@@ -335,10 +336,10 @@ pub(crate) fn construct_containers(
     unresolved: HashMap<String, UnresolvedContainer>,
     sorted_names: Vec<String>,
     dependencies: HashMap<String, String>,
-    parameters: &HashMap<String, Arc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<Parameter>>,
 ) -> Result<HashMap<String, Arc<SequenceContainerType>>> {
     // Build reverse mapping: parent -> [(child_name, restriction_criteria)]
-    let mut parent_to_children: HashMap<String, Vec<(String, crate::RestrictionCriteria)>> =
+    let mut parent_to_children: HashMap<String, Vec<(String, RestrictionCriteria)>> =
         HashMap::new();
 
     for (child_name, parent_name) in &dependencies {
@@ -426,7 +427,7 @@ pub(crate) fn construct_sequence_container_type(
     xml: hermes_xtce::SequenceContainerType,
     qualified_name: String,
     space_system_path: &str,
-    parameters: &HashMap<String, Arc<crate::Parameter>>,
+    parameters: &HashMap<String, Arc<Parameter>>,
     containers: &HashMap<String, UnresolvedContainer>,
 ) -> Result<SequenceContainerType> {
     // Convert size_in_bits if specified via binary encoding

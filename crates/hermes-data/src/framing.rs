@@ -1,4 +1,4 @@
-use crate::bit_vec::BitVec;
+use crate::de::BitVec;
 use crate::{ByteOrder, Error, Result};
 
 #[derive(Debug, Clone)]

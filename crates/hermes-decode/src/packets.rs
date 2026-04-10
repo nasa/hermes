@@ -1,6 +1,7 @@
 use crate::link::Link;
 use anyhow::Result;
-use hermes_data::{MissionDatabase, Packet, TmFrame};
+use hermes_data::de::Packet;
+use hermes_data::{MissionDatabase, TmFrame};
 use std::sync::{mpsc, Arc};
 use tracing::warn;
 

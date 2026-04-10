@@ -1,7 +1,7 @@
 use crate::app::App;
 use crate::ui;
 use anyhow::Result;
-use hermes_data::Packet;
+use hermes_data::de::Packet;
 use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::crossterm::terminal::{
