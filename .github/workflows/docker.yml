@@ -14,7 +14,7 @@ env:
 
 jobs:
   build-and-push:
-    name: Build and Push Docker Image (${{ matrix.platform }})
+    name: Build Docker Image (${{ matrix.platform }})
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -26,6 +26,10 @@ jobs:
             runner: ubuntu-latest
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
+    outputs:
+      image-name: ${{ steps.image.outputs.name }}
+      digest-amd64: ${{ matrix.platform == 'linux/amd64' && steps.build.outputs.digest || '' }}
+      digest-arm64: ${{ matrix.platform == 'linux/arm64' && steps.build.outputs.digest || '' }}
 
     steps:
       - name: Checkout code
@@ -46,34 +50,43 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            # Tag with 'dev' on push to main
-            type=raw,value=dev,enable={{is_default_branch}}
-            # Tag with version number on release
-            type=semver,pattern={{version}}
-            # Tag with 'latest' on release (not pre-release)
-            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
           labels: |
             org.opencontainers.image.title=Hermes Backend
             org.opencontainers.image.description=NASA telemetry and commanding system backend
             org.opencontainers.image.vendor=Jet Propulsion Laboratory
-          flavor: |
-            suffix=-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
 
-      - name: Build and push Docker image
+      - name: Set image name
+        id: image
+        run: echo "name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" >> $GITHUB_OUTPUT
+
+      - name: Build and push by digest
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile.backend
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
 
   merge-manifests:
-    name: Create and Push Multi-Arch Manifest
+    name: Create Multi-Arch Manifest
     needs: build-and-push
     runs-on: ubuntu-latest
     permissions:
@@ -81,6 +94,16 @@ jobs:
       packages: write
 
     steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -98,13 +121,8 @@ jobs:
             type=semver,pattern={{version}}
             type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
 
-      - name: Create and push multi-arch manifest
+      - name: Create manifest list and push
+        working-directory: /tmp/digests
         run: |
-          for tag in ${{ steps.meta.outputs.tags }}; do
-            docker buildx imagetools create -t ${tag} \
-              ${tag}-amd64 \
-              ${tag}-arm64
-          done
-
-      - name: Image digest
-        run: echo "Multi-arch manifest created for tags ${{ steps.meta.outputs.tags }}"
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@sha256:%s ' *)
