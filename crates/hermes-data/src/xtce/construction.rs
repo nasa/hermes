@@ -494,3 +494,251 @@ pub(crate) fn construct_sequence_container_type(
         children: vec![],
     })
 }
+
+// ============================================================================
+// Command construction functions
+// ============================================================================
+
+use super::collection::{UnresolvedArgumentType, UnresolvedMetaCommand};
+use crate::{Argument, MetaCommand};
+
+/// Construct argument types from XTCE ArgumentTypeSetType
+/// Similar to parameter types, but for command arguments
+pub(crate) fn construct_argument_types(
+    unresolved: HashMap<String, UnresolvedArgumentType>,
+) -> Result<HashMap<String, Arc<crate::Type>>> {
+    let mut completed: HashMap<String, Arc<crate::Type>> = HashMap::new();
+
+    // Convert argument types - they follow the same structure as parameter types
+    for (qualified_name, unresolved_type) in unresolved {
+        // Argument types use the same underlying type system as parameters
+        // Convert using the same type conversion logic
+        match convert_argument_type_set(&unresolved_type.xml) {
+            Ok(type_) => {
+                completed.insert(qualified_name, Arc::new(type_));
+            }
+            Err(Error::NotImplemented(msg)) => {
+                tracing::warn!(
+                    "Skipping unsupported argument type '{}': {}",
+                    qualified_name,
+                    msg
+                );
+            }
+            Err(e) => {
+                return Err(e);
+            }
+        }
+    }
+
+    Ok(completed)
+}
+
+/// Convert XTCE ArgumentTypeSetType to internal Type
+/// For now, we support basic argument types by converting through the base type
+fn convert_argument_type_set(arg_type: &hermes_xtce::ArgumentTypeSetType) -> Result<crate::Type> {
+    // Argument types in XTCE have a base_type field that references the underlying type
+    // For simplicity, we'll create basic types directly
+    // TODO: Properly implement full XTCE argument type conversion with ValidRange support
+
+    match arg_type {
+        hermes_xtce::ArgumentTypeSetType::IntegerArgumentType(_) => {
+            // For now, return a placeholder integer type
+            // TODO: Parse the actual encoding from the argument type
+            Err(Error::NotImplemented("Integer argument type conversion"))
+        }
+        hermes_xtce::ArgumentTypeSetType::FloatArgumentType(_) => {
+            Err(Error::NotImplemented("Float argument type conversion"))
+        }
+        hermes_xtce::ArgumentTypeSetType::StringArgumentType(_) => {
+            Err(Error::NotImplemented("String argument type conversion"))
+        }
+        hermes_xtce::ArgumentTypeSetType::BooleanArgumentType(_) => {
+            Err(Error::NotImplemented("Boolean argument type conversion"))
+        }
+        hermes_xtce::ArgumentTypeSetType::EnumeratedArgumentType(_) => {
+            Err(Error::NotImplemented("Enumerated argument type conversion"))
+        }
+        hermes_xtce::ArgumentTypeSetType::BinaryArgumentType(_) => {
+            Err(Error::NotImplemented("Binary argument type conversion"))
+        }
+        _ => Err(Error::NotImplemented("Unsupported argument type")),
+    }
+}
+
+/// Construct command arguments, similar to parameter construction
+pub(crate) fn construct_arguments(
+    meta_commands: &HashMap<String, UnresolvedMetaCommand>,
+    argument_types: &HashMap<String, Arc<crate::Type>>,
+) -> Result<HashMap<String, Arc<Argument>>> {
+    let mut arguments = HashMap::new();
+
+    // Collect all arguments from all commands
+    for (cmd_qualified_name, unresolved_cmd) in meta_commands {
+        if let Some(arg_list) = &unresolved_cmd.xml.argument_list {
+            for arg_xml in &arg_list.argument {
+                let arg_qualified_name = format!("{}/{}", cmd_qualified_name, arg_xml.name);
+
+                // Resolve the argument type reference
+                let resolved_type_ref = resolve_parameter_type_name(
+                    &arg_xml.argument_type_ref,
+                    &unresolved_cmd.space_system_path,
+                    argument_types,
+                )?;
+
+                let type_ = argument_types
+                    .get(&resolved_type_ref)
+                    .ok_or_else(|| Error::UnresolvedReference(resolved_type_ref.clone()))?
+                    .clone();
+
+                // Parse initial value if present
+                let initial_value = if let Some(initial) = &arg_xml.initial_value {
+                    Some(crate::Value::parse(&type_, initial)?)
+                } else {
+                    None
+                };
+
+                let argument = Arc::new(Argument {
+                    head: Item {
+                        name: arg_xml.name.clone(),
+                        qualified_name: arg_qualified_name.clone(),
+                        short_description: arg_xml.short_description.clone(),
+                        long_description: arg_xml.long_description.clone(),
+                        ancillary_data_set: arg_xml.ancillary_data_set.clone(),
+                    },
+                    type_,
+                    initial_value,
+                });
+
+                arguments.insert(arg_qualified_name, argument);
+            }
+        }
+    }
+
+    Ok(arguments)
+}
+
+/// Build dependency graph for meta commands (similar to containers)
+pub(crate) fn build_command_dependency_graph(
+    unresolved: &HashMap<String, UnresolvedMetaCommand>,
+) -> Result<(Vec<String>, HashMap<String, Option<String>>)> {
+    let mut sorted_names = Vec::new();
+    let mut dependencies: HashMap<String, Option<String>> = HashMap::new();
+
+    // Commands with no base command come first
+    let mut no_deps: Vec<String> = Vec::new();
+    let mut with_deps: Vec<(String, String)> = Vec::new();
+
+    for (qualified_name, unresolved_cmd) in unresolved {
+        if let Some(base_cmd_ref) = &unresolved_cmd.base_command_ref {
+            // Resolve the base command reference
+            let resolved_base = resolve_parameter_type_name(
+                base_cmd_ref,
+                &unresolved_cmd.space_system_path,
+                &HashMap::new(), // We'll resolve later in the actual construction
+            )
+            .unwrap_or(base_cmd_ref.clone());
+
+            with_deps.push((qualified_name.clone(), resolved_base.clone()));
+            dependencies.insert(qualified_name.clone(), Some(resolved_base));
+        } else {
+            no_deps.push(qualified_name.clone());
+            dependencies.insert(qualified_name.clone(), None);
+        }
+    }
+
+    // Topological sort
+    sorted_names.extend(no_deps);
+
+    // Process commands with dependencies
+    let mut remaining = with_deps;
+    while !remaining.is_empty() {
+        let mut progress = false;
+        let mut still_remaining = Vec::new();
+
+        for (cmd_name, base_cmd) in remaining {
+            if sorted_names.contains(&base_cmd) {
+                sorted_names.push(cmd_name);
+                progress = true;
+            } else {
+                still_remaining.push((cmd_name, base_cmd));
+            }
+        }
+
+        if !progress {
+            return Err(Error::InvalidXtce(
+                "Circular dependency in command inheritance".to_string(),
+            ));
+        }
+
+        remaining = still_remaining;
+    }
+
+    Ok((sorted_names, dependencies))
+}
+
+/// Construct meta commands with inheritance
+pub(crate) fn construct_meta_commands(
+    unresolved: HashMap<String, UnresolvedMetaCommand>,
+    arguments: &HashMap<String, Arc<Argument>>,
+) -> Result<HashMap<String, Arc<MetaCommand>>> {
+    let mut commands: HashMap<String, Arc<MetaCommand>> = HashMap::new();
+
+    // Build dependency graph
+    let (sorted_names, dependencies) = build_command_dependency_graph(&unresolved)?;
+
+    // Construct commands in dependency order
+    for qualified_name in sorted_names {
+        let unresolved_cmd = unresolved.get(&qualified_name).ok_or_else(|| {
+            Error::InvalidXtce(format!("Command not found: {}", qualified_name))
+        })?;
+
+        // Get base command if it exists
+        let base_command = if let Some(base_cmd_ref) = dependencies.get(&qualified_name).unwrap() {
+            commands.get(base_cmd_ref).map(|c| c.clone())
+        } else {
+            None
+        };
+
+        // Collect this command's arguments
+        let mut cmd_args = Vec::new();
+        if let Some(arg_list) = &unresolved_cmd.xml.argument_list {
+            for arg_xml in &arg_list.argument {
+                let arg_qualified_name = format!("{}/{}", qualified_name, arg_xml.name);
+                if let Some(arg) = arguments.get(&arg_qualified_name) {
+                    cmd_args.push(arg.clone());
+                }
+            }
+        }
+
+        // If there's a base command, inherit its arguments first
+        let all_args = if let Some(base) = &base_command {
+            let mut inherited = base.args.clone();
+            inherited.extend(cmd_args);
+            inherited
+        } else {
+            cmd_args
+        };
+
+        // TODO: Convert command container, constraints, and verifiers
+        // For now, create placeholder empty vectors
+        let command = Arc::new(MetaCommand {
+            head: Item {
+                name: unresolved_cmd.xml.name.clone(),
+                qualified_name: qualified_name.clone(),
+                short_description: unresolved_cmd.xml.short_description.clone(),
+                long_description: unresolved_cmd.xml.long_description.clone(),
+                ancillary_data_set: unresolved_cmd.xml.ancillary_data_set.clone(),
+            },
+            abstract_: unresolved_cmd.xml.abstract_,
+            args: all_args,
+            base_command,
+            command_container: None, // TODO: Implement
+            transmission_constraints: Vec::new(), // TODO: Implement
+            verifiers: Vec::new(), // TODO: Implement
+        });
+
+        commands.insert(qualified_name, command);
+    }
+
+    Ok(commands)
+}

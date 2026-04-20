@@ -18,11 +18,13 @@ mod utils;
 // Re-export public types and functions
 pub(crate) use collection::{
     UnresolvedContainer, collect_containers, collect_parameter_types, collect_parameters,
+    collect_argument_types, collect_meta_commands,
 };
 pub(crate) use construction::{
     build_dependency_graph, construct_containers, construct_parameter_types_pass1,
     construct_parameter_types_pass2_aggregates, construct_parameter_types_pass3_binary_array,
     construct_parameters, construct_remaining_parameters,
+    construct_argument_types, construct_arguments, construct_meta_commands,
 };
 pub(crate) use conversion::convert_integer_value;
 pub(crate) use resolution::{

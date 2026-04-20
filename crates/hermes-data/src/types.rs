@@ -436,4 +436,231 @@ impl Value {
             Type::Aggregate(_) => Err(Error::NotImplemented("Aggregate value parsing")),
         }
     }
+
+    /// Validate that this value conforms to the given type's constraints
+    pub fn validate(&self, ty: &Type) -> Result<()> {
+        match (self, ty) {
+            (Value::SignedInteger(i), Type::Integer(int_ty)) => {
+                if !int_ty.signed {
+                    return Err(Error::TypeValueMismatch);
+                }
+                Self::validate_signed_integer(*i, int_ty)
+            }
+            (Value::UnsignedInteger(u), Type::Integer(int_ty)) => {
+                if int_ty.signed {
+                    return Err(Error::TypeValueMismatch);
+                }
+                Self::validate_unsigned_integer(*u, int_ty)
+            }
+            (Value::Float(f), Type::Float(float_ty)) => Self::validate_float(*f, float_ty),
+            (Value::String(s), Type::String(str_ty)) => Self::validate_string(s, str_ty),
+            (Value::Boolean(_), Type::Boolean(_)) => Ok(()),
+            (Value::Binary(b), Type::Binary(bin_ty)) => Self::validate_binary(b, bin_ty),
+            (Value::Enumerated(e), Type::Enumerated(enum_ty)) => Self::validate_enum(e, enum_ty),
+            (Value::Array(arr), Type::Array(arr_ty)) => Self::validate_array(arr, arr_ty),
+            (Value::Aggregate(agg), Type::Aggregate(agg_ty)) => {
+                Self::validate_aggregate(agg, agg_ty)
+            }
+            (Value::AbsoluteTime(_), Type::AbsoluteTime(_)) => {
+                Err(Error::NotSupported("Validating absolute time value"))
+            }
+            (Value::RelativeTime(_), Type::RelativeTime(_)) => {
+                Err(Error::NotSupported("Validating relative time value"))
+            }
+            _ => return Err(Error::TypeValueMismatch),
+        }
+    }
+
+    fn validate_signed_integer(value: i64, int_ty: &IntegerType) -> Result<()> {
+        // Check that value fits in size_in_bits
+        let size_in_bits = int_ty.size_in_bits;
+        if size_in_bits >= 64 {
+            // 64-bit values are always valid for i64
+            return Ok(());
+        }
+
+        let max_value = (1i64 << (size_in_bits - 1)) - 1;
+        let min_value = -(1i64 << (size_in_bits - 1));
+
+        if value < min_value || value > max_value {
+            return Err(Error::InvalidValue(format!(
+                "Integer {} out of range for {}-bit signed integer (range: {}..{})",
+                value, size_in_bits, min_value, max_value
+            )));
+        }
+
+        Ok(())
+    }
+
+    fn validate_unsigned_integer(value: u64, int_ty: &IntegerType) -> Result<()> {
+        let size_in_bits = int_ty.size_in_bits;
+        if size_in_bits >= 64 {
+            // 64-bit values are always valid for u64
+            return Ok(());
+        }
+
+        let max_value = (1u64 << size_in_bits) - 1;
+
+        if value > max_value {
+            return Err(Error::InvalidValue(format!(
+                "Unsigned integer {} out of range for {}-bit unsigned integer (max: {})",
+                value, size_in_bits, max_value
+            )));
+        }
+
+        Ok(())
+    }
+
+    fn validate_float(value: f64, _ty: &FloatType) -> Result<()> {
+        // Check for NaN, infinity
+        if value.is_nan() {
+            return Err(Error::InvalidValue("Float value is NaN".to_string()));
+        }
+        if value.is_infinite() {
+            return Err(Error::InvalidValue(format!(
+                "Float value is infinite: {}",
+                value
+            )));
+        }
+
+        // TODO: Add ValidRange checking when extended with min/max fields
+
+        Ok(())
+    }
+
+    fn validate_string(value: &str, str_ty: &StringType) -> Result<()> {
+        match &str_ty.size {
+            VariableSize::Fixed(size_in_bits) => {
+                let byte_len = value.len();
+                let bit_size = byte_len * 8;
+                if bit_size != *size_in_bits {
+                    return Err(Error::InvalidValue(format!(
+                        "String length {} bits does not match fixed size {} bits",
+                        bit_size, size_in_bits
+                    )));
+                }
+            }
+            VariableSize::LeadingSize {
+                max_size_in_bits, ..
+            } => {
+                let byte_len = value.len();
+                let bit_size = byte_len * 8;
+                if bit_size > *max_size_in_bits {
+                    return Err(Error::InvalidValue(format!(
+                        "String length {} bits exceeds max size {} bits",
+                        bit_size, max_size_in_bits
+                    )));
+                }
+            }
+            VariableSize::TerminationChar {
+                max_size_in_bits,
+                chr,
+            } => {
+                if value.as_bytes().contains(chr) {
+                    return Err(Error::InvalidValue(format!(
+                        "String contains termination character 0x{:02x}",
+                        chr
+                    )));
+                }
+                let byte_len = value.len();
+                let bit_size = byte_len * 8;
+                if bit_size > *max_size_in_bits {
+                    return Err(Error::InvalidValue(format!(
+                        "String length {} bits exceeds max size {} bits",
+                        bit_size, max_size_in_bits
+                    )));
+                }
+            }
+            VariableSize::DynamicParameterRef(_) => {
+                // Can't validate without runtime context
+            }
+        }
+
+        Ok(())
+    }
+
+    fn validate_binary(value: &[u8], bin_ty: &BinaryType) -> Result<()> {
+        match &bin_ty.size {
+            VariableSize::Fixed(size_in_bits) => {
+                let byte_len = value.len();
+                let bit_size = byte_len * 8;
+                if bit_size != *size_in_bits {
+                    return Err(Error::InvalidValue(format!(
+                        "Binary length {} bits does not match fixed size {} bits",
+                        bit_size, size_in_bits
+                    )));
+                }
+            }
+            VariableSize::LeadingSize {
+                max_size_in_bits, ..
+            } => {
+                let byte_len = value.len();
+                let bit_size = byte_len * 8;
+                if bit_size > *max_size_in_bits {
+                    return Err(Error::InvalidValue(format!(
+                        "Binary length {} bits exceeds max size {} bits",
+                        bit_size, max_size_in_bits
+                    )));
+                }
+            }
+            _ => {
+                // Other size types not applicable to binary
+            }
+        }
+
+        Ok(())
+    }
+
+    fn validate_enum(value: &EnumerationValue, enum_ty: &EnumeratedType) -> Result<()> {
+        // Check that the value exists in the enumeration list
+        let valid = enum_ty
+            .enumeration_list
+            .iter()
+            .any(|entry| entry.value == value.value);
+
+        if !valid {
+            return Err(Error::InvalidValue(format!(
+                "Enumeration value {} not in enumeration list",
+                value.value
+            )));
+        }
+
+        Ok(())
+    }
+
+    fn validate_array(arr: &[Value], arr_ty: &ArrayType) -> Result<()> {
+        // Validate each element
+        for (i, element) in arr.iter().enumerate() {
+            element
+                .validate(&arr_ty.element_type)
+                .map_err(|e| Error::InvalidValue(format!("Array element {} invalid: {}", i, e)))?;
+        }
+
+        // TODO: Validate dimensions if static
+        // For dynamic arrays, would need context to resolve IntegerValue dimensions
+
+        Ok(())
+    }
+
+    fn validate_aggregate(agg: &AggregateValue, agg_ty: &AggregateType) -> Result<()> {
+        // Check that all required members are present
+        for member in &agg_ty.members {
+            let value = agg.get(&member.name).ok_or_else(|| {
+                Error::InvalidValue(format!("Missing aggregate member '{}'", member.name))
+            })?;
+            value.validate(&member.type_)?;
+        }
+
+        // Check for extra members not in type
+        for (name, _) in agg.iter() {
+            if !agg_ty.members.iter().any(|m| m.name == *name) {
+                return Err(Error::InvalidValue(format!(
+                    "Aggregate has unexpected member '{}'",
+                    name
+                )));
+            }
+        }
+
+        Ok(())
+    }
 }

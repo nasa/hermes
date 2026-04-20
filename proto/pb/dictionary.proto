@@ -189,12 +189,9 @@ message TelemetryDef {
 
 // Lightweight reference for passing dictionary items through message busses
 message TelemetryRef {
-  int32  id        = 1;
-  string name      = 2;
-  string component = 3;
-
-  // (optional) dictionary ID this comes from
-  string dictionary = 10;
+  reserved 1, 2, 3;
+  string instance_id = 4;
+  string qualified_name = 5;
 }
 
 message DictionaryHead {

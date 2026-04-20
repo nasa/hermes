@@ -58,9 +58,18 @@ pub enum Error {
     #[error("Operation Not Implemented: {0}")]
     NotImplemented(&'static str),
 
+    #[error("Operation Not Supported: {0}")]
+    NotSupported(&'static str),
+
     #[error("Invalid comparison: {0}")]
     InvalidComparison(Box<InvalidComparison>),
 
     #[error("Mismatching checksum, computed {0}, received {1}")]
     ChecksumMismatch(u16, u16),
+
+    #[error("Type-value mismatch: value does not match expected type")]
+    TypeValueMismatch,
+
+    #[error("Unresolved reference: {0}")]
+    UnresolvedReference(String),
 }
