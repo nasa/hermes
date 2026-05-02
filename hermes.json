@@ -1,0 +1,12 @@
+[
+    {
+        "name": "FPrime Server",
+        "provider": "FPrime Server",
+        "settings": {
+            "name": "fprime",
+            "address": "0.0.0.0:8000",
+            "dictionary": "GncDplTopology",
+            "protocol": "fprime"
+        }
+    }
+]

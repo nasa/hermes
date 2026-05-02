@@ -21,6 +21,66 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// *
+// Comparison operators for constraint checks.
+type ComparisonOperator int32
+
+const (
+	ComparisonOperator_EQUAL                 ComparisonOperator = 0 // ==
+	ComparisonOperator_NOT_EQUAL             ComparisonOperator = 1 // !=
+	ComparisonOperator_LESS_THAN             ComparisonOperator = 2 // <
+	ComparisonOperator_GREATER_THAN          ComparisonOperator = 3 // >
+	ComparisonOperator_LESS_THAN_OR_EQUAL    ComparisonOperator = 4 // <=
+	ComparisonOperator_GREATER_THAN_OR_EQUAL ComparisonOperator = 5 // >=
+)
+
+// Enum value maps for ComparisonOperator.
+var (
+	ComparisonOperator_name = map[int32]string{
+		0: "EQUAL",
+		1: "NOT_EQUAL",
+		2: "LESS_THAN",
+		3: "GREATER_THAN",
+		4: "LESS_THAN_OR_EQUAL",
+		5: "GREATER_THAN_OR_EQUAL",
+	}
+	ComparisonOperator_value = map[string]int32{
+		"EQUAL":                 0,
+		"NOT_EQUAL":             1,
+		"LESS_THAN":             2,
+		"GREATER_THAN":          3,
+		"LESS_THAN_OR_EQUAL":    4,
+		"GREATER_THAN_OR_EQUAL": 5,
+	}
+)
+
+func (x ComparisonOperator) Enum() *ComparisonOperator {
+	p := new(ComparisonOperator)
+	*p = x
+	return p
+}
+
+func (x ComparisonOperator) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ComparisonOperator) Descriptor() protoreflect.EnumDescriptor {
+	return file_dictionary_proto_enumTypes[0].Descriptor()
+}
+
+func (ComparisonOperator) Type() protoreflect.EnumType {
+	return &file_dictionary_proto_enumTypes[0]
+}
+
+func (x ComparisonOperator) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ComparisonOperator.Descriptor instead.
+func (ComparisonOperator) EnumDescriptor() ([]byte, []int) {
+	return file_dictionary_proto_rawDescGZIP(), []int{0}
+}
+
 type EvrSeverity int32
 
 const (
@@ -66,11 +126,11 @@ func (x EvrSeverity) String() string {
 }
 
 func (EvrSeverity) Descriptor() protoreflect.EnumDescriptor {
-	return file_dictionary_proto_enumTypes[0].Descriptor()
+	return file_dictionary_proto_enumTypes[1].Descriptor()
 }
 
 func (EvrSeverity) Type() protoreflect.EnumType {
-	return &file_dictionary_proto_enumTypes[0]
+	return &file_dictionary_proto_enumTypes[1]
 }
 
 func (x EvrSeverity) Number() protoreflect.EnumNumber {
@@ -79,7 +139,7 @@ func (x EvrSeverity) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use EvrSeverity.Descriptor instead.
 func (EvrSeverity) EnumDescriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{0}
+	return file_dictionary_proto_rawDescGZIP(), []int{1}
 }
 
 // Format specifier types following FPP specification
@@ -146,11 +206,11 @@ func (x FormatSpecifierType) String() string {
 }
 
 func (FormatSpecifierType) Descriptor() protoreflect.EnumDescriptor {
-	return file_dictionary_proto_enumTypes[1].Descriptor()
+	return file_dictionary_proto_enumTypes[2].Descriptor()
 }
 
 func (FormatSpecifierType) Type() protoreflect.EnumType {
-	return &file_dictionary_proto_enumTypes[1]
+	return &file_dictionary_proto_enumTypes[2]
 }
 
 func (x FormatSpecifierType) Number() protoreflect.EnumNumber {
@@ -159,7 +219,7 @@ func (x FormatSpecifierType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FormatSpecifierType.Descriptor instead.
 func (FormatSpecifierType) EnumDescriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{1}
+	return file_dictionary_proto_rawDescGZIP(), []int{2}
 }
 
 type ParameterDef struct {
@@ -243,30 +303,104 @@ func (x *ParameterDef) GetMetadata() string {
 	return ""
 }
 
+// *
+// Common metadata shared by all XTCE definitions (commands, telemetry, parameters).
+// This is reusable across different XTCE item types.
+type XtceDef struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Name             string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`                                                                                                                  // Local name (e.g., "CMD_NO_OP", "TEMP_SENSOR")
+	QualifiedName    string                 `protobuf:"bytes,2,opt,name=qualified_name,json=qualifiedName,proto3" json:"qualified_name,omitempty"`                                                                           // Full XTCE path (e.g., "/Mission/System/CMD_NO_OP")
+	ShortDescription *string                `protobuf:"bytes,3,opt,name=short_description,json=shortDescription,proto3,oneof" json:"short_description,omitempty"`                                                            // Brief description
+	LongDescription  *string                `protobuf:"bytes,4,opt,name=long_description,json=longDescription,proto3,oneof" json:"long_description,omitempty"`                                                               // Detailed description (may include HTML)
+	AncillaryData    map[string]string      `protobuf:"bytes,5,rep,name=ancillary_data,json=ancillaryData,proto3" json:"ancillary_data,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // XTCE AncillaryData key-value pairs
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *XtceDef) Reset() {
+	*x = XtceDef{}
+	mi := &file_dictionary_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *XtceDef) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*XtceDef) ProtoMessage() {}
+
+func (x *XtceDef) ProtoReflect() protoreflect.Message {
+	mi := &file_dictionary_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use XtceDef.ProtoReflect.Descriptor instead.
+func (*XtceDef) Descriptor() ([]byte, []int) {
+	return file_dictionary_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *XtceDef) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *XtceDef) GetQualifiedName() string {
+	if x != nil {
+		return x.QualifiedName
+	}
+	return ""
+}
+
+func (x *XtceDef) GetShortDescription() string {
+	if x != nil && x.ShortDescription != nil {
+		return *x.ShortDescription
+	}
+	return ""
+}
+
+func (x *XtceDef) GetLongDescription() string {
+	if x != nil && x.LongDescription != nil {
+		return *x.LongDescription
+	}
+	return ""
+}
+
+func (x *XtceDef) GetAncillaryData() map[string]string {
+	if x != nil {
+		return x.AncillaryData
+	}
+	return nil
+}
+
+// *
+// XTCE command definition with flattened inheritance structure.
+// This represents a single command that can be sent to the spacecraft.
 type CommandDef struct {
-	state  protoimpl.MessageState `protogen:"open.v1"`
-	Opcode int32                  `protobuf:"varint,1,opt,name=opcode,proto3" json:"opcode,omitempty"`
-	// *
-	// Mnemonic command used to identify this command.
-	// FSW may or may not include the module name in the mnemonic and its
-	// up to the language parsing software to identify the proper command from mnemonic information.
-	//
-	// This may have varying meaning across missions
-	Mnemonic string `protobuf:"bytes,2,opt,name=mnemonic,proto3" json:"mnemonic,omitempty"`
-	// *
-	// Parent component or module owning this command
-	Component string `protobuf:"bytes,3,opt,name=component,proto3" json:"component,omitempty"`
-	// *
-	// Command arguments
-	Arguments     []*Field `protobuf:"bytes,4,rep,name=arguments,proto3" json:"arguments,omitempty"`
-	Metadata      string   `protobuf:"bytes,5,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Def      *XtceDef               `protobuf:"bytes,1,opt,name=def,proto3" json:"def,omitempty"`            // Common XTCE metadata
+	Abstract bool                   `protobuf:"varint,2,opt,name=abstract,proto3" json:"abstract,omitempty"` // True if this is an abstract command (not instantiable)
+	// Command arguments (flattened from inheritance chain)
+	Arguments []*ArgumentDef `protobuf:"bytes,3,rep,name=arguments,proto3" json:"arguments,omitempty"`
+	// Input validation constraints (checked before sending)
+	// These determine if the command CAN be sent, not whether it executed successfully
+	TransmissionConstraints []*TransmissionConstraint `protobuf:"bytes,4,rep,name=transmission_constraints,json=transmissionConstraints,proto3" json:"transmission_constraints,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
 }
 
 func (x *CommandDef) Reset() {
 	*x = CommandDef{}
-	mi := &file_dictionary_proto_msgTypes[1]
+	mi := &file_dictionary_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -278,7 +412,7 @@ func (x *CommandDef) String() string {
 func (*CommandDef) ProtoMessage() {}
 
 func (x *CommandDef) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[1]
+	mi := &file_dictionary_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -291,43 +425,386 @@ func (x *CommandDef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandDef.ProtoReflect.Descriptor instead.
 func (*CommandDef) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{1}
+	return file_dictionary_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *CommandDef) GetOpcode() int32 {
+func (x *CommandDef) GetDef() *XtceDef {
 	if x != nil {
-		return x.Opcode
+		return x.Def
 	}
-	return 0
+	return nil
 }
 
-func (x *CommandDef) GetMnemonic() string {
+func (x *CommandDef) GetAbstract() bool {
 	if x != nil {
-		return x.Mnemonic
+		return x.Abstract
 	}
-	return ""
+	return false
 }
 
-func (x *CommandDef) GetComponent() string {
-	if x != nil {
-		return x.Component
-	}
-	return ""
-}
-
-func (x *CommandDef) GetArguments() []*Field {
+func (x *CommandDef) GetArguments() []*ArgumentDef {
 	if x != nil {
 		return x.Arguments
 	}
 	return nil
 }
 
-func (x *CommandDef) GetMetadata() string {
+func (x *CommandDef) GetTransmissionConstraints() []*TransmissionConstraint {
 	if x != nil {
-		return x.Metadata
+		return x.TransmissionConstraints
+	}
+	return nil
+}
+
+// *
+// Command argument definition.
+// Arguments are inputs that must be provided when sending the command.
+type ArgumentDef struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Def           *XtceDef               `protobuf:"bytes,1,opt,name=def,proto3" json:"def,omitempty"`                                             // Common XTCE metadata
+	Type          *Type                  `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`                                           // Argument data type
+	InitialValue  *Value                 `protobuf:"bytes,3,opt,name=initial_value,json=initialValue,proto3,oneof" json:"initial_value,omitempty"` // Default value if not provided
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ArgumentDef) Reset() {
+	*x = ArgumentDef{}
+	mi := &file_dictionary_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ArgumentDef) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ArgumentDef) ProtoMessage() {}
+
+func (x *ArgumentDef) ProtoReflect() protoreflect.Message {
+	mi := &file_dictionary_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ArgumentDef.ProtoReflect.Descriptor instead.
+func (*ArgumentDef) Descriptor() ([]byte, []int) {
+	return file_dictionary_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ArgumentDef) GetDef() *XtceDef {
+	if x != nil {
+		return x.Def
+	}
+	return nil
+}
+
+func (x *ArgumentDef) GetType() *Type {
+	if x != nil {
+		return x.Type
+	}
+	return nil
+}
+
+func (x *ArgumentDef) GetInitialValue() *Value {
+	if x != nil {
+		return x.InitialValue
+	}
+	return nil
+}
+
+// *
+// Parameter comparison constraint.
+// Command can only be sent if a telemetry parameter meets a condition.
+// Example: "MotorTemperature" < 80.0 (can't send motor command if too hot)
+type ParameterComparison struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ParameterRef  string                 `protobuf:"bytes,1,opt,name=parameter_ref,json=parameterRef,proto3" json:"parameter_ref,omitempty"`     // Qualified name of parameter to check
+	Operator      ComparisonOperator     `protobuf:"varint,2,opt,name=operator,proto3,enum=hermes.ComparisonOperator" json:"operator,omitempty"` // Comparison operator
+	Value         *Value                 `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`                                       // Value to compare against
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ParameterComparison) Reset() {
+	*x = ParameterComparison{}
+	mi := &file_dictionary_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ParameterComparison) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ParameterComparison) ProtoMessage() {}
+
+func (x *ParameterComparison) ProtoReflect() protoreflect.Message {
+	mi := &file_dictionary_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ParameterComparison.ProtoReflect.Descriptor instead.
+func (*ParameterComparison) Descriptor() ([]byte, []int) {
+	return file_dictionary_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ParameterComparison) GetParameterRef() string {
+	if x != nil {
+		return x.ParameterRef
 	}
 	return ""
 }
+
+func (x *ParameterComparison) GetOperator() ComparisonOperator {
+	if x != nil {
+		return x.Operator
+	}
+	return ComparisonOperator_EQUAL
+}
+
+func (x *ParameterComparison) GetValue() *Value {
+	if x != nil {
+		return x.Value
+	}
+	return nil
+}
+
+// *
+// Time window constraint.
+// Command can only be sent within a specific time window.
+// Example: Software update commands only allowed during maintenance windows.
+type TimeWindow struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StartTime     *string                `protobuf:"bytes,1,opt,name=start_time,json=startTime,proto3,oneof" json:"start_time,omitempty"` // ISO 8601 timestamp (optional = unbounded start)
+	EndTime       *string                `protobuf:"bytes,2,opt,name=end_time,json=endTime,proto3,oneof" json:"end_time,omitempty"`       // ISO 8601 timestamp (optional = unbounded end)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TimeWindow) Reset() {
+	*x = TimeWindow{}
+	mi := &file_dictionary_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TimeWindow) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TimeWindow) ProtoMessage() {}
+
+func (x *TimeWindow) ProtoReflect() protoreflect.Message {
+	mi := &file_dictionary_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TimeWindow.ProtoReflect.Descriptor instead.
+func (*TimeWindow) Descriptor() ([]byte, []int) {
+	return file_dictionary_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *TimeWindow) GetStartTime() string {
+	if x != nil && x.StartTime != nil {
+		return *x.StartTime
+	}
+	return ""
+}
+
+func (x *TimeWindow) GetEndTime() string {
+	if x != nil && x.EndTime != nil {
+		return *x.EndTime
+	}
+	return ""
+}
+
+// *
+// Boolean expression constraint.
+// Logical expression of multiple conditions.
+type BooleanExpression struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Expression    string                 `protobuf:"bytes,1,opt,name=expression,proto3" json:"expression,omitempty"`   // Expression string (format TBD)
+	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"` // Human-readable description
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BooleanExpression) Reset() {
+	*x = BooleanExpression{}
+	mi := &file_dictionary_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BooleanExpression) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BooleanExpression) ProtoMessage() {}
+
+func (x *BooleanExpression) ProtoReflect() protoreflect.Message {
+	mi := &file_dictionary_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BooleanExpression.ProtoReflect.Descriptor instead.
+func (*BooleanExpression) Descriptor() ([]byte, []int) {
+	return file_dictionary_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *BooleanExpression) GetExpression() string {
+	if x != nil {
+		return x.Expression
+	}
+	return ""
+}
+
+func (x *BooleanExpression) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+// *
+// Transmission constraint from XTCE.
+// These must be satisfied BEFORE sending a command to determine if the
+// command CAN be sent. They validate argument values, system state, and time windows.
+type TransmissionConstraint struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Description string                 `protobuf:"bytes,1,opt,name=description,proto3" json:"description,omitempty"` // Human-readable description
+	// Constraint check (one of these)
+	//
+	// Types that are valid to be assigned to Constraint:
+	//
+	//	*TransmissionConstraint_ParameterComparison
+	//	*TransmissionConstraint_TimeWindow
+	//	*TransmissionConstraint_BooleanExpression
+	Constraint    isTransmissionConstraint_Constraint `protobuf_oneof:"constraint"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TransmissionConstraint) Reset() {
+	*x = TransmissionConstraint{}
+	mi := &file_dictionary_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransmissionConstraint) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransmissionConstraint) ProtoMessage() {}
+
+func (x *TransmissionConstraint) ProtoReflect() protoreflect.Message {
+	mi := &file_dictionary_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransmissionConstraint.ProtoReflect.Descriptor instead.
+func (*TransmissionConstraint) Descriptor() ([]byte, []int) {
+	return file_dictionary_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *TransmissionConstraint) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *TransmissionConstraint) GetConstraint() isTransmissionConstraint_Constraint {
+	if x != nil {
+		return x.Constraint
+	}
+	return nil
+}
+
+func (x *TransmissionConstraint) GetParameterComparison() *ParameterComparison {
+	if x != nil {
+		if x, ok := x.Constraint.(*TransmissionConstraint_ParameterComparison); ok {
+			return x.ParameterComparison
+		}
+	}
+	return nil
+}
+
+func (x *TransmissionConstraint) GetTimeWindow() *TimeWindow {
+	if x != nil {
+		if x, ok := x.Constraint.(*TransmissionConstraint_TimeWindow); ok {
+			return x.TimeWindow
+		}
+	}
+	return nil
+}
+
+func (x *TransmissionConstraint) GetBooleanExpression() *BooleanExpression {
+	if x != nil {
+		if x, ok := x.Constraint.(*TransmissionConstraint_BooleanExpression); ok {
+			return x.BooleanExpression
+		}
+	}
+	return nil
+}
+
+type isTransmissionConstraint_Constraint interface {
+	isTransmissionConstraint_Constraint()
+}
+
+type TransmissionConstraint_ParameterComparison struct {
+	ParameterComparison *ParameterComparison `protobuf:"bytes,2,opt,name=parameter_comparison,json=parameterComparison,proto3,oneof"` // Check telemetry parameter value
+}
+
+type TransmissionConstraint_TimeWindow struct {
+	TimeWindow *TimeWindow `protobuf:"bytes,3,opt,name=time_window,json=timeWindow,proto3,oneof"` // Only valid during time window
+}
+
+type TransmissionConstraint_BooleanExpression struct {
+	BooleanExpression *BooleanExpression `protobuf:"bytes,4,opt,name=boolean_expression,json=booleanExpression,proto3,oneof"` // Logical expression
+}
+
+func (*TransmissionConstraint_ParameterComparison) isTransmissionConstraint_Constraint() {}
+
+func (*TransmissionConstraint_TimeWindow) isTransmissionConstraint_Constraint() {}
+
+func (*TransmissionConstraint_BooleanExpression) isTransmissionConstraint_Constraint() {}
 
 type FormatSpecifier struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -345,7 +822,7 @@ type FormatSpecifier struct {
 
 func (x *FormatSpecifier) Reset() {
 	*x = FormatSpecifier{}
-	mi := &file_dictionary_proto_msgTypes[2]
+	mi := &file_dictionary_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -357,7 +834,7 @@ func (x *FormatSpecifier) String() string {
 func (*FormatSpecifier) ProtoMessage() {}
 
 func (x *FormatSpecifier) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[2]
+	mi := &file_dictionary_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -370,7 +847,7 @@ func (x *FormatSpecifier) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FormatSpecifier.ProtoReflect.Descriptor instead.
 func (*FormatSpecifier) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{2}
+	return file_dictionary_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *FormatSpecifier) GetType() FormatSpecifierType {
@@ -407,7 +884,7 @@ type FormatFragment struct {
 
 func (x *FormatFragment) Reset() {
 	*x = FormatFragment{}
-	mi := &file_dictionary_proto_msgTypes[3]
+	mi := &file_dictionary_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -419,7 +896,7 @@ func (x *FormatFragment) String() string {
 func (*FormatFragment) ProtoMessage() {}
 
 func (x *FormatFragment) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[3]
+	mi := &file_dictionary_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -432,7 +909,7 @@ func (x *FormatFragment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FormatFragment.ProtoReflect.Descriptor instead.
 func (*FormatFragment) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{3}
+	return file_dictionary_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *FormatFragment) GetFragment() isFormatFragment_Fragment {
@@ -490,7 +967,7 @@ type FormatString struct {
 
 func (x *FormatString) Reset() {
 	*x = FormatString{}
-	mi := &file_dictionary_proto_msgTypes[4]
+	mi := &file_dictionary_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -502,7 +979,7 @@ func (x *FormatString) String() string {
 func (*FormatString) ProtoMessage() {}
 
 func (x *FormatString) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[4]
+	mi := &file_dictionary_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -515,7 +992,7 @@ func (x *FormatString) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FormatString.ProtoReflect.Descriptor instead.
 func (*FormatString) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{4}
+	return file_dictionary_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *FormatString) GetFragments() []*FormatFragment {
@@ -566,7 +1043,7 @@ type EventDef struct {
 
 func (x *EventDef) Reset() {
 	*x = EventDef{}
-	mi := &file_dictionary_proto_msgTypes[5]
+	mi := &file_dictionary_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -578,7 +1055,7 @@ func (x *EventDef) String() string {
 func (*EventDef) ProtoMessage() {}
 
 func (x *EventDef) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[5]
+	mi := &file_dictionary_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -591,7 +1068,7 @@ func (x *EventDef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventDef.ProtoReflect.Descriptor instead.
 func (*EventDef) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{5}
+	return file_dictionary_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *EventDef) GetId() int32 {
@@ -666,7 +1143,7 @@ type EventRef struct {
 
 func (x *EventRef) Reset() {
 	*x = EventRef{}
-	mi := &file_dictionary_proto_msgTypes[6]
+	mi := &file_dictionary_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -678,7 +1155,7 @@ func (x *EventRef) String() string {
 func (*EventRef) ProtoMessage() {}
 
 func (x *EventRef) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[6]
+	mi := &file_dictionary_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -691,7 +1168,7 @@ func (x *EventRef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventRef.ProtoReflect.Descriptor instead.
 func (*EventRef) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{6}
+	return file_dictionary_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *EventRef) GetId() int32 {
@@ -757,7 +1234,7 @@ type TelemetryDef struct {
 
 func (x *TelemetryDef) Reset() {
 	*x = TelemetryDef{}
-	mi := &file_dictionary_proto_msgTypes[7]
+	mi := &file_dictionary_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -769,7 +1246,7 @@ func (x *TelemetryDef) String() string {
 func (*TelemetryDef) ProtoMessage() {}
 
 func (x *TelemetryDef) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[7]
+	mi := &file_dictionary_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -782,7 +1259,7 @@ func (x *TelemetryDef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TelemetryDef.ProtoReflect.Descriptor instead.
 func (*TelemetryDef) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{7}
+	return file_dictionary_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *TelemetryDef) GetId() int32 {
@@ -822,19 +1299,16 @@ func (x *TelemetryDef) GetMetadata() string {
 
 // Lightweight reference for passing dictionary items through message busses
 type TelemetryRef struct {
-	state     protoimpl.MessageState `protogen:"open.v1"`
-	Id        int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name      string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Component string                 `protobuf:"bytes,3,opt,name=component,proto3" json:"component,omitempty"`
-	// (optional) dictionary ID this comes from
-	Dictionary    string `protobuf:"bytes,10,opt,name=dictionary,proto3" json:"dictionary,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	InstanceId    string                 `protobuf:"bytes,4,opt,name=instance_id,json=instanceId,proto3" json:"instance_id,omitempty"`
+	QualifiedName string                 `protobuf:"bytes,5,opt,name=qualified_name,json=qualifiedName,proto3" json:"qualified_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TelemetryRef) Reset() {
 	*x = TelemetryRef{}
-	mi := &file_dictionary_proto_msgTypes[8]
+	mi := &file_dictionary_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -846,7 +1320,7 @@ func (x *TelemetryRef) String() string {
 func (*TelemetryRef) ProtoMessage() {}
 
 func (x *TelemetryRef) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[8]
+	mi := &file_dictionary_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -859,33 +1333,19 @@ func (x *TelemetryRef) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TelemetryRef.ProtoReflect.Descriptor instead.
 func (*TelemetryRef) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{8}
+	return file_dictionary_proto_rawDescGZIP(), []int{14}
 }
 
-func (x *TelemetryRef) GetId() int32 {
+func (x *TelemetryRef) GetInstanceId() string {
 	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *TelemetryRef) GetName() string {
-	if x != nil {
-		return x.Name
+		return x.InstanceId
 	}
 	return ""
 }
 
-func (x *TelemetryRef) GetComponent() string {
+func (x *TelemetryRef) GetQualifiedName() string {
 	if x != nil {
-		return x.Component
-	}
-	return ""
-}
-
-func (x *TelemetryRef) GetDictionary() string {
-	if x != nil {
-		return x.Dictionary
+		return x.QualifiedName
 	}
 	return ""
 }
@@ -909,7 +1369,7 @@ type DictionaryHead struct {
 
 func (x *DictionaryHead) Reset() {
 	*x = DictionaryHead{}
-	mi := &file_dictionary_proto_msgTypes[9]
+	mi := &file_dictionary_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -921,7 +1381,7 @@ func (x *DictionaryHead) String() string {
 func (*DictionaryHead) ProtoMessage() {}
 
 func (x *DictionaryHead) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[9]
+	mi := &file_dictionary_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -934,7 +1394,7 @@ func (x *DictionaryHead) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DictionaryHead.ProtoReflect.Descriptor instead.
 func (*DictionaryHead) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{9}
+	return file_dictionary_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *DictionaryHead) GetType() string {
@@ -975,7 +1435,7 @@ type DictionaryNamespace struct {
 
 func (x *DictionaryNamespace) Reset() {
 	*x = DictionaryNamespace{}
-	mi := &file_dictionary_proto_msgTypes[10]
+	mi := &file_dictionary_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -987,7 +1447,7 @@ func (x *DictionaryNamespace) String() string {
 func (*DictionaryNamespace) ProtoMessage() {}
 
 func (x *DictionaryNamespace) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[10]
+	mi := &file_dictionary_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1000,7 +1460,7 @@ func (x *DictionaryNamespace) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DictionaryNamespace.ProtoReflect.Descriptor instead.
 func (*DictionaryNamespace) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{10}
+	return file_dictionary_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *DictionaryNamespace) GetCommands() map[string]*CommandDef {
@@ -1053,7 +1513,7 @@ type Dictionary struct {
 
 func (x *Dictionary) Reset() {
 	*x = Dictionary{}
-	mi := &file_dictionary_proto_msgTypes[11]
+	mi := &file_dictionary_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1065,7 +1525,7 @@ func (x *Dictionary) String() string {
 func (*Dictionary) ProtoMessage() {}
 
 func (x *Dictionary) ProtoReflect() protoreflect.Message {
-	mi := &file_dictionary_proto_msgTypes[11]
+	mi := &file_dictionary_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1078,7 +1538,7 @@ func (x *Dictionary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Dictionary.ProtoReflect.Descriptor instead.
 func (*Dictionary) Descriptor() ([]byte, []int) {
-	return file_dictionary_proto_rawDescGZIP(), []int{11}
+	return file_dictionary_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *Dictionary) GetHead() *DictionaryHead {
@@ -1120,14 +1580,53 @@ const file_dictionary_proto_rawDesc = "" +
 	"\tcomponent\x18\x02 \x01(\tR\tcomponent\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12 \n" +
 	"\x04type\x18\x04 \x01(\v2\f.hermes.TypeR\x04type\x12\x1a\n" +
-	"\bmetadata\x18\x05 \x01(\tR\bmetadata\"\xa7\x01\n" +
+	"\bmetadata\x18\x05 \x01(\tR\bmetadata\"\xde\x02\n" +
+	"\aXtceDef\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12%\n" +
+	"\x0equalified_name\x18\x02 \x01(\tR\rqualifiedName\x120\n" +
+	"\x11short_description\x18\x03 \x01(\tH\x00R\x10shortDescription\x88\x01\x01\x12.\n" +
+	"\x10long_description\x18\x04 \x01(\tH\x01R\x0flongDescription\x88\x01\x01\x12I\n" +
+	"\x0eancillary_data\x18\x05 \x03(\v2\".hermes.XtceDef.AncillaryDataEntryR\rancillaryData\x1a@\n" +
+	"\x12AncillaryDataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\x14\n" +
+	"\x12_short_descriptionB\x13\n" +
+	"\x11_long_description\"\xd9\x01\n" +
 	"\n" +
-	"CommandDef\x12\x16\n" +
-	"\x06opcode\x18\x01 \x01(\x05R\x06opcode\x12\x1a\n" +
-	"\bmnemonic\x18\x02 \x01(\tR\bmnemonic\x12\x1c\n" +
-	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12+\n" +
-	"\targuments\x18\x04 \x03(\v2\r.hermes.FieldR\targuments\x12\x1a\n" +
-	"\bmetadata\x18\x05 \x01(\tR\bmetadata\"\x9a\x01\n" +
+	"CommandDef\x12!\n" +
+	"\x03def\x18\x01 \x01(\v2\x0f.hermes.XtceDefR\x03def\x12\x1a\n" +
+	"\babstract\x18\x02 \x01(\bR\babstract\x121\n" +
+	"\targuments\x18\x03 \x03(\v2\x13.hermes.ArgumentDefR\targuments\x12Y\n" +
+	"\x18transmission_constraints\x18\x04 \x03(\v2\x1e.hermes.TransmissionConstraintR\x17transmissionConstraints\"\x9d\x01\n" +
+	"\vArgumentDef\x12!\n" +
+	"\x03def\x18\x01 \x01(\v2\x0f.hermes.XtceDefR\x03def\x12 \n" +
+	"\x04type\x18\x02 \x01(\v2\f.hermes.TypeR\x04type\x127\n" +
+	"\rinitial_value\x18\x03 \x01(\v2\r.hermes.ValueH\x00R\finitialValue\x88\x01\x01B\x10\n" +
+	"\x0e_initial_value\"\x97\x01\n" +
+	"\x13ParameterComparison\x12#\n" +
+	"\rparameter_ref\x18\x01 \x01(\tR\fparameterRef\x126\n" +
+	"\boperator\x18\x02 \x01(\x0e2\x1a.hermes.ComparisonOperatorR\boperator\x12#\n" +
+	"\x05value\x18\x03 \x01(\v2\r.hermes.ValueR\x05value\"l\n" +
+	"\n" +
+	"TimeWindow\x12\"\n" +
+	"\n" +
+	"start_time\x18\x01 \x01(\tH\x00R\tstartTime\x88\x01\x01\x12\x1e\n" +
+	"\bend_time\x18\x02 \x01(\tH\x01R\aendTime\x88\x01\x01B\r\n" +
+	"\v_start_timeB\v\n" +
+	"\t_end_time\"U\n" +
+	"\x11BooleanExpression\x12\x1e\n" +
+	"\n" +
+	"expression\x18\x01 \x01(\tR\n" +
+	"expression\x12 \n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\"\x9d\x02\n" +
+	"\x16TransmissionConstraint\x12 \n" +
+	"\vdescription\x18\x01 \x01(\tR\vdescription\x12P\n" +
+	"\x14parameter_comparison\x18\x02 \x01(\v2\x1b.hermes.ParameterComparisonH\x00R\x13parameterComparison\x125\n" +
+	"\vtime_window\x18\x03 \x01(\v2\x12.hermes.TimeWindowH\x00R\n" +
+	"timeWindow\x12J\n" +
+	"\x12boolean_expression\x18\x04 \x01(\v2\x19.hermes.BooleanExpressionH\x00R\x11booleanExpressionB\f\n" +
+	"\n" +
+	"constraint\"\x9a\x01\n" +
 	"\x0fFormatSpecifier\x12/\n" +
 	"\x04type\x18\x01 \x01(\x0e2\x1b.hermes.FormatSpecifierTypeR\x04type\x12!\n" +
 	"\tprecision\x18\x02 \x01(\rH\x00R\tprecision\x88\x01\x01\x12%\n" +
@@ -1166,15 +1665,11 @@ const file_dictionary_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +
 	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12 \n" +
 	"\x04type\x18\x04 \x01(\v2\f.hermes.TypeR\x04type\x12\x1a\n" +
-	"\bmetadata\x18\x06 \x01(\tR\bmetadataJ\x04\b\x05\x10\x06\"p\n" +
-	"\fTelemetryRef\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +
-	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12\x1e\n" +
-	"\n" +
-	"dictionary\x18\n" +
-	" \x01(\tR\n" +
-	"dictionary\"R\n" +
+	"\bmetadata\x18\x06 \x01(\tR\bmetadataJ\x04\b\x05\x10\x06\"h\n" +
+	"\fTelemetryRef\x12\x1f\n" +
+	"\vinstance_id\x18\x04 \x01(\tR\n" +
+	"instanceId\x12%\n" +
+	"\x0equalified_name\x18\x05 \x01(\tR\rqualifiedNameJ\x04\b\x01\x10\x02J\x04\b\x02\x10\x03J\x04\b\x03\x10\x04\"R\n" +
 	"\x0eDictionaryHead\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
@@ -1214,7 +1709,14 @@ const file_dictionary_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\v2\x1b.hermes.DictionaryNamespaceR\x05value:\x028\x01\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*\x99\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*\x82\x01\n" +
+	"\x12ComparisonOperator\x12\t\n" +
+	"\x05EQUAL\x10\x00\x12\r\n" +
+	"\tNOT_EQUAL\x10\x01\x12\r\n" +
+	"\tLESS_THAN\x10\x02\x12\x10\n" +
+	"\fGREATER_THAN\x10\x03\x12\x16\n" +
+	"\x12LESS_THAN_OR_EQUAL\x10\x04\x12\x19\n" +
+	"\x15GREATER_THAN_OR_EQUAL\x10\x05*\x99\x01\n" +
 	"\vEvrSeverity\x12\x12\n" +
 	"\x0eEVR_DIAGNOSTIC\x10\x00\x12\x14\n" +
 	"\x10EVR_ACTIVITY_LOW\x10\x01\x12\x15\n" +
@@ -1250,63 +1752,83 @@ func file_dictionary_proto_rawDescGZIP() []byte {
 	return file_dictionary_proto_rawDescData
 }
 
-var file_dictionary_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_dictionary_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_dictionary_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_dictionary_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_dictionary_proto_goTypes = []any{
-	(EvrSeverity)(0),            // 0: hermes.EvrSeverity
-	(FormatSpecifierType)(0),    // 1: hermes.FormatSpecifierType
-	(*ParameterDef)(nil),        // 2: hermes.ParameterDef
-	(*CommandDef)(nil),          // 3: hermes.CommandDef
-	(*FormatSpecifier)(nil),     // 4: hermes.FormatSpecifier
-	(*FormatFragment)(nil),      // 5: hermes.FormatFragment
-	(*FormatString)(nil),        // 6: hermes.FormatString
-	(*EventDef)(nil),            // 7: hermes.EventDef
-	(*EventRef)(nil),            // 8: hermes.EventRef
-	(*TelemetryDef)(nil),        // 9: hermes.TelemetryDef
-	(*TelemetryRef)(nil),        // 10: hermes.TelemetryRef
-	(*DictionaryHead)(nil),      // 11: hermes.DictionaryHead
-	(*DictionaryNamespace)(nil), // 12: hermes.DictionaryNamespace
-	(*Dictionary)(nil),          // 13: hermes.Dictionary
-	nil,                         // 14: hermes.DictionaryNamespace.CommandsEntry
-	nil,                         // 15: hermes.DictionaryNamespace.EventsEntry
-	nil,                         // 16: hermes.DictionaryNamespace.TelemetryEntry
-	nil,                         // 17: hermes.DictionaryNamespace.ParametersEntry
-	nil,                         // 18: hermes.DictionaryNamespace.TypesEntry
-	nil,                         // 19: hermes.Dictionary.ContentEntry
-	nil,                         // 20: hermes.Dictionary.MetadataEntry
-	(*Type)(nil),                // 21: hermes.Type
-	(*Field)(nil),               // 22: hermes.Field
+	(ComparisonOperator)(0),        // 0: hermes.ComparisonOperator
+	(EvrSeverity)(0),               // 1: hermes.EvrSeverity
+	(FormatSpecifierType)(0),       // 2: hermes.FormatSpecifierType
+	(*ParameterDef)(nil),           // 3: hermes.ParameterDef
+	(*XtceDef)(nil),                // 4: hermes.XtceDef
+	(*CommandDef)(nil),             // 5: hermes.CommandDef
+	(*ArgumentDef)(nil),            // 6: hermes.ArgumentDef
+	(*ParameterComparison)(nil),    // 7: hermes.ParameterComparison
+	(*TimeWindow)(nil),             // 8: hermes.TimeWindow
+	(*BooleanExpression)(nil),      // 9: hermes.BooleanExpression
+	(*TransmissionConstraint)(nil), // 10: hermes.TransmissionConstraint
+	(*FormatSpecifier)(nil),        // 11: hermes.FormatSpecifier
+	(*FormatFragment)(nil),         // 12: hermes.FormatFragment
+	(*FormatString)(nil),           // 13: hermes.FormatString
+	(*EventDef)(nil),               // 14: hermes.EventDef
+	(*EventRef)(nil),               // 15: hermes.EventRef
+	(*TelemetryDef)(nil),           // 16: hermes.TelemetryDef
+	(*TelemetryRef)(nil),           // 17: hermes.TelemetryRef
+	(*DictionaryHead)(nil),         // 18: hermes.DictionaryHead
+	(*DictionaryNamespace)(nil),    // 19: hermes.DictionaryNamespace
+	(*Dictionary)(nil),             // 20: hermes.Dictionary
+	nil,                            // 21: hermes.XtceDef.AncillaryDataEntry
+	nil,                            // 22: hermes.DictionaryNamespace.CommandsEntry
+	nil,                            // 23: hermes.DictionaryNamespace.EventsEntry
+	nil,                            // 24: hermes.DictionaryNamespace.TelemetryEntry
+	nil,                            // 25: hermes.DictionaryNamespace.ParametersEntry
+	nil,                            // 26: hermes.DictionaryNamespace.TypesEntry
+	nil,                            // 27: hermes.Dictionary.ContentEntry
+	nil,                            // 28: hermes.Dictionary.MetadataEntry
+	(*Type)(nil),                   // 29: hermes.Type
+	(*Value)(nil),                  // 30: hermes.Value
+	(*Field)(nil),                  // 31: hermes.Field
 }
 var file_dictionary_proto_depIdxs = []int32{
-	21, // 0: hermes.ParameterDef.type:type_name -> hermes.Type
-	22, // 1: hermes.CommandDef.arguments:type_name -> hermes.Field
-	1,  // 2: hermes.FormatSpecifier.type:type_name -> hermes.FormatSpecifierType
-	4,  // 3: hermes.FormatFragment.specifier:type_name -> hermes.FormatSpecifier
-	5,  // 4: hermes.FormatString.fragments:type_name -> hermes.FormatFragment
-	0,  // 5: hermes.EventDef.severity:type_name -> hermes.EvrSeverity
-	22, // 6: hermes.EventDef.arguments:type_name -> hermes.Field
-	6,  // 7: hermes.EventDef.format:type_name -> hermes.FormatString
-	0,  // 8: hermes.EventRef.severity:type_name -> hermes.EvrSeverity
-	21, // 9: hermes.TelemetryDef.type:type_name -> hermes.Type
-	14, // 10: hermes.DictionaryNamespace.commands:type_name -> hermes.DictionaryNamespace.CommandsEntry
-	15, // 11: hermes.DictionaryNamespace.events:type_name -> hermes.DictionaryNamespace.EventsEntry
-	16, // 12: hermes.DictionaryNamespace.telemetry:type_name -> hermes.DictionaryNamespace.TelemetryEntry
-	17, // 13: hermes.DictionaryNamespace.parameters:type_name -> hermes.DictionaryNamespace.ParametersEntry
-	18, // 14: hermes.DictionaryNamespace.types:type_name -> hermes.DictionaryNamespace.TypesEntry
-	11, // 15: hermes.Dictionary.head:type_name -> hermes.DictionaryHead
-	19, // 16: hermes.Dictionary.content:type_name -> hermes.Dictionary.ContentEntry
-	20, // 17: hermes.Dictionary.metadata:type_name -> hermes.Dictionary.MetadataEntry
-	3,  // 18: hermes.DictionaryNamespace.CommandsEntry.value:type_name -> hermes.CommandDef
-	7,  // 19: hermes.DictionaryNamespace.EventsEntry.value:type_name -> hermes.EventDef
-	9,  // 20: hermes.DictionaryNamespace.TelemetryEntry.value:type_name -> hermes.TelemetryDef
-	2,  // 21: hermes.DictionaryNamespace.ParametersEntry.value:type_name -> hermes.ParameterDef
-	21, // 22: hermes.DictionaryNamespace.TypesEntry.value:type_name -> hermes.Type
-	12, // 23: hermes.Dictionary.ContentEntry.value:type_name -> hermes.DictionaryNamespace
-	24, // [24:24] is the sub-list for method output_type
-	24, // [24:24] is the sub-list for method input_type
-	24, // [24:24] is the sub-list for extension type_name
-	24, // [24:24] is the sub-list for extension extendee
-	0,  // [0:24] is the sub-list for field type_name
+	29, // 0: hermes.ParameterDef.type:type_name -> hermes.Type
+	21, // 1: hermes.XtceDef.ancillary_data:type_name -> hermes.XtceDef.AncillaryDataEntry
+	4,  // 2: hermes.CommandDef.def:type_name -> hermes.XtceDef
+	6,  // 3: hermes.CommandDef.arguments:type_name -> hermes.ArgumentDef
+	10, // 4: hermes.CommandDef.transmission_constraints:type_name -> hermes.TransmissionConstraint
+	4,  // 5: hermes.ArgumentDef.def:type_name -> hermes.XtceDef
+	29, // 6: hermes.ArgumentDef.type:type_name -> hermes.Type
+	30, // 7: hermes.ArgumentDef.initial_value:type_name -> hermes.Value
+	0,  // 8: hermes.ParameterComparison.operator:type_name -> hermes.ComparisonOperator
+	30, // 9: hermes.ParameterComparison.value:type_name -> hermes.Value
+	7,  // 10: hermes.TransmissionConstraint.parameter_comparison:type_name -> hermes.ParameterComparison
+	8,  // 11: hermes.TransmissionConstraint.time_window:type_name -> hermes.TimeWindow
+	9,  // 12: hermes.TransmissionConstraint.boolean_expression:type_name -> hermes.BooleanExpression
+	2,  // 13: hermes.FormatSpecifier.type:type_name -> hermes.FormatSpecifierType
+	11, // 14: hermes.FormatFragment.specifier:type_name -> hermes.FormatSpecifier
+	12, // 15: hermes.FormatString.fragments:type_name -> hermes.FormatFragment
+	1,  // 16: hermes.EventDef.severity:type_name -> hermes.EvrSeverity
+	31, // 17: hermes.EventDef.arguments:type_name -> hermes.Field
+	13, // 18: hermes.EventDef.format:type_name -> hermes.FormatString
+	1,  // 19: hermes.EventRef.severity:type_name -> hermes.EvrSeverity
+	29, // 20: hermes.TelemetryDef.type:type_name -> hermes.Type
+	22, // 21: hermes.DictionaryNamespace.commands:type_name -> hermes.DictionaryNamespace.CommandsEntry
+	23, // 22: hermes.DictionaryNamespace.events:type_name -> hermes.DictionaryNamespace.EventsEntry
+	24, // 23: hermes.DictionaryNamespace.telemetry:type_name -> hermes.DictionaryNamespace.TelemetryEntry
+	25, // 24: hermes.DictionaryNamespace.parameters:type_name -> hermes.DictionaryNamespace.ParametersEntry
+	26, // 25: hermes.DictionaryNamespace.types:type_name -> hermes.DictionaryNamespace.TypesEntry
+	18, // 26: hermes.Dictionary.head:type_name -> hermes.DictionaryHead
+	27, // 27: hermes.Dictionary.content:type_name -> hermes.Dictionary.ContentEntry
+	28, // 28: hermes.Dictionary.metadata:type_name -> hermes.Dictionary.MetadataEntry
+	5,  // 29: hermes.DictionaryNamespace.CommandsEntry.value:type_name -> hermes.CommandDef
+	14, // 30: hermes.DictionaryNamespace.EventsEntry.value:type_name -> hermes.EventDef
+	16, // 31: hermes.DictionaryNamespace.TelemetryEntry.value:type_name -> hermes.TelemetryDef
+	3,  // 32: hermes.DictionaryNamespace.ParametersEntry.value:type_name -> hermes.ParameterDef
+	29, // 33: hermes.DictionaryNamespace.TypesEntry.value:type_name -> hermes.Type
+	19, // 34: hermes.Dictionary.ContentEntry.value:type_name -> hermes.DictionaryNamespace
+	35, // [35:35] is the sub-list for method output_type
+	35, // [35:35] is the sub-list for method input_type
+	35, // [35:35] is the sub-list for extension type_name
+	35, // [35:35] is the sub-list for extension extendee
+	0,  // [0:35] is the sub-list for field type_name
 }
 
 func init() { file_dictionary_proto_init() }
@@ -1315,8 +1837,16 @@ func file_dictionary_proto_init() {
 		return
 	}
 	file_type_proto_init()
-	file_dictionary_proto_msgTypes[2].OneofWrappers = []any{}
-	file_dictionary_proto_msgTypes[3].OneofWrappers = []any{
+	file_dictionary_proto_msgTypes[1].OneofWrappers = []any{}
+	file_dictionary_proto_msgTypes[3].OneofWrappers = []any{}
+	file_dictionary_proto_msgTypes[5].OneofWrappers = []any{}
+	file_dictionary_proto_msgTypes[7].OneofWrappers = []any{
+		(*TransmissionConstraint_ParameterComparison)(nil),
+		(*TransmissionConstraint_TimeWindow)(nil),
+		(*TransmissionConstraint_BooleanExpression)(nil),
+	}
+	file_dictionary_proto_msgTypes[8].OneofWrappers = []any{}
+	file_dictionary_proto_msgTypes[9].OneofWrappers = []any{
 		(*FormatFragment_Text)(nil),
 		(*FormatFragment_Specifier)(nil),
 	}
@@ -1325,8 +1855,8 @@ func file_dictionary_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_dictionary_proto_rawDesc), len(file_dictionary_proto_rawDesc)),
-			NumEnums:      2,
-			NumMessages:   19,
+			NumEnums:      3,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

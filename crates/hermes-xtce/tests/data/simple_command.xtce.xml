@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xtce:SpaceSystem name="TestSystem"
+    xmlns:xtce="http://www.omg.org/spec/XTCE/20180204"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <xtce:TelemetryMetaData>
+        <xtce:ParameterTypeSet>
+            <xtce:IntegerParameterType name="TempType" signed="false">
+                <xtce:UnitSet />
+                <xtce:IntegerDataEncoding sizeInBits="16" />
+            </xtce:IntegerParameterType>
+            <xtce:EnumeratedParameterType name="StatusType" initialValue="IDLE">
+                <xtce:UnitSet />
+                <xtce:IntegerDataEncoding sizeInBits="8" />
+                <xtce:EnumerationList>
+                    <xtce:Enumeration label="IDLE" value="0" />
+                    <xtce:Enumeration label="RUNNING" value="1" />
+                    <xtce:Enumeration label="ERROR" value="2" />
+                </xtce:EnumerationList>
+            </xtce:EnumeratedParameterType>
+        </xtce:ParameterTypeSet>
+        <xtce:ParameterSet>
+            <xtce:Parameter name="Temperature" parameterTypeRef="TempType" />
+            <xtce:Parameter name="Status" parameterTypeRef="StatusType" />
+        </xtce:ParameterSet>
+        <xtce:ContainerSet>
+            <xtce:SequenceContainer name="TelemetryPacket">
+                <xtce:EntryList>
+                    <xtce:ParameterRefEntry parameterRef="Temperature" />
+                    <xtce:ParameterRefEntry parameterRef="Status" />
+                </xtce:EntryList>
+            </xtce:SequenceContainer>
+        </xtce:ContainerSet>
+    </xtce:TelemetryMetaData>
+    <xtce:CommandMetaData>
+        <xtce:ArgumentTypeSet>
+            <xtce:EnumeratedArgumentType name="EnableDisableType">
+                <xtce:UnitSet />
+                <xtce:IntegerDataEncoding sizeInBits="8" />
+                <xtce:EnumerationList>
+                    <xtce:Enumeration label="DISABLE" value="0" />
+                    <xtce:Enumeration label="ENABLE" value="1" />
+                </xtce:EnumerationList>
+            </xtce:EnumeratedArgumentType>
+        </xtce:ArgumentTypeSet>
+        <xtce:MetaCommandSet>
+            <xtce:MetaCommand name="SetHeater">
+                <xtce:ArgumentList>
+                    <xtce:Argument name="EnableDisable"
+                        argumentTypeRef="EnableDisableType" />
+                </xtce:ArgumentList>
+                <xtce:VerifierSet>
+                    <xtce:ReceivedVerifier name="CmdReceived"
+                        shortDescription="Command received by spacecraft">
+                        <xtce:CheckWindow timeToStopChecking="PT5S" />
+                    </xtce:ReceivedVerifier>
+                    <xtce:AcceptedVerifier name="CmdAccepted"
+                        shortDescription="Command accepted for execution">
+                        <xtce:CheckWindow timeToStopChecking="PT10S" />
+                    </xtce:AcceptedVerifier>
+                    <xtce:CompleteVerifier name="CmdComplete"
+                        shortDescription="Command completed successfully">
+                        <xtce:CheckWindow timeToStopChecking="PT30S" />
+                    </xtce:CompleteVerifier>
+                </xtce:VerifierSet>
+            </xtce:MetaCommand>
+        </xtce:MetaCommandSet>
+    </xtce:CommandMetaData>
+</xtce:SpaceSystem>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xtce:SpaceSystem name="TestCmd"
+    xmlns:xtce="http://www.omg.org/spec/XTCE/20180204"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <xtce:TelemetryMetaData>
+        <xtce:ParameterTypeSet>
+            <xtce:IntegerParameterType name="DummyType" signed="false">
+                <xtce:UnitSet />
+                <xtce:IntegerDataEncoding sizeInBits="8" />
+            </xtce:IntegerParameterType>
+        </xtce:ParameterTypeSet>
+        <xtce:ParameterSet>
+            <xtce:Parameter name="Dummy" parameterTypeRef="DummyType" />
+        </xtce:ParameterSet>
+        <xtce:ContainerSet>
+            <xtce:SequenceContainer name="TelemetryRoot">
+                <xtce:EntryList>
+                    <xtce:ParameterRefEntry parameterRef="Dummy" />
+                </xtce:EntryList>
+            </xtce:SequenceContainer>
+        </xtce:ContainerSet>
+    </xtce:TelemetryMetaData>
+    <xtce:CommandMetaData>
+        <xtce:ArgumentTypeSet>
+            <xtce:IntegerArgumentType name="U8Type" signed="false">
+                <xtce:UnitSet />
+                <xtce:IntegerDataEncoding sizeInBits="8" />
+            </xtce:IntegerArgumentType>
+            <xtce:IntegerArgumentType name="U16Type" signed="false">
+                <xtce:UnitSet />
+                <xtce:IntegerDataEncoding sizeInBits="16" />
+            </xtce:IntegerArgumentType>
+        </xtce:ArgumentTypeSet>
+        <xtce:MetaCommandSet>
+            <xtce:MetaCommand name="TestCommand">
+                <xtce:ArgumentList>
+                    <xtce:Argument name="CmdId" argumentTypeRef="U8Type" />
+                    <xtce:Argument name="Value" argumentTypeRef="U16Type" />
+                </xtce:ArgumentList>
+                <xtce:CommandContainer name="TestCommandContainer">
+                    <xtce:EntryList>
+                        <!-- Fixed sync word 0xDEAD -->
+                        <xtce:FixedValueEntry name="SyncWord" binaryValue="DEAD" sizeInBits="16" />
+                        <!-- Command ID argument -->
+                        <xtce:ArgumentRefEntry argumentRef="CmdId" />
+                        <!-- Value argument -->
+                        <xtce:ArgumentRefEntry argumentRef="Value" />
+                    </xtce:EntryList>
+                </xtce:CommandContainer>
+            </xtce:MetaCommand>
+        </xtce:MetaCommandSet>
+    </xtce:CommandMetaData>
+</xtce:SpaceSystem>

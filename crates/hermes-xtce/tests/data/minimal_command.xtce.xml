@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xtce:SpaceSystem name="Minimal"
+    xmlns:xtce="http://www.omg.org/spec/XTCE/20180204"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <xtce:TelemetryMetaData>
+        <xtce:ParameterTypeSet>
+            <xtce:IntegerParameterType name="DummyType" signed="false">
+                <xtce:UnitSet />
+                <xtce:IntegerDataEncoding sizeInBits="8" />
+            </xtce:IntegerParameterType>
+        </xtce:ParameterTypeSet>
+        <xtce:ParameterSet>
+            <xtce:Parameter name="Dummy" parameterTypeRef="DummyType" />
+        </xtce:ParameterSet>
+        <xtce:ContainerSet>
+            <xtce:SequenceContainer name="TelemetryRoot">
+                <xtce:EntryList>
+                    <xtce:ParameterRefEntry parameterRef="Dummy" />
+                </xtce:EntryList>
+            </xtce:SequenceContainer>
+        </xtce:ContainerSet>
+    </xtce:TelemetryMetaData>
+    <xtce:CommandMetaData>
+        <xtce:ArgumentTypeSet>
+            <xtce:IntegerArgumentType name="ModeType" signed="false">
+                <xtce:UnitSet />
+                <xtce:IntegerDataEncoding sizeInBits="8" />
+            </xtce:IntegerArgumentType>
+        </xtce:ArgumentTypeSet>
+        <xtce:MetaCommandSet>
+            <xtce:MetaCommand name="SetMode">
+                <xtce:ArgumentList>
+                    <xtce:Argument name="Mode" argumentTypeRef="ModeType" />
+                </xtce:ArgumentList>
+            </xtce:MetaCommand>
+        </xtce:MetaCommandSet>
+    </xtce:CommandMetaData>
+</xtce:SpaceSystem>

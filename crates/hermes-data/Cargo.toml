@@ -6,9 +6,11 @@ authors.workspace = true
 
 [dependencies]
 hermes-xtce = { path = "../hermes-xtce" }
+hex = "0.4"
 thiserror = "2.0"
 tracing = "0.1.44"
 
 [dev-dependencies]
+hermes-pb = { path = "../hermes-pb" }
 test-log = { version = "0.2", default-features = false, features = ["trace"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

@@ -30,7 +30,7 @@ impl CommandContainerSerializer {
         // Serialize entries in order
         for entry in &self.container.entries {
             match entry {
-                SequenceEntry::ArgumentRef { argument } => {
+                SequenceEntry::ArgumentRef(argument) | SequenceEntry::ParameterRef(argument) => {
                     // Look up the argument value
                     let value = arguments
                         .get(&argument.head.qualified_name)
@@ -48,6 +48,12 @@ impl CommandContainerSerializer {
                     // Serialize the fixed value
                     serializer.serialize_value(type_, value)?;
                 }
+                SequenceEntry::ContainerRef { .. } => {
+                    // TODO: Handle nested container references
+                    return Err(Error::InvalidValue(
+                        "ContainerRef serialization not yet implemented".to_string(),
+                    ));
+                }
             }
         }
 
@@ -58,18 +64,21 @@ impl CommandContainerSerializer {
     pub fn serialize_validated(&self, arguments: &HashMap<String, Value>) -> Result<Vec<u8>> {
         // First validate all arguments
         for entry in &self.container.entries {
-            if let SequenceEntry::ArgumentRef { argument } = entry {
-                let value = arguments
-                    .get(&argument.head.qualified_name)
-                    .ok_or_else(|| {
-                        Error::InvalidValue(format!(
-                            "Missing argument '{}'",
-                            argument.head.qualified_name
-                        ))
-                    })?;
+            match entry {
+                SequenceEntry::ArgumentRef(argument) | SequenceEntry::ParameterRef(argument) => {
+                    let value = arguments
+                        .get(&argument.head.qualified_name)
+                        .ok_or_else(|| {
+                            Error::InvalidValue(format!(
+                                "Missing argument '{}'",
+                                argument.head.qualified_name
+                            ))
+                        })?;
 
-                // Validate the value against its type
-                value.validate(&argument.type_)?;
+                    // Validate the value against its type
+                    value.validate(&argument.type_)?;
+                }
+                _ => {}
             }
         }
 

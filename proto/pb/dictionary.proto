@@ -23,29 +23,117 @@ message ParameterDef {
   string metadata = 5;
 }
 
+// ============================================================================
+// XTCE Common Definitions
+// ============================================================================
+
+/**
+ * Common metadata shared by all XTCE definitions (commands, telemetry, parameters).
+ * This is reusable across different XTCE item types.
+ */
+message XtceDef {
+  string name = 1;                         // Local name (e.g., "CMD_NO_OP", "TEMP_SENSOR")
+  string qualified_name = 2;               // Full XTCE path (e.g., "/Mission/System/CMD_NO_OP")
+  optional string short_description = 3;   // Brief description
+  optional string long_description = 4;    // Detailed description (may include HTML)
+  map<string, string> ancillary_data = 5;  // XTCE AncillaryData key-value pairs
+}
+
+// ============================================================================
+// XTCE Command Definitions
+// ============================================================================
+
+/**
+ * XTCE command definition with flattened inheritance structure.
+ * This represents a single command that can be sent to the spacecraft.
+ */
 message CommandDef {
-  int32 opcode = 1;
+  XtceDef def = 1;                         // Common XTCE metadata
+  bool abstract = 2;                       // True if this is an abstract command (not instantiable)
 
-  /**
-   * Mnemonic command used to identify this command.
-   * FSW may or may not include the module name in the mnemonic and its
-   * up to the language parsing software to identify the proper command from mnemonic information.
-   *
-   * This may have varying meaning across missions
-   */
-  string mnemonic = 2;
+  // Command arguments (flattened from inheritance chain)
+  repeated ArgumentDef arguments = 3;
 
-  /**
-   * Parent component or module owning this command
-   */
-  string component = 3;
+  // Input validation constraints (checked before sending)
+  // These determine if the command CAN be sent, not whether it executed successfully
+  repeated TransmissionConstraint transmission_constraints = 4;
+}
 
-  /**
-   * Command arguments
-   */
-  repeated Field arguments = 4;
+/**
+ * Command argument definition.
+ * Arguments are inputs that must be provided when sending the command.
+ */
+message ArgumentDef {
+  XtceDef def = 1;                         // Common XTCE metadata
+  Type type = 2;                           // Argument data type
+  optional Value initial_value = 3;        // Default value if not provided
+}
 
-  string metadata = 5;
+// Note: Execution verifiers (tracking command lifecycle stages) are NOT exposed
+// in protobuf. Those are backend-only logic in hermes-data for tracking whether
+// commands were received, accepted, executed, etc. The frontend only needs to know
+// input validation constraints (can I send this command?), not execution tracking.
+
+// ============================================================================
+// XTCE Transmission Constraints (Input Validation)
+// ============================================================================
+
+/**
+ * Comparison operators for constraint checks.
+ */
+enum ComparisonOperator {
+  EQUAL = 0;                               // ==
+  NOT_EQUAL = 1;                           // !=
+  LESS_THAN = 2;                           // <
+  GREATER_THAN = 3;                        // >
+  LESS_THAN_OR_EQUAL = 4;                  // <=
+  GREATER_THAN_OR_EQUAL = 5;               // >=
+}
+
+/**
+ * Parameter comparison constraint.
+ * Command can only be sent if a telemetry parameter meets a condition.
+ * Example: "MotorTemperature" < 80.0 (can't send motor command if too hot)
+ */
+message ParameterComparison {
+  string parameter_ref = 1;                // Qualified name of parameter to check
+  ComparisonOperator operator = 2;         // Comparison operator
+  Value value = 3;                         // Value to compare against
+}
+
+/**
+ * Time window constraint.
+ * Command can only be sent within a specific time window.
+ * Example: Software update commands only allowed during maintenance windows.
+ */
+message TimeWindow {
+  optional string start_time = 1;          // ISO 8601 timestamp (optional = unbounded start)
+  optional string end_time = 2;            // ISO 8601 timestamp (optional = unbounded end)
+}
+
+/**
+ * Boolean expression constraint.
+ * Logical expression of multiple conditions.
+ */
+message BooleanExpression {
+  string expression = 1;                   // Expression string (format TBD)
+  string description = 2;                  // Human-readable description
+}
+
+/**
+ * Transmission constraint from XTCE.
+ * These must be satisfied BEFORE sending a command to determine if the
+ * command CAN be sent. They validate argument values, system state, and time windows.
+ */
+message TransmissionConstraint {
+  string description = 1;                  // Human-readable description
+
+  // Constraint check (one of these)
+  oneof constraint {
+    ParameterComparison parameter_comparison = 2;  // Check telemetry parameter value
+    TimeWindow time_window = 3;                    // Only valid during time window
+    BooleanExpression boolean_expression = 4;      // Logical expression
+  }
 }
 
 enum EvrSeverity {

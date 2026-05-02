@@ -54,11 +54,12 @@ pub enum SequenceEntry {
     },
 }
 
-/// Transmission constraint from XTCE (placeholder for now)
+/// Transmission constraint from XTCE
+/// These must be satisfied BEFORE transmitting the command
 #[derive(Clone, Debug)]
 pub struct TransmissionConstraint {
-    // TODO: Implement constraint checking logic
-    // This could include parameter value checks, time windows, etc.
+    pub description: String,
+    // TODO: Add structured constraint checking (parameter value checks, time windows, etc.)
 }
 
 /// Command verifier from XTCE (placeholder for now)
@@ -66,4 +67,38 @@ pub struct TransmissionConstraint {
 pub struct Verifier {
     // TODO: Implement verification logic
     // This could include checking for specific events, telemetry values, etc.
+}
+
+impl MetaCommand {
+    /// Collect all verifiers from this command and its inheritance chain
+    /// Verifiers are collected in order: base command first, then this command's verifiers
+    pub fn collect_verifiers(&self) -> Vec<Verifier> {
+        let mut verifiers = Vec::new();
+
+        // Collect from base command first (inheritance order)
+        if let Some(base) = &self.base_command {
+            verifiers.extend(base.collect_verifiers());
+        }
+
+        // Add this command's verifiers
+        verifiers.extend(self.verifiers.iter().cloned());
+
+        verifiers
+    }
+
+    /// Collect all transmission constraints from inheritance chain
+    /// Constraints are collected in order: base command first, then this command's constraints
+    pub fn collect_constraints(&self) -> Vec<TransmissionConstraint> {
+        let mut constraints = Vec::new();
+
+        // Collect from base command first
+        if let Some(base) = &self.base_command {
+            constraints.extend(base.collect_constraints());
+        }
+
+        // Add this command's constraints
+        constraints.extend(self.transmission_constraints.iter().cloned());
+
+        constraints
+    }
 }

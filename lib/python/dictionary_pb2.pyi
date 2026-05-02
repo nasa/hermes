@@ -8,6 +8,15 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class ComparisonOperator(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    EQUAL: _ClassVar[ComparisonOperator]
+    NOT_EQUAL: _ClassVar[ComparisonOperator]
+    LESS_THAN: _ClassVar[ComparisonOperator]
+    GREATER_THAN: _ClassVar[ComparisonOperator]
+    LESS_THAN_OR_EQUAL: _ClassVar[ComparisonOperator]
+    GREATER_THAN_OR_EQUAL: _ClassVar[ComparisonOperator]
+
 class EvrSeverity(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     EVR_DIAGNOSTIC: _ClassVar[EvrSeverity]
@@ -32,6 +41,12 @@ class FormatSpecifierType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     FMT_FIXED_UPPER: _ClassVar[FormatSpecifierType]
     FMT_GENERAL_LOWER: _ClassVar[FormatSpecifierType]
     FMT_GENERAL_UPPER: _ClassVar[FormatSpecifierType]
+EQUAL: ComparisonOperator
+NOT_EQUAL: ComparisonOperator
+LESS_THAN: ComparisonOperator
+GREATER_THAN: ComparisonOperator
+LESS_THAN_OR_EQUAL: ComparisonOperator
+GREATER_THAN_OR_EQUAL: ComparisonOperator
 EVR_DIAGNOSTIC: EvrSeverity
 EVR_ACTIVITY_LOW: EvrSeverity
 EVR_ACTIVITY_HIGH: EvrSeverity
@@ -66,19 +81,84 @@ class ParameterDef(_message.Message):
     metadata: str
     def __init__(self, id: _Optional[int] = ..., component: _Optional[str] = ..., name: _Optional[str] = ..., type: _Optional[_Union[_type_pb2.Type, _Mapping]] = ..., metadata: _Optional[str] = ...) -> None: ...
 
+class XtceDef(_message.Message):
+    __slots__ = ("name", "qualified_name", "short_description", "long_description", "ancillary_data")
+    class AncillaryDataEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    QUALIFIED_NAME_FIELD_NUMBER: _ClassVar[int]
+    SHORT_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    LONG_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    ANCILLARY_DATA_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    qualified_name: str
+    short_description: str
+    long_description: str
+    ancillary_data: _containers.ScalarMap[str, str]
+    def __init__(self, name: _Optional[str] = ..., qualified_name: _Optional[str] = ..., short_description: _Optional[str] = ..., long_description: _Optional[str] = ..., ancillary_data: _Optional[_Mapping[str, str]] = ...) -> None: ...
+
 class CommandDef(_message.Message):
-    __slots__ = ("opcode", "mnemonic", "component", "arguments", "metadata")
-    OPCODE_FIELD_NUMBER: _ClassVar[int]
-    MNEMONIC_FIELD_NUMBER: _ClassVar[int]
-    COMPONENT_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("abstract", "arguments", "transmission_constraints")
+    DEF_FIELD_NUMBER: _ClassVar[int]
+    ABSTRACT_FIELD_NUMBER: _ClassVar[int]
     ARGUMENTS_FIELD_NUMBER: _ClassVar[int]
-    METADATA_FIELD_NUMBER: _ClassVar[int]
-    opcode: int
-    mnemonic: str
-    component: str
-    arguments: _containers.RepeatedCompositeFieldContainer[_type_pb2.Field]
-    metadata: str
-    def __init__(self, opcode: _Optional[int] = ..., mnemonic: _Optional[str] = ..., component: _Optional[str] = ..., arguments: _Optional[_Iterable[_Union[_type_pb2.Field, _Mapping]]] = ..., metadata: _Optional[str] = ...) -> None: ...
+    TRANSMISSION_CONSTRAINTS_FIELD_NUMBER: _ClassVar[int]
+    abstract: bool
+    arguments: _containers.RepeatedCompositeFieldContainer[ArgumentDef]
+    transmission_constraints: _containers.RepeatedCompositeFieldContainer[TransmissionConstraint]
+    def __init__(self, abstract: bool = ..., arguments: _Optional[_Iterable[_Union[ArgumentDef, _Mapping]]] = ..., transmission_constraints: _Optional[_Iterable[_Union[TransmissionConstraint, _Mapping]]] = ..., **kwargs) -> None: ...
+
+class ArgumentDef(_message.Message):
+    __slots__ = ("type", "initial_value")
+    DEF_FIELD_NUMBER: _ClassVar[int]
+    TYPE_FIELD_NUMBER: _ClassVar[int]
+    INITIAL_VALUE_FIELD_NUMBER: _ClassVar[int]
+    type: _type_pb2.Type
+    initial_value: _type_pb2.Value
+    def __init__(self, type: _Optional[_Union[_type_pb2.Type, _Mapping]] = ..., initial_value: _Optional[_Union[_type_pb2.Value, _Mapping]] = ..., **kwargs) -> None: ...
+
+class ParameterComparison(_message.Message):
+    __slots__ = ("parameter_ref", "operator", "value")
+    PARAMETER_REF_FIELD_NUMBER: _ClassVar[int]
+    OPERATOR_FIELD_NUMBER: _ClassVar[int]
+    VALUE_FIELD_NUMBER: _ClassVar[int]
+    parameter_ref: str
+    operator: ComparisonOperator
+    value: _type_pb2.Value
+    def __init__(self, parameter_ref: _Optional[str] = ..., operator: _Optional[_Union[ComparisonOperator, str]] = ..., value: _Optional[_Union[_type_pb2.Value, _Mapping]] = ...) -> None: ...
+
+class TimeWindow(_message.Message):
+    __slots__ = ("start_time", "end_time")
+    START_TIME_FIELD_NUMBER: _ClassVar[int]
+    END_TIME_FIELD_NUMBER: _ClassVar[int]
+    start_time: str
+    end_time: str
+    def __init__(self, start_time: _Optional[str] = ..., end_time: _Optional[str] = ...) -> None: ...
+
+class BooleanExpression(_message.Message):
+    __slots__ = ("expression", "description")
+    EXPRESSION_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    expression: str
+    description: str
+    def __init__(self, expression: _Optional[str] = ..., description: _Optional[str] = ...) -> None: ...
+
+class TransmissionConstraint(_message.Message):
+    __slots__ = ("description", "parameter_comparison", "time_window", "boolean_expression")
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    PARAMETER_COMPARISON_FIELD_NUMBER: _ClassVar[int]
+    TIME_WINDOW_FIELD_NUMBER: _ClassVar[int]
+    BOOLEAN_EXPRESSION_FIELD_NUMBER: _ClassVar[int]
+    description: str
+    parameter_comparison: ParameterComparison
+    time_window: TimeWindow
+    boolean_expression: BooleanExpression
+    def __init__(self, description: _Optional[str] = ..., parameter_comparison: _Optional[_Union[ParameterComparison, _Mapping]] = ..., time_window: _Optional[_Union[TimeWindow, _Mapping]] = ..., boolean_expression: _Optional[_Union[BooleanExpression, _Mapping]] = ...) -> None: ...
 
 class FormatSpecifier(_message.Message):
     __slots__ = ("type", "precision", "argument_index")
@@ -157,16 +237,12 @@ class TelemetryDef(_message.Message):
     def __init__(self, id: _Optional[int] = ..., name: _Optional[str] = ..., component: _Optional[str] = ..., type: _Optional[_Union[_type_pb2.Type, _Mapping]] = ..., metadata: _Optional[str] = ...) -> None: ...
 
 class TelemetryRef(_message.Message):
-    __slots__ = ("id", "name", "component", "dictionary")
-    ID_FIELD_NUMBER: _ClassVar[int]
-    NAME_FIELD_NUMBER: _ClassVar[int]
-    COMPONENT_FIELD_NUMBER: _ClassVar[int]
-    DICTIONARY_FIELD_NUMBER: _ClassVar[int]
-    id: int
-    name: str
-    component: str
-    dictionary: str
-    def __init__(self, id: _Optional[int] = ..., name: _Optional[str] = ..., component: _Optional[str] = ..., dictionary: _Optional[str] = ...) -> None: ...
+    __slots__ = ("instance_id", "qualified_name")
+    INSTANCE_ID_FIELD_NUMBER: _ClassVar[int]
+    QUALIFIED_NAME_FIELD_NUMBER: _ClassVar[int]
+    instance_id: str
+    qualified_name: str
+    def __init__(self, instance_id: _Optional[str] = ..., qualified_name: _Optional[str] = ...) -> None: ...
 
 class DictionaryHead(_message.Message):
     __slots__ = ("type", "name", "version")

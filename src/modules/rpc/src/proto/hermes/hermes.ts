@@ -18,8 +18,10 @@ export interface ProtoGrpcType {
     }
   }
   hermes: {
+    ArgumentDef: MessageTypeDefinition
     ArrayType: MessageTypeDefinition
     ArrayValue: MessageTypeDefinition
+    BooleanExpression: MessageTypeDefinition
     BooleanType: MessageTypeDefinition
     BoundedArraySize: MessageTypeDefinition
     BusFilter: MessageTypeDefinition
@@ -29,6 +31,7 @@ export interface ProtoGrpcType {
     CommandOptions: MessageTypeDefinition
     CommandSequence: MessageTypeDefinition
     CommandValue: MessageTypeDefinition
+    ComparisonOperator: EnumTypeDefinition
     Dictionary: MessageTypeDefinition
     DictionaryHead: MessageTypeDefinition
     DictionaryList: MessageTypeDefinition
@@ -69,6 +72,7 @@ export interface ProtoGrpcType {
     NumberKind: EnumTypeDefinition
     ObjectType: MessageTypeDefinition
     ObjectValue: MessageTypeDefinition
+    ParameterComparison: MessageTypeDefinition
     ParameterDef: MessageTypeDefinition
     Profile: MessageTypeDefinition
     ProfileList: MessageTypeDefinition
@@ -95,6 +99,8 @@ export interface ProtoGrpcType {
     TelemetryDef: MessageTypeDefinition
     TelemetryRef: MessageTypeDefinition
     Time: MessageTypeDefinition
+    TimeWindow: MessageTypeDefinition
+    TransmissionConstraint: MessageTypeDefinition
     Type: MessageTypeDefinition
     UIntKind: EnumTypeDefinition
     Uplink: MessageTypeDefinition
@@ -102,6 +108,7 @@ export interface ProtoGrpcType {
     UplinkReply: MessageTypeDefinition
     Value: MessageTypeDefinition
     VoidType: MessageTypeDefinition
+    XtceDef: MessageTypeDefinition
   }
 }
 

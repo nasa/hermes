@@ -3631,32 +3631,150 @@ export namespace hermes {
         public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
+    /** Properties of a XtceDef. */
+    interface IXtceDef {
+
+        /** XtceDef name */
+        name?: (string|null);
+
+        /** XtceDef qualifiedName */
+        qualifiedName?: (string|null);
+
+        /** XtceDef shortDescription */
+        shortDescription?: (string|null);
+
+        /** XtceDef longDescription */
+        longDescription?: (string|null);
+
+        /** XtceDef ancillaryData */
+        ancillaryData?: ({ [k: string]: string }|null);
+    }
+
+    /**
+     * Common metadata shared by all XTCE definitions (commands, telemetry, parameters).
+     * This is reusable across different XTCE item types.
+     */
+    class XtceDef implements IXtceDef {
+
+        /**
+         * Constructs a new XtceDef.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.IXtceDef);
+
+        /** XtceDef name. */
+        public name: string;
+
+        /** XtceDef qualifiedName. */
+        public qualifiedName: string;
+
+        /** XtceDef shortDescription. */
+        public shortDescription?: (string|null);
+
+        /** XtceDef longDescription. */
+        public longDescription?: (string|null);
+
+        /** XtceDef ancillaryData. */
+        public ancillaryData: { [k: string]: string };
+
+        /**
+         * Creates a new XtceDef instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns XtceDef instance
+         */
+        public static create(properties?: hermes.IXtceDef): hermes.XtceDef;
+
+        /**
+         * Encodes the specified XtceDef message. Does not implicitly {@link hermes.XtceDef.verify|verify} messages.
+         * @param message XtceDef message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.IXtceDef, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified XtceDef message, length delimited. Does not implicitly {@link hermes.XtceDef.verify|verify} messages.
+         * @param message XtceDef message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.IXtceDef, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a XtceDef message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns XtceDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.XtceDef;
+
+        /**
+         * Decodes a XtceDef message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns XtceDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.XtceDef;
+
+        /**
+         * Verifies a XtceDef message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a XtceDef message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns XtceDef
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.XtceDef;
+
+        /**
+         * Creates a plain object from a XtceDef message. Also converts values to other types if specified.
+         * @param message XtceDef
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.XtceDef, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this XtceDef to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for XtceDef
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
     /** Properties of a CommandDef. */
     interface ICommandDef {
 
-        /** CommandDef opcode */
-        opcode?: (number|null);
+        /** CommandDef def */
+        def?: (hermes.IXtceDef|null);
 
-        /**
-         * Mnemonic command used to identify this command.
-         * FSW may or may not include the module name in the mnemonic and its
-         * up to the language parsing software to identify the proper command from mnemonic information.
-         *
-         * This may have varying meaning across missions
-         */
-        mnemonic?: (string|null);
+        /** CommandDef abstract */
+        abstract?: (boolean|null);
 
-        /** Parent component or module owning this command */
-        component?: (string|null);
+        /** CommandDef arguments */
+        "arguments"?: (hermes.IArgumentDef[]|null);
 
-        /** Command arguments */
-        "arguments"?: (hermes.IField[]|null);
-
-        /** CommandDef metadata */
-        metadata?: (string|null);
+        /** CommandDef transmissionConstraints */
+        transmissionConstraints?: (hermes.ITransmissionConstraint[]|null);
     }
 
-    /** Represents a CommandDef. */
+    /**
+     * XTCE command definition with flattened inheritance structure.
+     * This represents a single command that can be sent to the spacecraft.
+     */
     class CommandDef implements ICommandDef {
 
         /**
@@ -3665,26 +3783,17 @@ export namespace hermes {
          */
         constructor(properties?: hermes.ICommandDef);
 
-        /** CommandDef opcode. */
-        public opcode: number;
+        /** CommandDef def. */
+        public def?: (hermes.IXtceDef|null);
 
-        /**
-         * Mnemonic command used to identify this command.
-         * FSW may or may not include the module name in the mnemonic and its
-         * up to the language parsing software to identify the proper command from mnemonic information.
-         *
-         * This may have varying meaning across missions
-         */
-        public mnemonic: string;
+        /** CommandDef abstract. */
+        public abstract: boolean;
 
-        /** Parent component or module owning this command */
-        public component: string;
+        /** CommandDef arguments. */
+        public arguments: hermes.IArgumentDef[];
 
-        /** Command arguments */
-        public arguments: hermes.IField[];
-
-        /** CommandDef metadata. */
-        public metadata: string;
+        /** CommandDef transmissionConstraints. */
+        public transmissionConstraints: hermes.ITransmissionConstraint[];
 
         /**
          * Creates a new CommandDef instance using the specified properties.
@@ -3758,6 +3867,576 @@ export namespace hermes {
 
         /**
          * Gets the default type url for CommandDef
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of an ArgumentDef. */
+    interface IArgumentDef {
+
+        /** ArgumentDef def */
+        def?: (hermes.IXtceDef|null);
+
+        /** ArgumentDef type */
+        type?: (hermes.IType|null);
+
+        /** ArgumentDef initialValue */
+        initialValue?: (hermes.IValue|null);
+    }
+
+    /**
+     * Command argument definition.
+     * Arguments are inputs that must be provided when sending the command.
+     */
+    class ArgumentDef implements IArgumentDef {
+
+        /**
+         * Constructs a new ArgumentDef.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.IArgumentDef);
+
+        /** ArgumentDef def. */
+        public def?: (hermes.IXtceDef|null);
+
+        /** ArgumentDef type. */
+        public type?: (hermes.IType|null);
+
+        /** ArgumentDef initialValue. */
+        public initialValue?: (hermes.IValue|null);
+
+        /**
+         * Creates a new ArgumentDef instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns ArgumentDef instance
+         */
+        public static create(properties?: hermes.IArgumentDef): hermes.ArgumentDef;
+
+        /**
+         * Encodes the specified ArgumentDef message. Does not implicitly {@link hermes.ArgumentDef.verify|verify} messages.
+         * @param message ArgumentDef message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.IArgumentDef, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified ArgumentDef message, length delimited. Does not implicitly {@link hermes.ArgumentDef.verify|verify} messages.
+         * @param message ArgumentDef message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.IArgumentDef, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes an ArgumentDef message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns ArgumentDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.ArgumentDef;
+
+        /**
+         * Decodes an ArgumentDef message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns ArgumentDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.ArgumentDef;
+
+        /**
+         * Verifies an ArgumentDef message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates an ArgumentDef message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns ArgumentDef
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.ArgumentDef;
+
+        /**
+         * Creates a plain object from an ArgumentDef message. Also converts values to other types if specified.
+         * @param message ArgumentDef
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.ArgumentDef, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this ArgumentDef to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for ArgumentDef
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Comparison operators for constraint checks. */
+    enum ComparisonOperator {
+        EQUAL = 0,
+        NOT_EQUAL = 1,
+        LESS_THAN = 2,
+        GREATER_THAN = 3,
+        LESS_THAN_OR_EQUAL = 4,
+        GREATER_THAN_OR_EQUAL = 5
+    }
+
+    /** Properties of a ParameterComparison. */
+    interface IParameterComparison {
+
+        /** ParameterComparison parameterRef */
+        parameterRef?: (string|null);
+
+        /** ParameterComparison operator */
+        operator?: (hermes.ComparisonOperator|null);
+
+        /** ParameterComparison value */
+        value?: (hermes.IValue|null);
+    }
+
+    /**
+     * Parameter comparison constraint.
+     * Command can only be sent if a telemetry parameter meets a condition.
+     * Example: "MotorTemperature" < 80.0 (can't send motor command if too hot)
+     */
+    class ParameterComparison implements IParameterComparison {
+
+        /**
+         * Constructs a new ParameterComparison.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.IParameterComparison);
+
+        /** ParameterComparison parameterRef. */
+        public parameterRef: string;
+
+        /** ParameterComparison operator. */
+        public operator: hermes.ComparisonOperator;
+
+        /** ParameterComparison value. */
+        public value?: (hermes.IValue|null);
+
+        /**
+         * Creates a new ParameterComparison instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns ParameterComparison instance
+         */
+        public static create(properties?: hermes.IParameterComparison): hermes.ParameterComparison;
+
+        /**
+         * Encodes the specified ParameterComparison message. Does not implicitly {@link hermes.ParameterComparison.verify|verify} messages.
+         * @param message ParameterComparison message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.IParameterComparison, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified ParameterComparison message, length delimited. Does not implicitly {@link hermes.ParameterComparison.verify|verify} messages.
+         * @param message ParameterComparison message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.IParameterComparison, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a ParameterComparison message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns ParameterComparison
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.ParameterComparison;
+
+        /**
+         * Decodes a ParameterComparison message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns ParameterComparison
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.ParameterComparison;
+
+        /**
+         * Verifies a ParameterComparison message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a ParameterComparison message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns ParameterComparison
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.ParameterComparison;
+
+        /**
+         * Creates a plain object from a ParameterComparison message. Also converts values to other types if specified.
+         * @param message ParameterComparison
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.ParameterComparison, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this ParameterComparison to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for ParameterComparison
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a TimeWindow. */
+    interface ITimeWindow {
+
+        /** TimeWindow startTime */
+        startTime?: (string|null);
+
+        /** TimeWindow endTime */
+        endTime?: (string|null);
+    }
+
+    /**
+     * Time window constraint.
+     * Command can only be sent within a specific time window.
+     * Example: Software update commands only allowed during maintenance windows.
+     */
+    class TimeWindow implements ITimeWindow {
+
+        /**
+         * Constructs a new TimeWindow.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.ITimeWindow);
+
+        /** TimeWindow startTime. */
+        public startTime?: (string|null);
+
+        /** TimeWindow endTime. */
+        public endTime?: (string|null);
+
+        /**
+         * Creates a new TimeWindow instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns TimeWindow instance
+         */
+        public static create(properties?: hermes.ITimeWindow): hermes.TimeWindow;
+
+        /**
+         * Encodes the specified TimeWindow message. Does not implicitly {@link hermes.TimeWindow.verify|verify} messages.
+         * @param message TimeWindow message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.ITimeWindow, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified TimeWindow message, length delimited. Does not implicitly {@link hermes.TimeWindow.verify|verify} messages.
+         * @param message TimeWindow message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.ITimeWindow, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a TimeWindow message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns TimeWindow
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.TimeWindow;
+
+        /**
+         * Decodes a TimeWindow message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns TimeWindow
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.TimeWindow;
+
+        /**
+         * Verifies a TimeWindow message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a TimeWindow message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns TimeWindow
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.TimeWindow;
+
+        /**
+         * Creates a plain object from a TimeWindow message. Also converts values to other types if specified.
+         * @param message TimeWindow
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.TimeWindow, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this TimeWindow to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for TimeWindow
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a BooleanExpression. */
+    interface IBooleanExpression {
+
+        /** BooleanExpression expression */
+        expression?: (string|null);
+
+        /** BooleanExpression description */
+        description?: (string|null);
+    }
+
+    /**
+     * Boolean expression constraint.
+     * Logical expression of multiple conditions.
+     */
+    class BooleanExpression implements IBooleanExpression {
+
+        /**
+         * Constructs a new BooleanExpression.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.IBooleanExpression);
+
+        /** BooleanExpression expression. */
+        public expression: string;
+
+        /** BooleanExpression description. */
+        public description: string;
+
+        /**
+         * Creates a new BooleanExpression instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns BooleanExpression instance
+         */
+        public static create(properties?: hermes.IBooleanExpression): hermes.BooleanExpression;
+
+        /**
+         * Encodes the specified BooleanExpression message. Does not implicitly {@link hermes.BooleanExpression.verify|verify} messages.
+         * @param message BooleanExpression message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.IBooleanExpression, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified BooleanExpression message, length delimited. Does not implicitly {@link hermes.BooleanExpression.verify|verify} messages.
+         * @param message BooleanExpression message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.IBooleanExpression, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a BooleanExpression message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns BooleanExpression
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.BooleanExpression;
+
+        /**
+         * Decodes a BooleanExpression message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns BooleanExpression
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.BooleanExpression;
+
+        /**
+         * Verifies a BooleanExpression message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a BooleanExpression message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns BooleanExpression
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.BooleanExpression;
+
+        /**
+         * Creates a plain object from a BooleanExpression message. Also converts values to other types if specified.
+         * @param message BooleanExpression
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.BooleanExpression, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this BooleanExpression to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for BooleanExpression
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a TransmissionConstraint. */
+    interface ITransmissionConstraint {
+
+        /** TransmissionConstraint description */
+        description?: (string|null);
+
+        /** TransmissionConstraint parameterComparison */
+        parameterComparison?: (hermes.IParameterComparison|null);
+
+        /** TransmissionConstraint timeWindow */
+        timeWindow?: (hermes.ITimeWindow|null);
+
+        /** TransmissionConstraint booleanExpression */
+        booleanExpression?: (hermes.IBooleanExpression|null);
+    }
+
+    /**
+     * Transmission constraint from XTCE.
+     * These must be satisfied BEFORE sending a command to determine if the
+     * command CAN be sent. They validate argument values, system state, and time windows.
+     */
+    class TransmissionConstraint implements ITransmissionConstraint {
+
+        /**
+         * Constructs a new TransmissionConstraint.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.ITransmissionConstraint);
+
+        /** TransmissionConstraint description. */
+        public description: string;
+
+        /** TransmissionConstraint parameterComparison. */
+        public parameterComparison?: (hermes.IParameterComparison|null);
+
+        /** TransmissionConstraint timeWindow. */
+        public timeWindow?: (hermes.ITimeWindow|null);
+
+        /** TransmissionConstraint booleanExpression. */
+        public booleanExpression?: (hermes.IBooleanExpression|null);
+
+        /** TransmissionConstraint constraint. */
+        public constraint?: ("parameterComparison"|"timeWindow"|"booleanExpression");
+
+        /**
+         * Creates a new TransmissionConstraint instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns TransmissionConstraint instance
+         */
+        public static create(properties?: hermes.ITransmissionConstraint): hermes.TransmissionConstraint;
+
+        /**
+         * Encodes the specified TransmissionConstraint message. Does not implicitly {@link hermes.TransmissionConstraint.verify|verify} messages.
+         * @param message TransmissionConstraint message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.ITransmissionConstraint, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified TransmissionConstraint message, length delimited. Does not implicitly {@link hermes.TransmissionConstraint.verify|verify} messages.
+         * @param message TransmissionConstraint message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.ITransmissionConstraint, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a TransmissionConstraint message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns TransmissionConstraint
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.TransmissionConstraint;
+
+        /**
+         * Decodes a TransmissionConstraint message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns TransmissionConstraint
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.TransmissionConstraint;
+
+        /**
+         * Verifies a TransmissionConstraint message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a TransmissionConstraint message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns TransmissionConstraint
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.TransmissionConstraint;
+
+        /**
+         * Creates a plain object from a TransmissionConstraint message. Also converts values to other types if specified.
+         * @param message TransmissionConstraint
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.TransmissionConstraint, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this TransmissionConstraint to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for TransmissionConstraint
          * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
          * @returns The default type url
          */
@@ -4519,17 +5198,11 @@ export namespace hermes {
     /** Properties of a TelemetryRef. */
     interface ITelemetryRef {
 
-        /** TelemetryRef id */
-        id?: (number|null);
+        /** TelemetryRef instanceId */
+        instanceId?: (string|null);
 
-        /** TelemetryRef name */
-        name?: (string|null);
-
-        /** TelemetryRef component */
-        component?: (string|null);
-
-        /** TelemetryRef dictionary */
-        dictionary?: (string|null);
+        /** TelemetryRef qualifiedName */
+        qualifiedName?: (string|null);
     }
 
     /** Represents a TelemetryRef. */
@@ -4541,17 +5214,11 @@ export namespace hermes {
          */
         constructor(properties?: hermes.ITelemetryRef);
 
-        /** TelemetryRef id. */
-        public id: number;
+        /** TelemetryRef instanceId. */
+        public instanceId: string;
 
-        /** TelemetryRef name. */
-        public name: string;
-
-        /** TelemetryRef component. */
-        public component: string;
-
-        /** TelemetryRef dictionary. */
-        public dictionary: string;
+        /** TelemetryRef qualifiedName. */
+        public qualifiedName: string;
 
         /**
          * Creates a new TelemetryRef instance using the specified properties.

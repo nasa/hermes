@@ -2,15 +2,11 @@
 
 
 export interface TelemetryRef {
-  'id'?: (number);
-  'name'?: (string);
-  'component'?: (string);
-  'dictionary'?: (string);
+  'instanceId'?: (string);
+  'qualifiedName'?: (string);
 }
 
 export interface TelemetryRef__Output {
-  'id'?: (number);
-  'name'?: (string);
-  'component'?: (string);
-  'dictionary'?: (string);
+  'instanceId'?: (string);
+  'qualifiedName'?: (string);
 }

@@ -5,6 +5,7 @@ use std::sync::Arc;
 use super::collection::{UnresolvedContainer, UnresolvedParameter, UnresolvedParameterType};
 use super::conversion::convert_restriction_criteria;
 use super::resolution::{resolve_container_reference, resolve_parameter_type_name};
+use super::utils::resolve_name_reference;
 use crate::de::{RestrictionCriteria, SequenceContainerType};
 use crate::xtce::container::convert_entry;
 use crate::xtce::types::{
@@ -12,7 +13,10 @@ use crate::xtce::types::{
     convert_parameter_type_set_with_parameters,
 };
 use crate::{Error, Result};
-use crate::{Item, Parameter};
+use crate::{
+    Argument, BinaryType, CommandContainer, Item, MetaCommand, Parameter, SequenceEntry,
+    TransmissionConstraint, Type, Value, VariableSize, Verifier,
+};
 
 /// Construct parameter types in multiple passes:
 /// Pass 1: Simple types (int, float, string, bool, enum, time) - no dependencies
@@ -500,7 +504,6 @@ pub(crate) fn construct_sequence_container_type(
 // ============================================================================
 
 use super::collection::{UnresolvedArgumentType, UnresolvedMetaCommand};
-use crate::{Argument, MetaCommand};
 
 /// Construct argument types from XTCE ArgumentTypeSetType
 /// Similar to parameter types, but for command arguments
@@ -534,17 +537,85 @@ pub(crate) fn construct_argument_types(
 }
 
 /// Convert XTCE ArgumentTypeSetType to internal Type
-/// For now, we support basic argument types by converting through the base type
+/// Argument types follow similar structure to parameter types - extract encoding and create types directly
 fn convert_argument_type_set(arg_type: &hermes_xtce::ArgumentTypeSetType) -> Result<crate::Type> {
-    // Argument types in XTCE have a base_type field that references the underlying type
-    // For simplicity, we'll create basic types directly
-    // TODO: Properly implement full XTCE argument type conversion with ValidRange support
+    use crate::{ByteOrder, Calibrator, EnumeratedType, EnumerationEntry, IntegerType};
 
     match arg_type {
-        hermes_xtce::ArgumentTypeSetType::IntegerArgumentType(_) => {
-            // For now, return a placeholder integer type
-            // TODO: Parse the actual encoding from the argument type
-            Err(Error::NotImplemented("Integer argument type conversion"))
+        hermes_xtce::ArgumentTypeSetType::IntegerArgumentType(t) => {
+            // Extract encoding information from content
+            let encoding_opt = t.content.iter().find_map(|item| match item {
+                hermes_xtce::IntegerArgumentTypeContent::IntegerDataEncoding(enc) => Some(enc),
+                _ => None,
+            });
+
+            let (size_in_bits, byte_order, encoding) = if let Some(enc) = encoding_opt {
+                (
+                    enc.size_in_bits,
+                    enc.byte_order.clone().try_into()?,
+                    enc.encoding.clone(),
+                )
+            } else {
+                // Use defaults from type attributes
+                (
+                    t.size_in_bits,
+                    ByteOrder::BigEndian,
+                    if t.signed {
+                        hermes_xtce::IntegerEncodingType::TwosComplement
+                    } else {
+                        hermes_xtce::IntegerEncodingType::Unsigned
+                    },
+                )
+            };
+
+            Ok(crate::Type::Integer(IntegerType {
+                size_in_bits,
+                signed: t.signed,
+                byte_order,
+                encoding,
+                calibrator: Calibrator::None,
+            }))
+        }
+        hermes_xtce::ArgumentTypeSetType::EnumeratedArgumentType(t) => {
+            // Extract encoding and enumeration list
+            let encoding = t.content.iter().find_map(|item| match item {
+                hermes_xtce::EnumeratedArgumentTypeContent::IntegerDataEncoding(enc) => Some(enc),
+                _ => None,
+            });
+
+            let enum_list = t.content.iter().find_map(|item| match item {
+                hermes_xtce::EnumeratedArgumentTypeContent::EnumerationList(list) => Some(list),
+                _ => None,
+            });
+
+            if let (Some(enc), Some(list)) = (encoding, enum_list) {
+                let enumeration_list = list
+                    .enumeration
+                    .iter()
+                    .map(|e| EnumerationEntry {
+                        label: e.label.clone(),
+                        value: e.value,
+                        short_description: e.short_description.clone(),
+                    })
+                    .collect();
+
+                let int_encoding = IntegerType {
+                    size_in_bits: enc.size_in_bits,
+                    signed: false, // Enums are typically unsigned
+                    byte_order: enc.byte_order.clone().try_into()?,
+                    encoding: enc.encoding.clone(),
+                    calibrator: Calibrator::None,
+                };
+
+                Ok(crate::Type::Enumerated(EnumeratedType {
+                    encoding: int_encoding,
+                    enumeration_list,
+                }))
+            } else {
+                Err(Error::InvalidXtce(
+                    "EnumeratedArgumentType missing encoding or enumeration list".to_string(),
+                ))
+            }
         }
         hermes_xtce::ArgumentTypeSetType::FloatArgumentType(_) => {
             Err(Error::NotImplemented("Float argument type conversion"))
@@ -554,9 +625,6 @@ fn convert_argument_type_set(arg_type: &hermes_xtce::ArgumentTypeSetType) -> Res
         }
         hermes_xtce::ArgumentTypeSetType::BooleanArgumentType(_) => {
             Err(Error::NotImplemented("Boolean argument type conversion"))
-        }
-        hermes_xtce::ArgumentTypeSetType::EnumeratedArgumentType(_) => {
-            Err(Error::NotImplemented("Enumerated argument type conversion"))
         }
         hermes_xtce::ArgumentTypeSetType::BinaryArgumentType(_) => {
             Err(Error::NotImplemented("Binary argument type conversion"))
@@ -580,8 +648,8 @@ pub(crate) fn construct_arguments(
 
                 // Resolve the argument type reference
                 let resolved_type_ref = resolve_parameter_type_name(
-                    &arg_xml.argument_type_ref,
                     &unresolved_cmd.space_system_path,
+                    &arg_xml.argument_type_ref,
                     argument_types,
                 )?;
 
@@ -632,8 +700,8 @@ pub(crate) fn build_command_dependency_graph(
         if let Some(base_cmd_ref) = &unresolved_cmd.base_command_ref {
             // Resolve the base command reference
             let resolved_base = resolve_parameter_type_name(
-                base_cmd_ref,
                 &unresolved_cmd.space_system_path,
+                base_cmd_ref,
                 &HashMap::new(), // We'll resolve later in the actual construction
             )
             .unwrap_or(base_cmd_ref.clone());
@@ -719,8 +787,67 @@ pub(crate) fn construct_meta_commands(
             cmd_args
         };
 
-        // TODO: Convert command container, constraints, and verifiers
-        // For now, create placeholder empty vectors
+        // Parse transmission constraints
+        let transmission_constraints = if let Some(ref constraint_list) =
+            unresolved_cmd.xml.transmission_constraint_list
+        {
+            constraint_list
+                .transmission_constraint
+                .iter()
+                .map(|_constraint| {
+                    // For now, just create a simple constraint with description
+                    // TODO: Parse actual constraint logic (comparisons, etc.)
+                    TransmissionConstraint {
+                        description: "Input validation constraint".to_string(),
+                    }
+                })
+                .collect()
+        } else {
+            Vec::new()
+        };
+
+        // Parse verifiers
+        let verifiers = if let Some(ref verifier_set) = unresolved_cmd.xml.verifier_set {
+            let mut v = Vec::new();
+
+            // Simple parsing - just count verifier types
+            if verifier_set.received_verifier.is_some() {
+                v.push(Verifier {});
+            }
+            if verifier_set.accepted_verifier.is_some() {
+                v.push(Verifier {});
+            }
+            if !verifier_set.execution_verifier.is_empty() {
+                for _ in &verifier_set.execution_verifier {
+                    v.push(Verifier {});
+                }
+            }
+            if !verifier_set.complete_verifier.is_empty() {
+                for _ in &verifier_set.complete_verifier {
+                    v.push(Verifier {});
+                }
+            }
+            if verifier_set.failed_verifier.is_some() {
+                v.push(Verifier {});
+            }
+
+            v
+        } else {
+            Vec::new()
+        };
+
+        // Parse command container if present
+        let command_container = if let Some(ref container_xml) = unresolved_cmd.xml.command_container {
+            Some(construct_command_container(
+                container_xml,
+                &qualified_name,
+                arguments,
+                &commands, // For resolving base containers
+            )?)
+        } else {
+            None
+        };
+
         let command = Arc::new(MetaCommand {
             head: Item {
                 name: unresolved_cmd.xml.name.clone(),
@@ -732,13 +859,131 @@ pub(crate) fn construct_meta_commands(
             abstract_: unresolved_cmd.xml.abstract_,
             args: all_args,
             base_command,
-            command_container: None, // TODO: Implement
-            transmission_constraints: Vec::new(), // TODO: Implement
-            verifiers: Vec::new(), // TODO: Implement
+            command_container,
+            transmission_constraints,
+            verifiers,
         });
 
         commands.insert(qualified_name, command);
     }
 
     Ok(commands)
+}
+
+/// Convert XTCE CommandContainerType to internal CommandContainer
+fn construct_command_container(
+    xml: &hermes_xtce::CommandContainerType,
+    parent_path: &str,
+    arguments: &HashMap<String, Arc<Argument>>,
+    constructed_commands: &HashMap<String, Arc<MetaCommand>>,
+) -> Result<Arc<CommandContainer>> {
+    // Resolve base container if present
+    let base_container = if let Some(base_ref) = &xml.base_container {
+        // The base container reference is to another command's container
+        let base_container_ref = &base_ref.container_ref;
+
+        // Try to find the command with this container
+        // The containerRef points to a MetaCommand, and we want its CommandContainer
+        let resolved_ref = resolve_name_reference(parent_path, base_container_ref);
+
+        // Look up the base command and get its container
+        if let Some(base_cmd) = constructed_commands.get(&resolved_ref) {
+            base_cmd.command_container.clone()
+        } else {
+            // Base command not yet constructed - will be None
+            None
+        }
+    } else {
+        None
+    };
+
+    // Convert entry list
+    let entries = convert_command_entry_list(&xml.entry_list, arguments, parent_path)?;
+
+    Ok(Arc::new(CommandContainer {
+        name: xml.name.clone(),
+        base_container,
+        entries,
+    }))
+}
+
+/// Convert XTCE command entry list to SequenceEntry vector
+fn convert_command_entry_list(
+    entry_list: &[hermes_xtce::CommandContainerEntryListType],
+    arguments: &HashMap<String, Arc<Argument>>,
+    parent_path: &str,
+) -> Result<Vec<SequenceEntry>> {
+    let mut entries = Vec::new();
+
+    for entry in entry_list {
+        match entry {
+            hermes_xtce::CommandContainerEntryListType::ArgumentRefEntry(ref_entry) => {
+                // Resolve argument reference
+                let arg_ref = &ref_entry.argument_ref;
+                let resolved_name = resolve_name_reference(parent_path, arg_ref);
+
+                if let Some(arg) = arguments.get(&resolved_name) {
+                    entries.push(SequenceEntry::ArgumentRef(arg.clone()));
+                } else {
+                    tracing::warn!(
+                        "Argument reference '{}' not found for command at '{}' (resolved to '{}')",
+                        arg_ref,
+                        parent_path,
+                        resolved_name
+                    );
+                }
+            }
+
+            hermes_xtce::CommandContainerEntryListType::ParameterRefEntry(ref_entry) => {
+                // Parameters in command containers are treated as ArgumentRef
+                // (they're values that come from the commanding system)
+                let param_ref = &ref_entry.parameter_ref;
+                let resolved_name = resolve_name_reference(parent_path, param_ref);
+
+                if let Some(arg) = arguments.get(&resolved_name) {
+                    entries.push(SequenceEntry::ParameterRef(arg.clone()));
+                } else {
+                    tracing::warn!(
+                        "Parameter reference '{}' not found for command at '{}' (resolved to '{}')",
+                        param_ref,
+                        parent_path,
+                        resolved_name
+                    );
+                }
+            }
+
+            hermes_xtce::CommandContainerEntryListType::FixedValueEntry(fixed_entry) => {
+                // Parse fixed value from binary hex string
+                let hex_value = &fixed_entry.binary_value;
+                let size_in_bits = fixed_entry.size_in_bits;
+
+                // Convert hex string to bytes
+                let bytes = hex::decode(hex_value).map_err(|e| {
+                    Error::InvalidXtce(format!("Invalid hex value '{}': {}", hex_value, e))
+                })?;
+
+                // Create a binary type for this fixed value
+                let type_ = Arc::new(Type::Binary(BinaryType {
+                    size: VariableSize::Fixed(size_in_bits as usize),
+                }));
+
+                let value = Value::Binary(bytes);
+
+                entries.push(SequenceEntry::FixedValue { value, type_ });
+            }
+
+            hermes_xtce::CommandContainerEntryListType::ContainerRefEntry(_container_ref) => {
+                // TODO: Implement container reference entries
+                // This requires resolving another CommandContainer and potentially filling in arguments
+                tracing::warn!("ContainerRefEntry not yet implemented, skipping");
+            }
+
+            // Other entry types not commonly used in commanding
+            _ => {
+                tracing::warn!("Unsupported command container entry type, skipping");
+            }
+        }
+    }
+
+    Ok(entries)
 }

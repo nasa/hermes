@@ -17,7 +17,7 @@ use super::utils::{move_up_path, resolve_name_reference};
 /// * `current_path` - The path where the reference originates
 /// * `name_ref` - The name reference (absolute, relative, or unqualified)
 /// * `exists_fn` - Function to check if a candidate qualified name exists
-/// * `error_fn` - Function to generate appropriate error message
+/// * `error_fn` - Function to generate appropriate error message (name_ref, current_path, last_candidate_tried)
 fn resolve_reference_with_upward_search<F, E>(
     current_path: &str,
     name_ref: &str,
@@ -26,21 +26,23 @@ fn resolve_reference_with_upward_search<F, E>(
 ) -> Result<String>
 where
     F: Fn(&str) -> bool,
-    E: Fn(&str, &str) -> Error,
+    E: Fn(&str, &str, &str) -> Error,
 {
     // If it's an absolute path starting with /, use as-is (no upward search)
     if name_ref.starts_with('/') {
         if exists_fn(name_ref) {
             return Ok(name_ref.to_string());
         }
-        return Err(error_fn(name_ref, name_ref));
+        return Err(error_fn(name_ref, current_path, name_ref));
     }
 
     // For relative or unqualified names (with or without /), do upward search
     // This handles both simple names ("Item") and hierarchical paths ("Sub/Item")
     let mut search_path = current_path.to_string();
+    let mut last_candidate: String;
     loop {
         let candidate = resolve_name_reference(&search_path, name_ref);
+        last_candidate = candidate.clone();
 
         if exists_fn(&candidate) {
             return Ok(candidate);
@@ -49,7 +51,7 @@ where
         // Move up one level
         if search_path.is_empty() || search_path == "/" {
             // Reached root without finding the item
-            return Err(error_fn(name_ref, current_path));
+            return Err(error_fn(name_ref, current_path, &last_candidate));
         }
 
         search_path = move_up_path(&search_path);
@@ -69,11 +71,11 @@ pub(crate) fn resolve_container_reference(
         current_path,
         name_ref,
         |candidate| unresolved.contains_key(candidate),
-        |name_ref, context| {
+        |name_ref, context, last_tried| {
             if name_ref.contains('/') {
                 Error::ContainerNotFound(format!(
-                    "Container reference '{}' resolved to '{}' but not found",
-                    name_ref, context
+                    "Container reference '{}' not found (searched from '{}', last tried '{}')",
+                    name_ref, context, last_tried
                 ))
             } else {
                 Error::ContainerNotFound(format!(
@@ -95,16 +97,16 @@ pub(crate) fn resolve_parameter_type_name(
         current_path,
         type_ref,
         |candidate| parameter_types.contains_key(candidate),
-        |type_ref, context| {
+        |type_ref, context, last_tried| {
             if type_ref.contains('/') {
                 Error::InvalidXtce(format!(
-                    "Parameter type reference '{}' resolved to '{}' but not found",
-                    type_ref, context
+                    "Parameter type reference '{}' not found (searched from '{}', last tried '{}')",
+                    type_ref, context, last_tried
                 ))
             } else {
                 Error::InvalidXtce(format!(
-                    "Parameter type '{}' not found in '{}' or any parent SpaceSystem",
-                    type_ref, context
+                    "Parameter type '{}' not found in '{}' or any parent SpaceSystem (last tried '{}')",
+                    type_ref, context, last_tried
                 ))
             }
         },
@@ -177,7 +179,7 @@ pub(crate) fn resolve_parameter_ref(
         space_system_path,
         param_ref,
         |name| parameters.contains_key(name),
-        |_, _| Error::InvalidXtce("not found".to_string()), // Dummy error, we'll handle it below
+        |_, _, _| Error::InvalidXtce("not found".to_string()), // Dummy error, we'll handle it below
     ) {
         Ok(resolved) => {
             // Successfully resolved as a complete parameter path
@@ -206,7 +208,7 @@ pub(crate) fn resolve_parameter_ref(
             space_system_path,
             &base_param_ref,
             |name| parameters.contains_key(name),
-            |_, _| Error::InvalidXtce("not found".to_string()),
+            |_, _, _| Error::InvalidXtce("not found".to_string()),
         ) {
             // Found a parameter - validate that it has an aggregate type and the member path is valid
             let parameter = parameters.get(&resolved_param_name).ok_or_else(|| {

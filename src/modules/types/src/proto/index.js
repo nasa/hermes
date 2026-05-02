@@ -9853,33 +9853,30 @@ $root.hermes = (function() {
         return ParameterDef;
     })();
 
-    hermes.CommandDef = (function() {
+    hermes.XtceDef = (function() {
 
         /**
-         * Properties of a CommandDef.
+         * Properties of a XtceDef.
          * @memberof hermes
-         * @interface ICommandDef
-         * @property {number|null} [opcode] CommandDef opcode
-         * @property {string|null} [mnemonic] Mnemonic command used to identify this command.
-         * FSW may or may not include the module name in the mnemonic and its
-         * up to the language parsing software to identify the proper command from mnemonic information.
-         * 
-         * This may have varying meaning across missions
-         * @property {string|null} [component] Parent component or module owning this command
-         * @property {Array.<hermes.IField>|null} ["arguments"] Command arguments
-         * @property {string|null} [metadata] CommandDef metadata
+         * @interface IXtceDef
+         * @property {string|null} [name] XtceDef name
+         * @property {string|null} [qualifiedName] XtceDef qualifiedName
+         * @property {string|null} [shortDescription] XtceDef shortDescription
+         * @property {string|null} [longDescription] XtceDef longDescription
+         * @property {Object.<string,string>|null} [ancillaryData] XtceDef ancillaryData
          */
 
         /**
-         * Constructs a new CommandDef.
+         * Constructs a new XtceDef.
          * @memberof hermes
-         * @classdesc Represents a CommandDef.
-         * @implements ICommandDef
+         * @classdesc Common metadata shared by all XTCE definitions (commands, telemetry, parameters).
+         * This is reusable across different XTCE item types.
+         * @implements IXtceDef
          * @constructor
-         * @param {hermes.ICommandDef=} [properties] Properties to set
+         * @param {hermes.IXtceDef=} [properties] Properties to set
          */
-        function CommandDef(properties) {
-            this["arguments"] = [];
+        function XtceDef(properties) {
+            this.ancillaryData = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
@@ -9887,48 +9884,393 @@ $root.hermes = (function() {
         }
 
         /**
-         * CommandDef opcode.
-         * @member {number} opcode
+         * XtceDef name.
+         * @member {string} name
+         * @memberof hermes.XtceDef
+         * @instance
+         */
+        XtceDef.prototype.name = "";
+
+        /**
+         * XtceDef qualifiedName.
+         * @member {string} qualifiedName
+         * @memberof hermes.XtceDef
+         * @instance
+         */
+        XtceDef.prototype.qualifiedName = "";
+
+        /**
+         * XtceDef shortDescription.
+         * @member {string|null|undefined} shortDescription
+         * @memberof hermes.XtceDef
+         * @instance
+         */
+        XtceDef.prototype.shortDescription = null;
+
+        /**
+         * XtceDef longDescription.
+         * @member {string|null|undefined} longDescription
+         * @memberof hermes.XtceDef
+         * @instance
+         */
+        XtceDef.prototype.longDescription = null;
+
+        /**
+         * XtceDef ancillaryData.
+         * @member {Object.<string,string>} ancillaryData
+         * @memberof hermes.XtceDef
+         * @instance
+         */
+        XtceDef.prototype.ancillaryData = $util.emptyObject;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(XtceDef.prototype, "_shortDescription", {
+            get: $util.oneOfGetter($oneOfFields = ["shortDescription"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(XtceDef.prototype, "_longDescription", {
+            get: $util.oneOfGetter($oneOfFields = ["longDescription"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Creates a new XtceDef instance using the specified properties.
+         * @function create
+         * @memberof hermes.XtceDef
+         * @static
+         * @param {hermes.IXtceDef=} [properties] Properties to set
+         * @returns {hermes.XtceDef} XtceDef instance
+         */
+        XtceDef.create = function create(properties) {
+            return new XtceDef(properties);
+        };
+
+        /**
+         * Encodes the specified XtceDef message. Does not implicitly {@link hermes.XtceDef.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.XtceDef
+         * @static
+         * @param {hermes.IXtceDef} message XtceDef message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        XtceDef.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+            if (message.qualifiedName != null && Object.hasOwnProperty.call(message, "qualifiedName"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.qualifiedName);
+            if (message.shortDescription != null && Object.hasOwnProperty.call(message, "shortDescription"))
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.shortDescription);
+            if (message.longDescription != null && Object.hasOwnProperty.call(message, "longDescription"))
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.longDescription);
+            if (message.ancillaryData != null && Object.hasOwnProperty.call(message, "ancillaryData"))
+                for (var keys = Object.keys(message.ancillaryData), i = 0; i < keys.length; ++i)
+                    writer.uint32(/* id 5, wireType 2 =*/42).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.ancillaryData[keys[i]]).ldelim();
+            return writer;
+        };
+
+        /**
+         * Encodes the specified XtceDef message, length delimited. Does not implicitly {@link hermes.XtceDef.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.XtceDef
+         * @static
+         * @param {hermes.IXtceDef} message XtceDef message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        XtceDef.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a XtceDef message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.XtceDef
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.XtceDef} XtceDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        XtceDef.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.XtceDef(), key, value;
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.name = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.qualifiedName = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.shortDescription = reader.string();
+                        break;
+                    }
+                case 4: {
+                        message.longDescription = reader.string();
+                        break;
+                    }
+                case 5: {
+                        if (message.ancillaryData === $util.emptyObject)
+                            message.ancillaryData = {};
+                        var end2 = reader.uint32() + reader.pos;
+                        key = "";
+                        value = "";
+                        while (reader.pos < end2) {
+                            var tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.string();
+                                break;
+                            case 2:
+                                value = reader.string();
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7);
+                                break;
+                            }
+                        }
+                        message.ancillaryData[key] = value;
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a XtceDef message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.XtceDef
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.XtceDef} XtceDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        XtceDef.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a XtceDef message.
+         * @function verify
+         * @memberof hermes.XtceDef
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        XtceDef.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            var properties = {};
+            if (message.name != null && message.hasOwnProperty("name"))
+                if (!$util.isString(message.name))
+                    return "name: string expected";
+            if (message.qualifiedName != null && message.hasOwnProperty("qualifiedName"))
+                if (!$util.isString(message.qualifiedName))
+                    return "qualifiedName: string expected";
+            if (message.shortDescription != null && message.hasOwnProperty("shortDescription")) {
+                properties._shortDescription = 1;
+                if (!$util.isString(message.shortDescription))
+                    return "shortDescription: string expected";
+            }
+            if (message.longDescription != null && message.hasOwnProperty("longDescription")) {
+                properties._longDescription = 1;
+                if (!$util.isString(message.longDescription))
+                    return "longDescription: string expected";
+            }
+            if (message.ancillaryData != null && message.hasOwnProperty("ancillaryData")) {
+                if (!$util.isObject(message.ancillaryData))
+                    return "ancillaryData: object expected";
+                var key = Object.keys(message.ancillaryData);
+                for (var i = 0; i < key.length; ++i)
+                    if (!$util.isString(message.ancillaryData[key[i]]))
+                        return "ancillaryData: string{k:string} expected";
+            }
+            return null;
+        };
+
+        /**
+         * Creates a XtceDef message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.XtceDef
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.XtceDef} XtceDef
+         */
+        XtceDef.fromObject = function fromObject(object) {
+            if (object instanceof $root.hermes.XtceDef)
+                return object;
+            var message = new $root.hermes.XtceDef();
+            if (object.name != null)
+                message.name = String(object.name);
+            if (object.qualifiedName != null)
+                message.qualifiedName = String(object.qualifiedName);
+            if (object.shortDescription != null)
+                message.shortDescription = String(object.shortDescription);
+            if (object.longDescription != null)
+                message.longDescription = String(object.longDescription);
+            if (object.ancillaryData) {
+                if (typeof object.ancillaryData !== "object")
+                    throw TypeError(".hermes.XtceDef.ancillaryData: object expected");
+                message.ancillaryData = {};
+                for (var keys = Object.keys(object.ancillaryData), i = 0; i < keys.length; ++i)
+                    message.ancillaryData[keys[i]] = String(object.ancillaryData[keys[i]]);
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a XtceDef message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.XtceDef
+         * @static
+         * @param {hermes.XtceDef} message XtceDef
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        XtceDef.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.objects || options.defaults)
+                object.ancillaryData = {};
+            if (options.defaults) {
+                object.name = "";
+                object.qualifiedName = "";
+            }
+            if (message.name != null && message.hasOwnProperty("name"))
+                object.name = message.name;
+            if (message.qualifiedName != null && message.hasOwnProperty("qualifiedName"))
+                object.qualifiedName = message.qualifiedName;
+            if (message.shortDescription != null && message.hasOwnProperty("shortDescription")) {
+                object.shortDescription = message.shortDescription;
+                if (options.oneofs)
+                    object._shortDescription = "shortDescription";
+            }
+            if (message.longDescription != null && message.hasOwnProperty("longDescription")) {
+                object.longDescription = message.longDescription;
+                if (options.oneofs)
+                    object._longDescription = "longDescription";
+            }
+            var keys2;
+            if (message.ancillaryData && (keys2 = Object.keys(message.ancillaryData)).length) {
+                object.ancillaryData = {};
+                for (var j = 0; j < keys2.length; ++j)
+                    object.ancillaryData[keys2[j]] = message.ancillaryData[keys2[j]];
+            }
+            return object;
+        };
+
+        /**
+         * Converts this XtceDef to JSON.
+         * @function toJSON
+         * @memberof hermes.XtceDef
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        XtceDef.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for XtceDef
+         * @function getTypeUrl
+         * @memberof hermes.XtceDef
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        XtceDef.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.XtceDef";
+        };
+
+        return XtceDef;
+    })();
+
+    hermes.CommandDef = (function() {
+
+        /**
+         * Properties of a CommandDef.
+         * @memberof hermes
+         * @interface ICommandDef
+         * @property {hermes.IXtceDef|null} [def] CommandDef def
+         * @property {boolean|null} [abstract] CommandDef abstract
+         * @property {Array.<hermes.IArgumentDef>|null} ["arguments"] CommandDef arguments
+         * @property {Array.<hermes.ITransmissionConstraint>|null} [transmissionConstraints] CommandDef transmissionConstraints
+         */
+
+        /**
+         * Constructs a new CommandDef.
+         * @memberof hermes
+         * @classdesc XTCE command definition with flattened inheritance structure.
+         * This represents a single command that can be sent to the spacecraft.
+         * @implements ICommandDef
+         * @constructor
+         * @param {hermes.ICommandDef=} [properties] Properties to set
+         */
+        function CommandDef(properties) {
+            this["arguments"] = [];
+            this.transmissionConstraints = [];
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * CommandDef def.
+         * @member {hermes.IXtceDef|null|undefined} def
          * @memberof hermes.CommandDef
          * @instance
          */
-        CommandDef.prototype.opcode = 0;
+        CommandDef.prototype.def = null;
 
         /**
-         * Mnemonic command used to identify this command.
-         * FSW may or may not include the module name in the mnemonic and its
-         * up to the language parsing software to identify the proper command from mnemonic information.
-         * 
-         * This may have varying meaning across missions
-         * @member {string} mnemonic
+         * CommandDef abstract.
+         * @member {boolean} abstract
          * @memberof hermes.CommandDef
          * @instance
          */
-        CommandDef.prototype.mnemonic = "";
+        CommandDef.prototype.abstract = false;
 
         /**
-         * Parent component or module owning this command
-         * @member {string} component
-         * @memberof hermes.CommandDef
-         * @instance
-         */
-        CommandDef.prototype.component = "";
-
-        /**
-         * Command arguments
-         * @member {Array.<hermes.IField>} arguments
+         * CommandDef arguments.
+         * @member {Array.<hermes.IArgumentDef>} arguments
          * @memberof hermes.CommandDef
          * @instance
          */
         CommandDef.prototype["arguments"] = $util.emptyArray;
 
         /**
-         * CommandDef metadata.
-         * @member {string} metadata
+         * CommandDef transmissionConstraints.
+         * @member {Array.<hermes.ITransmissionConstraint>} transmissionConstraints
          * @memberof hermes.CommandDef
          * @instance
          */
-        CommandDef.prototype.metadata = "";
+        CommandDef.prototype.transmissionConstraints = $util.emptyArray;
 
         /**
          * Creates a new CommandDef instance using the specified properties.
@@ -9954,17 +10296,16 @@ $root.hermes = (function() {
         CommandDef.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            if (message.opcode != null && Object.hasOwnProperty.call(message, "opcode"))
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.opcode);
-            if (message.mnemonic != null && Object.hasOwnProperty.call(message, "mnemonic"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.mnemonic);
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.component);
+            if (message.def != null && Object.hasOwnProperty.call(message, "def"))
+                $root.hermes.XtceDef.encode(message.def, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+            if (message.abstract != null && Object.hasOwnProperty.call(message, "abstract"))
+                writer.uint32(/* id 2, wireType 0 =*/16).bool(message.abstract);
             if (message["arguments"] != null && message["arguments"].length)
                 for (var i = 0; i < message["arguments"].length; ++i)
-                    $root.hermes.Field.encode(message["arguments"][i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                writer.uint32(/* id 5, wireType 2 =*/42).string(message.metadata);
+                    $root.hermes.ArgumentDef.encode(message["arguments"][i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+            if (message.transmissionConstraints != null && message.transmissionConstraints.length)
+                for (var i = 0; i < message.transmissionConstraints.length; ++i)
+                    $root.hermes.TransmissionConstraint.encode(message.transmissionConstraints[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
             return writer;
         };
 
@@ -10000,25 +10341,23 @@ $root.hermes = (function() {
                 var tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1: {
-                        message.opcode = reader.int32();
+                        message.def = $root.hermes.XtceDef.decode(reader, reader.uint32());
                         break;
                     }
                 case 2: {
-                        message.mnemonic = reader.string();
+                        message.abstract = reader.bool();
                         break;
                     }
                 case 3: {
-                        message.component = reader.string();
+                        if (!(message["arguments"] && message["arguments"].length))
+                            message["arguments"] = [];
+                        message["arguments"].push($root.hermes.ArgumentDef.decode(reader, reader.uint32()));
                         break;
                     }
                 case 4: {
-                        if (!(message["arguments"] && message["arguments"].length))
-                            message["arguments"] = [];
-                        message["arguments"].push($root.hermes.Field.decode(reader, reader.uint32()));
-                        break;
-                    }
-                case 5: {
-                        message.metadata = reader.string();
+                        if (!(message.transmissionConstraints && message.transmissionConstraints.length))
+                            message.transmissionConstraints = [];
+                        message.transmissionConstraints.push($root.hermes.TransmissionConstraint.decode(reader, reader.uint32()));
                         break;
                     }
                 default:
@@ -10056,27 +10395,32 @@ $root.hermes = (function() {
         CommandDef.verify = function verify(message) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.opcode != null && message.hasOwnProperty("opcode"))
-                if (!$util.isInteger(message.opcode))
-                    return "opcode: integer expected";
-            if (message.mnemonic != null && message.hasOwnProperty("mnemonic"))
-                if (!$util.isString(message.mnemonic))
-                    return "mnemonic: string expected";
-            if (message.component != null && message.hasOwnProperty("component"))
-                if (!$util.isString(message.component))
-                    return "component: string expected";
+            if (message.def != null && message.hasOwnProperty("def")) {
+                var error = $root.hermes.XtceDef.verify(message.def);
+                if (error)
+                    return "def." + error;
+            }
+            if (message.abstract != null && message.hasOwnProperty("abstract"))
+                if (typeof message.abstract !== "boolean")
+                    return "abstract: boolean expected";
             if (message["arguments"] != null && message.hasOwnProperty("arguments")) {
                 if (!Array.isArray(message["arguments"]))
                     return "arguments: array expected";
                 for (var i = 0; i < message["arguments"].length; ++i) {
-                    var error = $root.hermes.Field.verify(message["arguments"][i]);
+                    var error = $root.hermes.ArgumentDef.verify(message["arguments"][i]);
                     if (error)
                         return "arguments." + error;
                 }
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
-                if (!$util.isString(message.metadata))
-                    return "metadata: string expected";
+            if (message.transmissionConstraints != null && message.hasOwnProperty("transmissionConstraints")) {
+                if (!Array.isArray(message.transmissionConstraints))
+                    return "transmissionConstraints: array expected";
+                for (var i = 0; i < message.transmissionConstraints.length; ++i) {
+                    var error = $root.hermes.TransmissionConstraint.verify(message.transmissionConstraints[i]);
+                    if (error)
+                        return "transmissionConstraints." + error;
+                }
+            }
             return null;
         };
 
@@ -10092,12 +10436,13 @@ $root.hermes = (function() {
             if (object instanceof $root.hermes.CommandDef)
                 return object;
             var message = new $root.hermes.CommandDef();
-            if (object.opcode != null)
-                message.opcode = object.opcode | 0;
-            if (object.mnemonic != null)
-                message.mnemonic = String(object.mnemonic);
-            if (object.component != null)
-                message.component = String(object.component);
+            if (object.def != null) {
+                if (typeof object.def !== "object")
+                    throw TypeError(".hermes.CommandDef.def: object expected");
+                message.def = $root.hermes.XtceDef.fromObject(object.def);
+            }
+            if (object.abstract != null)
+                message.abstract = Boolean(object.abstract);
             if (object["arguments"]) {
                 if (!Array.isArray(object["arguments"]))
                     throw TypeError(".hermes.CommandDef.arguments: array expected");
@@ -10105,11 +10450,19 @@ $root.hermes = (function() {
                 for (var i = 0; i < object["arguments"].length; ++i) {
                     if (typeof object["arguments"][i] !== "object")
                         throw TypeError(".hermes.CommandDef.arguments: object expected");
-                    message["arguments"][i] = $root.hermes.Field.fromObject(object["arguments"][i]);
+                    message["arguments"][i] = $root.hermes.ArgumentDef.fromObject(object["arguments"][i]);
                 }
             }
-            if (object.metadata != null)
-                message.metadata = String(object.metadata);
+            if (object.transmissionConstraints) {
+                if (!Array.isArray(object.transmissionConstraints))
+                    throw TypeError(".hermes.CommandDef.transmissionConstraints: array expected");
+                message.transmissionConstraints = [];
+                for (var i = 0; i < object.transmissionConstraints.length; ++i) {
+                    if (typeof object.transmissionConstraints[i] !== "object")
+                        throw TypeError(".hermes.CommandDef.transmissionConstraints: object expected");
+                    message.transmissionConstraints[i] = $root.hermes.TransmissionConstraint.fromObject(object.transmissionConstraints[i]);
+                }
+            }
             return message;
         };
 
@@ -10126,27 +10479,28 @@ $root.hermes = (function() {
             if (!options)
                 options = {};
             var object = {};
-            if (options.arrays || options.defaults)
+            if (options.arrays || options.defaults) {
                 object["arguments"] = [];
-            if (options.defaults) {
-                object.opcode = 0;
-                object.mnemonic = "";
-                object.component = "";
-                object.metadata = "";
+                object.transmissionConstraints = [];
             }
-            if (message.opcode != null && message.hasOwnProperty("opcode"))
-                object.opcode = message.opcode;
-            if (message.mnemonic != null && message.hasOwnProperty("mnemonic"))
-                object.mnemonic = message.mnemonic;
-            if (message.component != null && message.hasOwnProperty("component"))
-                object.component = message.component;
+            if (options.defaults) {
+                object.def = null;
+                object.abstract = false;
+            }
+            if (message.def != null && message.hasOwnProperty("def"))
+                object.def = $root.hermes.XtceDef.toObject(message.def, options);
+            if (message.abstract != null && message.hasOwnProperty("abstract"))
+                object.abstract = message.abstract;
             if (message["arguments"] && message["arguments"].length) {
                 object["arguments"] = [];
                 for (var j = 0; j < message["arguments"].length; ++j)
-                    object["arguments"][j] = $root.hermes.Field.toObject(message["arguments"][j], options);
+                    object["arguments"][j] = $root.hermes.ArgumentDef.toObject(message["arguments"][j], options);
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
-                object.metadata = message.metadata;
+            if (message.transmissionConstraints && message.transmissionConstraints.length) {
+                object.transmissionConstraints = [];
+                for (var j = 0; j < message.transmissionConstraints.length; ++j)
+                    object.transmissionConstraints[j] = $root.hermes.TransmissionConstraint.toObject(message.transmissionConstraints[j], options);
+            }
             return object;
         };
 
@@ -10177,6 +10531,1407 @@ $root.hermes = (function() {
         };
 
         return CommandDef;
+    })();
+
+    hermes.ArgumentDef = (function() {
+
+        /**
+         * Properties of an ArgumentDef.
+         * @memberof hermes
+         * @interface IArgumentDef
+         * @property {hermes.IXtceDef|null} [def] ArgumentDef def
+         * @property {hermes.IType|null} [type] ArgumentDef type
+         * @property {hermes.IValue|null} [initialValue] ArgumentDef initialValue
+         */
+
+        /**
+         * Constructs a new ArgumentDef.
+         * @memberof hermes
+         * @classdesc Command argument definition.
+         * Arguments are inputs that must be provided when sending the command.
+         * @implements IArgumentDef
+         * @constructor
+         * @param {hermes.IArgumentDef=} [properties] Properties to set
+         */
+        function ArgumentDef(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * ArgumentDef def.
+         * @member {hermes.IXtceDef|null|undefined} def
+         * @memberof hermes.ArgumentDef
+         * @instance
+         */
+        ArgumentDef.prototype.def = null;
+
+        /**
+         * ArgumentDef type.
+         * @member {hermes.IType|null|undefined} type
+         * @memberof hermes.ArgumentDef
+         * @instance
+         */
+        ArgumentDef.prototype.type = null;
+
+        /**
+         * ArgumentDef initialValue.
+         * @member {hermes.IValue|null|undefined} initialValue
+         * @memberof hermes.ArgumentDef
+         * @instance
+         */
+        ArgumentDef.prototype.initialValue = null;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(ArgumentDef.prototype, "_initialValue", {
+            get: $util.oneOfGetter($oneOfFields = ["initialValue"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Creates a new ArgumentDef instance using the specified properties.
+         * @function create
+         * @memberof hermes.ArgumentDef
+         * @static
+         * @param {hermes.IArgumentDef=} [properties] Properties to set
+         * @returns {hermes.ArgumentDef} ArgumentDef instance
+         */
+        ArgumentDef.create = function create(properties) {
+            return new ArgumentDef(properties);
+        };
+
+        /**
+         * Encodes the specified ArgumentDef message. Does not implicitly {@link hermes.ArgumentDef.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.ArgumentDef
+         * @static
+         * @param {hermes.IArgumentDef} message ArgumentDef message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ArgumentDef.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.def != null && Object.hasOwnProperty.call(message, "def"))
+                $root.hermes.XtceDef.encode(message.def, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                $root.hermes.Type.encode(message.type, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+            if (message.initialValue != null && Object.hasOwnProperty.call(message, "initialValue"))
+                $root.hermes.Value.encode(message.initialValue, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+            return writer;
+        };
+
+        /**
+         * Encodes the specified ArgumentDef message, length delimited. Does not implicitly {@link hermes.ArgumentDef.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.ArgumentDef
+         * @static
+         * @param {hermes.IArgumentDef} message ArgumentDef message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ArgumentDef.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes an ArgumentDef message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.ArgumentDef
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.ArgumentDef} ArgumentDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ArgumentDef.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ArgumentDef();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.def = $root.hermes.XtceDef.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 2: {
+                        message.type = $root.hermes.Type.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        message.initialValue = $root.hermes.Value.decode(reader, reader.uint32());
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes an ArgumentDef message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.ArgumentDef
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.ArgumentDef} ArgumentDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ArgumentDef.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies an ArgumentDef message.
+         * @function verify
+         * @memberof hermes.ArgumentDef
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        ArgumentDef.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            var properties = {};
+            if (message.def != null && message.hasOwnProperty("def")) {
+                var error = $root.hermes.XtceDef.verify(message.def);
+                if (error)
+                    return "def." + error;
+            }
+            if (message.type != null && message.hasOwnProperty("type")) {
+                var error = $root.hermes.Type.verify(message.type);
+                if (error)
+                    return "type." + error;
+            }
+            if (message.initialValue != null && message.hasOwnProperty("initialValue")) {
+                properties._initialValue = 1;
+                {
+                    var error = $root.hermes.Value.verify(message.initialValue);
+                    if (error)
+                        return "initialValue." + error;
+                }
+            }
+            return null;
+        };
+
+        /**
+         * Creates an ArgumentDef message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.ArgumentDef
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.ArgumentDef} ArgumentDef
+         */
+        ArgumentDef.fromObject = function fromObject(object) {
+            if (object instanceof $root.hermes.ArgumentDef)
+                return object;
+            var message = new $root.hermes.ArgumentDef();
+            if (object.def != null) {
+                if (typeof object.def !== "object")
+                    throw TypeError(".hermes.ArgumentDef.def: object expected");
+                message.def = $root.hermes.XtceDef.fromObject(object.def);
+            }
+            if (object.type != null) {
+                if (typeof object.type !== "object")
+                    throw TypeError(".hermes.ArgumentDef.type: object expected");
+                message.type = $root.hermes.Type.fromObject(object.type);
+            }
+            if (object.initialValue != null) {
+                if (typeof object.initialValue !== "object")
+                    throw TypeError(".hermes.ArgumentDef.initialValue: object expected");
+                message.initialValue = $root.hermes.Value.fromObject(object.initialValue);
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from an ArgumentDef message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.ArgumentDef
+         * @static
+         * @param {hermes.ArgumentDef} message ArgumentDef
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        ArgumentDef.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.def = null;
+                object.type = null;
+            }
+            if (message.def != null && message.hasOwnProperty("def"))
+                object.def = $root.hermes.XtceDef.toObject(message.def, options);
+            if (message.type != null && message.hasOwnProperty("type"))
+                object.type = $root.hermes.Type.toObject(message.type, options);
+            if (message.initialValue != null && message.hasOwnProperty("initialValue")) {
+                object.initialValue = $root.hermes.Value.toObject(message.initialValue, options);
+                if (options.oneofs)
+                    object._initialValue = "initialValue";
+            }
+            return object;
+        };
+
+        /**
+         * Converts this ArgumentDef to JSON.
+         * @function toJSON
+         * @memberof hermes.ArgumentDef
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        ArgumentDef.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for ArgumentDef
+         * @function getTypeUrl
+         * @memberof hermes.ArgumentDef
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        ArgumentDef.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.ArgumentDef";
+        };
+
+        return ArgumentDef;
+    })();
+
+    /**
+     * Comparison operators for constraint checks.
+     * @name hermes.ComparisonOperator
+     * @enum {number}
+     * @property {number} EQUAL=0 EQUAL value
+     * @property {number} NOT_EQUAL=1 NOT_EQUAL value
+     * @property {number} LESS_THAN=2 LESS_THAN value
+     * @property {number} GREATER_THAN=3 GREATER_THAN value
+     * @property {number} LESS_THAN_OR_EQUAL=4 LESS_THAN_OR_EQUAL value
+     * @property {number} GREATER_THAN_OR_EQUAL=5 GREATER_THAN_OR_EQUAL value
+     */
+    hermes.ComparisonOperator = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "EQUAL"] = 0;
+        values[valuesById[1] = "NOT_EQUAL"] = 1;
+        values[valuesById[2] = "LESS_THAN"] = 2;
+        values[valuesById[3] = "GREATER_THAN"] = 3;
+        values[valuesById[4] = "LESS_THAN_OR_EQUAL"] = 4;
+        values[valuesById[5] = "GREATER_THAN_OR_EQUAL"] = 5;
+        return values;
+    })();
+
+    hermes.ParameterComparison = (function() {
+
+        /**
+         * Properties of a ParameterComparison.
+         * @memberof hermes
+         * @interface IParameterComparison
+         * @property {string|null} [parameterRef] ParameterComparison parameterRef
+         * @property {hermes.ComparisonOperator|null} [operator] ParameterComparison operator
+         * @property {hermes.IValue|null} [value] ParameterComparison value
+         */
+
+        /**
+         * Constructs a new ParameterComparison.
+         * @memberof hermes
+         * @classdesc Parameter comparison constraint.
+         * Command can only be sent if a telemetry parameter meets a condition.
+         * Example: "MotorTemperature" < 80.0 (can't send motor command if too hot)
+         * @implements IParameterComparison
+         * @constructor
+         * @param {hermes.IParameterComparison=} [properties] Properties to set
+         */
+        function ParameterComparison(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * ParameterComparison parameterRef.
+         * @member {string} parameterRef
+         * @memberof hermes.ParameterComparison
+         * @instance
+         */
+        ParameterComparison.prototype.parameterRef = "";
+
+        /**
+         * ParameterComparison operator.
+         * @member {hermes.ComparisonOperator} operator
+         * @memberof hermes.ParameterComparison
+         * @instance
+         */
+        ParameterComparison.prototype.operator = 0;
+
+        /**
+         * ParameterComparison value.
+         * @member {hermes.IValue|null|undefined} value
+         * @memberof hermes.ParameterComparison
+         * @instance
+         */
+        ParameterComparison.prototype.value = null;
+
+        /**
+         * Creates a new ParameterComparison instance using the specified properties.
+         * @function create
+         * @memberof hermes.ParameterComparison
+         * @static
+         * @param {hermes.IParameterComparison=} [properties] Properties to set
+         * @returns {hermes.ParameterComparison} ParameterComparison instance
+         */
+        ParameterComparison.create = function create(properties) {
+            return new ParameterComparison(properties);
+        };
+
+        /**
+         * Encodes the specified ParameterComparison message. Does not implicitly {@link hermes.ParameterComparison.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.ParameterComparison
+         * @static
+         * @param {hermes.IParameterComparison} message ParameterComparison message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ParameterComparison.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.parameterRef != null && Object.hasOwnProperty.call(message, "parameterRef"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.parameterRef);
+            if (message.operator != null && Object.hasOwnProperty.call(message, "operator"))
+                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.operator);
+            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
+                $root.hermes.Value.encode(message.value, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+            return writer;
+        };
+
+        /**
+         * Encodes the specified ParameterComparison message, length delimited. Does not implicitly {@link hermes.ParameterComparison.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.ParameterComparison
+         * @static
+         * @param {hermes.IParameterComparison} message ParameterComparison message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ParameterComparison.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a ParameterComparison message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.ParameterComparison
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.ParameterComparison} ParameterComparison
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ParameterComparison.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ParameterComparison();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.parameterRef = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.operator = reader.int32();
+                        break;
+                    }
+                case 3: {
+                        message.value = $root.hermes.Value.decode(reader, reader.uint32());
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a ParameterComparison message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.ParameterComparison
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.ParameterComparison} ParameterComparison
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ParameterComparison.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a ParameterComparison message.
+         * @function verify
+         * @memberof hermes.ParameterComparison
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        ParameterComparison.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.parameterRef != null && message.hasOwnProperty("parameterRef"))
+                if (!$util.isString(message.parameterRef))
+                    return "parameterRef: string expected";
+            if (message.operator != null && message.hasOwnProperty("operator"))
+                switch (message.operator) {
+                default:
+                    return "operator: enum value expected";
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                    break;
+                }
+            if (message.value != null && message.hasOwnProperty("value")) {
+                var error = $root.hermes.Value.verify(message.value);
+                if (error)
+                    return "value." + error;
+            }
+            return null;
+        };
+
+        /**
+         * Creates a ParameterComparison message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.ParameterComparison
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.ParameterComparison} ParameterComparison
+         */
+        ParameterComparison.fromObject = function fromObject(object) {
+            if (object instanceof $root.hermes.ParameterComparison)
+                return object;
+            var message = new $root.hermes.ParameterComparison();
+            if (object.parameterRef != null)
+                message.parameterRef = String(object.parameterRef);
+            switch (object.operator) {
+            default:
+                if (typeof object.operator === "number") {
+                    message.operator = object.operator;
+                    break;
+                }
+                break;
+            case "EQUAL":
+            case 0:
+                message.operator = 0;
+                break;
+            case "NOT_EQUAL":
+            case 1:
+                message.operator = 1;
+                break;
+            case "LESS_THAN":
+            case 2:
+                message.operator = 2;
+                break;
+            case "GREATER_THAN":
+            case 3:
+                message.operator = 3;
+                break;
+            case "LESS_THAN_OR_EQUAL":
+            case 4:
+                message.operator = 4;
+                break;
+            case "GREATER_THAN_OR_EQUAL":
+            case 5:
+                message.operator = 5;
+                break;
+            }
+            if (object.value != null) {
+                if (typeof object.value !== "object")
+                    throw TypeError(".hermes.ParameterComparison.value: object expected");
+                message.value = $root.hermes.Value.fromObject(object.value);
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a ParameterComparison message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.ParameterComparison
+         * @static
+         * @param {hermes.ParameterComparison} message ParameterComparison
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        ParameterComparison.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.parameterRef = "";
+                object.operator = options.enums === String ? "EQUAL" : 0;
+                object.value = null;
+            }
+            if (message.parameterRef != null && message.hasOwnProperty("parameterRef"))
+                object.parameterRef = message.parameterRef;
+            if (message.operator != null && message.hasOwnProperty("operator"))
+                object.operator = options.enums === String ? $root.hermes.ComparisonOperator[message.operator] === undefined ? message.operator : $root.hermes.ComparisonOperator[message.operator] : message.operator;
+            if (message.value != null && message.hasOwnProperty("value"))
+                object.value = $root.hermes.Value.toObject(message.value, options);
+            return object;
+        };
+
+        /**
+         * Converts this ParameterComparison to JSON.
+         * @function toJSON
+         * @memberof hermes.ParameterComparison
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        ParameterComparison.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for ParameterComparison
+         * @function getTypeUrl
+         * @memberof hermes.ParameterComparison
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        ParameterComparison.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.ParameterComparison";
+        };
+
+        return ParameterComparison;
+    })();
+
+    hermes.TimeWindow = (function() {
+
+        /**
+         * Properties of a TimeWindow.
+         * @memberof hermes
+         * @interface ITimeWindow
+         * @property {string|null} [startTime] TimeWindow startTime
+         * @property {string|null} [endTime] TimeWindow endTime
+         */
+
+        /**
+         * Constructs a new TimeWindow.
+         * @memberof hermes
+         * @classdesc Time window constraint.
+         * Command can only be sent within a specific time window.
+         * Example: Software update commands only allowed during maintenance windows.
+         * @implements ITimeWindow
+         * @constructor
+         * @param {hermes.ITimeWindow=} [properties] Properties to set
+         */
+        function TimeWindow(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * TimeWindow startTime.
+         * @member {string|null|undefined} startTime
+         * @memberof hermes.TimeWindow
+         * @instance
+         */
+        TimeWindow.prototype.startTime = null;
+
+        /**
+         * TimeWindow endTime.
+         * @member {string|null|undefined} endTime
+         * @memberof hermes.TimeWindow
+         * @instance
+         */
+        TimeWindow.prototype.endTime = null;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(TimeWindow.prototype, "_startTime", {
+            get: $util.oneOfGetter($oneOfFields = ["startTime"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        // Virtual OneOf for proto3 optional field
+        Object.defineProperty(TimeWindow.prototype, "_endTime", {
+            get: $util.oneOfGetter($oneOfFields = ["endTime"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Creates a new TimeWindow instance using the specified properties.
+         * @function create
+         * @memberof hermes.TimeWindow
+         * @static
+         * @param {hermes.ITimeWindow=} [properties] Properties to set
+         * @returns {hermes.TimeWindow} TimeWindow instance
+         */
+        TimeWindow.create = function create(properties) {
+            return new TimeWindow(properties);
+        };
+
+        /**
+         * Encodes the specified TimeWindow message. Does not implicitly {@link hermes.TimeWindow.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.TimeWindow
+         * @static
+         * @param {hermes.ITimeWindow} message TimeWindow message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        TimeWindow.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.startTime != null && Object.hasOwnProperty.call(message, "startTime"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.startTime);
+            if (message.endTime != null && Object.hasOwnProperty.call(message, "endTime"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.endTime);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified TimeWindow message, length delimited. Does not implicitly {@link hermes.TimeWindow.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.TimeWindow
+         * @static
+         * @param {hermes.ITimeWindow} message TimeWindow message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        TimeWindow.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a TimeWindow message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.TimeWindow
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.TimeWindow} TimeWindow
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        TimeWindow.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.TimeWindow();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.startTime = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.endTime = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a TimeWindow message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.TimeWindow
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.TimeWindow} TimeWindow
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        TimeWindow.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a TimeWindow message.
+         * @function verify
+         * @memberof hermes.TimeWindow
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        TimeWindow.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            var properties = {};
+            if (message.startTime != null && message.hasOwnProperty("startTime")) {
+                properties._startTime = 1;
+                if (!$util.isString(message.startTime))
+                    return "startTime: string expected";
+            }
+            if (message.endTime != null && message.hasOwnProperty("endTime")) {
+                properties._endTime = 1;
+                if (!$util.isString(message.endTime))
+                    return "endTime: string expected";
+            }
+            return null;
+        };
+
+        /**
+         * Creates a TimeWindow message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.TimeWindow
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.TimeWindow} TimeWindow
+         */
+        TimeWindow.fromObject = function fromObject(object) {
+            if (object instanceof $root.hermes.TimeWindow)
+                return object;
+            var message = new $root.hermes.TimeWindow();
+            if (object.startTime != null)
+                message.startTime = String(object.startTime);
+            if (object.endTime != null)
+                message.endTime = String(object.endTime);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a TimeWindow message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.TimeWindow
+         * @static
+         * @param {hermes.TimeWindow} message TimeWindow
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        TimeWindow.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (message.startTime != null && message.hasOwnProperty("startTime")) {
+                object.startTime = message.startTime;
+                if (options.oneofs)
+                    object._startTime = "startTime";
+            }
+            if (message.endTime != null && message.hasOwnProperty("endTime")) {
+                object.endTime = message.endTime;
+                if (options.oneofs)
+                    object._endTime = "endTime";
+            }
+            return object;
+        };
+
+        /**
+         * Converts this TimeWindow to JSON.
+         * @function toJSON
+         * @memberof hermes.TimeWindow
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        TimeWindow.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for TimeWindow
+         * @function getTypeUrl
+         * @memberof hermes.TimeWindow
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        TimeWindow.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.TimeWindow";
+        };
+
+        return TimeWindow;
+    })();
+
+    hermes.BooleanExpression = (function() {
+
+        /**
+         * Properties of a BooleanExpression.
+         * @memberof hermes
+         * @interface IBooleanExpression
+         * @property {string|null} [expression] BooleanExpression expression
+         * @property {string|null} [description] BooleanExpression description
+         */
+
+        /**
+         * Constructs a new BooleanExpression.
+         * @memberof hermes
+         * @classdesc Boolean expression constraint.
+         * Logical expression of multiple conditions.
+         * @implements IBooleanExpression
+         * @constructor
+         * @param {hermes.IBooleanExpression=} [properties] Properties to set
+         */
+        function BooleanExpression(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * BooleanExpression expression.
+         * @member {string} expression
+         * @memberof hermes.BooleanExpression
+         * @instance
+         */
+        BooleanExpression.prototype.expression = "";
+
+        /**
+         * BooleanExpression description.
+         * @member {string} description
+         * @memberof hermes.BooleanExpression
+         * @instance
+         */
+        BooleanExpression.prototype.description = "";
+
+        /**
+         * Creates a new BooleanExpression instance using the specified properties.
+         * @function create
+         * @memberof hermes.BooleanExpression
+         * @static
+         * @param {hermes.IBooleanExpression=} [properties] Properties to set
+         * @returns {hermes.BooleanExpression} BooleanExpression instance
+         */
+        BooleanExpression.create = function create(properties) {
+            return new BooleanExpression(properties);
+        };
+
+        /**
+         * Encodes the specified BooleanExpression message. Does not implicitly {@link hermes.BooleanExpression.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.BooleanExpression
+         * @static
+         * @param {hermes.IBooleanExpression} message BooleanExpression message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        BooleanExpression.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.expression != null && Object.hasOwnProperty.call(message, "expression"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.expression);
+            if (message.description != null && Object.hasOwnProperty.call(message, "description"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.description);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified BooleanExpression message, length delimited. Does not implicitly {@link hermes.BooleanExpression.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.BooleanExpression
+         * @static
+         * @param {hermes.IBooleanExpression} message BooleanExpression message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        BooleanExpression.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a BooleanExpression message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.BooleanExpression
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.BooleanExpression} BooleanExpression
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        BooleanExpression.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.BooleanExpression();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.expression = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.description = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a BooleanExpression message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.BooleanExpression
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.BooleanExpression} BooleanExpression
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        BooleanExpression.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a BooleanExpression message.
+         * @function verify
+         * @memberof hermes.BooleanExpression
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        BooleanExpression.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.expression != null && message.hasOwnProperty("expression"))
+                if (!$util.isString(message.expression))
+                    return "expression: string expected";
+            if (message.description != null && message.hasOwnProperty("description"))
+                if (!$util.isString(message.description))
+                    return "description: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a BooleanExpression message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.BooleanExpression
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.BooleanExpression} BooleanExpression
+         */
+        BooleanExpression.fromObject = function fromObject(object) {
+            if (object instanceof $root.hermes.BooleanExpression)
+                return object;
+            var message = new $root.hermes.BooleanExpression();
+            if (object.expression != null)
+                message.expression = String(object.expression);
+            if (object.description != null)
+                message.description = String(object.description);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a BooleanExpression message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.BooleanExpression
+         * @static
+         * @param {hermes.BooleanExpression} message BooleanExpression
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        BooleanExpression.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.expression = "";
+                object.description = "";
+            }
+            if (message.expression != null && message.hasOwnProperty("expression"))
+                object.expression = message.expression;
+            if (message.description != null && message.hasOwnProperty("description"))
+                object.description = message.description;
+            return object;
+        };
+
+        /**
+         * Converts this BooleanExpression to JSON.
+         * @function toJSON
+         * @memberof hermes.BooleanExpression
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        BooleanExpression.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for BooleanExpression
+         * @function getTypeUrl
+         * @memberof hermes.BooleanExpression
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        BooleanExpression.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.BooleanExpression";
+        };
+
+        return BooleanExpression;
+    })();
+
+    hermes.TransmissionConstraint = (function() {
+
+        /**
+         * Properties of a TransmissionConstraint.
+         * @memberof hermes
+         * @interface ITransmissionConstraint
+         * @property {string|null} [description] TransmissionConstraint description
+         * @property {hermes.IParameterComparison|null} [parameterComparison] TransmissionConstraint parameterComparison
+         * @property {hermes.ITimeWindow|null} [timeWindow] TransmissionConstraint timeWindow
+         * @property {hermes.IBooleanExpression|null} [booleanExpression] TransmissionConstraint booleanExpression
+         */
+
+        /**
+         * Constructs a new TransmissionConstraint.
+         * @memberof hermes
+         * @classdesc Transmission constraint from XTCE.
+         * These must be satisfied BEFORE sending a command to determine if the
+         * command CAN be sent. They validate argument values, system state, and time windows.
+         * @implements ITransmissionConstraint
+         * @constructor
+         * @param {hermes.ITransmissionConstraint=} [properties] Properties to set
+         */
+        function TransmissionConstraint(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * TransmissionConstraint description.
+         * @member {string} description
+         * @memberof hermes.TransmissionConstraint
+         * @instance
+         */
+        TransmissionConstraint.prototype.description = "";
+
+        /**
+         * TransmissionConstraint parameterComparison.
+         * @member {hermes.IParameterComparison|null|undefined} parameterComparison
+         * @memberof hermes.TransmissionConstraint
+         * @instance
+         */
+        TransmissionConstraint.prototype.parameterComparison = null;
+
+        /**
+         * TransmissionConstraint timeWindow.
+         * @member {hermes.ITimeWindow|null|undefined} timeWindow
+         * @memberof hermes.TransmissionConstraint
+         * @instance
+         */
+        TransmissionConstraint.prototype.timeWindow = null;
+
+        /**
+         * TransmissionConstraint booleanExpression.
+         * @member {hermes.IBooleanExpression|null|undefined} booleanExpression
+         * @memberof hermes.TransmissionConstraint
+         * @instance
+         */
+        TransmissionConstraint.prototype.booleanExpression = null;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        /**
+         * TransmissionConstraint constraint.
+         * @member {"parameterComparison"|"timeWindow"|"booleanExpression"|undefined} constraint
+         * @memberof hermes.TransmissionConstraint
+         * @instance
+         */
+        Object.defineProperty(TransmissionConstraint.prototype, "constraint", {
+            get: $util.oneOfGetter($oneOfFields = ["parameterComparison", "timeWindow", "booleanExpression"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Creates a new TransmissionConstraint instance using the specified properties.
+         * @function create
+         * @memberof hermes.TransmissionConstraint
+         * @static
+         * @param {hermes.ITransmissionConstraint=} [properties] Properties to set
+         * @returns {hermes.TransmissionConstraint} TransmissionConstraint instance
+         */
+        TransmissionConstraint.create = function create(properties) {
+            return new TransmissionConstraint(properties);
+        };
+
+        /**
+         * Encodes the specified TransmissionConstraint message. Does not implicitly {@link hermes.TransmissionConstraint.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.TransmissionConstraint
+         * @static
+         * @param {hermes.ITransmissionConstraint} message TransmissionConstraint message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        TransmissionConstraint.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.description != null && Object.hasOwnProperty.call(message, "description"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.description);
+            if (message.parameterComparison != null && Object.hasOwnProperty.call(message, "parameterComparison"))
+                $root.hermes.ParameterComparison.encode(message.parameterComparison, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+            if (message.timeWindow != null && Object.hasOwnProperty.call(message, "timeWindow"))
+                $root.hermes.TimeWindow.encode(message.timeWindow, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+            if (message.booleanExpression != null && Object.hasOwnProperty.call(message, "booleanExpression"))
+                $root.hermes.BooleanExpression.encode(message.booleanExpression, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+            return writer;
+        };
+
+        /**
+         * Encodes the specified TransmissionConstraint message, length delimited. Does not implicitly {@link hermes.TransmissionConstraint.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.TransmissionConstraint
+         * @static
+         * @param {hermes.ITransmissionConstraint} message TransmissionConstraint message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        TransmissionConstraint.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a TransmissionConstraint message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.TransmissionConstraint
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.TransmissionConstraint} TransmissionConstraint
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        TransmissionConstraint.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.TransmissionConstraint();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1: {
+                        message.description = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.parameterComparison = $root.hermes.ParameterComparison.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 3: {
+                        message.timeWindow = $root.hermes.TimeWindow.decode(reader, reader.uint32());
+                        break;
+                    }
+                case 4: {
+                        message.booleanExpression = $root.hermes.BooleanExpression.decode(reader, reader.uint32());
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a TransmissionConstraint message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.TransmissionConstraint
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.TransmissionConstraint} TransmissionConstraint
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        TransmissionConstraint.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a TransmissionConstraint message.
+         * @function verify
+         * @memberof hermes.TransmissionConstraint
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        TransmissionConstraint.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            var properties = {};
+            if (message.description != null && message.hasOwnProperty("description"))
+                if (!$util.isString(message.description))
+                    return "description: string expected";
+            if (message.parameterComparison != null && message.hasOwnProperty("parameterComparison")) {
+                properties.constraint = 1;
+                {
+                    var error = $root.hermes.ParameterComparison.verify(message.parameterComparison);
+                    if (error)
+                        return "parameterComparison." + error;
+                }
+            }
+            if (message.timeWindow != null && message.hasOwnProperty("timeWindow")) {
+                if (properties.constraint === 1)
+                    return "constraint: multiple values";
+                properties.constraint = 1;
+                {
+                    var error = $root.hermes.TimeWindow.verify(message.timeWindow);
+                    if (error)
+                        return "timeWindow." + error;
+                }
+            }
+            if (message.booleanExpression != null && message.hasOwnProperty("booleanExpression")) {
+                if (properties.constraint === 1)
+                    return "constraint: multiple values";
+                properties.constraint = 1;
+                {
+                    var error = $root.hermes.BooleanExpression.verify(message.booleanExpression);
+                    if (error)
+                        return "booleanExpression." + error;
+                }
+            }
+            return null;
+        };
+
+        /**
+         * Creates a TransmissionConstraint message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.TransmissionConstraint
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.TransmissionConstraint} TransmissionConstraint
+         */
+        TransmissionConstraint.fromObject = function fromObject(object) {
+            if (object instanceof $root.hermes.TransmissionConstraint)
+                return object;
+            var message = new $root.hermes.TransmissionConstraint();
+            if (object.description != null)
+                message.description = String(object.description);
+            if (object.parameterComparison != null) {
+                if (typeof object.parameterComparison !== "object")
+                    throw TypeError(".hermes.TransmissionConstraint.parameterComparison: object expected");
+                message.parameterComparison = $root.hermes.ParameterComparison.fromObject(object.parameterComparison);
+            }
+            if (object.timeWindow != null) {
+                if (typeof object.timeWindow !== "object")
+                    throw TypeError(".hermes.TransmissionConstraint.timeWindow: object expected");
+                message.timeWindow = $root.hermes.TimeWindow.fromObject(object.timeWindow);
+            }
+            if (object.booleanExpression != null) {
+                if (typeof object.booleanExpression !== "object")
+                    throw TypeError(".hermes.TransmissionConstraint.booleanExpression: object expected");
+                message.booleanExpression = $root.hermes.BooleanExpression.fromObject(object.booleanExpression);
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a TransmissionConstraint message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.TransmissionConstraint
+         * @static
+         * @param {hermes.TransmissionConstraint} message TransmissionConstraint
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        TransmissionConstraint.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults)
+                object.description = "";
+            if (message.description != null && message.hasOwnProperty("description"))
+                object.description = message.description;
+            if (message.parameterComparison != null && message.hasOwnProperty("parameterComparison")) {
+                object.parameterComparison = $root.hermes.ParameterComparison.toObject(message.parameterComparison, options);
+                if (options.oneofs)
+                    object.constraint = "parameterComparison";
+            }
+            if (message.timeWindow != null && message.hasOwnProperty("timeWindow")) {
+                object.timeWindow = $root.hermes.TimeWindow.toObject(message.timeWindow, options);
+                if (options.oneofs)
+                    object.constraint = "timeWindow";
+            }
+            if (message.booleanExpression != null && message.hasOwnProperty("booleanExpression")) {
+                object.booleanExpression = $root.hermes.BooleanExpression.toObject(message.booleanExpression, options);
+                if (options.oneofs)
+                    object.constraint = "booleanExpression";
+            }
+            return object;
+        };
+
+        /**
+         * Converts this TransmissionConstraint to JSON.
+         * @function toJSON
+         * @memberof hermes.TransmissionConstraint
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        TransmissionConstraint.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for TransmissionConstraint
+         * @function getTypeUrl
+         * @memberof hermes.TransmissionConstraint
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        TransmissionConstraint.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.TransmissionConstraint";
+        };
+
+        return TransmissionConstraint;
     })();
 
     /**
@@ -12205,10 +13960,8 @@ $root.hermes = (function() {
          * Properties of a TelemetryRef.
          * @memberof hermes
          * @interface ITelemetryRef
-         * @property {number|null} [id] TelemetryRef id
-         * @property {string|null} [name] TelemetryRef name
-         * @property {string|null} [component] TelemetryRef component
-         * @property {string|null} [dictionary] TelemetryRef dictionary
+         * @property {string|null} [instanceId] TelemetryRef instanceId
+         * @property {string|null} [qualifiedName] TelemetryRef qualifiedName
          */
 
         /**
@@ -12227,36 +13980,20 @@ $root.hermes = (function() {
         }
 
         /**
-         * TelemetryRef id.
-         * @member {number} id
+         * TelemetryRef instanceId.
+         * @member {string} instanceId
          * @memberof hermes.TelemetryRef
          * @instance
          */
-        TelemetryRef.prototype.id = 0;
+        TelemetryRef.prototype.instanceId = "";
 
         /**
-         * TelemetryRef name.
-         * @member {string} name
+         * TelemetryRef qualifiedName.
+         * @member {string} qualifiedName
          * @memberof hermes.TelemetryRef
          * @instance
          */
-        TelemetryRef.prototype.name = "";
-
-        /**
-         * TelemetryRef component.
-         * @member {string} component
-         * @memberof hermes.TelemetryRef
-         * @instance
-         */
-        TelemetryRef.prototype.component = "";
-
-        /**
-         * TelemetryRef dictionary.
-         * @member {string} dictionary
-         * @memberof hermes.TelemetryRef
-         * @instance
-         */
-        TelemetryRef.prototype.dictionary = "";
+        TelemetryRef.prototype.qualifiedName = "";
 
         /**
          * Creates a new TelemetryRef instance using the specified properties.
@@ -12282,14 +14019,10 @@ $root.hermes = (function() {
         TelemetryRef.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.name);
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.component);
-            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
-                writer.uint32(/* id 10, wireType 2 =*/82).string(message.dictionary);
+            if (message.instanceId != null && Object.hasOwnProperty.call(message, "instanceId"))
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.instanceId);
+            if (message.qualifiedName != null && Object.hasOwnProperty.call(message, "qualifiedName"))
+                writer.uint32(/* id 5, wireType 2 =*/42).string(message.qualifiedName);
             return writer;
         };
 
@@ -12324,20 +14057,12 @@ $root.hermes = (function() {
             while (reader.pos < end) {
                 var tag = reader.uint32();
                 switch (tag >>> 3) {
-                case 1: {
-                        message.id = reader.int32();
+                case 4: {
+                        message.instanceId = reader.string();
                         break;
                     }
-                case 2: {
-                        message.name = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.component = reader.string();
-                        break;
-                    }
-                case 10: {
-                        message.dictionary = reader.string();
+                case 5: {
+                        message.qualifiedName = reader.string();
                         break;
                     }
                 default:
@@ -12375,18 +14100,12 @@ $root.hermes = (function() {
         TelemetryRef.verify = function verify(message) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.id != null && message.hasOwnProperty("id"))
-                if (!$util.isInteger(message.id))
-                    return "id: integer expected";
-            if (message.name != null && message.hasOwnProperty("name"))
-                if (!$util.isString(message.name))
-                    return "name: string expected";
-            if (message.component != null && message.hasOwnProperty("component"))
-                if (!$util.isString(message.component))
-                    return "component: string expected";
-            if (message.dictionary != null && message.hasOwnProperty("dictionary"))
-                if (!$util.isString(message.dictionary))
-                    return "dictionary: string expected";
+            if (message.instanceId != null && message.hasOwnProperty("instanceId"))
+                if (!$util.isString(message.instanceId))
+                    return "instanceId: string expected";
+            if (message.qualifiedName != null && message.hasOwnProperty("qualifiedName"))
+                if (!$util.isString(message.qualifiedName))
+                    return "qualifiedName: string expected";
             return null;
         };
 
@@ -12402,14 +14121,10 @@ $root.hermes = (function() {
             if (object instanceof $root.hermes.TelemetryRef)
                 return object;
             var message = new $root.hermes.TelemetryRef();
-            if (object.id != null)
-                message.id = object.id | 0;
-            if (object.name != null)
-                message.name = String(object.name);
-            if (object.component != null)
-                message.component = String(object.component);
-            if (object.dictionary != null)
-                message.dictionary = String(object.dictionary);
+            if (object.instanceId != null)
+                message.instanceId = String(object.instanceId);
+            if (object.qualifiedName != null)
+                message.qualifiedName = String(object.qualifiedName);
             return message;
         };
 
@@ -12427,19 +14142,13 @@ $root.hermes = (function() {
                 options = {};
             var object = {};
             if (options.defaults) {
-                object.id = 0;
-                object.name = "";
-                object.component = "";
-                object.dictionary = "";
+                object.instanceId = "";
+                object.qualifiedName = "";
             }
-            if (message.id != null && message.hasOwnProperty("id"))
-                object.id = message.id;
-            if (message.name != null && message.hasOwnProperty("name"))
-                object.name = message.name;
-            if (message.component != null && message.hasOwnProperty("component"))
-                object.component = message.component;
-            if (message.dictionary != null && message.hasOwnProperty("dictionary"))
-                object.dictionary = message.dictionary;
+            if (message.instanceId != null && message.hasOwnProperty("instanceId"))
+                object.instanceId = message.instanceId;
+            if (message.qualifiedName != null && message.hasOwnProperty("qualifiedName"))
+                object.qualifiedName = message.qualifiedName;
             return object;
         };
 

@@ -874,7 +874,9 @@ checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 name = "hermes-data"
 version = "4.1.0-a1"
 dependencies = [
+ "hermes-pb",
  "hermes-xtce",
+ "hex",
  "test-log",
  "thiserror 2.0.18",
  "tracing",
@@ -895,22 +897,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "hermes-fprime-dictionary"
-version = "4.1.0-a1"
-dependencies = [
- "clap",
- "hermes-pb",
- "prost",
- "serde",
- "serde_json",
- "serde_with",
- "thiserror 2.0.18",
-]
-
-[[package]]
 name = "hermes-pb"
 version = "4.1.0-a1"
 dependencies = [
+ "hermes-data",
+ "hermes-xtce",
  "prost",
  "prost-build",
  "prost-types",
