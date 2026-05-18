@@ -1,13 +1,13 @@
 // Original file: proto/pb/type.proto
 
-import type { Field as _Field, Field__Output as _Field__Output } from './Field';
+import type { Field as _hermes_Field, Field__Output as _hermes_Field__Output } from '../hermes/Field';
 
 export interface ObjectType {
   'name'?: (string);
-  'fields'?: (_Field)[];
+  'fields'?: (_hermes_Field)[];
 }
 
 export interface ObjectType__Output {
   'name'?: (string);
-  'fields'?: (_Field__Output)[];
+  'fields'?: (_hermes_Field__Output)[];
 }

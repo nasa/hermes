@@ -1,22 +1,22 @@
 // Original file: proto/pb/type.proto
 
-import type { Type as _Type, Type__Output as _Type__Output } from './Type';
-import type { BoundedArraySize as _BoundedArraySize, BoundedArraySize__Output as _BoundedArraySize__Output } from './BoundedArraySize';
-import type { UIntKind as _UIntKind, UIntKind__Output as _UIntKind__Output } from './UIntKind';
+import type { Type as _hermes_Type, Type__Output as _hermes_Type__Output } from '../hermes/Type';
+import type { BoundedArraySize as _hermes_BoundedArraySize, BoundedArraySize__Output as _hermes_BoundedArraySize__Output } from '../hermes/BoundedArraySize';
+import type { UIntKind as _hermes_UIntKind, UIntKind__Output as _hermes_UIntKind__Output } from '../hermes/UIntKind';
 
 export interface ArrayType {
   'name'?: (string);
-  'elType'?: (_Type | null);
+  'elType'?: (_hermes_Type | null);
   'static'?: (number);
-  'dynamic'?: (_BoundedArraySize | null);
-  'lengthType'?: (_UIntKind);
+  'dynamic'?: (_hermes_BoundedArraySize | null);
+  'lengthType'?: (_hermes_UIntKind);
   'size'?: "static"|"dynamic";
 }
 
 export interface ArrayType__Output {
   'name'?: (string);
-  'elType'?: (_Type__Output);
+  'elType'?: (_hermes_Type__Output);
   'static'?: (number);
-  'dynamic'?: (_BoundedArraySize__Output);
-  'lengthType'?: (_UIntKind__Output);
+  'dynamic'?: (_hermes_BoundedArraySize__Output);
+  'lengthType'?: (_hermes_UIntKind__Output);
 }

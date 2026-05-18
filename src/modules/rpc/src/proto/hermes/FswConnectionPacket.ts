@@ -1,15 +1,15 @@
 // Original file: proto/pb/msg.proto
 
-import type { FswInitialPacket as _FswInitialPacket, FswInitialPacket__Output as _FswInitialPacket__Output } from './FswInitialPacket';
-import type { UplinkReply as _UplinkReply, UplinkReply__Output as _UplinkReply__Output } from './UplinkReply';
+import type { FswInitialPacket as _hermes_FswInitialPacket, FswInitialPacket__Output as _hermes_FswInitialPacket__Output } from '../hermes/FswInitialPacket';
+import type { UplinkReply as _hermes_UplinkReply, UplinkReply__Output as _hermes_UplinkReply__Output } from '../hermes/UplinkReply';
 
 export interface FswConnectionPacket {
-  'info'?: (_FswInitialPacket | null);
-  'reply'?: (_UplinkReply | null);
+  'info'?: (_hermes_FswInitialPacket | null);
+  'reply'?: (_hermes_UplinkReply | null);
   'value'?: "info"|"reply";
 }
 
 export interface FswConnectionPacket__Output {
-  'info'?: (_FswInitialPacket__Output);
-  'reply'?: (_UplinkReply__Output);
+  'info'?: (_hermes_FswInitialPacket__Output);
+  'reply'?: (_hermes_UplinkReply__Output);
 }

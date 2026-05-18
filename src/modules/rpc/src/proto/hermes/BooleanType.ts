@@ -1,11 +1,11 @@
 // Original file: proto/pb/type.proto
 
-import type { UIntKind as _UIntKind, UIntKind__Output as _UIntKind__Output } from './UIntKind';
+import type { UIntKind as _hermes_UIntKind, UIntKind__Output as _hermes_UIntKind__Output } from '../hermes/UIntKind';
 
 export interface BooleanType {
-  'encodeType'?: (_UIntKind);
+  'encodeType'?: (_hermes_UIntKind);
 }
 
 export interface BooleanType__Output {
-  'encodeType'?: (_UIntKind__Output);
+  'encodeType'?: (_hermes_UIntKind__Output);
 }

@@ -1,12 +1,12 @@
 // Original file: proto/pb/dictionary.proto
 
-import type { Type as _Type, Type__Output as _Type__Output } from './Type';
+import type { Type as _hermes_Type, Type__Output as _hermes_Type__Output } from '../hermes/Type';
 
 export interface ParameterDef {
   'id'?: (number);
   'component'?: (string);
   'name'?: (string);
-  'type'?: (_Type | null);
+  'type'?: (_hermes_Type | null);
   'metadata'?: (string);
 }
 
@@ -14,6 +14,6 @@ export interface ParameterDef__Output {
   'id'?: (number);
   'component'?: (string);
   'name'?: (string);
-  'type'?: (_Type__Output);
+  'type'?: (_hermes_Type__Output);
   'metadata'?: (string);
 }

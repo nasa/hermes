@@ -1,21 +1,21 @@
 // Original file: proto/pb/msg.proto
 
-import type { CommandValue as _CommandValue, CommandValue__Output as _CommandValue__Output } from './CommandValue';
-import type { RawCommandValue as _RawCommandValue, RawCommandValue__Output as _RawCommandValue__Output } from './RawCommandValue';
-import type { CommandSequence as _CommandSequence, CommandSequence__Output as _CommandSequence__Output } from './CommandSequence';
-import type { RawCommandSequence as _RawCommandSequence, RawCommandSequence__Output as _RawCommandSequence__Output } from './RawCommandSequence';
-import type { UplinkFileChunk as _UplinkFileChunk, UplinkFileChunk__Output as _UplinkFileChunk__Output } from './UplinkFileChunk';
-import type { RequestValue as _RequestValue, RequestValue__Output as _RequestValue__Output } from './RequestValue';
-import type { Empty as _google_protobuf_Empty, Empty__Output as _google_protobuf_Empty__Output } from './google/protobuf/Empty';
+import type { CommandValue as _hermes_CommandValue, CommandValue__Output as _hermes_CommandValue__Output } from '../hermes/CommandValue';
+import type { RawCommandValue as _hermes_RawCommandValue, RawCommandValue__Output as _hermes_RawCommandValue__Output } from '../hermes/RawCommandValue';
+import type { CommandSequence as _hermes_CommandSequence, CommandSequence__Output as _hermes_CommandSequence__Output } from '../hermes/CommandSequence';
+import type { RawCommandSequence as _hermes_RawCommandSequence, RawCommandSequence__Output as _hermes_RawCommandSequence__Output } from '../hermes/RawCommandSequence';
+import type { UplinkFileChunk as _hermes_UplinkFileChunk, UplinkFileChunk__Output as _hermes_UplinkFileChunk__Output } from '../hermes/UplinkFileChunk';
+import type { RequestValue as _hermes_RequestValue, RequestValue__Output as _hermes_RequestValue__Output } from '../hermes/RequestValue';
+import type { Empty as _google_protobuf_Empty, Empty__Output as _google_protobuf_Empty__Output } from '../google/protobuf/Empty';
 
 export interface Uplink {
   'id'?: (string);
-  'cmd'?: (_CommandValue | null);
-  'parseCmd'?: (_RawCommandValue | null);
-  'seq'?: (_CommandSequence | null);
-  'parseSeq'?: (_RawCommandSequence | null);
-  'file'?: (_UplinkFileChunk | null);
-  'request'?: (_RequestValue | null);
+  'cmd'?: (_hermes_CommandValue | null);
+  'parseCmd'?: (_hermes_RawCommandValue | null);
+  'seq'?: (_hermes_CommandSequence | null);
+  'parseSeq'?: (_hermes_RawCommandSequence | null);
+  'file'?: (_hermes_UplinkFileChunk | null);
+  'request'?: (_hermes_RequestValue | null);
   'cancel'?: (_google_protobuf_Empty | null);
   'final'?: (_google_protobuf_Empty | null);
   'value'?: "cmd"|"parseCmd"|"seq"|"parseSeq"|"file"|"request"|"cancel"|"final";
@@ -23,12 +23,12 @@ export interface Uplink {
 
 export interface Uplink__Output {
   'id'?: (string);
-  'cmd'?: (_CommandValue__Output);
-  'parseCmd'?: (_RawCommandValue__Output);
-  'seq'?: (_CommandSequence__Output);
-  'parseSeq'?: (_RawCommandSequence__Output);
-  'file'?: (_UplinkFileChunk__Output);
-  'request'?: (_RequestValue__Output);
+  'cmd'?: (_hermes_CommandValue__Output);
+  'parseCmd'?: (_hermes_RawCommandValue__Output);
+  'seq'?: (_hermes_CommandSequence__Output);
+  'parseSeq'?: (_hermes_RawCommandSequence__Output);
+  'file'?: (_hermes_UplinkFileChunk__Output);
+  'request'?: (_hermes_RequestValue__Output);
   'cancel'?: (_google_protobuf_Empty__Output);
   'final'?: (_google_protobuf_Empty__Output);
 }
