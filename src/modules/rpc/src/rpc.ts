@@ -168,7 +168,7 @@ export class Client implements Hermes.Api {
             () => this.client.SubTelemetry({}),
             (data) => ({
                 time: (
-                    (Convert.toNumber(data.telemetry?.time?.unix?.seconds?.toNumber()) * 1000)
+                    (Convert.toNumber(data.telemetry?.time?.unix?.seconds) * 1000)
                     + (Convert.toNumber(data.telemetry?.time?.unix?.nanos) / 1000000)
                 ),
                 sclk: data.telemetry?.time?.sclk ?? 0,

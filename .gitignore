@@ -69,6 +69,7 @@ target
 tmp/
 work/
 site/
+venv/
 
 # Sqlite database files
 *.db
