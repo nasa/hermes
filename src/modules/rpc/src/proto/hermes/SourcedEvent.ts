@@ -1,16 +1,16 @@
 // Original file: proto/pb/bus.proto
 
-import type { Event as _Event, Event__Output as _Event__Output } from './Event';
-import type { SourceContext as _SourceContext, SourceContext__Output as _SourceContext__Output } from './SourceContext';
+import type { Event as _hermes_Event, Event__Output as _hermes_Event__Output } from '../hermes/Event';
+import type { SourceContext as _hermes_SourceContext, SourceContext__Output as _hermes_SourceContext__Output } from '../hermes/SourceContext';
 
 export interface SourcedEvent {
-  'event'?: (_Event | null);
+  'event'?: (_hermes_Event | null);
   'source'?: (string);
-  'context'?: (_SourceContext);
+  'context'?: (_hermes_SourceContext);
 }
 
 export interface SourcedEvent__Output {
-  'event'?: (_Event__Output);
+  'event'?: (_hermes_Event__Output);
   'source'?: (string);
-  'context'?: (_SourceContext__Output);
+  'context'?: (_hermes_SourceContext__Output);
 }

@@ -1,22 +1,22 @@
 // Original file: proto/pb/type.proto
 
-import type { NumberKind as _NumberKind, NumberKind__Output as _NumberKind__Output } from './NumberKind';
-import type { BoundedArraySize as _BoundedArraySize, BoundedArraySize__Output as _BoundedArraySize__Output } from './BoundedArraySize';
-import type { UIntKind as _UIntKind, UIntKind__Output as _UIntKind__Output } from './UIntKind';
+import type { NumberKind as _hermes_NumberKind, NumberKind__Output as _hermes_NumberKind__Output } from '../hermes/NumberKind';
+import type { BoundedArraySize as _hermes_BoundedArraySize, BoundedArraySize__Output as _hermes_BoundedArraySize__Output } from '../hermes/BoundedArraySize';
+import type { UIntKind as _hermes_UIntKind, UIntKind__Output as _hermes_UIntKind__Output } from '../hermes/UIntKind';
 
 export interface BytesType {
   'name'?: (string);
-  'kind'?: (_NumberKind);
+  'kind'?: (_hermes_NumberKind);
   'static'?: (number);
-  'dynamic'?: (_BoundedArraySize | null);
-  'lengthType'?: (_UIntKind);
+  'dynamic'?: (_hermes_BoundedArraySize | null);
+  'lengthType'?: (_hermes_UIntKind);
   'size'?: "static"|"dynamic";
 }
 
 export interface BytesType__Output {
   'name'?: (string);
-  'kind'?: (_NumberKind__Output);
+  'kind'?: (_hermes_NumberKind__Output);
   'static'?: (number);
-  'dynamic'?: (_BoundedArraySize__Output);
-  'lengthType'?: (_UIntKind__Output);
+  'dynamic'?: (_hermes_BoundedArraySize__Output);
+  'lengthType'?: (_hermes_UIntKind__Output);
 }

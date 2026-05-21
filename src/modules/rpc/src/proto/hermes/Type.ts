@@ -1,43 +1,43 @@
 // Original file: proto/pb/type.proto
 
-import type { ReferenceType as _ReferenceType, ReferenceType__Output as _ReferenceType__Output } from './ReferenceType';
-import type { BooleanType as _BooleanType, BooleanType__Output as _BooleanType__Output } from './BooleanType';
-import type { IntType as _IntType, IntType__Output as _IntType__Output } from './IntType';
-import type { FloatType as _FloatType, FloatType__Output as _FloatType__Output } from './FloatType';
-import type { StringType as _StringType, StringType__Output as _StringType__Output } from './StringType';
-import type { EnumType as _EnumType, EnumType__Output as _EnumType__Output } from './EnumType';
-import type { ObjectType as _ObjectType, ObjectType__Output as _ObjectType__Output } from './ObjectType';
-import type { ArrayType as _ArrayType, ArrayType__Output as _ArrayType__Output } from './ArrayType';
-import type { BytesType as _BytesType, BytesType__Output as _BytesType__Output } from './BytesType';
-import type { VoidType as _VoidType, VoidType__Output as _VoidType__Output } from './VoidType';
+import type { ReferenceType as _hermes_ReferenceType, ReferenceType__Output as _hermes_ReferenceType__Output } from '../hermes/ReferenceType';
+import type { BooleanType as _hermes_BooleanType, BooleanType__Output as _hermes_BooleanType__Output } from '../hermes/BooleanType';
+import type { IntType as _hermes_IntType, IntType__Output as _hermes_IntType__Output } from '../hermes/IntType';
+import type { FloatType as _hermes_FloatType, FloatType__Output as _hermes_FloatType__Output } from '../hermes/FloatType';
+import type { StringType as _hermes_StringType, StringType__Output as _hermes_StringType__Output } from '../hermes/StringType';
+import type { EnumType as _hermes_EnumType, EnumType__Output as _hermes_EnumType__Output } from '../hermes/EnumType';
+import type { ObjectType as _hermes_ObjectType, ObjectType__Output as _hermes_ObjectType__Output } from '../hermes/ObjectType';
+import type { ArrayType as _hermes_ArrayType, ArrayType__Output as _hermes_ArrayType__Output } from '../hermes/ArrayType';
+import type { BytesType as _hermes_BytesType, BytesType__Output as _hermes_BytesType__Output } from '../hermes/BytesType';
+import type { VoidType as _hermes_VoidType, VoidType__Output as _hermes_VoidType__Output } from '../hermes/VoidType';
 
 export interface Type {
-  'ref'?: (_ReferenceType | null);
-  'bool'?: (_BooleanType | null);
-  'int'?: (_IntType | null);
-  'float'?: (_FloatType | null);
-  'string'?: (_StringType | null);
-  'enum'?: (_EnumType | null);
-  'bitmask'?: (_EnumType | null);
-  'object'?: (_ObjectType | null);
-  'array'?: (_ArrayType | null);
-  'bytes'?: (_BytesType | null);
-  'void'?: (_VoidType | null);
+  'ref'?: (_hermes_ReferenceType | null);
+  'bool'?: (_hermes_BooleanType | null);
+  'int'?: (_hermes_IntType | null);
+  'float'?: (_hermes_FloatType | null);
+  'string'?: (_hermes_StringType | null);
+  'enum'?: (_hermes_EnumType | null);
+  'bitmask'?: (_hermes_EnumType | null);
+  'object'?: (_hermes_ObjectType | null);
+  'array'?: (_hermes_ArrayType | null);
+  'bytes'?: (_hermes_BytesType | null);
+  'void'?: (_hermes_VoidType | null);
   'metadata'?: (string);
   'value'?: "ref"|"bool"|"int"|"float"|"string"|"enum"|"bitmask"|"object"|"array"|"bytes"|"void";
 }
 
 export interface Type__Output {
-  'ref'?: (_ReferenceType__Output);
-  'bool'?: (_BooleanType__Output);
-  'int'?: (_IntType__Output);
-  'float'?: (_FloatType__Output);
-  'string'?: (_StringType__Output);
-  'enum'?: (_EnumType__Output);
-  'bitmask'?: (_EnumType__Output);
-  'object'?: (_ObjectType__Output);
-  'array'?: (_ArrayType__Output);
-  'bytes'?: (_BytesType__Output);
-  'void'?: (_VoidType__Output);
+  'ref'?: (_hermes_ReferenceType__Output);
+  'bool'?: (_hermes_BooleanType__Output);
+  'int'?: (_hermes_IntType__Output);
+  'float'?: (_hermes_FloatType__Output);
+  'string'?: (_hermes_StringType__Output);
+  'enum'?: (_hermes_EnumType__Output);
+  'bitmask'?: (_hermes_EnumType__Output);
+  'object'?: (_hermes_ObjectType__Output);
+  'array'?: (_hermes_ArrayType__Output);
+  'bytes'?: (_hermes_BytesType__Output);
+  'void'?: (_hermes_VoidType__Output);
   'metadata'?: (string);
 }

@@ -1,19 +1,19 @@
 // Original file: proto/pb/bus.proto
 
-import type { TelemetryRef as _TelemetryRef, TelemetryRef__Output as _TelemetryRef__Output } from './TelemetryRef';
-import type { Time as _Time, Time__Output as _Time__Output } from './Time';
-import type { Value as _Value, Value__Output as _Value__Output } from './Value';
+import type { TelemetryRef as _hermes_TelemetryRef, TelemetryRef__Output as _hermes_TelemetryRef__Output } from '../hermes/TelemetryRef';
+import type { Time as _hermes_Time, Time__Output as _hermes_Time__Output } from '../hermes/Time';
+import type { Value as _hermes_Value, Value__Output as _hermes_Value__Output } from '../hermes/Value';
 
 export interface Telemetry {
-  'ref'?: (_TelemetryRef | null);
-  'time'?: (_Time | null);
-  'value'?: (_Value | null);
+  'ref'?: (_hermes_TelemetryRef | null);
+  'time'?: (_hermes_Time | null);
+  'value'?: (_hermes_Value | null);
   'labels'?: ({[key: string]: string});
 }
 
 export interface Telemetry__Output {
-  'ref'?: (_TelemetryRef__Output);
-  'time'?: (_Time__Output);
-  'value'?: (_Value__Output);
+  'ref'?: (_hermes_TelemetryRef__Output);
+  'time'?: (_hermes_Time__Output);
+  'value'?: (_hermes_Value__Output);
   'labels'?: ({[key: string]: string});
 }

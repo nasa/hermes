@@ -27,7 +27,7 @@ export interface TelemetrySeriesDataPoint {
 
 export interface TelemetrySeriesData {
     /**
-     * Time in UTC milliseconds
+     * Time in UTC milliseconds this point was received
      */
     time: number[];
 

@@ -1,18 +1,18 @@
 // Original file: proto/pb/type.proto
 
-import type { Type as _Type, Type__Output as _Type__Output } from './Type';
-import type { Value as _Value, Value__Output as _Value__Output } from './Value';
+import type { Type as _hermes_Type, Type__Output as _hermes_Type__Output } from '../hermes/Type';
+import type { Value as _hermes_Value, Value__Output as _hermes_Value__Output } from '../hermes/Value';
 
 export interface Field {
   'name'?: (string);
-  'type'?: (_Type | null);
+  'type'?: (_hermes_Type | null);
   'metadata'?: (string);
-  'value'?: (_Value | null);
+  'value'?: (_hermes_Value | null);
 }
 
 export interface Field__Output {
   'name'?: (string);
-  'type'?: (_Type__Output);
+  'type'?: (_hermes_Type__Output);
   'metadata'?: (string);
-  'value'?: (_Value__Output);
+  'value'?: (_hermes_Value__Output);
 }

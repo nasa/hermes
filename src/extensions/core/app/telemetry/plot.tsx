@@ -193,11 +193,15 @@ function TelemetryPlot() {
 
     // Build uPlot data (separate from config)
     // Depends on tick to force rerender even when no new data arrives
+    // Must iterate in same order as series in plotConfig
     const data = useMemo<uPlot.AlignedData>(() => {
-        // Filter out disabled series
-        const enabledChannels = Object.entries(plotData)
-            .filter(([channelKey]) => !disabledSeries.has(channelKey))
-            .map(([_, data]) => data);
+        // Filter out disabled series, using plotInfo order to match series config
+        const enabledChannels: TelemetrySeriesData[] = [];
+        for (const [channelKey] of Object.entries(plotInfo)) {
+            if (!disabledSeries.has(channelKey) && plotData[channelKey]) {
+                enabledChannels.push(plotData[channelKey]);
+            }
+        }
 
         if (enabledChannels.length === 0) {
             return [[], []];
@@ -209,7 +213,7 @@ function TelemetryPlot() {
                 data.valueNum!
             ])
         );
-    }, [plotData, disabledSeries]);
+    }, [plotInfo, plotData, disabledSeries]);
 
     const plotConfig = useMemo(() => {
         const builder = new UPlotConfigBuilder();
@@ -299,24 +303,27 @@ function TelemetryPlot() {
         });
 
         // Add series (only enabled ones)
-        let index = 0;
+        // Must iterate in same order as data construction
+        let seriesIndex = 0;
         for (const [channelKey, info] of Object.entries(plotInfo)) {
-            if (index >= palette.length) {
+            // Skip disabled series
+            if (disabledSeries.has(channelKey)) {
+                continue;
+            }
+
+            if (seriesIndex >= palette.length) {
                 break;
             }
 
-            // Skip disabled series
-            if (!disabledSeries.has(channelKey)) {
-                builder.addSeries({
-                    scaleKey: 'y',
-                    label: `${info.component}.${info.name}`,
-                    stroke: palette[index],
-                    lineInterpolation: interpolationMode,
-                    width: 2,
-                });
-            }
+            builder.addSeries({
+                scaleKey: 'y',
+                label: `${info.component}.${info.name}`,
+                stroke: palette[seriesIndex],
+                lineInterpolation: interpolationMode,
+                width: 2,
+            });
 
-            index++;
+            seriesIndex++;
         }
 
         return builder;
@@ -364,15 +371,19 @@ function TelemetryPlot() {
     // Create legend items from plot data
     const legendItems = useMemo<VizLegendItem[]>(() => {
         const items: VizLegendItem[] = [];
-        let index = 0;
+        let colorIndex = 0;
 
         for (const [channelKey, info] of Object.entries(plotInfo)) {
-            if (index >= palette.length) {
-                break;
-            }
-
             const data = plotData[channelKey];
             const label = `${info.component}.${info.name}`;
+            const isDisabled = disabledSeries.has(channelKey);
+
+            // Only increment color index for enabled series to match plot
+            const itemColor = isDisabled ? palette[colorIndex] : palette[colorIndex++];
+
+            if (colorIndex > palette.length && !isDisabled) {
+                break;
+            }
 
             // Calculate statistics if numeric data is available
             const getDisplayValues = data?.valueNum && data.valueNum.length > 0 ? () => {
@@ -402,16 +413,14 @@ function TelemetryPlot() {
 
             items.push({
                 label,
-                color: palette[index],
+                color: itemColor,
                 yAxis: 1,
-                disabled: disabledSeries.has(channelKey),
+                disabled: isDisabled,
                 fieldName: channelKey,
                 getDisplayValues,
                 getItemKey: () => channelKey,
                 lineStyle: { fill: 'solid' },
             });
-
-            index++;
         }
 
         return items;
@@ -451,17 +460,19 @@ function TelemetryPlot() {
         const seriesValues: Array<{ color: string; label: string; value: string }> = [];
 
         // Get enabled channels in same order as displayed
-        plotConfig.getSeries().forEach((series, seriesIdxN1) => {
-            const seriesIdx = seriesIdxN1 + 1;
+        plotConfig.getSeries().forEach((series, seriesIdx) => {
             const config = series.getConfig();
 
-            // Get the index for this specific series
-            const dataIdx = tooltipDataIdx[seriesIdx];
+            // seriesIdx is 0-based for data series (time is implicit)
+            // In tooltipDataIdx, index 0 is time, data series start at 1
+            const dataSeriesIdx = seriesIdx + 1;
+            const dataIdx = tooltipDataIdx[dataSeriesIdx];
+
             if (dataIdx !== null && dataIdx !== undefined) {
-                const value = data[seriesIdx][dataIdx];
+                const value = data[dataSeriesIdx][dataIdx];
                 if (value !== null && value !== undefined) {
                     seriesValues.push({
-                        color: palette[seriesIdxN1],
+                        color: palette[seriesIdx],
                         label: config.label?.toString() ?? "",
                         value: value.toFixed(3),
                     });
@@ -493,7 +504,6 @@ function TelemetryPlot() {
             const canvas = uPlotInstanceRef.current.ctx.canvas;
             const dataUrl = canvas.toDataURL("image/png");
 
-            console.log(dataUrl.substring(0, 40));
             messages.postMessage({
                 type: "snapshot",
                 pngData: dataUrl.substring(dataUrl.indexOf(',') + 1)
