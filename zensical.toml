@@ -31,6 +31,11 @@ nav = [
             "tlm/db/sqlite.md",
         ] },
     ] },
+    { "Executing" = [
+        "exec/procs_flow.md",
+        "exec/author.md",
+        "exec/execution.md",
+    ] },
     { "Deploying" = [
         "prod/dev.md",
         "prod/testbed.md",
