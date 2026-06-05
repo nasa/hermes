@@ -1,13 +1,13 @@
 // Original file: proto/pb/fsw.proto
 
-import type { FswCapability as _FswCapability, FswCapability__Output as _FswCapability__Output } from './FswCapability';
+import type { FswCapability as _hermes_FswCapability, FswCapability__Output as _hermes_FswCapability__Output } from '../hermes/FswCapability';
 
 export interface Fsw {
   'id'?: (string);
   'type'?: (string);
   'profileId'?: (string);
   'forwards'?: (string)[];
-  'capabilities'?: (_FswCapability)[];
+  'capabilities'?: (_hermes_FswCapability)[];
   'dictionary'?: (string);
 }
 
@@ -16,6 +16,6 @@ export interface Fsw__Output {
   'type'?: (string);
   'profileId'?: (string);
   'forwards'?: (string)[];
-  'capabilities'?: (_FswCapability__Output)[];
+  'capabilities'?: (_hermes_FswCapability__Output)[];
   'dictionary'?: (string);
 }

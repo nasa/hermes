@@ -26,7 +26,7 @@ import type_pb2 as type__pb2
 import dictionary_pb2 as dictionary__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tfsw.proto\x1a\ntype.proto\x1a\x10\x64ictionary.proto\"\x8b\x01\n\x03\x46sw\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\x12\n\nprofile_id\x18\x03 \x01(\t\x12\x10\n\x08\x66orwards\x18\x04 \x03(\t\x12$\n\x0c\x63\x61pabilities\x18\x07 \x03(\x0e\x32\x0e.FswCapability\x12\x12\n\ndictionary\x18\x08 \x01(\tJ\x04\x08\x05\x10\x06J\x04\x08\x06\x10\x07\"!\n\x0e\x43ommandOptions\x12\x0f\n\x07no_wait\x18\x01 \x01(\x08\"\xc0\x01\n\x0c\x43ommandValue\x12\x18\n\x03\x64\x65\x66\x18\x01 \x01(\x0b\x32\x0b.CommandDef\x12\x14\n\x04\x61rgs\x18\x02 \x03(\x0b\x32\x06.Value\x12 \n\x07options\x18\x03 \x01(\x0b\x32\x0f.CommandOptions\x12-\n\x08metadata\x18\x04 \x03(\x0b\x32\x1b.CommandValue.MetadataEntry\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xa7\x01\n\x0fRawCommandValue\x12\x0f\n\x07\x63ommand\x18\x02 \x01(\t\x12 \n\x07options\x18\x03 \x01(\x0b\x32\x0f.CommandOptions\x12\x30\n\x08metadata\x18\x04 \x03(\x0b\x32\x1e.RawCommandValue.MetadataEntry\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xac\x01\n\x0f\x43ommandSequence\x12\x1f\n\x08\x63ommands\x18\x01 \x03(\x0b\x32\r.CommandValue\x12\x15\n\rlanguage_name\x18\x02 \x01(\t\x12\x30\n\x08metadata\x18\x03 \x03(\x0b\x32\x1e.CommandSequence.MetadataEntry\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xc0\x01\n\x12RawCommandSequence\x12\x10\n\x08sequence\x18\x01 \x01(\t\x12\x15\n\rlanguage_name\x18\x02 \x01(\t\x12\x33\n\x08metadata\x18\x03 \x03(\x0b\x32!.RawCommandSequence.MetadataEntry\x12\x1b\n\x13line_comment_prefix\x18\x04 \x01(\t\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"*\n\x0cRequestValue\x12\x0c\n\x04kind\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\"\x1c\n\x0cRequestReply\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c*h\n\rFswCapability\x12\x0b\n\x07\x43OMMAND\x10\x00\x12\x11\n\rPARSE_COMMAND\x10\x01\x12\x0c\n\x08SEQUENCE\x10\x02\x12\x12\n\x0ePARSE_SEQUENCE\x10\x03\x12\x08\n\x04\x46ILE\x10\x04\x12\x0b\n\x07REQUEST\x10\x05\x42\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tfsw.proto\x12\x06hermes\x1a\ntype.proto\x1a\x10\x64ictionary.proto\"\x92\x01\n\x03\x46sw\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\x12\n\nprofile_id\x18\x03 \x01(\t\x12\x10\n\x08\x66orwards\x18\x04 \x03(\t\x12+\n\x0c\x63\x61pabilities\x18\x07 \x03(\x0e\x32\x15.hermes.FswCapability\x12\x12\n\ndictionary\x18\x08 \x01(\tJ\x04\x08\x05\x10\x06J\x04\x08\x06\x10\x07\"!\n\x0e\x43ommandOptions\x12\x0f\n\x07no_wait\x18\x01 \x01(\x08\"\xdc\x01\n\x0c\x43ommandValue\x12\x1f\n\x03\x64\x65\x66\x18\x01 \x01(\x0b\x32\x12.hermes.CommandDef\x12\x1b\n\x04\x61rgs\x18\x02 \x03(\x0b\x32\r.hermes.Value\x12\'\n\x07options\x18\x03 \x01(\x0b\x32\x16.hermes.CommandOptions\x12\x34\n\x08metadata\x18\x04 \x03(\x0b\x32\".hermes.CommandValue.MetadataEntry\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xb5\x01\n\x0fRawCommandValue\x12\x0f\n\x07\x63ommand\x18\x02 \x01(\t\x12\'\n\x07options\x18\x03 \x01(\x0b\x32\x16.hermes.CommandOptions\x12\x37\n\x08metadata\x18\x04 \x03(\x0b\x32%.hermes.RawCommandValue.MetadataEntry\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xba\x01\n\x0f\x43ommandSequence\x12&\n\x08\x63ommands\x18\x01 \x03(\x0b\x32\x14.hermes.CommandValue\x12\x15\n\rlanguage_name\x18\x02 \x01(\t\x12\x37\n\x08metadata\x18\x03 \x03(\x0b\x32%.hermes.CommandSequence.MetadataEntry\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xc7\x01\n\x12RawCommandSequence\x12\x10\n\x08sequence\x18\x01 \x01(\t\x12\x15\n\rlanguage_name\x18\x02 \x01(\t\x12:\n\x08metadata\x18\x03 \x03(\x0b\x32(.hermes.RawCommandSequence.MetadataEntry\x12\x1b\n\x13line_comment_prefix\x18\x04 \x01(\t\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"*\n\x0cRequestValue\x12\x0c\n\x04kind\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x02 \x01(\x0c\"\x1c\n\x0cRequestReply\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c*h\n\rFswCapability\x12\x0b\n\x07\x43OMMAND\x10\x00\x12\x11\n\rPARSE_COMMAND\x10\x01\x12\x0c\n\x08SEQUENCE\x10\x02\x12\x12\n\x0ePARSE_SEQUENCE\x10\x03\x12\x08\n\x04\x46ILE\x10\x04\x12\x0b\n\x07REQUEST\x10\x05\x42\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -42,30 +42,30 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_COMMANDSEQUENCE_METADATAENTRY']._serialized_options = b'8\001'
   _globals['_RAWCOMMANDSEQUENCE_METADATAENTRY']._loaded_options = None
   _globals['_RAWCOMMANDSEQUENCE_METADATAENTRY']._serialized_options = b'8\001'
-  _globals['_FSWCAPABILITY']._serialized_start=1029
-  _globals['_FSWCAPABILITY']._serialized_end=1133
-  _globals['_FSW']._serialized_start=44
-  _globals['_FSW']._serialized_end=183
-  _globals['_COMMANDOPTIONS']._serialized_start=185
-  _globals['_COMMANDOPTIONS']._serialized_end=218
-  _globals['_COMMANDVALUE']._serialized_start=221
-  _globals['_COMMANDVALUE']._serialized_end=413
-  _globals['_COMMANDVALUE_METADATAENTRY']._serialized_start=366
-  _globals['_COMMANDVALUE_METADATAENTRY']._serialized_end=413
-  _globals['_RAWCOMMANDVALUE']._serialized_start=416
-  _globals['_RAWCOMMANDVALUE']._serialized_end=583
-  _globals['_RAWCOMMANDVALUE_METADATAENTRY']._serialized_start=366
-  _globals['_RAWCOMMANDVALUE_METADATAENTRY']._serialized_end=413
-  _globals['_COMMANDSEQUENCE']._serialized_start=586
-  _globals['_COMMANDSEQUENCE']._serialized_end=758
-  _globals['_COMMANDSEQUENCE_METADATAENTRY']._serialized_start=366
-  _globals['_COMMANDSEQUENCE_METADATAENTRY']._serialized_end=413
-  _globals['_RAWCOMMANDSEQUENCE']._serialized_start=761
-  _globals['_RAWCOMMANDSEQUENCE']._serialized_end=953
-  _globals['_RAWCOMMANDSEQUENCE_METADATAENTRY']._serialized_start=366
-  _globals['_RAWCOMMANDSEQUENCE_METADATAENTRY']._serialized_end=413
-  _globals['_REQUESTVALUE']._serialized_start=955
-  _globals['_REQUESTVALUE']._serialized_end=997
-  _globals['_REQUESTREPLY']._serialized_start=999
-  _globals['_REQUESTREPLY']._serialized_end=1027
+  _globals['_FSWCAPABILITY']._serialized_start=1107
+  _globals['_FSWCAPABILITY']._serialized_end=1211
+  _globals['_FSW']._serialized_start=52
+  _globals['_FSW']._serialized_end=198
+  _globals['_COMMANDOPTIONS']._serialized_start=200
+  _globals['_COMMANDOPTIONS']._serialized_end=233
+  _globals['_COMMANDVALUE']._serialized_start=236
+  _globals['_COMMANDVALUE']._serialized_end=456
+  _globals['_COMMANDVALUE_METADATAENTRY']._serialized_start=409
+  _globals['_COMMANDVALUE_METADATAENTRY']._serialized_end=456
+  _globals['_RAWCOMMANDVALUE']._serialized_start=459
+  _globals['_RAWCOMMANDVALUE']._serialized_end=640
+  _globals['_RAWCOMMANDVALUE_METADATAENTRY']._serialized_start=409
+  _globals['_RAWCOMMANDVALUE_METADATAENTRY']._serialized_end=456
+  _globals['_COMMANDSEQUENCE']._serialized_start=643
+  _globals['_COMMANDSEQUENCE']._serialized_end=829
+  _globals['_COMMANDSEQUENCE_METADATAENTRY']._serialized_start=409
+  _globals['_COMMANDSEQUENCE_METADATAENTRY']._serialized_end=456
+  _globals['_RAWCOMMANDSEQUENCE']._serialized_start=832
+  _globals['_RAWCOMMANDSEQUENCE']._serialized_end=1031
+  _globals['_RAWCOMMANDSEQUENCE_METADATAENTRY']._serialized_start=409
+  _globals['_RAWCOMMANDSEQUENCE_METADATAENTRY']._serialized_end=456
+  _globals['_REQUESTVALUE']._serialized_start=1033
+  _globals['_REQUESTVALUE']._serialized_end=1075
+  _globals['_REQUESTREPLY']._serialized_start=1077
+  _globals['_REQUESTREPLY']._serialized_end=1105
 # @@protoc_insertion_point(module_scope)

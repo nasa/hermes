@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ntime.proto\x1a\x1fgoogle/protobuf/timestamp.proto\">\n\x04Time\x12(\n\x04unix\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0c\n\x04sclk\x18\x02 \x01(\x01\x42\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ntime.proto\x12\x06hermes\x1a\x1fgoogle/protobuf/timestamp.proto\">\n\x04Time\x12(\n\x04unix\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0c\n\x04sclk\x18\x02 \x01(\x01\x42\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,6 +33,6 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'time_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z\035github.com/nasa/hermes/pkg/pb'
-  _globals['_TIME']._serialized_start=47
-  _globals['_TIME']._serialized_end=109
+  _globals['_TIME']._serialized_start=55
+  _globals['_TIME']._serialized_end=117
 # @@protoc_insertion_point(module_scope)

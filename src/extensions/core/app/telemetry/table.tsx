@@ -140,7 +140,7 @@ export function TelemetryTable() {
                         const existing = channelMap.get(key);
 
                         const time = telem.time ?? Date.now();
-                        const sclk = telem.time ?? 0;
+                        const sclk = telem.sclk ?? 0;
                         const value = telem.value;
 
                         // Process value based on type

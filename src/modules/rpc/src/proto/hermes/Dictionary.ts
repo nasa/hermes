@@ -1,18 +1,18 @@
 // Original file: proto/pb/dictionary.proto
 
-import type { DictionaryHead as _DictionaryHead, DictionaryHead__Output as _DictionaryHead__Output } from './DictionaryHead';
-import type { DictionaryNamespace as _DictionaryNamespace, DictionaryNamespace__Output as _DictionaryNamespace__Output } from './DictionaryNamespace';
+import type { DictionaryHead as _hermes_DictionaryHead, DictionaryHead__Output as _hermes_DictionaryHead__Output } from '../hermes/DictionaryHead';
+import type { DictionaryNamespace as _hermes_DictionaryNamespace, DictionaryNamespace__Output as _hermes_DictionaryNamespace__Output } from '../hermes/DictionaryNamespace';
 
 export interface Dictionary {
-  'head'?: (_DictionaryHead | null);
-  'content'?: ({[key: string]: _DictionaryNamespace});
+  'head'?: (_hermes_DictionaryHead | null);
+  'content'?: ({[key: string]: _hermes_DictionaryNamespace});
   'metadata'?: ({[key: string]: string});
   'id'?: (string);
 }
 
 export interface Dictionary__Output {
-  'head'?: (_DictionaryHead__Output);
-  'content'?: ({[key: string]: _DictionaryNamespace__Output});
+  'head'?: (_hermes_DictionaryHead__Output);
+  'content'?: ({[key: string]: _hermes_DictionaryNamespace__Output});
   'metadata'?: ({[key: string]: string});
   'id'?: (string);
 }

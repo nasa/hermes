@@ -1,12 +1,12 @@
 // Original file: proto/pb/dictionary.proto
 
-import type { EvrSeverity as _EvrSeverity, EvrSeverity__Output as _EvrSeverity__Output } from './EvrSeverity';
+import type { EvrSeverity as _hermes_EvrSeverity, EvrSeverity__Output as _hermes_EvrSeverity__Output } from '../hermes/EvrSeverity';
 
 export interface EventRef {
   'id'?: (number);
   'name'?: (string);
   'component'?: (string);
-  'severity'?: (_EvrSeverity);
+  'severity'?: (_hermes_EvrSeverity);
   'arguments'?: (string)[];
   'dictionary'?: (string);
 }
@@ -15,7 +15,7 @@ export interface EventRef__Output {
   'id'?: (number);
   'name'?: (string);
   'component'?: (string);
-  'severity'?: (_EvrSeverity__Output);
+  'severity'?: (_hermes_EvrSeverity__Output);
   'arguments'?: (string)[];
   'dictionary'?: (string);
 }

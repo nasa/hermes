@@ -1,9 +1,9 @@
 // Original file: proto/pb/type.proto
 
-import type { EnumValue as _EnumValue, EnumValue__Output as _EnumValue__Output } from './EnumValue';
-import type { ObjectValue as _ObjectValue, ObjectValue__Output as _ObjectValue__Output } from './ObjectValue';
-import type { ArrayValue as _ArrayValue, ArrayValue__Output as _ArrayValue__Output } from './ArrayValue';
-import type { BytesValue as _BytesValue, BytesValue__Output as _BytesValue__Output } from './BytesValue';
+import type { EnumValue as _hermes_EnumValue, EnumValue__Output as _hermes_EnumValue__Output } from '../hermes/EnumValue';
+import type { ObjectValue as _hermes_ObjectValue, ObjectValue__Output as _hermes_ObjectValue__Output } from '../hermes/ObjectValue';
+import type { ArrayValue as _hermes_ArrayValue, ArrayValue__Output as _hermes_ArrayValue__Output } from '../hermes/ArrayValue';
+import type { BytesValue as _hermes_BytesValue, BytesValue__Output as _hermes_BytesValue__Output } from '../hermes/BytesValue';
 import type { Long } from '@grpc/proto-loader';
 
 export interface Value {
@@ -12,10 +12,10 @@ export interface Value {
   'f'?: (number | string);
   'b'?: (boolean);
   's'?: (string);
-  'e'?: (_EnumValue | null);
-  'o'?: (_ObjectValue | null);
-  'a'?: (_ArrayValue | null);
-  'r'?: (_BytesValue | null);
+  'e'?: (_hermes_EnumValue | null);
+  'o'?: (_hermes_ObjectValue | null);
+  'a'?: (_hermes_ArrayValue | null);
+  'r'?: (_hermes_BytesValue | null);
   'value'?: "i"|"u"|"f"|"b"|"s"|"e"|"o"|"a"|"r";
 }
 
@@ -25,8 +25,8 @@ export interface Value__Output {
   'f'?: (number);
   'b'?: (boolean);
   's'?: (string);
-  'e'?: (_EnumValue__Output);
-  'o'?: (_ObjectValue__Output);
-  'a'?: (_ArrayValue__Output);
-  'r'?: (_BytesValue__Output);
+  'e'?: (_hermes_EnumValue__Output);
+  'o'?: (_hermes_ObjectValue__Output);
+  'a'?: (_hermes_ArrayValue__Output);
+  'r'?: (_hermes_BytesValue__Output);
 }

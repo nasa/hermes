@@ -1,19 +1,19 @@
 // Original file: proto/pb/bus.proto
 
-import type { FileDownlink as _FileDownlink, FileDownlink__Output as _FileDownlink__Output } from './FileDownlink';
-import type { FileUplink as _FileUplink, FileUplink__Output as _FileUplink__Output } from './FileUplink';
-import type { FileTransfer as _FileTransfer, FileTransfer__Output as _FileTransfer__Output } from './FileTransfer';
+import type { FileDownlink as _hermes_FileDownlink, FileDownlink__Output as _hermes_FileDownlink__Output } from '../hermes/FileDownlink';
+import type { FileUplink as _hermes_FileUplink, FileUplink__Output as _hermes_FileUplink__Output } from '../hermes/FileUplink';
+import type { FileTransfer as _hermes_FileTransfer, FileTransfer__Output as _hermes_FileTransfer__Output } from '../hermes/FileTransfer';
 
 export interface FileTransferState {
-  'downlinkCompleted'?: (_FileDownlink)[];
-  'uplinkCompleted'?: (_FileUplink)[];
-  'downlinkInProgress'?: (_FileTransfer)[];
-  'uplinkInProgress'?: (_FileTransfer)[];
+  'downlinkCompleted'?: (_hermes_FileDownlink)[];
+  'uplinkCompleted'?: (_hermes_FileUplink)[];
+  'downlinkInProgress'?: (_hermes_FileTransfer)[];
+  'uplinkInProgress'?: (_hermes_FileTransfer)[];
 }
 
 export interface FileTransferState__Output {
-  'downlinkCompleted'?: (_FileDownlink__Output)[];
-  'uplinkCompleted'?: (_FileUplink__Output)[];
-  'downlinkInProgress'?: (_FileTransfer__Output)[];
-  'uplinkInProgress'?: (_FileTransfer__Output)[];
+  'downlinkCompleted'?: (_hermes_FileDownlink__Output)[];
+  'uplinkCompleted'?: (_hermes_FileUplink__Output)[];
+  'downlinkInProgress'?: (_hermes_FileTransfer__Output)[];
+  'uplinkInProgress'?: (_hermes_FileTransfer__Output)[];
 }

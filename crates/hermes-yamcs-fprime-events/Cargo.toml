@@ -1,0 +1,7 @@
+[package]
+name = "hermes-yamcs-fprime-events"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+
+[dependencies]

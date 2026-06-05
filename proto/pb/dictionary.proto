@@ -1,5 +1,6 @@
 syntax = "proto3";
 option go_package = "github.com/nasa/hermes/pkg/pb";
+package hermes;
 
 import "type.proto";
 
@@ -57,6 +58,58 @@ enum EvrSeverity {
   EVR_FATAL         = 6;
 }
 
+// Format specifier types following FPP specification
+enum FormatSpecifierType {
+  // Default/generic conversion
+  FMT_DEFAULT = 0;        // {} -> %v
+
+  // Integer conversions
+  FMT_CHAR = 1;           // {c} -> %c
+  FMT_DECIMAL = 2;        // {d} -> %d
+  FMT_HEX_LOWER = 3;      // {x} -> %x
+  FMT_HEX_UPPER = 4;      // {X} -> %X
+  FMT_OCTAL = 5;          // {o} -> %o
+
+  // Floating-point conversions
+  FMT_EXP_LOWER = 6;      // {e} -> %e
+  FMT_EXP_UPPER = 7;      // {E} -> %E
+  FMT_FIXED_LOWER = 8;    // {f} -> %f
+  FMT_FIXED_UPPER = 9;    // {F} -> %F
+  FMT_GENERAL_LOWER = 10; // {g} -> %g
+  FMT_GENERAL_UPPER = 11; // {G} -> %G
+}
+
+message FormatSpecifier {
+  // Type of format specifier (d, f, x, etc.)
+  FormatSpecifierType type = 1;
+
+  // Optional precision (digits after decimal point)
+  // For {.3f} this would be 3
+  optional uint32 precision = 2;
+
+  // Index into the arguments array (0-based)
+  // This connects the specifier to its corresponding argument
+  uint32 argument_index = 3;
+}
+
+message FormatFragment {
+  oneof fragment {
+    // Plain text segment
+    string text = 1;
+
+    // Format specifier with metadata
+    FormatSpecifier specifier = 2;
+  }
+}
+
+message FormatString {
+  // Ordered list of text and format specifier fragments
+  repeated FormatFragment fragments = 1;
+
+  // Original format string (for debugging and backward compatibility)
+  string original = 2;
+}
+
 message EventDef {
   int32 id = 1;
 
@@ -79,9 +132,10 @@ message EventDef {
   EvrSeverity severity = 4;
 
   /**
+   * DEPRECATED: Use format instead
    * printf format string that will be formatted via sprintf
    */
-  string format_string = 5;
+  string format_string = 5 [deprecated = true];
 
   /**
    * Arguments used inside the format string
@@ -89,6 +143,11 @@ message EventDef {
   repeated Field arguments = 6;
 
   string metadata = 7;
+
+  /**
+   * Structured format string with parsed fragments
+   */
+  FormatString format = 8;
 }
 
 message EventRef {

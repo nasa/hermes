@@ -9,8 +9,8 @@ import (
 type TimeSystemKind int
 
 const (
-	TimeSystem_TDB = 1
-	TimeSystem_TT  = 2
+	TimeSystem_TDB TimeSystemKind = 1
+	TimeSystem_TT  TimeSystemKind = 2
 )
 
 // Barycentric Dynamical Time (ET), is the independent argument

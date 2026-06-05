@@ -1,5 +1,5 @@
 import * as Def from './def';
-import * as Proto from './proto';
+import { hermes as Proto } from './proto';
 
 import { typeKindName, validateEqualTypes } from './util';
 import { DualKeyMap } from './DualKeyMap';

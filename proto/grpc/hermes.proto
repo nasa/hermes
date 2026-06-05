@@ -31,13 +31,13 @@ service Api {
    *  Keep executing the sequence even if
    *  "keepGoingOnFailure": "x"
    */
-  rpc Sequence(CommandSequence) returns (SequenceReply);
+  rpc Sequence(hermes.CommandSequence) returns (hermes.SequenceReply);
 
   /**
    * A wrapper endpoint around Sequence/RawCommand.
    * This endpoint will parse a sequence and run it through Sequence.
    */
-  rpc RawSequence(RawCommandSequence) returns (SequenceReply);
+  rpc RawSequence(hermes.RawCommandSequence) returns (hermes.SequenceReply);
 
   /**
    * Send a command to the FSW. Wait for
@@ -47,7 +47,7 @@ service Api {
    * Metadata:
    *  "id": [fsw-id]
    */
-  rpc Command(CommandValue) returns (Reply);
+  rpc Command(hermes.CommandValue) returns (hermes.Reply);
 
   /**
    * Send a custom request to the FSW. Requests
@@ -59,7 +59,7 @@ service Api {
    * Metadata:
    *  "id": [fsw-id]
    */
-  rpc Request(RequestValue) returns (RequestReply);
+  rpc Request(hermes.RequestValue) returns (hermes.RequestReply);
 
   /**
    * Send a 'raw' command to the FSW. A raw command
@@ -72,7 +72,7 @@ service Api {
    * Metadata:
    *  "id": [fsw-id]
    */
-  rpc RawCommand(RawCommandValue) returns (Reply);
+  rpc RawCommand(hermes.RawCommandValue) returns (hermes.Reply);
 
   /**
    * Uplink a file to the FSW.
@@ -80,40 +80,40 @@ service Api {
    * Metadata:
    *  "id": [fsw-id]
    */
-  rpc Uplink(stream UplinkFileChunk) returns (Reply);
+  rpc Uplink(stream hermes.UplinkFileChunk) returns (hermes.Reply);
 
   // Get FSW metadata given its ID
-  rpc GetFsw(Id) returns (Fsw);
+  rpc GetFsw(hermes.Id) returns (hermes.Fsw);
 
   // Get all the current connected FSWs
-  rpc AllFsw(google.protobuf.Empty) returns (FswList);
+  rpc AllFsw(google.protobuf.Empty) returns (hermes.FswList);
 
   // Subscribe to any changes to FSW connections state
-  rpc SubscribeFsw(google.protobuf.Empty) returns (stream FswList);
+  rpc SubscribeFsw(google.protobuf.Empty) returns (stream hermes.FswList);
 
   // Start a profile and return once it's connected (cancellable)
-  rpc StartProfile(Id) returns (google.protobuf.Empty);
+  rpc StartProfile(hermes.Id) returns (google.protobuf.Empty);
 
   // Stop profile given its name/id and reutrn once its stopped (cancellable)
-  rpc StopProfile(Id) returns (google.protobuf.Empty);
+  rpc StopProfile(hermes.Id) returns (google.protobuf.Empty);
 
   // Update a profile
-  rpc UpdateProfile(ProfileUpdate) returns (google.protobuf.Empty);
+  rpc UpdateProfile(hermes.ProfileUpdate) returns (google.protobuf.Empty);
 
   // Create a new Profile and return it's ID
-  rpc AddProfile(Profile) returns (Id);
+  rpc AddProfile(hermes.Profile) returns (hermes.Id);
 
   // Delete a profile by its id
-  rpc RemoveProfile(Id) returns (google.protobuf.Empty);
+  rpc RemoveProfile(hermes.Id) returns (google.protobuf.Empty);
 
   // Get all the profiles
-  rpc AllProfiles(google.protobuf.Empty) returns (ProfileList);
+  rpc AllProfiles(google.protobuf.Empty) returns (hermes.ProfileList);
 
   // Get all the registered profile providers
-  rpc AllProviders(google.protobuf.Empty) returns (ProfileProviderList);
+  rpc AllProviders(google.protobuf.Empty) returns (hermes.ProfileProviderList);
 
   // Get the current file downlink/uplink state
-  rpc GetFileTransferState(google.protobuf.Empty) returns (FileTransferState);
+  rpc GetFileTransferState(google.protobuf.Empty) returns (hermes.FileTransferState);
 
   // Clear the cached downlink transfer state
   rpc ClearDownlinkTransferState(google.protobuf.Empty) returns (google.protobuf.Empty);
@@ -123,10 +123,10 @@ service Api {
 
   // Get notified when the set of profile providers updates
   rpc SubscribeProviders(google.protobuf.Empty)
-  returns (stream ProfileProviderList);
+  returns (stream hermes.ProfileProviderList);
 
   // Get notified when the set of profile or their internal state updates
-  rpc SubscribeProfiles(google.protobuf.Empty) returns (stream ProfileList);
+  rpc SubscribeProfiles(google.protobuf.Empty) returns (stream hermes.ProfileList);
 
   /**
    * Get a dictionary by its ID
@@ -145,34 +145,34 @@ service Api {
    *    - "*": The entire namespace
    *  Example: "sections": [".events", "ns-1.*", "ns-2.telemetry"]
    */
-  rpc GetDictionary(Id) returns (Dictionary);
+  rpc GetDictionary(hermes.Id) returns (hermes.Dictionary);
 
   // Add a new dictionary entry, return it's ID.
-  rpc AddDictionary(Dictionary) returns (Id);
+  rpc AddDictionary(hermes.Dictionary) returns (hermes.Id);
 
   // Remove specified dictionary
-  rpc RemoveDictionary(Id) returns (google.protobuf.Empty);
+  rpc RemoveDictionary(hermes.Id) returns (google.protobuf.Empty);
 
   // Get all registered dictionaries as a sequential stream
-  rpc AllDictionary(google.protobuf.Empty) returns (DictionaryList);
+  rpc AllDictionary(google.protobuf.Empty) returns (hermes.DictionaryList);
 
   // Subscribe to changes to the dictionary state. streams { id, type }
-  rpc SubscribeDictionary(google.protobuf.Empty) returns (stream DictionaryList);
+  rpc SubscribeDictionary(google.protobuf.Empty) returns (stream hermes.DictionaryList);
 
   // Subscribe to the event message bus
-  rpc SubEvent(BusFilter) returns (stream SourcedEvent);
+  rpc SubEvent(hermes.BusFilter) returns (stream hermes.SourcedEvent);
 
   // Subscribe to the telemetry message bus
-  rpc SubTelemetry(BusFilter) returns (stream SourcedTelemetry);
+  rpc SubTelemetry(hermes.BusFilter) returns (stream hermes.SourcedTelemetry);
 
   // Subscribe to the file downlink message bus
-  rpc SubFileDownlink(BusFilter) returns (stream FileDownlink);
+  rpc SubFileDownlink(hermes.BusFilter) returns (stream hermes.FileDownlink);
 
   // Subscribe to the file downlink message bus
-  rpc SubFileUplink(BusFilter) returns (stream FileUplink);
+  rpc SubFileUplink(hermes.BusFilter) returns (stream hermes.FileUplink);
 
   // Subscribe to the aggregated state of file uplink and downlink
-  rpc SubFileTransfer(google.protobuf.Empty) returns (stream FileTransferState);
+  rpc SubFileTransfer(google.protobuf.Empty) returns (stream hermes.FileTransferState);
 }
 
 // API to provide interfaces with external software
@@ -184,7 +184,7 @@ service Provider {
    *
    * Any downlink comming from this FSW is routed through the other client stream endpoints.
    */
-  rpc Connection(stream FswConnectionPacket) returns (stream Uplink);
+  rpc Connection(stream hermes.FswConnectionPacket) returns (stream hermes.Uplink);
 
   /**
    * Initiate a file downlink session with the host.
@@ -194,17 +194,17 @@ service Provider {
    *
    * TODO(tumbar) Figure out a mechanism for file validation
    */
-  rpc File(stream DownlinkFileChunk) returns (google.protobuf.Empty);
+  rpc File(stream hermes.DownlinkFileChunk) returns (google.protobuf.Empty);
 
   /**
    * Stream events to the host.
    * The client can open as many of these as needed though they should be long-lived.
    */
-  rpc Event(stream SourcedEvent) returns (google.protobuf.Empty);
+  rpc Event(stream hermes.SourcedEvent) returns (google.protobuf.Empty);
 
   /**
    * Stream telemetry to the host.
    * The client can open as many of these as needed though they should be long-lived.
    */
-  rpc Telemetry(stream SourcedTelemetry) returns (google.protobuf.Empty);
+  rpc Telemetry(stream hermes.SourcedTelemetry) returns (google.protobuf.Empty);
 }

@@ -62,8 +62,8 @@ export class TelemetryDatabase implements vscode.Disposable {
             }
 
             const data = this.data.get(key)!;
-            const time = telem.time ?? Date.now();
-            const sclk = telem.time ?? 0;
+            const time = Date.now();
+            const sclk = telem.sclk ?? 0;
 
             // Precompute all values for this data point to keep columns in sync
             const value = telem.value;

@@ -1,0 +1,54 @@
+#######################
+# Docker.backend
+# 
+# Author: Andrei Tumbar
+# Brief: Build the Hermes code
+#
+#######################
+
+############################################################
+# Backend build stage
+############################################################
+FROM golang:1.26-alpine AS builder-backend
+
+# Install build dependencies
+RUN apk add --no-cache git make
+
+WORKDIR /build
+
+# Copy go mod files first for better caching
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the backend binary
+RUN CGO_ENABLED=0 GOOS=linux go build -o backend ./cmd/backend
+
+############################################################
+# Runtime stage
+############################################################
+FROM alpine
+
+# Install runtime dependencies
+RUN apk add --no-cache ca-certificates tzdata
+
+WORKDIR /app
+
+# Copy backend binary from builder
+COPY --from=builder-backend /build/backend /app/backend
+
+# Create directories for config and data
+RUN mkdir -p /app/config /app/data
+
+EXPOSE 6880
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD ["/app/backend", "--help"] || exit 1
+
+RUN /app/backend --generate-config > /app/config/hermes.toml
+
+ENTRYPOINT ["/app/backend"]
+CMD ["--bind", "0.0.0.0:6880", "--config", "app/config/hermes.toml", "--root", "/app/data", "--verbose"]
