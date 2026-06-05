@@ -14,6 +14,32 @@ Terms
 * As-Run: The procedure used to record a specific test instance.
 * Test-ID: The unique identification of a test or a condition  
 
+
+
+## Directory Structure
+
+* user_folder
+    * procedures
+        * as_runs
+            * campaign_1
+                * procedure_pictures
+                    * image1.jpeg
+                    * image2.jpeg
+                * test_procedure_TEST_1.hermes.md
+                * test_procedure_TEST_2.hermes.md
+                * test_procedure_TEST_3.hermes.md
+
+        * procedure_templates
+            * procedure_pictures
+                * image1.jpeg
+                * image2.jpeg
+            * asrun_generator.py
+            * test_procedure.hermes.md
+
+
+## Procedure Generation Flow
+
+
 ``` mermaid
 classDiagram
   AuthorProcedure    --|> Template Procedure

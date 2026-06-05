@@ -17,15 +17,10 @@ Markdown is not the only format used in the procedure. Python, bash, FPrime, and
 
 When using a FPrime code block, there are additional features that allow for integrated command dictionaries giving suthors real time commands, agruments, argument range validation, and additional argument details.
 
+---
 ## :fontawesome-solid-cube: Common Markdown Blocks
 
-
-### :fontawesome-solid-table-columns: Tables
-
-### :fontawesome-solid-camera: Pictures
-
-### :fontawesome-solid-link: URL Links
-
+---
 ### :fontawesome-solid-stairs: Manual Instructs
 
 * Denotes a manual action to be taken by the operator
@@ -38,6 +33,7 @@ When using a FPrime code block, there are additional features that allow for int
 
 <span style="color:green"> **MANUAL INSTRUCT:**</span> 
 
+---
 ### :fontawesome-solid-text-slash: Redlines
 
 * Red Lines are used to document a deviation from the approved procedural steps. These are critical to repeating tests effectively and understanding if an anomaly is due to test response, procedural error, or operator error. 
@@ -58,16 +54,77 @@ When using a FPrime code block, there are additional features that allow for int
 
 <span style="color:red"> **REDLINE_STOP:** </span>
 
-### :fontawesome-solid-note-sticky: Notes
-
+---
 ### :fontawesome-solid-compact-disc: Record
 
+``` py
+---
+<span style="color:orange"> **RECORD:** </span> denotes a manual recording of a value in the procedure to be written in by the operator
+- (record in the next markdown Code Block)
+- <span style="color:white"> **RECORD BELOW:** </span>
+```
+
+``` py
+```
+``` py
+---
+```
+:fontawesome-solid-arrow-down:  Looks like :fontawesome-solid-arrow-down:
+
+---
+<span style="color:orange"> **RECORD:** </span> denotes a manual recording of a value in the procedure to be written in by the operator
+- (record in the next markdown Code Block)
+- <span style="color:white"> **RECORD BELOW:** </span>
+
+``` py
+```
+
+---
+### :fontawesome-solid-table-columns: Tables
+``` py 
+|Test Number |Condition |Notes     |
+|:-          |:-:       |:-:       |
+|Test 1      | Hot      |          |
+|Test 2      | Cold     |          |
+```
+:fontawesome-solid-arrow-down:  Looks like :fontawesome-solid-arrow-down:
+
+|Test Number |Condition |Notes     |
+|:-          |:-:       |:-:       |
+|Test 1      | Hot      |          |
+|Test 2      | Cold     |          |
+
+---
+### :fontawesome-solid-camera: Pictures
+``` py
+<div align="center">
+<img src="procedure_pictures/retro_jpl_logo.jpg" style=center alt="drawing" width="500"/>
+Label 1: Retro JPL Logo
+</div>
+```
+
+<p align="center">
+<img src="../assets/retro_jpl_logo.jpg" alt="drawing" width="500"/>
+</p>
+:fontawesome-solid-arrow-down:  Looks like :fontawesome-solid-arrow-down:
+
+<div align="center">
+Label 1: Retro JPL Logo
+</div>
+
+---
+### :fontawesome-solid-link: URL Links
+
+---
 ## :fontawesome-solid-terminal: Common Code Blocks
 
+---
 ### :fontawesome-solid-satellite-dish: Flight Commands
 
+---
 ### :fontawesome-brands-python: Python Scripts
 
+---
 ### :fontawesome-solid-code: Bash Scripts
 
 
