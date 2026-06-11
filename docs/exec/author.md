@@ -5,7 +5,9 @@ icon: fontawesome/solid/pen-fancy
 # Authoring
 
 Authoring the .hermes.md procedure templates is recommended in VS Code. 
+
 Terms:
+
 * Markdown Block: Manual Instructions or notes for the test operators
 * Code Block: Instructions that can be scripts, logic, calculations, or commands to the software like FPrime.
 * Section: Uses # to denote different levels of section headers.
@@ -102,11 +104,11 @@ When using a FPrime code block, there are additional features that allow for int
 Label 1: Retro JPL Logo
 </div>
 ```
-
+:fontawesome-solid-arrow-down:  Looks like :fontawesome-solid-arrow-down:
 <p align="center">
 <img src="../assets/retro_jpl_logo.jpg" alt="drawing" width="500"/>
 </p>
-:fontawesome-solid-arrow-down:  Looks like :fontawesome-solid-arrow-down:
+
 
 <div align="center">
 Label 1: Retro JPL Logo
