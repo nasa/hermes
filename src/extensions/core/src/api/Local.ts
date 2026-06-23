@@ -145,6 +145,11 @@ class LocalBackendExecution implements vscode.Pseudoterminal, StandardPseudoTerm
             );
         }
 
+        const extraArgs = Settings.hostArgs();
+        if (extraArgs) {
+            args.push(...extraArgs.split(" "));
+        }
+
         this.logger.info(`Starting Backend: ${this.binary} ${args.join(" ")}`);
         this.process = attachProcessToPsuedoTerminal(
             this,
@@ -203,7 +208,7 @@ class Local extends Rpc.Client {
         this.grpcClient = client;
     }
 
-    static async startTask(def: LocalTaskDefinition, context: vscode.ExtensionContext): Promise<vscode.TaskExecution> {;
+    static async startTask(def: LocalTaskDefinition, context: vscode.ExtensionContext): Promise<vscode.TaskExecution> {
         const task = new vscode.Task(
             def,
             vscode.TaskScope.Workspace,
@@ -354,6 +359,13 @@ async function pickLocalDialog(current?: LocalTaskDefinition): Promise<LocalTask
     const quickPick = vscode.window.createQuickPick<LocalTaskDefinition & vscode.QuickPickItem>();
     quickPick.canSelectMany = false;
     quickPick.title = "Select a Local backend configuration to start";
+    quickPick.buttons = [
+        {
+            iconPath: new vscode.ThemeIcon("settings-gear"),
+            location: vscode.QuickInputButtonLocation.Inline,
+            tooltip: "Edit Local Settings"
+        }
+    ];
     quickPick.items = [
         {
             label: "Local Backend (UNIX)",
@@ -396,6 +408,15 @@ async function pickLocalDialog(current?: LocalTaskDefinition): Promise<LocalTask
                 } else {
                     resolve(null);
                 }
+            }),
+            quickPick.onDidTriggerButton(() => {
+                vscode.commands.executeCommand('workbench.action.openWorkspaceSettingsFile', {
+                    revealSetting: {
+                        key: 'hermes.host.args',
+                        edit: false
+                    }
+                });
+                resolve(null);
             })
         );
     });

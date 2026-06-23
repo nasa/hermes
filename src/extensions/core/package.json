@@ -330,6 +330,10 @@
                     "hermes.host.binary": {
                         "description": "Path to a Hermes backend binary to run for 'local' host mode. Leave blank to use bundled backend binary.",
                         "type": "string"
+                    },
+                    "hermes.host.args": {
+                        "description": "Command line arguments to be supplied to the backend in 'local' host mode, such as '--export-telemetry'.",
+                        "type": "string"
                     }
                 }
             },
