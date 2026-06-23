@@ -390,16 +390,19 @@ async function createNewRemoteDialog(): Promise<Settings.Remote | undefined> {
     const url = await vscode.window.showInputBox({
         title: "New Hermes Remote",
         prompt: "Enter the Hermes backend URL",
-        placeHolder: "e.g. http://localhost:6880",
+        value: "http://localhost:6880",
         validateInput: (v) => {
-            if (!v) return "URL is required";
-            try { new URL(v); return undefined; } catch { return "Must be a valid URL (e.g. http://localhost:6880)"; }
+            const trimmed = v.trim();
+            if (!trimmed) return "URL is required";
+            try { new URL(trimmed); return undefined; } catch { return "Must be a valid URL (e.g. http://localhost:6880)"; }
         },
     });
     if (!url) return undefined;
  
     type AuthPick = vscode.QuickPickItem & { value: Rpc.HostAuthenticationKind; disabled?: boolean };
-    const isHttps = url.toLowerCase().startsWith("https://");
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return undefined;
+    const isHttps = trimmedUrl.toLowerCase().startsWith("https://");
     const authPick = await new Promise<AuthPick | undefined>((resolve) => {
         const qp = vscode.window.createQuickPick<AuthPick>();
         qp.title = "Authentication Method";
@@ -433,7 +436,7 @@ async function createNewRemoteDialog(): Promise<Settings.Remote | undefined> {
     const remote: Settings.Remote = {
         key,
         label,
-        url,
+        url: trimmedUrl,
         authenticationMethod: authPick.value,
         skipTLSVerify: false,
     };
