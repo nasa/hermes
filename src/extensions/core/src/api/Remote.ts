@@ -365,5 +365,45 @@ async function pickRemoteDialog(current?: Settings.Remote): Promise<Settings.Rem
 }
 
 async function createNewRemoteDialog(): Promise<Settings.Remote | undefined> {
-    return undefined;
+    const label = await vscode.window.showInputBox({
+        title: "New Hermes Remote",
+        prompt: "Enter a label for this remote",
+        placeHolder: "e.g. Local TCP",
+    });
+    if (label === undefined) return undefined;
+ 
+    const url = await vscode.window.showInputBox({
+        title: "New Hermes Remote",
+        prompt: "Enter the Hermes backend URL",
+        placeHolder: "e.g. http://localhost:6880",
+        validateInput: (v) => v ? undefined : "URL is required",
+    });
+    if (!url) return undefined;
+ 
+    type AuthPick = vscode.QuickPickItem & { value: Rpc.HostAuthenticationKind };
+    const authPick = await vscode.window.showQuickPick<AuthPick>([
+        { label: "None", value: Rpc.HostAuthenticationKind.NONE },
+        { label: "Username / Password", value: Rpc.HostAuthenticationKind.USER_PASS },
+        { label: "Token", value: Rpc.HostAuthenticationKind.TOKEN },
+    ], { title: "Authentication Method" });
+    if (!authPick) return undefined;
+ 
+    const key = label.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || Date.now().toString();
+    const remote: Settings.Remote = {
+        key,
+        label,
+        url,
+        authenticationMethod: authPick.value,
+        skipTLSVerify: false,
+    };
+ 
+    const remotes = Settings.hostRemotes();
+    remotes[key] = remote;
+    await vscode.workspace.getConfiguration().update(
+        Settings.names.host.remotes,
+        remotes,
+        vscode.ConfigurationTarget.Workspace
+    );
+ 
+    return remote;
 }
