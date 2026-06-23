@@ -384,16 +384,42 @@ async function createNewRemoteDialog(): Promise<Settings.Remote | undefined> {
         title: "New Hermes Remote",
         prompt: "Enter the Hermes backend URL",
         placeHolder: "e.g. http://localhost:6880",
-        validateInput: (v) => v ? undefined : "URL is required",
+        validateInput: (v) => {
+            if (!v) return "URL is required";
+            try { new URL(v); return undefined; } catch { return "Must be a valid URL (e.g. http://localhost:6880)"; }
+        },
     });
     if (!url) return undefined;
  
-    type AuthPick = vscode.QuickPickItem & { value: Rpc.HostAuthenticationKind };
-    const authPick = await vscode.window.showQuickPick<AuthPick>([
-        { label: "None", value: Rpc.HostAuthenticationKind.NONE },
-        { label: "Username / Password", value: Rpc.HostAuthenticationKind.USER_PASS },
-        { label: "Token", value: Rpc.HostAuthenticationKind.TOKEN },
-    ], { title: "Authentication Method" });
+    type AuthPick = vscode.QuickPickItem & { value: Rpc.HostAuthenticationKind; disabled?: boolean };
+    const isHttps = url.toLowerCase().startsWith("https://");
+    const authPick = await new Promise<AuthPick | undefined>((resolve) => {
+        const qp = vscode.window.createQuickPick<AuthPick>();
+        qp.title = "Authentication Method";
+        qp.items = [
+            { label: "None", value: Rpc.HostAuthenticationKind.NONE },
+            {
+                label: "Username / Password",
+                description: isHttps ? undefined : "$(lock) Requires HTTPS",
+                value: Rpc.HostAuthenticationKind.USER_PASS,
+                disabled: !isHttps,
+            },
+            {
+                label: "Token",
+                description: isHttps ? undefined : "$(lock) Requires HTTPS",
+                value: Rpc.HostAuthenticationKind.TOKEN,
+                disabled: !isHttps,
+            },
+        ];
+        qp.onDidAccept(() => {
+            const selected = qp.selectedItems[0];
+            if (!selected || selected.disabled) return;
+            resolve(selected);
+            qp.dispose();
+        });
+        qp.onDidHide(() => { resolve(undefined); qp.dispose(); });
+        qp.show();
+    });
     if (!authPick) return undefined;
  
     const key = label.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || Date.now().toString();
