@@ -373,10 +373,17 @@ async function pickRemoteDialog(current?: Settings.Remote): Promise<Settings.Rem
 }
 
 async function createNewRemoteDialog(): Promise<Settings.Remote | undefined> {
+    const existingRemotes = Settings.hostRemotes();
     const label = await vscode.window.showInputBox({
         title: "New Hermes Remote",
         prompt: "Enter a label for this remote",
         placeHolder: "e.g. Local TCP",
+        validateInput: (v) => {
+            if (v && !/^[a-zA-Z0-9_ ]+$/.test(v)) return "Label may only contain letters, numbers, spaces, and underscores";
+            const key = v.toLowerCase().replace(/\s+/g, '-');
+            if (key && existingRemotes[key]) return `Label "${v}" is already in use`;
+            return undefined;
+        },
     });
     if (label === undefined) return undefined;
  
@@ -422,7 +429,7 @@ async function createNewRemoteDialog(): Promise<Settings.Remote | undefined> {
     });
     if (!authPick) return undefined;
  
-    const key = label.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || Date.now().toString();
+    const key = label.toLowerCase().replace(/\s+/g, '-') || Date.now().toString();
     const remote: Settings.Remote = {
         key,
         label,
