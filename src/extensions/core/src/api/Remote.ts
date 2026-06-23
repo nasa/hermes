@@ -278,17 +278,22 @@ function remoteToQuickPickItem(key: string, remote: Settings.Remote): RemoteQuic
         description: saneRemote.url,
         detail: errors.length > 0 ? ("$(alert) Invalid Remote: " + errors.join(". ")) : undefined,
         remote: saneRemote,
-        invalid: errors.length > 0
+        invalid: errors.length > 0,
+        buttons: [{ iconPath: new vscode.ThemeIcon("trash"), tooltip: "Remove remote" }]
     };
 }
 
 
 async function pickRemoteDialog(current?: Settings.Remote): Promise<Settings.Remote | undefined> {
-    const remotes = Settings.hostRemotes();
     const quickPick = vscode.window.createQuickPick<RemoteQuickPickItem>();
     quickPick.canSelectMany = false;
 
-    const remoteQuickPickItems = Array.from(Object.entries(remotes).map(([key, remote]) => remoteToQuickPickItem(key, remote)));
+    const buildItems = (currentRemotes = Settings.hostRemotes()): RemoteQuickPickItem[] => [
+        ...Object.entries(currentRemotes).map(([key, remote]) => remoteToQuickPickItem(key, remote)),
+        { label: "", kind: vscode.QuickPickItemKind.Separator },
+        { iconPath: new vscode.ThemeIcon("plus"), label: "Add new Hermes remote", alwaysShow: true, createNew: true },
+    ];
+
     quickPick.title = "Select a Hermes remote host to connect to";
     quickPick.buttons = [
         {
@@ -297,21 +302,9 @@ async function pickRemoteDialog(current?: Settings.Remote): Promise<Settings.Rem
             tooltip: "Edit Remote Settings"
         }
     ];
-    quickPick.items = [
-        ...remoteQuickPickItems,
-        {
-            label: "",
-            kind: vscode.QuickPickItemKind.Separator,
-        },
-        {
-            iconPath: new vscode.ThemeIcon("plus"),
-            label: "Add new Hermes remote",
-            alwaysShow: true,
-            createNew: true,
-        }
-    ];
+    quickPick.items = buildItems();
 
-    const selected = remoteQuickPickItems.find((v) => {
+    const selected = quickPick.items.find((v) => {
         if (v.remote && current) {
             return current.key === v.remote.key;
         } else {
@@ -327,6 +320,21 @@ async function pickRemoteDialog(current?: Settings.Remote): Promise<Settings.Rem
         subs.push(
             quickPick.onDidHide(() => {
                 resolve(undefined);
+            }),
+            quickPick.onDidTriggerItemButton(async ({ item }) => {
+                // There is only one button
+                // [Trash Button]
+                if (item.remote?.key) {
+                    const updatedRemotes = { ...Settings.hostRemotes() };
+                    delete updatedRemotes[item.remote.key];
+                    await vscode.workspace.getConfiguration().update(
+                        Settings.names.host.remotes,
+                        updatedRemotes,
+                        vscode.ConfigurationTarget.Workspace
+                    );
+                    quickPick.items = buildItems(updatedRemotes);
+                }
+                // Rebuild items list without removed item
             }),
             quickPick.onDidAccept(() => {
                 if (quickPick.selectedItems.length > 0) {
