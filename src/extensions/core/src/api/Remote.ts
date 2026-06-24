@@ -278,17 +278,22 @@ function remoteToQuickPickItem(key: string, remote: Settings.Remote): RemoteQuic
         description: saneRemote.url,
         detail: errors.length > 0 ? ("$(alert) Invalid Remote: " + errors.join(". ")) : undefined,
         remote: saneRemote,
-        invalid: errors.length > 0
+        invalid: errors.length > 0,
+        buttons: [{ iconPath: new vscode.ThemeIcon("trash"), tooltip: "Remove remote" }]
     };
 }
 
 
 async function pickRemoteDialog(current?: Settings.Remote): Promise<Settings.Remote | undefined> {
-    const remotes = Settings.hostRemotes();
     const quickPick = vscode.window.createQuickPick<RemoteQuickPickItem>();
     quickPick.canSelectMany = false;
 
-    const remoteQuickPickItems = Array.from(Object.entries(remotes).map(([key, remote]) => remoteToQuickPickItem(key, remote)));
+    const buildItems = (currentRemotes = Settings.hostRemotes()): RemoteQuickPickItem[] => [
+        ...Object.entries(currentRemotes).map(([key, remote]) => remoteToQuickPickItem(key, remote)),
+        { label: "", kind: vscode.QuickPickItemKind.Separator },
+        { iconPath: new vscode.ThemeIcon("plus"), label: "Add new Hermes remote", alwaysShow: true, createNew: true },
+    ];
+
     quickPick.title = "Select a Hermes remote host to connect to";
     quickPick.buttons = [
         {
@@ -297,21 +302,9 @@ async function pickRemoteDialog(current?: Settings.Remote): Promise<Settings.Rem
             tooltip: "Edit Remote Settings"
         }
     ];
-    quickPick.items = [
-        ...remoteQuickPickItems,
-        {
-            label: "",
-            kind: vscode.QuickPickItemKind.Separator,
-        },
-        {
-            iconPath: new vscode.ThemeIcon("plus"),
-            label: "Add new Hermes remote",
-            alwaysShow: true,
-            createNew: true,
-        }
-    ];
+    quickPick.items = buildItems();
 
-    const selected = remoteQuickPickItems.find((v) => {
+    const selected = quickPick.items.find((v) => {
         if (v.remote && current) {
             return current.key === v.remote.key;
         } else {
@@ -327,6 +320,21 @@ async function pickRemoteDialog(current?: Settings.Remote): Promise<Settings.Rem
         subs.push(
             quickPick.onDidHide(() => {
                 resolve(undefined);
+            }),
+            quickPick.onDidTriggerItemButton(async ({ item }) => {
+                // There is only one button
+                // [Trash Button]
+                if (item.remote?.key) {
+                    const updatedRemotes = { ...Settings.hostRemotes() };
+                    delete updatedRemotes[item.remote.key];
+                    await vscode.workspace.getConfiguration().update(
+                        Settings.names.host.remotes,
+                        updatedRemotes,
+                        vscode.ConfigurationTarget.Workspace
+                    );
+                    quickPick.items = buildItems(updatedRemotes);
+                }
+                // Rebuild items list without removed item
             }),
             quickPick.onDidAccept(() => {
                 if (quickPick.selectedItems.length > 0) {
@@ -365,5 +373,81 @@ async function pickRemoteDialog(current?: Settings.Remote): Promise<Settings.Rem
 }
 
 async function createNewRemoteDialog(): Promise<Settings.Remote | undefined> {
-    return undefined;
+    const existingRemotes = Settings.hostRemotes();
+    const label = await vscode.window.showInputBox({
+        title: "New Hermes Remote",
+        prompt: "Enter a label for this remote",
+        placeHolder: "e.g. Local TCP",
+        validateInput: (v) => {
+            if (v && !/^[a-zA-Z0-9_ ]+$/.test(v)) return "Label may only contain letters, numbers, spaces, and underscores";
+            const key = v.toLowerCase().replace(/\s+/g, '-');
+            if (key && existingRemotes[key]) return `Label "${v}" is already in use`;
+            return undefined;
+        },
+    });
+    if (label === undefined) return undefined;
+ 
+    const url = await vscode.window.showInputBox({
+        title: "New Hermes Remote",
+        prompt: "Enter the Hermes backend URL",
+        value: "http://localhost:6880",
+        validateInput: (v) => {
+            const trimmed = v.trim();
+            if (!trimmed) return "URL is required";
+            try { new URL(trimmed); return undefined; } catch { return "Must be a valid URL (e.g. http://localhost:6880)"; }
+        },
+    });
+    if (!url) return undefined;
+ 
+    type AuthPick = vscode.QuickPickItem & { value: Rpc.HostAuthenticationKind; disabled?: boolean };
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return undefined;
+    const isHttps = trimmedUrl.toLowerCase().startsWith("https://");
+    const authPick = await new Promise<AuthPick | undefined>((resolve) => {
+        const qp = vscode.window.createQuickPick<AuthPick>();
+        qp.title = "Authentication Method";
+        qp.items = [
+            { label: "None", value: Rpc.HostAuthenticationKind.NONE },
+            {
+                label: "Username / Password",
+                description: isHttps ? undefined : "$(lock) Requires HTTPS",
+                value: Rpc.HostAuthenticationKind.USER_PASS,
+                disabled: !isHttps,
+            },
+            {
+                label: "Token",
+                description: isHttps ? undefined : "$(lock) Requires HTTPS",
+                value: Rpc.HostAuthenticationKind.TOKEN,
+                disabled: !isHttps,
+            },
+        ];
+        qp.onDidAccept(() => {
+            const selected = qp.selectedItems[0];
+            if (!selected || selected.disabled) return;
+            resolve(selected);
+            qp.dispose();
+        });
+        qp.onDidHide(() => { resolve(undefined); qp.dispose(); });
+        qp.show();
+    });
+    if (!authPick) return undefined;
+ 
+    const key = label.toLowerCase().replace(/\s+/g, '-') || Date.now().toString();
+    const remote: Settings.Remote = {
+        key,
+        label,
+        url: trimmedUrl,
+        authenticationMethod: authPick.value,
+        skipTLSVerify: false,
+    };
+ 
+    const remotes = Settings.hostRemotes();
+    remotes[key] = remote;
+    await vscode.workspace.getConfiguration().update(
+        Settings.names.host.remotes,
+        remotes,
+        vscode.ConfigurationTarget.Workspace
+    );
+ 
+    return remote;
 }
