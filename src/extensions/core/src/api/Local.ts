@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import * as tmp from 'tmp';
 import * as child_process from 'child_process';
+import * as fs from 'fs';
+import * as os from 'os';
 import winston from "winston";
 
 import * as Rpc from '@gov.nasa.jpl.hermes/rpc';
@@ -143,6 +145,10 @@ class LocalBackendExecution implements vscode.Pseudoterminal, StandardPseudoTerm
                 "--config",
                 this.def.configFile
             );
+        }
+
+        if (os.platform() !== 'win32') {
+            fs.chmodSync(this.binary, 0o755);
         }
 
         this.logger.info(`Starting Backend: ${this.binary} ${args.join(" ")}`);
