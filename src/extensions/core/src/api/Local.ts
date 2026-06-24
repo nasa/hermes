@@ -147,7 +147,7 @@ class LocalBackendExecution implements vscode.Pseudoterminal, StandardPseudoTerm
 
         const extraArgs = Settings.hostArgs();
         if (extraArgs) {
-            args.push(...extraArgs.split(" "));
+            args.push(...extraArgs);
         }
 
         this.logger.info(`Starting Backend: ${this.binary} ${args.join(" ")}`);

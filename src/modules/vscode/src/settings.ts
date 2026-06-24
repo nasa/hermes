@@ -85,8 +85,8 @@ export function hostBinary(): string | undefined {
     return b === "" ? undefined : b;
 }
 
-export function hostArgs(): string {
-    return getSetting(names.host.args, "");
+export function hostArgs(): string[] {
+    return getSetting(names.host.args, []);
 }
 
 export function hostRemotes(): Record<string, Remote> {
