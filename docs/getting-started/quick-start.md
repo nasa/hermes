@@ -47,6 +47,13 @@ backend. In this guide we will be using **Local Mode**. The **Remote Mode**
 will become useful once you are ready to deploy Hermes into a
 [production environment](../prod/index.md) though is not strictly required.
 
+### Hermes Backend Local Mode
+
+The local mode opens a unix socket for communication with databases by default. This can be used for connecting and exporting data to a database. When starting a local backend, you can change the socket or change to a tcp server by clicking the gear shown below and editing the corresponding configuration entries. By default, the socket will be hermes-transport-XXXXXX.sock and the tcp address will be localhost:6880.
+
+![Backend dialog selecting local backend](../assets/local-backend.png)
+![VS Code workspace settings.json file configuring hermes.host.args and hermes.host.bind](../assets/local-backend-config.png)
+
 **Verifying the Backend**
 
 To validate the backend started correctly, the VSCode terminal process

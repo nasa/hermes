@@ -352,7 +352,10 @@
                         "description": "Command line arguments to be supplied to the backend in 'local' host mode, such as '--export-telemetry'.",
                         "type": "array",
                         "items": {
-                            "type": "string"
+                            "type": "string",
+                            "examples": [
+                                "--export-telemetry"
+                            ]
                         }
                     }
                 }
