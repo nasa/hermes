@@ -368,13 +368,7 @@ async function pickRemoteDialog(current?: Settings.Remote): Promise<Settings.Rem
     if (pick?.remote) {
         return pick.remote;
     } else if (pick?.createNew) {
-        const newRemote = await createNewRemoteDialog();
-        if (!newRemote) return undefined;
-        const connect = await vscode.window.showInformationMessage(
-            `Remote "${newRemote.label}" added. Connect to it now?`,
-            "Connect", "Not now"
-        );
-        return connect === "Connect" ? newRemote : undefined;
+        return await createNewRemoteDialog();
     }
 }
 
