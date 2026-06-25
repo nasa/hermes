@@ -2,48 +2,35 @@
     "type": "object",
     "description": "Pushes Telemetry and EVRs to TimescaleDB to be viewed with Grafana",
     "properties": {
-        "url": {
+        "host": {
             "type": "string",
-            "title": "URL",
-            "description": "URL to TimescaleDB host (hostname:port)"
+            "title": "Host",
+            "description": "TimescaleDB host and port (e.g. localhost:5432)"
         },
-        "defaultTags": {
-            "type": "array",
-            "title": "Default tags",
-            "description": "Adds tags to all telemetry coming through. Useful when you want to attach session information to telemetry for indexing",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "key": {
-                        "type": "string",
-                        "title": "Key"
-                    },
-                    "value": {
-                        "type": "string",
-                        "title": "Value"
-                    }
-                }
-            }
+        "user": {
+            "type": "string",
+            "title": "User",
+            "description": "Database user. Leave blank to use the OS user."
         },
         "password": {
             "type": "string",
             "title": "Password",
-            "description": "TimescaleDB password. Might not be needed for localhost."
+            "description": "Database password. Leave blank if not required."
         },
         "database": {
             "type": "string",
-            "title": "Database Name",
-            "description": "TimescaleDB database where this session's data will be pushed to. All telemetry from all FSW sources will be pushed here during this session."
+            "title": "Database",
+            "description": "Database name where telemetry and events will be stored."
         },
         "ert": {
             "type": "boolean",
             "title": "ERT",
             "default": true,
-            "description": "Attach Earth-Return-Time as an additional field to every point"
+            "description": "Attach Earth-Return-Time as an additional field to every row"
         }
     },
     "required": [
-        "url",
+        "host",
         "database",
         "ert"
     ]
