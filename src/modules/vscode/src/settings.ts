@@ -26,6 +26,8 @@ export const names = {
     host: {
         remotes: "hermes.host.remotes",
         binary: "hermes.host.binary",
+        args: "hermes.host.args",
+        bind: "hermes.host.bind",
     }
 };
 
@@ -82,6 +84,14 @@ export interface Remote {
 export function hostBinary(): string | undefined {
     const b = getSetting(names.host.binary, undefined);
     return b === "" ? undefined : b;
+}
+
+export function hostBind(): { bindType?: string, bind?: string } {
+    return getSetting(names.host.bind, { bindType: undefined, bind: undefined })
+}
+
+export function hostArgs(): string[] {
+    return getSetting(names.host.args, []);
 }
 
 export function hostRemotes(): Record<string, Remote> {

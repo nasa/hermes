@@ -42,6 +42,11 @@ export interface BackendProvider<State> {
     icon: string;
 
     /**
+     * Button and callback to display on the right of the option in the dialog
+     */
+    buttons?: (vscode.QuickInputButton & { callback: (e: vscode.QuickInputButton) => any })[]
+
+    /**
      * Prompt this provider for state if not already provided to the
      * top level API
      * @param context (Hermes Core) VSCode Extension Context

@@ -277,17 +277,24 @@ export class VscodeApi implements Hermes.Api {
             (a, b) => (a.priority ?? 100) - (b.priority ?? 100)
         );
 
-        const pick = await vscode.window.showQuickPick<vscode.QuickPickItem & {
+        type BackendQuickPickItem = vscode.QuickPickItem & {
             type?: string;
             reconnect?: true;
-        }>([
+            buttonCallbacks?: [(e: vscode.QuickInputButton) => any];
+        };
+        const quickPick = await vscode.window.createQuickPick<BackendQuickPickItem>();
+        quickPick.canSelectMany = false;
+        quickPick.title = 'Hermes Backend Mode';
+        quickPick.items = [
             ...providersSorted.map((provider) => ({
                 iconPath: new vscode.ThemeIcon(provider.icon),
                 label: ((provider.type === this.currentProvider.type) ? "$(check) " : "") + provider.title,
                 description: provider.description,
                 detail: provider.detail,
                 type: provider.type,
-            })),
+                buttons: provider.buttons,
+                buttonCallbacks: provider.buttons?.map(({ callback }) => callback)
+            } as BackendQuickPickItem)),
             {
                 label: "",
                 kind: vscode.QuickPickItemKind.Separator,
@@ -298,9 +305,36 @@ export class VscodeApi implements Hermes.Api {
                 description: "Reconnect/Rerun the current backend",
                 reconnect: true,
             }
-        ], {
-            title: 'Hermes Backend Mode',
+        ];
+
+        quickPick.show();
+
+        const subs: vscode.Disposable[] = [];
+        const pick = await new Promise<{
+            type?: string;
+            reconnect?: true;
+        } | null>((resolve) => {
+            subs.push(
+                quickPick.onDidHide(() => {
+                    resolve(null);
+                }),
+                quickPick.onDidAccept(() => {
+                    if (quickPick.selectedItems.length > 0) {
+                        resolve(quickPick.selectedItems[0]);
+                    } else {
+                        resolve(null);
+                    }
+                }),
+                quickPick.onDidTriggerItemButton((e) => {
+                    const buttonIdx = e.item.buttons?.indexOf(e.button) ?? -1;
+                    buttonIdx >= 0 && e.item.buttonCallbacks?.[buttonIdx](e.button);
+                    resolve(null);
+                })
+            )
         });
+
+        subs.forEach((d) => d.dispose());
+        quickPick.dispose();
 
         if (pick) {
             if (pick.reconnect) {

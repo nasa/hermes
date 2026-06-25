@@ -74,7 +74,7 @@ Usage:
 		log.Error("cannot log to both sqlite and postgres at the same time")
 		os.Exit(1)
 	} else if config.Sqlite == "" && config.Postgresql == "" {
-		log.Error("--sqlite or --postgres must be specified")
+		log.Error("--sqlite or --postgresql must be specified")
 		os.Exit(1)
 	}
 
