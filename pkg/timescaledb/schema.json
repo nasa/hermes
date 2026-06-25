@@ -1,0 +1,50 @@
+{
+    "type": "object",
+    "description": "Pushes Telemetry and EVRs to TimescaleDB to be viewed with Grafana",
+    "properties": {
+        "url": {
+            "type": "string",
+            "title": "URL",
+            "description": "URL to TimescaleDB host (hostname:port)"
+        },
+        "defaultTags": {
+            "type": "array",
+            "title": "Default tags",
+            "description": "Adds tags to all telemetry coming through. Useful when you want to attach session information to telemetry for indexing",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "title": "Key"
+                    },
+                    "value": {
+                        "type": "string",
+                        "title": "Value"
+                    }
+                }
+            }
+        },
+        "password": {
+            "type": "string",
+            "title": "Password",
+            "description": "TimescaleDB password. Might not be needed for localhost."
+        },
+        "database": {
+            "type": "string",
+            "title": "Database Name",
+            "description": "TimescaleDB database where this session's data will be pushed to. All telemetry from all FSW sources will be pushed here during this session."
+        },
+        "ert": {
+            "type": "boolean",
+            "title": "ERT",
+            "default": true,
+            "description": "Attach Earth-Return-Time as an additional field to every point"
+        }
+    },
+    "required": [
+        "url",
+        "database",
+        "ert"
+    ]
+}

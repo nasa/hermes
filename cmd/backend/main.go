@@ -17,6 +17,7 @@ import (
 	"github.com/nasa/hermes/pkg/log"
 	"github.com/nasa/hermes/pkg/pb"
 	"github.com/nasa/hermes/pkg/rpc"
+	"github.com/nasa/hermes/pkg/timescaledb"
 	"github.com/nasa/hermes/pkg/util"
 
 	flag "github.com/spf13/pflag"
@@ -69,6 +70,12 @@ func main() {
 	err = influxdb.Init()
 	if err != nil {
 		logger.Error("failed to initialize influxdb", "err", err)
+		os.Exit(1)
+	}
+
+	err = timescaledb.Init()
+	if err != nil {
+		logger.Error("failed to initialize timescaledb", "err", err)
 		os.Exit(1)
 	}
 
