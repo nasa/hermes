@@ -61,7 +61,6 @@ CREATE TABLE IF NOT EXISTS telemetry (
     boolval BOOLEAN,
     string TEXT,
     bytes BYTEA,
-    %s
     PRIMARY KEY(id, time, telemetryDefId, timeSclk)
 ) WITH (
     tsdb.hypertable,
