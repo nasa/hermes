@@ -34,5 +34,13 @@ services:
       DOCKER_INFLUXDB_INIT_BUCKET: dev
     ports:
       - 8086:8086/tcp
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hermes
+    ports:
+      - 5432:5432/tcp
 volumes:
   lgtm-data:

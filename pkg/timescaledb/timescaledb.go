@@ -24,13 +24,8 @@ var schema string
 var schemaSql string
 
 type Params struct {
-	Url string `json:"url"`
-
-	DefaultTags []struct {
-		Key   string `json:"key"`
-		Value string `json:"value"`
-	} `json:"defaultTags"`
-
+	Host     string `json:"host"`
+	User     string `json:"user"`
 	Password string `json:"password"`
 	Database string `json:"database"`
 	Ert      bool   `json:"ert"`
@@ -52,13 +47,16 @@ func (t *timescaleDbProvider) Start(
 	settings Params,
 	session host.ConnectSession,
 ) error {
+	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
+		settings.User, settings.Password, settings.Host, settings.Database)
+
 	session.Log().Info(
 		"connecting to timescaledb endpoint",
 		"address",
-		settings.Url,
+		dsn,
 	)
 
-	db, err := timescaledb.Open("postgres", settings.Url)
+	db, err := timescaledb.Open("postgres", dsn)
 	if err != nil {
 		return fmt.Errorf("failed to open timescaledb connection: %w", err)
 	}
@@ -98,7 +96,7 @@ func Init() error {
 		"TimescaleDB",
 		&timescaleDbProvider{},
 		schema,
-		`{"ui:order": ["url", "password", "database", "defaultTags", "ert"]}`,
+		`{"ui:order": ["host", "user", "password", "database", "ert"]}`,
 	)
 
 	if err != nil {
