@@ -5,6 +5,7 @@
         "url": {
             "type": "string",
             "title": "URL",
+            "default": "localhost:5432",
             "description": "URL to TimescaleDB host (hostname:port)"
         },
         "defaultTags": {

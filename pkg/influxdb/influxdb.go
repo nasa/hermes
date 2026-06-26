@@ -39,7 +39,9 @@ type influxDbProvider struct{}
 
 // Default implements host.ProfileProvider.
 func (i *influxDbProvider) Default() Params {
-	return Params{}
+	return Params{
+		Ert: true,
+	}
 }
 
 func metricAsPoint(metric protocol.Metric) *write.Point {
