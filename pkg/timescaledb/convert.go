@@ -6,29 +6,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/nasa/hermes/pkg/pb"
 )
 
-func execInsert(ctx context.Context, tx *sql.Tx, table string, values map[string]any) error {
-	cols := make([]string, 0, len(values))
-	vals := make([]any, 0, len(values))
-	placeholders := make([]string, 0, len(values))
-	i := 1
-	for col, val := range values {
-		cols = append(cols, col)
-		vals = append(vals, val)
-		placeholders = append(placeholders, "$"+strconv.Itoa(i))
-		i++
-	}
-	query := "INSERT INTO " + table +
-		" (" + strings.Join(cols, ", ") + ")" +
-		" VALUES (" + strings.Join(placeholders, ", ") + ")" +
-		" ON CONFLICT DO NOTHING"
-	_, err := tx.ExecContext(ctx, query, vals...)
-	return err
-}
+const (
+	insertEventDefSQL = `INSERT INTO eventDefs (id, component, name, severity, args)
+		VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING`
+	insertEventSQL = `INSERT INTO events (eventDefId, time, timeSclk, message, source, args)
+		VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING`
+	insertTelemetryDefSQL = `INSERT INTO telemetryDefs (id, name, component)
+		VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`
+	insertTelemetrySQL = `INSERT INTO telemetry (time, telemetryDefId, timeSclk, source, labels, key, valueType, integral, floating, boolval, string, bytes)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) ON CONFLICT DO NOTHING`
+)
 
 func valuesToAnys(values []*pb.Value) ([]any, error) {
 	valueAnys := make([]any, len(values))
@@ -66,24 +57,17 @@ func InsertEvent(ctx context.Context, db *sql.DB, msg *pb.SourcedEvent) error {
 	}
 	defer tx.Rollback()
 
-	if err := execInsert(ctx, tx, "eventDefs", map[string]any{
-		"id":        event.GetRef().GetId(),
-		"component": event.GetRef().GetComponent(),
-		"name":      event.GetRef().GetName(),
-		"severity":  event.GetRef().GetSeverity(),
-		"args":      string(defArgs),
-	}); err != nil {
+	ref := event.GetRef()
+	if _, err := tx.ExecContext(ctx, insertEventDefSQL,
+		ref.GetId(), ref.GetComponent(), ref.GetName(), ref.GetSeverity(), string(defArgs),
+	); err != nil {
 		return fmt.Errorf("failed to insert event def: %w", err)
 	}
 
-	if err := execInsert(ctx, tx, "events", map[string]any{
-		"eventDefId": event.GetRef().GetId(),
-		"time":       event.GetTime().GetUnix().AsTime(),
-		"timeSclk":   event.GetTime().GetSclk(),
-		"message":    event.GetMessage(),
-		"source":     msg.GetSource(),
-		"args":       string(eventArgs),
-	}); err != nil {
+	if _, err := tx.ExecContext(ctx, insertEventSQL,
+		ref.GetId(), event.GetTime().GetUnix().AsTime(), event.GetTime().GetSclk(),
+		event.GetMessage(), msg.GetSource(), string(eventArgs),
+	); err != nil {
 		return fmt.Errorf("failed to insert event: %w", err)
 	}
 
@@ -105,11 +89,9 @@ func InsertTelemetry(ctx context.Context, db *sql.DB, msg *pb.SourcedTelemetry) 
 	}
 	defer tx.Rollback()
 
-	if err := execInsert(ctx, tx, "telemetryDefs", map[string]any{
-		"id":        def.GetId(),
-		"name":      def.GetName(),
-		"component": def.GetComponent(),
-	}); err != nil {
+	if _, err := tx.ExecContext(ctx, insertTelemetryDefSQL,
+		def.GetId(), def.GetName(), def.GetComponent(),
+	); err != nil {
 		return fmt.Errorf("failed to insert telemetry def: %w", err)
 	}
 
@@ -121,56 +103,57 @@ func InsertTelemetry(ctx context.Context, db *sql.DB, msg *pb.SourcedTelemetry) 
 }
 
 func insertValue(ctx context.Context, tx *sql.Tx, time *pb.Time, telemetryDefId int32, source string, labels string, path string, value *pb.Value) error {
-	telValues := map[string]any{
-		"time":           time.GetUnix().AsTime(),
-		"telemetryDefId": telemetryDefId,
-		"timeSclk":       time.GetSclk(),
-		"source":         source,
-		"labels":         labels,
-		"key":            path,
-	}
+	var (
+		valueType          string
+		integral, floating any
+		boolval            any
+		str                any
+		bytes              any
+	)
 
-	var err error
 	switch valueTy := value.GetValue().(type) {
 	case *pb.Value_I:
-		telValues["valueType"] = "int"
-		telValues["integral"] = valueTy.I
+		valueType = "int"
+		integral = valueTy.I
 	case *pb.Value_U:
-		telValues["valueType"] = "uint"
-		telValues["integral"] = valueTy.U
+		valueType = "uint"
+		integral = valueTy.U
 	case *pb.Value_F:
-		telValues["valueType"] = "float"
-		telValues["floating"] = valueTy.F
+		valueType = "float"
+		floating = valueTy.F
 	case *pb.Value_B:
-		telValues["valueType"] = "bool"
-		telValues["boolval"] = valueTy.B
+		valueType = "bool"
+		boolval = valueTy.B
 	case *pb.Value_S:
-		telValues["valueType"] = "string"
-		telValues["string"] = valueTy.S
+		valueType = "string"
+		str = valueTy.S
 	case *pb.Value_E:
-		telValues["valueType"] = "enum"
-		telValues["integral"] = valueTy.E.Raw
-		telValues["string"] = valueTy.E.Formatted
+		valueType = "enum"
+		integral = valueTy.E.Raw
+		str = valueTy.E.Formatted
 	case *pb.Value_O:
 		for key, fieldValue := range valueTy.O.O {
-			err = insertValue(ctx, tx, time, telemetryDefId, source, labels, path+"."+key, fieldValue)
-			if err != nil {
+			if err := insertValue(ctx, tx, time, telemetryDefId, source, labels, path+"."+key, fieldValue); err != nil {
 				return fmt.Errorf("failed to insert telemetry key %s: %w", key, err)
 			}
 		}
 		return nil
 	case *pb.Value_A:
 		for i, arrValue := range valueTy.A.GetValue() {
-			err = insertValue(ctx, tx, time, telemetryDefId, source, labels, path+"["+strconv.FormatUint(uint64(i), 10)+"]", arrValue)
-			if err != nil {
+			if err := insertValue(ctx, tx, time, telemetryDefId, source, labels, path+"["+strconv.FormatUint(uint64(i), 10)+"]", arrValue); err != nil {
 				return fmt.Errorf("failed to insert telemetry [%d]: %w", i, err)
 			}
 		}
 		return nil
 	case *pb.Value_R:
-		telValues["valueType"] = "bytes"
-		telValues["bytes"] = valueTy.R.Value
+		valueType = "bytes"
+		bytes = valueTy.R.Value
 	}
 
-	return execInsert(ctx, tx, "telemetry", telValues)
+	_, err := tx.ExecContext(ctx, insertTelemetrySQL,
+		time.GetUnix().AsTime(), telemetryDefId, time.GetSclk(),
+		source, labels, path, valueType,
+		integral, floating, boolval, str, bytes,
+	)
+	return err
 }
