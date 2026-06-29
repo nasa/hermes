@@ -18,7 +18,7 @@ services:
       - timescaledb
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./provisioning:/etc/grafana/provisioning:ro
 volumes:
   timescale-data:
   grafana-data:
