@@ -6,7 +6,7 @@ import (
 
 	_ "embed"
 
-	timescaledb "database/sql"
+	"database/sql"
 
 	_ "github.com/lib/pq"
 	"github.com/nasa/hermes/pkg/host"
@@ -56,7 +56,7 @@ func (t *timescaleDbProvider) Start(
 		dsn,
 	)
 
-	db, err := timescaledb.Open("postgres", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return fmt.Errorf("failed to open timescaledb connection: %w", err)
 	}
