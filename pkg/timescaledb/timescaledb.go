@@ -36,8 +36,8 @@ type timescaleDbProvider struct{}
 // Default implements host.ProfileProvider.
 func (i *timescaleDbProvider) Default() Params {
 	return Params{
-		Url: "localhost:5432",
-		Ert: true,
+		Host: "localhost:5432",
+		Ert:  true,
 	}
 }
 
