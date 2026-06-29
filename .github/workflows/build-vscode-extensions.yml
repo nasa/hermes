@@ -246,9 +246,6 @@ jobs:
         run: |
           mkdir -p src/extensions/core/out
           cp out/backend src/extensions/core/out/${{ steps.platform-map.outputs.backend_file }}
-          if [[ "${{ matrix.platform }}" != win32-* ]]; then
-            chmod +x src/extensions/core/out/${{ steps.platform-map.outputs.backend_file }}
-          fi
 
       - name: Package core extension
         run: |

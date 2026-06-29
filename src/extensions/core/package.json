@@ -330,6 +330,33 @@
                     "hermes.host.binary": {
                         "description": "Path to a Hermes backend binary to run for 'local' host mode. Leave blank to use bundled backend binary.",
                         "type": "string"
+                    },
+                    "hermes.host.bind": {
+                        "description": "Bind type and port/sock to open in 'local' host mode.",
+                        "type": "object",
+                        "required": [
+                            "bindType"
+                        ],
+                        "properties": {
+                            "bindType": {
+                                "type": "string",
+                                "enum": ["unix", "tcp"]
+                            },
+                            "bind": {
+                                "type": "string",
+                                "description": "A sock for unix and address for TCP. Defaults to hermes-transport-XXXXXX.sock and localhost:6880 respectively."
+                            }
+                        }
+                    },
+                    "hermes.host.args": {
+                        "description": "Command line arguments to be supplied to the backend in 'local' host mode, such as '--export-telemetry'.",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "examples": [
+                                "--export-telemetry"
+                            ]
+                        }
                     }
                 }
             },
