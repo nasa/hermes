@@ -1,10 +1,10 @@
-# InfluxDB Package
+# TimescaleDB Package
 
 This package provides integration with TimescaleDB for storing and querying telemetry and event data.
 
 ## Overview
 
-The timescaledb package implements a profile provider for connecting to TimescaleDB databases and storing spacecraft telemetry and event data. It converts Hermes data structures to TimescaleDB [[TODO]] format and manages the connection to the TimescaleDB server.
+The timescaledb package implements a profile provider for connecting to TimescaleDB databases and storing spacecraft telemetry and event data. It converts Hermes data structures to TimescaleDB PostgreSQL format and manages the connection to the TimescaleDB server.
 
 ## Components
 
@@ -18,11 +18,7 @@ The timescaledb package provides the following components:
 
 - Real-time telemetry storage in TimescaleDB
 - Event logging with severity levels
-- Support for custom tags and fields
 - Integration with Grafana for visualization
-- Configurable data organization with buckets
-
-[[TODO]]: BELOW
 
 ## Usage
 
@@ -30,44 +26,35 @@ The timescaledb package provides the following components:
 
 ```go
 import (
-    "github.com/nasa/hermes/pkg/host"
-    "github.com/nasa/hermes/pkg/timescaledb"
+    _ "github.com/nasa/hermes/pkg/timescaledb"
 )
 
-// Register the InfluxDB provider
-host.Profiles.RegisterProvider("influxdb", &influxdb.Provider{})
+// Register the TimescaleDB provider (call once at startup)
+timescaledb.Init()
+```
 
-// Create a profile with InfluxDB configuration
-profile, err := host.Profiles.Create("myInfluxProfile", "influxdb", influxdb.Params{
-    Url:    "http://localhost:8086",
-    Token:  "my-token",
-    OrgId:  "my-organization",
-    Bucket: "spacecraft-data",
-    Ert:    true,
-    DefaultTags: []struct{
-        Key   string
-        Value string
-    }{
-        {Key: "mission", Value: "demo"},
-    },
-})
+Once registered, configure a TimescaleDB profile through the Hermes UI or programmatically with:
 
-// Connect the profile
-err = profile.Connect(ctx)
+```go
+params := timescaledb.Params{
+    Host:     "localhost:5432",
+    User:     "postgres",
+    Password: "password",
+    Database: "hermes",
+    Ert:      true,
+}
 ```
 
 ### Configuration Parameters
 
-- `url`: URL to the InfluxDB server (e.g., "http://localhost:8086")
-- `token`: Authentication token for the InfluxDB API
-- `orgId`: Organization ID or name
-- `bucket`: Bucket name for storing data
-- `ert`: Whether to include Earth Return Time with data points
-- `defaultTags`: List of tags to apply to all data points
+- `host`: TimescaleDB host and port (e.g., `localhost:5432`)
+- `user`: Database user
+- `password`: Database password
+- `database`: Database name where telemetry and events will be stored
+- `ert`: Whether to attach Earth Return Time as an additional field to every row
 
 ## Dependencies
 
-- `github.com/influxdata/influxdb-client-go/v2`: InfluxDB client library
-- `github.com/influxdata/line-protocol`: Line protocol parsing and formatting
+- `github.com/lib/pq`: PostgreSQL driver for Go
 - `github.com/nasa/hermes/pkg/host`: For profile provider interfaces
 - `github.com/nasa/hermes/pkg/pb`: For protocol buffer definitions
