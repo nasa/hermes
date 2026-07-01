@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - main
+      - test-subfolder-workflows
     paths:
       - 'nasa-hermes-datasource/**'
   pull_request:
