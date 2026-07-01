@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	stdtime "time"
 
 	"github.com/nasa/hermes/pkg/pb"
 )
@@ -13,12 +14,12 @@ import (
 const (
 	insertEventDefSQL = `INSERT INTO eventDefs (id, component, name, severity, args)
 		VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING`
-	insertEventSQL = `INSERT INTO events (eventDefId, time, timeSclk, message, source, args)
-		VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING`
+	insertEventSQL = `INSERT INTO events (eventDefId, time, timeSclk, message, source, args, ert)
+		VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING`
 	insertTelemetryDefSQL = `INSERT INTO telemetryDefs (id, name, component)
 		VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`
-	insertTelemetrySQL = `INSERT INTO telemetry (time, telemetryDefId, timeSclk, source, labels, key, valueType, integral, floating, boolval, string, bytes)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) ON CONFLICT DO NOTHING`
+	insertTelemetrySQL = `INSERT INTO telemetry (time, telemetryDefId, timeSclk, source, labels, key, valueType, integral, floating, boolval, string, bytes, ert)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) ON CONFLICT DO NOTHING`
 )
 
 func valuesToAnys(values []*pb.Value) ([]any, error) {
@@ -66,7 +67,7 @@ func InsertEvent(ctx context.Context, db *sql.DB, msg *pb.SourcedEvent) error {
 
 	if _, err := tx.ExecContext(ctx, insertEventSQL,
 		ref.GetId(), event.GetTime().GetUnix().AsTime(), event.GetTime().GetSclk(),
-		event.GetMessage(), msg.GetSource(), string(eventArgs),
+		event.GetMessage(), msg.GetSource(), string(eventArgs), stdtime.Now(),
 	); err != nil {
 		return fmt.Errorf("failed to insert event: %w", err)
 	}
@@ -150,10 +151,11 @@ func insertValue(ctx context.Context, tx *sql.Tx, time *pb.Time, telemetryDefId 
 		bytes = valueTy.R.Value
 	}
 
+	now := stdtime.Now()
 	_, err := tx.ExecContext(ctx, insertTelemetrySQL,
 		time.GetUnix().AsTime(), telemetryDefId, time.GetSclk(),
 		source, labels, path, valueType,
-		integral, floating, boolval, str, bytes,
+		integral, floating, boolval, str, bytes, now,
 	)
 	return err
 }

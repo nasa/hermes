@@ -28,7 +28,6 @@ type Params struct {
 	User     string `json:"user"`
 	Password string `json:"password"`
 	Database string `json:"database"`
-	Ert      bool   `json:"ert"`
 }
 
 type timescaleDbProvider struct{}
@@ -37,7 +36,6 @@ type timescaleDbProvider struct{}
 func (i *timescaleDbProvider) Default() Params {
 	return Params{
 		Host: "localhost:5432",
-		Ert:  true,
 	}
 }
 
@@ -96,7 +94,7 @@ func Init() error {
 		"TimescaleDB",
 		&timescaleDbProvider{},
 		schema,
-		`{"ui:order": ["host", "user", "password", "database", "ert"]}`,
+		`{"ui:order": ["host", "user", "password", "database"]}`,
 	)
 
 	if err != nil {

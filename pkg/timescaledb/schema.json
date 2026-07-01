@@ -22,17 +22,10 @@
             "type": "string",
             "title": "Database",
             "description": "Database name where telemetry and events will be stored."
-        },
-        "ert": {
-            "type": "boolean",
-            "title": "ERT",
-            "default": true,
-            "description": "Attach Earth-Return-Time as an additional field to every row"
         }
     },
     "required": [
         "host",
-        "database",
-        "ert"
+        "database"
     ]
 }

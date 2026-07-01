@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS events (
     message TEXT,
     source TEXT,
     args JSONB,
+    ert TIMESTAMP WITH TIME ZONE,
     PRIMARY KEY(id, eventDefId, time, timeSclk)
 ) WITH (
     tsdb.hypertable,
@@ -61,6 +62,7 @@ CREATE TABLE IF NOT EXISTS telemetry (
     boolval BOOLEAN,
     string TEXT,
     bytes BYTEA,
+    ert TIMESTAMP WITH TIME ZONE,
     PRIMARY KEY(id, time, telemetryDefId, timeSclk)
 ) WITH (
     tsdb.hypertable,

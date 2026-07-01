@@ -41,7 +41,6 @@ params := timescaledb.Params{
     User:     "postgres",
     Password: "password",
     Database: "hermes",
-    Ert:      true,
 }
 ```
 
@@ -51,7 +50,8 @@ params := timescaledb.Params{
 - `user`: Database user
 - `password`: Database password
 - `database`: Database name where telemetry and events will be stored
-- `ert`: Whether to attach Earth Return Time as an additional field to every row
+
+Earth Return Time (ERT) is automatically recorded as a `TIMESTAMPTZ` column on every telemetry and event row, capturing the wall-clock time at insertion.
 
 ## Dependencies
 
