@@ -934,6 +934,22 @@ export function isNumberTypeKind(kind: TypeKind): kind is NumberTypeKind {
     }
 }
 
+export function isIntegerTypeKind(kind: TypeKind): kind is IntegerTypeKind {
+    switch (kind) {
+        case TypeKind.u8:
+        case TypeKind.i8:
+        case TypeKind.u16:
+        case TypeKind.i16:
+        case TypeKind.u32:
+        case TypeKind.i32:
+        case TypeKind.u64:
+        case TypeKind.i64:
+            return true;
+        default:
+            return false;
+    }
+}
+
 export function isNumberType(type: Type): type is NumberType {
     return isNumberTypeKind(type.kind);
 }

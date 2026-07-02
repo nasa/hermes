@@ -184,13 +184,19 @@ function enumItemReduce(enumItemXml: any): Def.EnumItem {
 }
 
 function enumReduce(enumXml: any): Def.EnumType {
+    const type = parseType(enumXml.serializeType ?? "I32");
+    if (!Def.isIntegerTypeKind(type.kind)) {
+        throw new Error(`enum ${enumXml.type} does not have an integer type kind ${enumXml.serializeType}`);
+    }
+
     return {
         kind: Def.TypeKind.enum,
         name: enumXml.type,
         values: new DualKeyMap('value',
             ((enumXml.item ?? []) as any[]).map((element) =>
                 [element.name, enumItemReduce(element)])
-        )
+        ),
+        encodeType: type.kind,
     };
 }
 
