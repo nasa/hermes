@@ -41,7 +41,12 @@ func (f *fprimeProtocol) Read() chan []byte {
 
 // Write implements framer.
 func (f *fprimeProtocol) Write(pkt *Packet) ([]byte, error) {
-	w := serial.NewWriter(serial.WithWriterByteOrder(binary.BigEndian))
+	w := serial.NewWriter(
+		serial.WithWriterByteOrder(binary.BigEndian),
+		serial.WithBoolTrueValue(Config.TrueValue),
+		serial.WithBoolFalseValue(Config.FalseValue),
+	)
+
 	pkt.Marshal(w, f.dictionary)
 	data := w.Get()
 
