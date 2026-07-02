@@ -17,12 +17,15 @@ CREATE TABLE IF NOT EXISTS events (
     source TEXT,
     args JSONB,
     ert TIMESTAMP WITH TIME ZONE NOT NULL,
-    PRIMARY KEY(id, eventDefId, time, timeSclk, ert)
+    PRIMARY KEY(id, eventDefId, time, timeSclk, ert, source)
+) WITH (
+    tsdb.hypertable,
+    tsdb.partition_column = 'time',
+    tsdb.segmentby = 'source',
+    tsdb.chunk_interval = '1 day'
 );
 
-SELECT create_hypertable('events', by_range('time', INTERVAL '1 hour'), if_not_exists => true);
 SELECT add_dimension('events', by_range('ert', INTERVAL '1 day'), if_not_exists => true);
-SELECT add_dimension('events', by_hash('eventdefid', 4), if_not_exists => true);
 
 CREATE TABLE IF NOT EXISTS telemetryDefs (
     id SERIAL PRIMARY KEY,
@@ -62,9 +65,12 @@ CREATE TABLE IF NOT EXISTS telemetry (
     string TEXT,
     bytes BYTEA,
     ert TIMESTAMP WITH TIME ZONE NOT NULL,
-    PRIMARY KEY(id, time, telemetryDefId, timeSclk, ert)
+    PRIMARY KEY(id, time, telemetryDefId, timeSclk, ert, source)
+) WITH (
+    tsdb.hypertable,
+    tsdb.partition_column = 'time',
+    tsdb.segmentby = 'source',
+    tsdb.chunk_interval = '1 day'
 );
 
-SELECT create_hypertable('telemetry', by_range('time'), if_not_exists => true);
 SELECT add_dimension('telemetry', by_range('ert', INTERVAL '1 day'), if_not_exists => true);
-SELECT add_dimension('telemetry', by_hash('telemetrydefid', 4), if_not_exists => true);
