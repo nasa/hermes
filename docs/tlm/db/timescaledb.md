@@ -4,9 +4,21 @@ icon: brands/timescaledb
 
 # TimescaleDB
 
-![Hermes extension Profile tab with an TimescaleDB Profile](../../assets/profile-timescaledb.png){ width=200 align=right }
+## Manual Local Connection
 
-Hermes offers an docker compose containing an TimescaleDB and Grafana instance, found in `timescale-stack`. To get started with development, start the database locally with `docker compose --project-directory ./timescale-stack up -d`. Next, we can connect the backend to the database with the Hermes VS Code extension. Create a new TimescaleDB Profile and fill out the information. The default values can be found in the accompanying screenshot. Once you have both the flight software connection and the TimescaleDB connection, you should be able to see telemetry and events flowing into the database and should be visible in Grafana at `localhost:3000`.
+Hermes offers utilities to manually connect a local hermes backend to a TimescaleDB. In this example, we connect a local hermes backend to a local TimescaleDB instance. First, we start a local TimescaleDB instance via docker at `localhost:5432` with password `password`. Then, we can [start the Hermes backend in local mode](../../getting-started/quick-start.md#starting-the-hermes-backend) with `hermes.host.bind` set to:
+
+```
+"hermes.host.bind": {
+    "bindType": "tcp"
+}
+```
+
+Now, we can run the Hermes utility to connect the backend to the database. Compile and execute the code found in [`hermes/cmd/sqlrecord`](https://github.com/nasa/hermes/tree/main/cmd/sqlrecord) with the following command:
+
+```
+go run . --postgresql="postgres://postgre@localhost:5432/hermes_db?sslmode=disable"
+```
 
 !!! warning "Documentation In Progress"
 

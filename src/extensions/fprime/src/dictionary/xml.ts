@@ -184,13 +184,19 @@ function enumItemReduce(enumItemXml: any): Def.EnumItem {
 }
 
 function enumReduce(enumXml: any): Def.EnumType {
+    const type = parseTypeKind(enumXml.serialize_type ?? "I32");
+    if (!Def.isIntegerTypeKind(type.kind)) {
+        throw new Error(`enum ${enumXml.type} does not have an integer type kind ${enumXml.serializeType}`);
+    }
+
     return {
         kind: Def.TypeKind.enum,
         name: enumXml.type,
         values: new DualKeyMap('value',
             ((enumXml.item ?? []) as any[]).map((element) =>
                 [element.name, enumItemReduce(element)])
-        )
+        ),
+        encodeType: type.kind,
     };
 }
 
@@ -261,6 +267,35 @@ function arrayReduce(arrayXml: any): Def.ArrayType | Def.BytesType {
             size: size,
             type: elTy,
         };
+    }
+}
+
+function parseTypeKind(typeName: string): Def.Type {
+    switch (typeName) {
+        case "bool":
+            return tBoolean;
+        case "U8":
+            return tU8;
+        case "I8":
+            return tI8;
+        case "U16":
+            return tU16;
+        case "I16":
+            return tI16;
+        case "U32":
+            return tU32;
+        case "I32":
+            return tI32;
+        case "U64":
+            return tU64;
+        case "I64":
+            return tI64;
+        case "F32":
+            return tF32;
+        case "F64":
+            return tF64;
+        default:
+            throw new Error(`invalid type kind ${JSON.stringify(typeName)}`);
     }
 }
 

@@ -5,7 +5,7 @@
         "url": {
             "type": "string",
             "title": "URL",
-            "description": "URL to InfluxDB host (hostname:port)"
+            "description": "URL to InfluxDB host (scheme://hostname:port)"
         },
         "defaultTags": {
             "type": "array",

@@ -32,7 +32,12 @@ type ccsdsProtocol struct {
 
 // Write implements framer.
 func (c *ccsdsProtocol) Write(pkt *Packet) ([]byte, error) {
-	w := serial.NewWriter(serial.WithWriterByteOrder(binary.BigEndian))
+	w := serial.NewWriter(
+		serial.WithWriterByteOrder(binary.BigEndian),
+		serial.WithBoolTrueValue(Config.TrueValue),
+		serial.WithBoolFalseValue(Config.FalseValue),
+	)
+
 	err := pkt.Marshal(w, c.dictionary)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode fprime packet: %w", err)

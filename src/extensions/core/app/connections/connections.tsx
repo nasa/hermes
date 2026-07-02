@@ -439,7 +439,7 @@ export default function ConnectionUi() {
     const [dictionaryProviders, setDictionaryProviders] = useState<{ key: string, title: string }[]>([]);
     const [profileProviders, setProfileProviders] = useState<Record<string, ProfileProvider>>({});
 
-    const [selectedDictionaryProvider, setSelectedDictionaryProvider] = useState<{ key: string, title: string }>();
+    const [selectedDictionaryProvider, setSelectedDictionaryProvider] = useState<string>();
     const [selectedProfileProvider, setSelectedProfileProvider] = useState<string>();
 
     const [dictionaryLoading, setDictionaryLoading] = useState<boolean>(false);
@@ -523,7 +523,7 @@ export default function ConnectionUi() {
 
     useEffect(() => {
         if (selectedDictionaryProvider === undefined && dictionaryProviders.length > 0) {
-            setSelectedDictionaryProvider(dictionaryProviders[0]);
+            setSelectedDictionaryProvider(dictionaryProviders[0].key);
         } else if (dictionaryProviders.length === 0) {
             setSelectedDictionaryProvider(undefined);
         }
@@ -534,7 +534,7 @@ export default function ConnectionUi() {
     }, [selectedProfileProvider]);
 
     const onOpenDictionary = useCallback(() => {
-        messages.postMessage({ type: "dictionaryOpen", provider: selectedDictionaryProvider!.key });
+        messages.postMessage({ type: "dictionaryOpen", provider: selectedDictionaryProvider! });
     }, [selectedDictionaryProvider]);
 
     const onProfileUpdate = useCallback((cfgId: string, settings: any) => {
@@ -578,7 +578,7 @@ export default function ConnectionUi() {
             <VStack>
                 <Progress active={dictionaryLoading} />
                 <VSCodeDropdown
-                    value={selectedDictionaryProvider?.key}
+                    value={selectedDictionaryProvider}
                     disabled={dictionaryLoading}
                     onChange={e => setSelectedDictionaryProvider((e.target as any).value)}
                     id="provider-dropdown"
