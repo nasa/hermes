@@ -184,7 +184,7 @@ function enumItemReduce(enumItemXml: any): Def.EnumItem {
 }
 
 function enumReduce(enumXml: any): Def.EnumType {
-    const type = parseType(enumXml.serializeType ?? "I32");
+    const type = parseType(enumXml.serialize_type ?? "I32");
     if (!Def.isIntegerTypeKind(type.kind)) {
         throw new Error(`enum ${enumXml.type} does not have an integer type kind ${enumXml.serializeType}`);
     }
