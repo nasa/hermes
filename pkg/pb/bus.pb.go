@@ -407,10 +407,6 @@ type SourcedEvent struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *SourcedEvent) GetTelemetry() {
-	panic("unimplemented")
-}
-
 func (x *SourcedEvent) Reset() {
 	*x = SourcedEvent{}
 	mi := &file_bus_proto_msgTypes[3]
