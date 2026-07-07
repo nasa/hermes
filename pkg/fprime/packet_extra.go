@@ -3,6 +3,7 @@ package fprime
 import (
 	"fmt"
 
+	"github.com/nasa/hermes/pkg/host"
 	"github.com/nasa/hermes/pkg/pb"
 	"github.com/nasa/hermes/pkg/serial"
 )
@@ -19,7 +20,7 @@ func (p *CommandPacket) Unmarshal(r *serial.Reader) error {
 	return fmt.Errorf("command packets should not be decoded")
 }
 
-func (p *CommandPacket) Marshal(w *serial.Writer) error {
+func (p *CommandPacket) Marshal(w *serial.Writer, dict *host.DictionaryNamespace) error {
 	if len(p.Def.Arguments) != len(p.Args) {
 		return fmt.Errorf(
 			"argument count mismatch %d (value) != %d (dict)",
@@ -28,7 +29,7 @@ func (p *CommandPacket) Marshal(w *serial.Writer) error {
 		)
 	}
 
-	err := w.IntKind(Config.OpcodeType, int64(p.Def.Opcode))
+	err := OpcodeType(int64(p.Def.Opcode)).Marshal(w, dict)
 	if err != nil {
 		return fmt.Errorf("failed to write opcode: %w", err)
 	}

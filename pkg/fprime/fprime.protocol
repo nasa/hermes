@@ -7,7 +7,7 @@ extern TimeBaseStoreType("UM:*host.DictionaryNamespace"): "TimeBaseStoreType"
 extern TimeContextStoreType("UM:*host.DictionaryNamespace"): "TimeContextStoreType"
 extern PacketDescriptorType("UM:*host.DictionaryNamespace"): "PacketDescriptorType"
 
-extern CommandPacket: "*CommandPacket"
+extern CommandPacket("M:*host.DictionaryNamespace"): "*CommandPacket"
 
 enum PacketType(dict) PacketDescriptorType(dict) {
     COMMAND = 0
@@ -45,7 +45,7 @@ struct Packet(dict, dictTlmPkt) * {
         `s.Type == PacketType_TELEM`: [*]TelemValue(dict)
         `s.Type == PacketType_LOG`: LogValue(dict)
         `s.Type == PacketType_FILE`: FilePacket
-        `s.Type == PacketType_COMMAND`: CommandPacket
+        `s.Type == PacketType_COMMAND`: CommandPacket(dict)
         `s.Type == PacketType_PACKETIZED_TLM`: TelemPacket(dict, dictTlmPkt)
 
         # Drop any packets we don't understand

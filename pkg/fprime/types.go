@@ -174,3 +174,19 @@ func (t *TlmPacketizeIdType) Unmarshal(r *serial.Reader, dict *host.DictionaryNa
 func (t TlmPacketizeIdType) Marshal(w *serial.Writer, dict *host.DictionaryNamespace) error {
 	return wDictionaryIntType(w, dict, "FwTlmPacketizeIdType", Config.TlmPacketizeIdType, int64(t))
 }
+
+type OpcodeType int64
+
+func (t *OpcodeType) Unmarshal(r *serial.Reader, dict *host.DictionaryNamespace) error {
+	v, err := rDictionaryIntType(r, dict, "FwOpcodeType", Config.OpcodeType)
+	if err != nil {
+		return err
+	}
+
+	*t = OpcodeType(v)
+	return nil
+}
+
+func (t OpcodeType) Marshal(w *serial.Writer, dict *host.DictionaryNamespace) error {
+	return wDictionaryIntType(w, dict, "FwOpcodeType", Config.OpcodeType, int64(t))
+}

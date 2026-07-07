@@ -15,7 +15,7 @@ release: vscode out/uplink out/backend out/sqlrecord
 
 protocol: out/protocolc
 	./out/protocolc -p fprime -o pkg/fprime/packet.go ./pkg/fprime/fprime.protocol
-	./out/protocolc -p spp -o pkg/spp/packet.go ./pkg/spp/spp.protocol
+	./out/protocolc -p ccsds -o pkg/ccsds/packet.go ./pkg/ccsds/ccsds.protocol
 
 out/protocolc: out FORCE
 	go build ${GO_FLAGS} -o out/protocolc github.com/nasa/hermes/cmd/protocolc

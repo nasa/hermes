@@ -526,7 +526,7 @@ func (s *Packet) Marshal(wo *serial.Writer, dict *host.DictionaryNamespace) (err
 		if !ok {
 			return fmt.Errorf("expected s.Payload to be *CommandPacket, got %T", s.Payload)
 		}
-		err = s_Payload.Marshal(w)
+		err = s_Payload.Marshal(w, dict)
 		if err != nil {
 			return fmt.Errorf("*CommandPacket marshal failed: %w", err)
 		}
