@@ -23,7 +23,7 @@
         "telemetry": {
             "type": "boolean",
             "title": "Export Telemetry",
-            "default": false,
+            "default": true,
             "description": "Export channelized telemetry as metrics (e.g. to Prometheus)"
         }
     },

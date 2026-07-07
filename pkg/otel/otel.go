@@ -39,7 +39,7 @@ func (o *otelProvider) Default() Params {
 		Endpoint:    "localhost:4317",
 		ServiceName: "hermes",
 		Events:      true,
-		Telemetry:   false,
+		Telemetry:   true,
 	}
 }
 
