@@ -3,6 +3,7 @@ package otel
 import (
 	"context"
 	"fmt"
+	"time"
 
 	_ "embed"
 
@@ -10,7 +11,9 @@ import (
 	"github.com/nasa/hermes/pkg/pb"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/sdk/log"
+	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
@@ -47,15 +50,6 @@ func (o *otelProvider) Start(
 ) error {
 	session.Log().Info("connecting to OTEL collector", "endpoint", settings.Endpoint)
 
-	exporter, err := otlploggrpc.New(ctx,
-		otlploggrpc.WithEndpoint(settings.Endpoint),
-		otlploggrpc.WithInsecure(),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create OTEL exporter: %w", err)
-	}
-	defer exporter.Shutdown(context.Background())
-
 	res, err := resource.New(ctx,
 		resource.WithAttributes(semconv.ServiceNameKey.String(settings.ServiceName)),
 	)
@@ -63,20 +57,30 @@ func (o *otelProvider) Start(
 		return fmt.Errorf("failed to create OTEL resource: %w", err)
 	}
 
-	provider := log.NewLoggerProvider(
-		log.WithResource(res),
-		log.WithProcessor(log.NewBatchProcessor(exporter)),
-	)
-	defer provider.Shutdown(context.Background())
-
-	handler := otelslog.NewHandler("hermes",
-		otelslog.WithLoggerProvider(provider),
-	)
-
-	session.Started()
-
 	if settings.Events {
 		session.Log().Info("exporting events to OTEL collector")
+
+		logOpts := []otlploggrpc.Option{otlploggrpc.WithInsecure()}
+		if settings.Endpoint != "" {
+			logOpts = append(logOpts, otlploggrpc.WithEndpoint(settings.Endpoint))
+		}
+
+		logExporter, err := otlploggrpc.New(ctx, logOpts...)
+		if err != nil {
+			return fmt.Errorf("failed to create OTEL log exporter: %w", err)
+		}
+		defer logExporter.Shutdown(context.Background())
+
+		logProvider := log.NewLoggerProvider(
+			log.WithResource(res),
+			log.WithProcessor(log.NewBatchProcessor(logExporter)),
+		)
+		defer logProvider.Shutdown(context.Background())
+
+		handler := otelslog.NewHandler("hermes",
+			otelslog.WithLoggerProvider(logProvider),
+		)
+
 		host.Event.On(ctx, func(msg *pb.SourcedEvent) {
 			handler.Handle(context.Background(), msg.GetEvent().Record())
 		})
@@ -84,10 +88,57 @@ func (o *otelProvider) Start(
 
 	if settings.Telemetry {
 		session.Log().Info("exporting telemetry to OTEL collector")
+
+		metricOpts := []otlpmetricgrpc.Option{otlpmetricgrpc.WithInsecure()}
+		if settings.Endpoint != "" {
+			metricOpts = append(metricOpts, otlpmetricgrpc.WithEndpoint(settings.Endpoint))
+		}
+
+		metricExporter, err := otlpmetricgrpc.New(ctx, metricOpts...)
+		if err != nil {
+			return fmt.Errorf("failed to create OTEL metric exporter: %w", err)
+		}
+		defer metricExporter.Shutdown(context.Background())
+
+		cache := make(chan []metricdata.Metrics, 64)
+
+		go func() {
+			ticker := time.NewTicker(1 * time.Second)
+			defer ticker.Stop()
+			var buf []metricdata.Metrics
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case chunk := <-cache:
+					buf = append(buf, chunk...)
+				case <-ticker.C:
+					if len(buf) == 0 {
+						continue
+					}
+					exportErr := metricExporter.Export(ctx, &metricdata.ResourceMetrics{
+						Resource: res,
+						ScopeMetrics: []metricdata.ScopeMetrics{{
+							Metrics: buf,
+						}},
+					})
+					if exportErr != nil {
+						session.Log().Error("failed to export telemetry metrics", "err", exportErr)
+					}
+					buf = nil
+				}
+			}
+		}()
+
 		host.Telemetry.On(ctx, func(msg *pb.SourcedTelemetry) {
-			handler.Handle(context.Background(), msg.GetTelemetry().Record())
+			m := msg.GetTelemetry().AsOtelMetric([]metricdata.Metrics{})
+			if len(m) > 0 {
+				cache <- m
+			}
 		})
 	}
+
+	session.Started()
 
 	<-ctx.Done()
 	return nil

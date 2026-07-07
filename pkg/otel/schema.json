@@ -18,13 +18,13 @@
             "type": "boolean",
             "title": "Export Events",
             "default": true,
-            "description": "Export flight software events as log records"
+            "description": "Export flight software events as log records (e.g. to Loki)"
         },
         "telemetry": {
             "type": "boolean",
             "title": "Export Telemetry",
             "default": false,
-            "description": "Export channelized telemetry as log records"
+            "description": "Export channelized telemetry as metrics (e.g. to Prometheus)"
         }
     },
     "required": ["endpoint"]
