@@ -6,7 +6,7 @@
             "type": "string",
             "title": "Collector Endpoint",
             "default": "localhost:4317",
-            "description": "OTLP gRPC collector endpoint (e.g. localhost:4317)"
+            "description": "OTLP gRPC collector endpoint. Leave empty to use OTEL_EXPORTER_OTLP_ENDPOINT env var."
         },
         "serviceName": {
             "type": "string",

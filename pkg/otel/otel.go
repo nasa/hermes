@@ -36,7 +36,7 @@ type otelProvider struct{}
 
 func (o *otelProvider) Default() Params {
 	return Params{
-		Endpoint:    "localhost:4317",
+		Endpoint:    "",
 		ServiceName: "hermes",
 		Events:      true,
 		Telemetry:   true,
