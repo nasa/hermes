@@ -27,5 +27,5 @@
             "description": "Export channelized telemetry as metrics (e.g. to Prometheus)"
         }
     },
-    "required": ["endpoint"]
+    "required": []
 }

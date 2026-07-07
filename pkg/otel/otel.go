@@ -36,7 +36,7 @@ type otelProvider struct{}
 
 func (o *otelProvider) Default() Params {
 	return Params{
-		Endpoint:    "",
+		Endpoint:    "localhost:4317",
 		ServiceName: "hermes",
 		Events:      true,
 		Telemetry:   true,
@@ -48,6 +48,10 @@ func (o *otelProvider) Start(
 	settings Params,
 	session host.ConnectSession,
 ) error {
+	if !settings.Events && !settings.Telemetry {
+		return fmt.Errorf("at least one of events or telemetry must be enabled")
+	}
+
 	session.Log().Info("connecting to OTEL collector", "endpoint", settings.Endpoint)
 
 	res, err := resource.New(ctx,
