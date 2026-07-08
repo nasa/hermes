@@ -24,10 +24,12 @@ var schema string
 var schemaSql string
 
 type Params struct {
-	Host     string `json:"host"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-	Database string `json:"database"`
+	Host      string `json:"host"`
+	User      string `json:"user"`
+	Password  string `json:"password"`
+	Database  string `json:"database"`
+	Events    bool   `json:"events"`
+	Telemetry bool   `json:"telemetry"`
 }
 
 type timescaleDbProvider struct{}
@@ -35,7 +37,9 @@ type timescaleDbProvider struct{}
 // Default implements host.ProfileProvider.
 func (i *timescaleDbProvider) Default() Params {
 	return Params{
-		Host: "localhost:5432",
+		Host:      "localhost:5432",
+		Events:    true,
+		Telemetry: true,
 	}
 }
 
@@ -71,19 +75,23 @@ func (t *timescaleDbProvider) Start(
 
 	session.Started()
 
-	session.Log().Info("creating event bus listener to push to timescaledb")
-	host.Event.On(ctx, func(msg *pb.SourcedEvent) {
-		if err := InsertEvent(ctx, db, msg); err != nil {
-			session.Log().Error("failed to insert event to timescaledb", "err", err)
-		}
-	})
+	if settings.Events {
+		session.Log().Info("creating event bus listener to push to timescaledb")
+		host.Event.On(ctx, func(msg *pb.SourcedEvent) {
+			if err := InsertEvent(ctx, db, msg); err != nil {
+				session.Log().Error("failed to insert event to timescaledb", "err", err)
+			}
+		})
+	}
 
-	session.Log().Info("creating telemetry bus listener to push to timescaledb")
-	host.Telemetry.On(ctx, func(msg *pb.SourcedTelemetry) {
-		if err := InsertTelemetry(ctx, db, msg); err != nil {
-			session.Log().Error("failed to insert telemetry to timescaledb", "err", err)
-		}
-	})
+	if settings.Telemetry {
+		session.Log().Info("creating telemetry bus listener to push to timescaledb")
+		host.Telemetry.On(ctx, func(msg *pb.SourcedTelemetry) {
+			if err := InsertTelemetry(ctx, db, msg); err != nil {
+				session.Log().Error("failed to insert telemetry to timescaledb", "err", err)
+			}
+		})
+	}
 
 	<-ctx.Done()
 	return nil
@@ -94,7 +102,7 @@ func Init() error {
 		"TimescaleDB",
 		&timescaleDbProvider{},
 		schema,
-		`{"ui:order": ["host", "user", "password", "database"]}`,
+		`{"ui:order": ["host", "user", "password", "database", "events", "telemetry"]}`,
 	)
 
 	if err != nil {

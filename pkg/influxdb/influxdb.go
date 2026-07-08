@@ -29,10 +29,12 @@ type Params struct {
 		Value string `json:"value"`
 	} `json:"defaultTags"`
 
-	Token  string `json:"token"`
-	OrgId  string `json:"orgId"`
-	Bucket string `json:"bucket"`
-	Ert    bool   `json:"ert"`
+	Token     string `json:"token"`
+	OrgId     string `json:"orgId"`
+	Bucket    string `json:"bucket"`
+	Ert       bool   `json:"ert"`
+	Events    bool   `json:"events"`
+	Telemetry bool   `json:"telemetry"`
 }
 
 type influxDbProvider struct{}
@@ -40,7 +42,9 @@ type influxDbProvider struct{}
 // Default implements host.ProfileProvider.
 func (i *influxDbProvider) Default() Params {
 	return Params{
-		Ert: true,
+		Ert:       true,
+		Events:    true,
+		Telemetry: true,
 	}
 }
 
@@ -114,35 +118,39 @@ func (i *influxDbProvider) Start(
 		}
 	}()
 
-	session.Log().Info("creating event bus listener to push to influxdb")
-	host.Event.On(ctx, func(msg *pb.SourcedEvent) {
-		mtr, err := SourcedEventAsMetric(msg)
+	if settings.Events {
+		session.Log().Info("creating event bus listener to push to influxdb")
+		host.Event.On(ctx, func(msg *pb.SourcedEvent) {
+			mtr, err := SourcedEventAsMetric(msg)
 
-		if settings.Ert {
-			mtr.AddField("ert", time.Now().UnixMilli())
-		}
+			if settings.Ert {
+				mtr.AddField("ert", time.Now().UnixMilli())
+			}
 
-		if err != nil {
-			session.Log().Warn("failed to convert event to influxdb metric", "err", err)
-		} else {
-			writeAPI.WritePoint(metricAsPoint(mtr))
-		}
-	})
+			if err != nil {
+				session.Log().Warn("failed to convert event to influxdb metric", "err", err)
+			} else {
+				writeAPI.WritePoint(metricAsPoint(mtr))
+			}
+		})
+	}
 
-	session.Log().Info("creating telemetry bus listener to push to influxdb")
-	host.Telemetry.On(ctx, func(msg *pb.SourcedTelemetry) {
-		mtr, err := SourcedTelemetryAsMetric(msg)
+	if settings.Telemetry {
+		session.Log().Info("creating telemetry bus listener to push to influxdb")
+		host.Telemetry.On(ctx, func(msg *pb.SourcedTelemetry) {
+			mtr, err := SourcedTelemetryAsMetric(msg)
 
-		if settings.Ert {
-			mtr.AddField("ert", time.Now().UnixMilli())
-		}
+			if settings.Ert {
+				mtr.AddField("ert", time.Now().UnixMilli())
+			}
 
-		if err != nil {
-			session.Log().Warn("failed to convert telemetry to influxdb metric", "err", err)
-		} else {
-			writeAPI.WritePoint(metricAsPoint(mtr))
-		}
-	})
+			if err != nil {
+				session.Log().Warn("failed to convert telemetry to influxdb metric", "err", err)
+			} else {
+				writeAPI.WritePoint(metricAsPoint(mtr))
+			}
+		})
+	}
 
 	wg.Wait()
 	return nil
@@ -153,7 +161,7 @@ func Init() error {
 		"InfluxDB",
 		&influxDbProvider{},
 		schema,
-		`{"ui:order": ["url", "token", "orgId", "bucket", "defaultTags", "ert"]}`,
+		`{"ui:order": ["url", "token", "orgId", "bucket", "defaultTags", "ert", "events", "telemetry"]}`,
 	)
 
 	if err != nil {

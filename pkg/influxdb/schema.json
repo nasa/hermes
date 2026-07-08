@@ -45,6 +45,18 @@
             "title": "ERT",
             "default": true,
             "description": "Attach Earth-Return-Time as an additional field to every point"
+        },
+        "events": {
+            "type": "boolean",
+            "title": "Export Events",
+            "default": true,
+            "description": "Export flight software events to InfluxDB"
+        },
+        "telemetry": {
+            "type": "boolean",
+            "title": "Export Telemetry",
+            "default": true,
+            "description": "Export channelized telemetry to InfluxDB"
         }
     },
     "required": [
