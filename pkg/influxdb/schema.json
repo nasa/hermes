@@ -45,6 +45,18 @@
             "title": "ERT",
             "default": true,
             "description": "Attach Earth-Return-Time as an additional field to every point"
+        },
+        "events": {
+            "type": "boolean",
+            "title": "Log Events",
+            "default": true,
+            "description": "Push events (EVRs) to this database."
+        },
+        "telemetry": {
+            "type": "boolean",
+            "title": "Log Telemetry",
+            "default": true,
+            "description": "Push telemetry channels to this database."
         }
     },
     "required": [
