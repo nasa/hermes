@@ -272,7 +272,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
 
       {queryType === 'telemetry' && (
         <>
-          <InlineField label="Channel" labelWidth={16} tooltip="Telemetry channel name" grow={true} required>
+          <InlineField label="Channel" labelWidth={16} tooltip="Telemetry channel name" grow shrink required>
             <MultiCombobox
               id="query-editor-channel"
               data-testid="query-editor-channel"
@@ -281,9 +281,10 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
               onChange={onChannelChange}
               loading={channelLoading}
               placeholder="Select channel"
+              prefixIcon="channel-add"
             />
           </InlineField>
-          <InlineField label="Source" labelWidth={16} tooltip="FSW source identifier (optional)" grow={true}>
+          <InlineField label="Source" labelWidth={16} tooltip="FSW source identifier (optional)" grow shrink>
             <MultiCombobox
               id="query-editor-source"
               data-testid="query-editor-source"
@@ -293,6 +294,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
               isClearable
               loading={sourceLoading}
               placeholder="All sources"
+              prefixIcon="rocket"
             />
           </InlineField>
           {Object.entries(keysByChannel)
@@ -308,7 +310,8 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
                   key={id}
                   label={chLabel}
                   tooltip={`Value field path for ${chLabel}`}
-                  grow={true}
+                  grow
+                  shrink
                 >
                   <MultiCombobox
                     id={`query-editor-key-${id}`}
@@ -319,6 +322,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
                     isClearable
                     loading={keyLoading}
                     placeholder="All keys"
+                    prefixIcon="key-skeleton-alt"
                   />
                 </InlineField>
               );
@@ -328,7 +332,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
 
       {queryType === 'events' && (
         <>
-          <InlineField label="Source" labelWidth={16} tooltip="FSW source identifier (optional)">
+          <InlineField label="Source" labelWidth={16} tooltip="FSW source identifier (optional)" grow shrink>
             <MultiCombobox
               id="query-editor-event-source"
               data-testid="query-editor-event-source"
@@ -338,7 +342,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
               isClearable
               loading={eventSourceLoading}
               placeholder="All sources"
-              width={56}
+              prefixIcon="rocket"
             />
           </InlineField>
         </>
@@ -375,6 +379,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
             value={query.aggregation ?? 'avg'}
             onChange={onAggregationChange}
             isClearable={false}
+            prefixIcon="calculator-alt"
           />
         </InlineField>
       </CollapsableSection>
