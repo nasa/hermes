@@ -219,7 +219,7 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 
 	// Set time grouping interval
 	var intervalExpr string
-	if queryInterval.Milliseconds() >= 1 && qm.Aggregation != "raw" {
+	if queryInterval.Milliseconds() >= 1 && qm.Aggregation != "raw" && qm.Aggregation != "deriv" {
 		queryArgs = append(queryArgs, fmt.Sprintf("%d milliseconds", int(queryInterval.Milliseconds())))
 		intervalExpr = "time_bucket($7::interval, t." + timeColumn + ")"
 	} else {
@@ -247,6 +247,8 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 		aggregationOp = "LAST"
 	case "deriv":
 		aggregationOp = ""
+		stringAggregationOp = ""
+		groupByClause = ""
 	case "sum":
 		aggregationOp = "SUM"
 	case "count":
@@ -363,6 +365,10 @@ func buildResponse(qm queryModel, rows *sql.Rows, response backend.DataResponse)
 		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("telemetry row iteration error: %v", err.Error()))
 	}
 
+	if qm.Aggregation == "deriv" {
+		computeDerivatives(&frames)
+	}
+
 	// Compute minimal display names across all frames
 	keySet := make(map[string]struct{})
 	sourceSet := make(map[string]struct{})
@@ -407,4 +413,60 @@ func buildResponse(qm queryModel, rows *sql.Rows, response backend.DataResponse)
 		return cmp.Compare(a.Name, b.Name)
 	})
 	return response
+}
+
+func computeDerivatives(frames *map[string]*data.Frame) {
+	for _, frame := range *frames {
+		if len(frame.Fields) < 2 {
+			continue
+		}
+
+		timeField := frame.Fields[0]
+		valueField := frame.Fields[1]
+		size := valueField.Len()
+		if size < 2 {
+			continue
+		}
+		if _, ok := valueField.At(0).(*float64); !ok {
+			continue
+		}
+
+		valuesCopy := make([]*float64, size)
+		for i := range size {
+			if val := valueField.At(i); val != nil {
+				valuesCopy[i] = val.(*float64)
+			}
+		}
+
+		deriv := make([]*float64, size)
+		deriv[0] = nil
+
+		for i := range size {
+			// Skip the first one
+			if i == 0 {
+				continue
+			}
+
+			prevTime := timeField.At(i - 1).(time.Time)
+			currTime := timeField.At(i).(time.Time)
+
+			prevVal := valuesCopy[i-1]
+			currVal := valuesCopy[i]
+			if prevVal == nil || currVal == nil {
+				continue
+			}
+
+			timeDelta := currTime.Sub(prevTime).Seconds()
+			if timeDelta == 0 {
+				var zero float64
+				deriv[i] = &zero
+				continue
+			}
+
+			deri := (*currVal - *prevVal) / timeDelta
+			deriv[i] = &deri
+		}
+
+		frame.Fields[1] = data.NewField(valueField.Name, valueField.Labels, deriv)
+	}
 }
