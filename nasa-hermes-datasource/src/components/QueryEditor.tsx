@@ -284,6 +284,15 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
               prefixIcon="channel-add"
             />
           </InlineField>
+          <InlineField label="Aggregation" labelWidth={16} tooltip="Data aggregation method used when the data interval is smaller than the requested interval. The requested interval can be found in the query options at the top of this query." grow shrink>
+            <Combobox
+              options={AGGREGATION_OPTIONS}
+              value={query.aggregation ?? 'avg'}
+              onChange={onAggregationChange}
+              isClearable={false}
+              prefixIcon="calculator-alt"
+            />
+          </InlineField>
           <InlineField label="Source" labelWidth={16} tooltip="FSW source identifier (optional)" grow shrink>
             <MultiCombobox
               id="query-editor-source"
@@ -371,15 +380,6 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
             date={query.timeOverrideTo ? dateTime(query.timeOverrideTo) : undefined}
             onChange={onTimeOverrideToChange}
             clearable
-          />
-        </InlineField>
-        <InlineField label="Aggregation" labelWidth={16} tooltip="Data aggregation method used when the data interval is smaller than the requested interval. The requested interval can be found in the query options at the top of this query.">
-          <Combobox
-            options={AGGREGATION_OPTIONS}
-            value={query.aggregation ?? 'avg'}
-            onChange={onAggregationChange}
-            isClearable={false}
-            prefixIcon="calculator-alt"
           />
         </InlineField>
       </CollapsableSection>
