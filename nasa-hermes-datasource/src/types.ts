@@ -3,7 +3,7 @@ import { DataQuery } from '@grafana/schema';
 
 export type QueryType = 'telemetry' | 'events';
 export type TimeField = 'time' | 'ert';
-export type Aggregation = 'avg' | 'min' | 'max' | 'count';
+export type Aggregation = 'avg' | 'min' | 'max' | 'count' | 'first' | 'last' | 'sum' | 'deriv' | 'raw';
 
 export interface ChannelRef {
   component: string;
