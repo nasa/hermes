@@ -219,7 +219,7 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 
 	// Set time grouping interval
 	var intervalExpr string
-	if queryInterval.Milliseconds() >= 1 {
+	if queryInterval.Milliseconds() >= 1 && qm.Aggregation != "raw" {
 		queryArgs = append(queryArgs, fmt.Sprintf("%d milliseconds", int(queryInterval.Milliseconds())))
 		intervalExpr = "time_bucket($7::interval, t." + timeColumn + ")"
 	} else {
@@ -228,13 +228,27 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 
 	// Data aggregation operations
 	var aggregationOp string
+	stringAggregationOp := "MAX"
+	groupByClause := "GROUP BY time_bucket, d.component, d.name, t.source, t.valueType, t.key"
 	switch qm.Aggregation {
+	case "raw":
+		aggregationOp = ""
+		stringAggregationOp = ""
+		groupByClause = ""
 	case "avg":
 		aggregationOp = "AVG"
 	case "min":
 		aggregationOp = "MIN"
 	case "max":
 		aggregationOp = "MAX"
+	case "first":
+		aggregationOp = "FIRST"
+	case "last":
+		aggregationOp = "LAST"
+	case "deriv":
+		aggregationOp = ""
+	case "sum":
+		aggregationOp = "SUM"
 	case "count":
 		aggregationOp = "COUNT"
 	default:
@@ -253,7 +267,7 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 			%s(t.integral::double precision) AS val_int,
 			%s(t.floating::double precision) AS val_float,
 			%s(t.boolval::int::double precision) AS val_bool,
-			MAX(t.string) AS val_str 
+			%s(t.string) AS val_str 
 		FROM telemetryDefs d
 		JOIN telemetry t ON t.telemetryDefId = d.id
 		WHERE d.component = ANY($1)
@@ -261,8 +275,8 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 		  AND ($3::text[] = '{}' OR t.source = ANY($3))
 		  AND t.%s >= $4 AND t.%s <= $5
 		  AND ($6::text[] = '{}' OR t.key LIKE ANY($6))
-		GROUP BY time_bucket, d.component, d.name, t.source, t.valueType, t.key
-		ORDER BY time_bucket ASC;`, intervalExpr, aggregationOp, aggregationOp, aggregationOp, timeColumn, timeColumn)
+		%s
+		ORDER BY time_bucket ASC;`, intervalExpr, aggregationOp, aggregationOp, aggregationOp, stringAggregationOp, timeColumn, timeColumn, groupByClause)
 
 	// Execute the query
 	rows, err := d.db.QueryContext(ctx, rawSQL, queryArgs...)
