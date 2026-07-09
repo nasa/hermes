@@ -50,10 +50,11 @@ type queryModel struct {
 	QueryType        string       `json:"queryType"`
 	Channels         []channelRef `json:"channels"`
 	Sources          []string     `json:"sources"`
-	TimeOverrideFrom string       `json:"timeOverrideFrom,omitempty"`
-	TimeOverrideTo   string       `json:"timeOverrideTo,omitempty"`
 	Keys             []keyRef     `json:"keys,omitempty"`
 	TimeField        string       `json:"timeField"`
+	TimeOverrideFrom string       `json:"timeOverrideFrom,omitempty"`
+	TimeOverrideTo   string       `json:"timeOverrideTo,omitempty"`
+	Aggregation      string       `json:"aggregation,omitempty"`
 }
 
 func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, query backend.DataQuery) backend.DataResponse {
@@ -225,6 +226,21 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 		intervalExpr = "t." + timeColumn
 	}
 
+	// Data aggregation operations
+	var aggregationOp string
+	switch qm.Aggregation {
+	case "avg":
+		aggregationOp = "AVG"
+	case "min":
+		aggregationOp = "MIN"
+	case "max":
+		aggregationOp = "MAX"
+	case "count":
+		aggregationOp = "COUNT"
+	default:
+		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("invalid data aggregation type: %s", qm.Aggregation))
+	}
+
 	// TODO: also consider having valueType in telemetryDefs instead of telemetry
 	rawSQL := fmt.Sprintf(`
 		SELECT
@@ -234,9 +250,9 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 			t.source,
 			t.valueType,
 			t.key,
-			AVG(t.integral::double precision) AS val_int,
-			AVG(t.floating::double precision) AS val_float,
-			AVG(t.boolval::int::double precision) AS val_bool,
+			%s(t.integral::double precision) AS val_int,
+			%s(t.floating::double precision) AS val_float,
+			%s(t.boolval::int::double precision) AS val_bool,
 			MAX(t.string) AS val_str 
 		FROM telemetryDefs d
 		JOIN telemetry t ON t.telemetryDefId = d.id
@@ -246,7 +262,7 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 		  AND t.%s >= $4 AND t.%s <= $5
 		  AND ($6::text[] = '{}' OR t.key LIKE ANY($6))
 		GROUP BY time_bucket, d.component, d.name, t.source, t.valueType, t.key
-		ORDER BY time_bucket ASC;`, intervalExpr, timeColumn, timeColumn)
+		ORDER BY time_bucket ASC;`, intervalExpr, aggregationOp, aggregationOp, aggregationOp, timeColumn, timeColumn)
 
 	// Execute the query
 	rows, err := d.db.QueryContext(ctx, rawSQL, queryArgs...)

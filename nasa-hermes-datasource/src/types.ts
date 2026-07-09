@@ -3,6 +3,7 @@ import { DataQuery } from '@grafana/schema';
 
 export type QueryType = 'telemetry' | 'events';
 export type TimeField = 'time' | 'ert';
+export type Aggregation = 'avg' | 'min' | 'max' | 'count';
 
 export interface ChannelRef {
   component: string;
@@ -23,9 +24,10 @@ export interface MyQuery extends DataQuery {
   timeField?: TimeField;
   timeOverrideFrom?: string;
   timeOverrideTo?: string;
+  aggregation: Aggregation;
 }
 
-export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], timeField: 'time' };
+export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], timeField: 'time', aggregation: 'avg' };
 
 /**
  * These are options configured for each DataSource instance

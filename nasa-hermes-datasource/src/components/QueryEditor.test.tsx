@@ -40,7 +40,7 @@ function buildProps(
   overrides?: Partial<QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>>
 ): QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions> {
   return {
-    query: { refId: 'A', queryType: 'telemetry', channels: [], sources: [], keys: [] } as MyQuery,
+    query: { refId: 'A', queryType: 'telemetry', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
     onChange: jest.fn(),
     onRunQuery: jest.fn(),
     datasource: mockDatasource(),
@@ -71,7 +71,7 @@ describe('QueryEditor — Telemetry', () => {
       <QueryEditor
         {...buildProps({
           datasource: ds,
-          query: { refId: 'A', queryType: 'telemetry', channels: [ch('CDH', 'Temperature')], sources: [], keys: [] } as MyQuery,
+          query: { refId: 'A', queryType: 'telemetry', channels: [ch('CDH', 'Temperature')], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
@@ -89,7 +89,7 @@ describe('QueryEditor — Telemetry', () => {
       <QueryEditor
         {...buildProps({
           datasource: ds,
-          query: { refId: 'A', queryType: 'telemetry', channels: [ch('CDH', 'Temperature')], sources: [], keys: [] } as MyQuery,
+          query: { refId: 'A', queryType: 'telemetry', channels: [ch('CDH', 'Temperature')], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
@@ -125,7 +125,7 @@ describe('QueryEditor — Telemetry', () => {
       <QueryEditor
         {...buildProps({
           datasource: ds,
-          query: { refId: 'A', queryType: 'telemetry', channels: [ch('CDH', 'Temperature')], sources: [], keys: [] } as MyQuery,
+          query: { refId: 'A', queryType: 'telemetry', channels: [ch('CDH', 'Temperature')], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
@@ -164,6 +164,7 @@ describe('QueryEditor — Telemetry', () => {
             channels: [ch('CDH', 'Attitude')],
             sources: ['fsw-1'],
             keys: [{ component: 'CDH', channel: 'Attitude', key: 'value.x' }],
+            aggregation: 'avg',
           } as MyQuery,
         })}
       />
@@ -195,6 +196,7 @@ describe('QueryEditor — Telemetry', () => {
             channels: [ch('CDH', 'Attitude'), ch('Sensors', 'IMU')],
             sources: [],
             keys: [],
+            aggregation: 'avg',
           } as MyQuery,
         })}
       />
@@ -224,6 +226,7 @@ describe('QueryEditor — Telemetry', () => {
             channels: [ch('CDH', 'Attitude'), ch('CDH', 'Temperature')],
             sources: [],
             keys: [],
+            aggregation: 'avg',
           } as MyQuery,
         })}
       />
@@ -266,7 +269,7 @@ describe('QueryEditor — Events', () => {
     render(
       <QueryEditor
         {...buildProps({
-          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [] } as MyQuery,
+          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
@@ -280,7 +283,7 @@ describe('QueryEditor — Events', () => {
     render(
       <QueryEditor
         {...buildProps({
-          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [] } as MyQuery,
+          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
@@ -294,7 +297,7 @@ describe('QueryEditor — Events', () => {
       <QueryEditor
         {...buildProps({
           datasource: ds,
-          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [] } as MyQuery,
+          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
@@ -310,7 +313,7 @@ describe('QueryEditor — Events', () => {
       <QueryEditor
         {...buildProps({
           datasource: ds,
-          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [] } as MyQuery,
+          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
@@ -334,6 +337,7 @@ describe('QueryEditor — Events', () => {
             channels: [],
             sources: ['fsw-1'],
             keys: [],
+            aggregation: 'avg',
           } as MyQuery,
         })}
       />
@@ -350,7 +354,7 @@ describe('QueryEditor — Events', () => {
       <QueryEditor
         {...buildProps({
           datasource: ds,
-          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [] } as MyQuery,
+          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
@@ -378,6 +382,7 @@ describe('QueryEditor — Multi-select', () => {
             channels: [ch('CDH', 'Temperature'), ch('CDH', 'Voltage')],
             sources: [],
             keys: [],
+            aggregation: 'avg',
           } as MyQuery,
         })}
       />
@@ -400,6 +405,7 @@ describe('QueryEditor — Multi-select', () => {
             channels: [ch('CDH', 'Temperature')],
             sources: ['fsw-1', 'fsw-2'],
             keys: [],
+            aggregation: 'avg',
           } as MyQuery,
         })}
       />
@@ -435,6 +441,7 @@ describe('QueryEditor — Time field toggle', () => {
             sources: [],
             keys: [],
             timeField: 'ert',
+            aggregation: 'avg',
           } as MyQuery,
         })}
       />
@@ -447,7 +454,7 @@ describe('QueryEditor — Time field toggle', () => {
     render(
       <QueryEditor
         {...buildProps({
-          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [] } as MyQuery,
+          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );

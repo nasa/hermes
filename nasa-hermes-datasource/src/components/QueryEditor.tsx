@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { CollapsableSection, ComboboxOption, DateTimePicker, InlineField, MultiCombobox, RadioButtonGroup } from '@grafana/ui';
+import { CollapsableSection, Combobox, ComboboxOption, DateTimePicker, InlineField, MultiCombobox, RadioButtonGroup } from '@grafana/ui';
 import { dateTime, DateTime, QueryEditorProps, SelectableValue } from '@grafana/data';
 import { DataSource } from '../datasource';
-import { ChannelRef, KeyRef, MyDataSourceOptions, MyQuery, QueryType, TimeField } from '../types';
+import { Aggregation, ChannelRef, KeyRef, MyDataSourceOptions, MyQuery, QueryType, TimeField } from '../types';
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
@@ -14,6 +14,13 @@ const QUERY_TYPE_OPTIONS: Array<SelectableValue<QueryType>> = [
 const TIME_FIELD_OPTIONS: Array<SelectableValue<TimeField>> = [
   { label: 'Receive Time', value: 'ert' },
   { label: 'On-board Time', value: 'time' },
+];
+
+const AGGREGATION_OPTIONS: Array<ComboboxOption<Aggregation>> = [
+  { label: 'Average', value: 'avg' },
+  { label: 'Min', value: 'min' },
+  { label: 'Max', value: 'max' },
+  { label: 'Count', value: 'count' },
 ];
 
 function toOptions(values: string[]): Array<ComboboxOption<string>> {
@@ -156,6 +163,11 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
 
   const onTimeOverrideToChange = (date?: DateTime) => {
     onChange({ ...query, timeOverrideTo: date ? date.toISOString() : undefined });
+    onRunQuery();
+  };
+
+  const onAggregationChange = (option: ComboboxOption<Aggregation>) => {
+    onChange({ ...query, aggregation: option.value });
     onRunQuery();
   };
 
@@ -342,19 +354,27 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
           fullWidth={false}
         />
       </div>
-      <CollapsableSection label="Time override" isOpen={false}>
-        <InlineField label="From" labelWidth={16} tooltip="Absolute start time (optional)">
+      <CollapsableSection label="Advanced" isOpen={false}>
+        <InlineField label="From Override" labelWidth={16} tooltip="Absolute start time (optional)">
           <DateTimePicker
             date={query.timeOverrideFrom ? dateTime(query.timeOverrideFrom) : undefined}
             onChange={onTimeOverrideFromChange}
             clearable
           />
         </InlineField>
-        <InlineField label="To" labelWidth={16} tooltip="Absolute end time (optional)">
+        <InlineField label="To Override" labelWidth={16} tooltip="Absolute end time (optional)">
           <DateTimePicker
             date={query.timeOverrideTo ? dateTime(query.timeOverrideTo) : undefined}
             onChange={onTimeOverrideToChange}
             clearable
+          />
+        </InlineField>
+        <InlineField label="Aggregation" labelWidth={16} tooltip="Data aggregation method used when the data interval is smaller than the requested interval. The requested interval can be found in the query options at the top of this query.">
+          <Combobox
+            options={AGGREGATION_OPTIONS}
+            value={query.aggregation ?? 'avg'}
+            onChange={onAggregationChange}
+            isClearable={false}
           />
         </InlineField>
       </CollapsableSection>

@@ -43,7 +43,8 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       })),
       timeOverrideFrom: query.timeOverrideFrom,
       timeOverrideTo: query.timeOverrideTo,
-      timeField: query.timeField ?? 'time'
+      timeField: query.timeField ?? 'time',
+      aggregation: query.aggregation ?? 'avg',
     };
   }
 
