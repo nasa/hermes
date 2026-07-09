@@ -20,14 +20,30 @@ var (
 //go:embed schema.json
 var schema string
 
+var uiSchema = `{"ui:order": ["host", "user", "password", "database", "events", "telemetry"]}`
+
 //go:embed schema.sql
 var schemaSql string
 
 type Params struct {
-	Host     string `json:"host"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-	Database string `json:"database"`
+	Host      string `json:"host"`
+	User      string `json:"user"`
+	Password  string `json:"password"`
+	Database  string `json:"database"`
+	Events    *bool  `json:"events,omitempty"`
+	Telemetry *bool  `json:"telemetry,omitempty"`
+}
+
+// EventsEnabled reports whether events should be pushed. Profiles saved
+// before this option existed have no key and must stay enabled.
+func (p Params) EventsEnabled() bool {
+	return p.Events == nil || *p.Events
+}
+
+// TelemetryEnabled reports whether telemetry should be pushed. Profiles
+// saved before this option existed have no key and must stay enabled.
+func (p Params) TelemetryEnabled() bool {
+	return p.Telemetry == nil || *p.Telemetry
 }
 
 type timescaleDbProvider struct{}
@@ -71,19 +87,27 @@ func (t *timescaleDbProvider) Start(
 
 	session.Started()
 
-	session.Log().Info("creating event bus listener to push to timescaledb")
-	host.Event.On(ctx, func(msg *pb.SourcedEvent) {
-		if err := InsertEvent(ctx, db, msg); err != nil {
-			session.Log().Error("failed to insert event to timescaledb", "err", err)
-		}
-	})
+	if settings.EventsEnabled() {
+		session.Log().Info("creating event bus listener to push to timescaledb")
+		host.Event.On(ctx, func(msg *pb.SourcedEvent) {
+			if err := InsertEvent(ctx, db, msg); err != nil {
+				session.Log().Error("failed to insert event to timescaledb", "err", err)
+			}
+		})
+	} else {
+		session.Log().Info("event logging to timescaledb is disabled by profile settings")
+	}
 
-	session.Log().Info("creating telemetry bus listener to push to timescaledb")
-	host.Telemetry.On(ctx, func(msg *pb.SourcedTelemetry) {
-		if err := InsertTelemetry(ctx, db, msg); err != nil {
-			session.Log().Error("failed to insert telemetry to timescaledb", "err", err)
-		}
-	})
+	if settings.TelemetryEnabled() {
+		session.Log().Info("creating telemetry bus listener to push to timescaledb")
+		host.Telemetry.On(ctx, func(msg *pb.SourcedTelemetry) {
+			if err := InsertTelemetry(ctx, db, msg); err != nil {
+				session.Log().Error("failed to insert telemetry to timescaledb", "err", err)
+			}
+		})
+	} else {
+		session.Log().Info("telemetry logging to timescaledb is disabled by profile settings")
+	}
 
 	<-ctx.Done()
 	return nil
@@ -94,7 +118,7 @@ func Init() error {
 		"TimescaleDB",
 		&timescaleDbProvider{},
 		schema,
-		`{"ui:order": ["host", "user", "password", "database"]}`,
+		uiSchema,
 	)
 
 	if err != nil {
