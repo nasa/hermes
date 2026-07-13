@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { css } from '@emotion/css';
-import { ConfirmModal } from '@grafana/ui';
-import { dateTime, QueryEditorProps } from '@grafana/data';
+import { ConfirmModal, RadioButtonGroup } from '@grafana/ui';
+import { dateTime, QueryEditorProps, SelectableValue } from '@grafana/data';
 import { DataSource } from '../datasource';
 import { MyDataSourceOptions, MyQuery, withDefaults } from '../types';
 import { BuilderEditor } from './BuilderEditor';
@@ -9,6 +9,11 @@ import { SqlEditor } from './SqlEditor';
 import { buildQuery } from '../query';
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
+
+const EDITOR_MODE_OPTIONS: Array<SelectableValue<string>> = [
+  { label: 'Builder', value: 'builder' },
+  { label: 'Code', value: 'code' },
+];
 
 export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: Props) {
   const [editorMode, setEditorMode] = useState<string>('builder');
@@ -35,14 +40,23 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
 
   return (
     <>
+      <div style={{ marginTop: 8, marginBottom: 8 }}>
+        <RadioButtonGroup
+          id="query-editor-editor-mode"
+          options={EDITOR_MODE_OPTIONS}
+          value={editorMode}
+          onChange={onEditorModeChange}
+          size="sm"
+          fullWidth={true}
+        />
+      </div>
+
       {editorMode === 'builder' && (
         <BuilderEditor
           query={query}
           onChange={onChange}
           onRunQuery={onRunQuery}
           datasource={datasource}
-          editorMode={editorMode}
-          onEditorModeChange={onEditorModeChange}
         />
       )}
 
@@ -51,8 +65,6 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
           query={query}
           onChange={onChange}
           onRunQuery={onRunQuery}
-          editorMode={editorMode}
-          onEditorModeChange={onEditorModeChange}
         />
       )}
 

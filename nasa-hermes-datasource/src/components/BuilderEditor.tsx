@@ -11,8 +11,6 @@ interface BuilderEditorProps {
   onChange: (query: MyQuery) => void;
   onRunQuery: () => void;
   datasource: DataSource;
-  editorMode: string;
-  onEditorModeChange: (mode: string) => void;
 }
 
 const QUERY_TYPE_OPTIONS: Array<SelectableValue<QueryType>> = [
@@ -25,12 +23,7 @@ const TIME_FIELD_OPTIONS: Array<SelectableValue<TimeField>> = [
   { label: 'On-board Time', value: 'time' },
 ];
 
-const EDITOR_MODE_OPTIONS: Array<SelectableValue<string>> = [
-  { label: 'Builder', value: 'builder' },
-  { label: 'Code', value: 'code' },
-];
-
-export function BuilderEditor({ query, onChange, onRunQuery, datasource, editorMode, onEditorModeChange }: BuilderEditorProps) {
+export function BuilderEditor({ query, onChange, onRunQuery, datasource }: BuilderEditorProps) {
   const queryType = query.queryType ?? 'telemetry';
 
   const onQueryTypeChange = (value: QueryType) => {
@@ -64,17 +57,6 @@ export function BuilderEditor({ query, onChange, onRunQuery, datasource, editorM
 
   return (
     <>
-      <div style={{ marginTop: 8, marginBottom: 8 }}>
-        <RadioButtonGroup
-          id="query-editor-query-type"
-          options={QUERY_TYPE_OPTIONS}
-          value={queryType}
-          onChange={onQueryTypeChange}
-          size="sm"
-          fullWidth={true}
-        />
-      </div>
-
       {queryType === 'telemetry' && (
         <TelemetryFields
           query={query}
@@ -103,10 +85,10 @@ export function BuilderEditor({ query, onChange, onRunQuery, datasource, editorM
           fullWidth={false}
         />
         <RadioButtonGroup
-          id="query-editor-editor-mode"
-          options={EDITOR_MODE_OPTIONS}
-          value={editorMode}
-          onChange={onEditorModeChange}
+          id="query-editor-query-type"
+          options={QUERY_TYPE_OPTIONS}
+          value={queryType}
+          onChange={onQueryTypeChange}
           size="sm"
           fullWidth={false}
         />
