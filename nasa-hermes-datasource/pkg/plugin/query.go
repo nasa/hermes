@@ -116,7 +116,7 @@ func (d *Datasource) handleGetQueryRaw(w http.ResponseWriter, r *http.Request) {
 
 	switch qm.QueryType {
 	case "events":
-		queryArgs, eventSQL := queryEventsBuildSql(qm, queryFrom, queryTo, timeColumn)
+		eventSQL, queryArgs := queryEventsBuildSql(qm, queryFrom, queryTo, timeColumn)
 		writeJSONResponse(w, map[string]any{
 			"sql":  eventSQL,
 			"args": queryArgs,
@@ -356,10 +356,10 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 	}
 	defer func() { _ = rows.Close() }()
 
-	return buildResponse(qm, rows, backend.DataResponse{})
+	return buildResponse(qm, rows)
 }
 
-func buildResponse(qm queryModel, rows *sql.Rows, response backend.DataResponse) backend.DataResponse {
+func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 	frames := make(map[string]*data.Frame)
 
 	for rows.Next() {
@@ -456,6 +456,7 @@ func buildResponse(qm queryModel, rows *sql.Rows, response backend.DataResponse)
 	multiSource := len(sourceSet) > 1
 
 	// Return all data frames with display names
+	var response backend.DataResponse
 	for _, frame := range frames {
 		var frameName string
 		for _, field := range frame.Fields {
