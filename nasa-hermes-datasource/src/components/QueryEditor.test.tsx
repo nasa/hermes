@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryEditor } from './QueryEditor';
 import { DataSource } from '../datasource';
-import { ChannelRef, MyDataSourceOptions, MyQuery } from '../types';
+import { ChannelRef, DEFAULT_QUERY, MyDataSourceOptions, MyQuery, withDefaults } from '../types';
 import { QueryEditorProps } from '@grafana/data';
 
 beforeAll(() => {
@@ -413,6 +413,30 @@ describe('QueryEditor — Multi-select', () => {
 
     // MultiCombobox in jsdom may only render visible pills
     expect(screen.getByText('fsw-1')).toBeInTheDocument();
+  });
+});
+
+describe('withDefaults', () => {
+  it('fills in default timeField as ert (Receive Time)', () => {
+    const q = withDefaults({ refId: 'A', channels: [], sources: [], keys: [] } as unknown as MyQuery);
+    expect(q.timeField).toBe('ert');
+  });
+
+  it('fills in default queryType and aggregation', () => {
+    const q = withDefaults({ refId: 'A', channels: [], sources: [], keys: [] } as unknown as MyQuery);
+    expect(q.queryType).toBe('telemetry');
+    expect(q.aggregation).toBe('avg');
+  });
+
+  it('preserves explicit values', () => {
+    const q = withDefaults({ refId: 'A', queryType: 'events', timeField: 'time', aggregation: 'max', channels: [], sources: [], keys: [] } as MyQuery);
+    expect(q.queryType).toBe('events');
+    expect(q.timeField).toBe('time');
+    expect(q.aggregation).toBe('max');
+  });
+
+  it('DEFAULT_QUERY timeField matches UI default (ert)', () => {
+    expect(DEFAULT_QUERY.timeField).toBe('ert');
   });
 });
 

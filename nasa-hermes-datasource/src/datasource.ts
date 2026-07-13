@@ -1,7 +1,7 @@
 import { DataQueryRequest, DataSourceInstanceSettings, CoreApp, ScopedVars } from '@grafana/data';
 import { DataSourceWithBackend, getTemplateSrv } from '@grafana/runtime';
 import { map } from 'rxjs/operators';
-import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, ChannelRef, KeyRef } from './types';
+import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, ChannelRef, KeyRef, withDefaults } from './types';
 import { buildQuery } from 'query';
 
 export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptions> {
@@ -12,9 +12,8 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
   query(request: DataQueryRequest<MyQuery>) {
     // Build raw SQL for each target if not already provided
     request.targets.forEach((target) => {
-      target.queryType = target.queryType ?? 'telemetry';
-      target.timeField = target.timeField ?? 'time';
-      target.aggregation = target.aggregation ?? 'avg';
+      const filled = withDefaults(target);
+      Object.assign(target, filled);
       if (!target.rawSql) {
         target.rawSql = buildQuery(target, request);
       }
@@ -81,12 +80,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
   }
 
   async getRawSql(query: MyQuery): Promise<string> {
-    const result = await this.postResource('query/raw', {
-      ...query,
-      queryType: query.queryType ?? 'telemetry',
-      timeField: query.timeField ?? 'time',
-      aggregation: query.aggregation ?? 'avg',
-    }) as { sql?: string };
+    const result = await this.postResource('query/raw', withDefaults(query)) as { sql?: string };
     return result.sql ?? '';
   }
 }
