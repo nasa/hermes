@@ -79,7 +79,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	if qm.RawSql != nil {
 		querySQL = *qm.RawSql
 	} else {
-		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid query: %s", *qm.RawSql))
+		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("rawSql is required for query type: %s", qm.QueryType))
 	}
 
 	if strings.Contains(querySQL, "$__interval") {
