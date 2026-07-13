@@ -12,6 +12,7 @@ import (
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
+	"github.com/grafana/grafana-plugin-sdk-go/data/sqlutil"
 )
 
 // QueryData handles multiple queries and returns multiple responses.
@@ -89,6 +90,8 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		return d.queryEvents(ctx, pCtx, qm, querySQL)
 	case "telemetry":
 		return d.queryTelemetry(ctx, pCtx, qm, querySQL)
+	case "raw":
+		return d.queryRaw(ctx, pCtx, querySQL)
 	}
 	return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid query type: %s", qm.QueryType))
 }
@@ -340,4 +343,22 @@ func computeDerivatives(frames *map[string]*data.Frame) {
 
 		frame.Fields[1] = data.NewField(valueField.Name, valueField.Labels, deriv)
 	}
+}
+
+func (d *Datasource) queryRaw(ctx context.Context, _ backend.PluginContext, eventSQL string) backend.DataResponse {
+	rows, err := d.db.QueryContext(ctx, eventSQL)
+	if err != nil {
+		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("events query execution failed: %v", err.Error()))
+	}
+	defer func() { _ = rows.Close() }()
+
+	frame, err := sqlutil.FrameFromRows(rows, -1)
+	if err != nil {
+		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("failed to parse rows to frame: %v", err.Error()))
+	}
+	frame.Name = "Raw Data"
+
+	var response backend.DataResponse
+	response.Frames = append(response.Frames, frame)
+	return response
 }
