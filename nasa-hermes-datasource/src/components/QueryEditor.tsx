@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CollapsableSection, Combobox, ComboboxOption, DateTimePicker, InlineField, MultiCombobox, RadioButtonGroup } from '@grafana/ui';
+import { CodeEditor, CollapsableSection, Combobox, ComboboxOption, DateTimePicker, InlineField, MultiCombobox, RadioButtonGroup } from '@grafana/ui';
 import { dateTime, DateTime, QueryEditorProps, SelectableValue } from '@grafana/data';
 import { DataSource } from '../datasource';
 import { Aggregation, ChannelRef, KeyRef, MyDataSourceOptions, MyQuery, QueryType, TimeField } from '../types';
@@ -14,6 +14,11 @@ const QUERY_TYPE_OPTIONS: Array<SelectableValue<QueryType>> = [
 const TIME_FIELD_OPTIONS: Array<SelectableValue<TimeField>> = [
   { label: 'Receive Time', value: 'ert' },
   { label: 'On-board Time', value: 'time' },
+];
+
+const EDITOR_MODE_OPTIONS: Array<SelectableValue<string>> = [
+  { label: 'Builder', value: 'builder' },
+  { label: 'Code', value: 'code' },
 ];
 
 const AGGREGATION_OPTIONS: Array<ComboboxOption<Aggregation>> = [
@@ -103,6 +108,9 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
   const [eventSourceOptions, setEventSourceOptions] = useState<Array<ComboboxOption<string>>>([]);
   const [eventSourceLoading, setEventSourceLoading] = useState(false);
 
+  // Editor mode state
+  const [editorMode, setEditorMode] = useState<string>('builder');
+
   // --- Handlers ---
 
   const onQueryTypeChange = (value: QueryType) => {
@@ -174,6 +182,16 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
   const onAggregationChange = (option: ComboboxOption<Aggregation>) => {
     onChange({ ...query, aggregation: option.value });
     onRunQuery();
+  };
+
+  const onEditorModeChange = (mode: string) => {
+    setEditorMode(mode);
+    if (mode === 'code') {
+      datasource
+        .getRawSql(query)
+        .then((sql) => onChange({ ...query, rawSql: sql }))
+        .catch(() => {});
+    }
   };
 
   // --- Telemetry data loading ---
@@ -275,7 +293,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
         />
       </div>
 
-      {queryType === 'telemetry' && (
+      {editorMode === 'builder' && queryType === 'telemetry' && (
         <>
           <InlineField label="Channel" labelWidth={16} tooltip="Telemetry channel name" grow shrink required>
             <MultiCombobox
@@ -344,7 +362,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
         </>
       )}
 
-      {queryType === 'events' && (
+      {editorMode === 'builder' && queryType === 'events' && (
         <>
           <InlineField label="Source" labelWidth={16} tooltip="FSW source identifier (optional)" grow shrink>
             <MultiCombobox
@@ -362,12 +380,35 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
         </>
       )}
 
-      <div style={{ marginTop: 8, marginBottom: 8 }}>
+      {editorMode === 'code' && (
+        <CodeEditor
+          value={query.rawSql ?? ''}
+          language="sql"
+          height={200}
+          showMiniMap={false}
+          showLineNumbers={true}
+          onChange={(value) => onChange({ ...query, rawSql: value })}
+          onBlur={(value) => {
+            onChange({ ...query, rawSql: value });
+            onRunQuery();
+          }}
+        />
+      )}
+
+      <div style={{ marginTop: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <RadioButtonGroup
           id="query-editor-time-field"
           options={TIME_FIELD_OPTIONS}
           value={query.timeField ?? 'ert'}
           onChange={onTimeFieldChange}
+          size="sm"
+          fullWidth={false}
+        />
+        <RadioButtonGroup
+          id="query-editor-editor-mode"
+          options={EDITOR_MODE_OPTIONS}
+          value={editorMode}
+          onChange={onEditorModeChange}
           size="sm"
           fullWidth={false}
         />

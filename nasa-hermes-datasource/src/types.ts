@@ -25,6 +25,7 @@ export interface MyQuery extends DataQuery {
   timeOverrideFrom?: string;
   timeOverrideTo?: string;
   aggregation: Aggregation;
+  rawSql?: string;
 }
 
 export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], timeField: 'time', aggregation: 'avg' };

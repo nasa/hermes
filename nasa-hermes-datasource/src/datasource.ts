@@ -74,4 +74,10 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
   async getEventSources(): Promise<string[]> {
     return this.getResource('events/sources');
   }
+
+  // Raw SQL generation
+  async getRawSql(query: MyQuery): Promise<string> {
+    const result = await this.postResource('query/raw', query) as { sql?: string };
+    return result.sql ?? '';
+  }
 }
