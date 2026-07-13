@@ -390,7 +390,9 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
 
       {editorMode === 'code' && (
         <>
-          <div style={{ marginTop: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+          <div style={{ marginTop: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <span style={{ fontWeight: 500 }}>Manual query editor</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Button variant="primary" size="sm" icon="play" onClick={onRunQuery}>
               Run query
             </Button>
@@ -402,6 +404,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
               size="sm"
               fullWidth={false}
             />
+            </div>
           </div>
           <CodeEditor
             value={query.rawSql ?? ''}
