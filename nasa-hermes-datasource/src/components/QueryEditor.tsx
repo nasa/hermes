@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { css } from '@emotion/css';
-import { CodeEditor, CollapsableSection, Combobox, ComboboxOption, ConfirmModal, DateTimePicker, InlineField, MultiCombobox, RadioButtonGroup } from '@grafana/ui';
+import { Button, CodeEditor, CollapsableSection, Combobox, ComboboxOption, ConfirmModal, DateTimePicker, InlineField, MultiCombobox, RadioButtonGroup } from '@grafana/ui';
 import { dateTime, DateTime, QueryEditorProps, SelectableValue } from '@grafana/data';
 import { DataSource } from '../datasource';
 import { Aggregation, ChannelRef, KeyRef, MyDataSourceOptions, MyQuery, QueryType, TimeField } from '../types';
@@ -389,22 +389,37 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
       )}
 
       {editorMode === 'code' && (
-        <CodeEditor
-          value={query.rawSql ?? ''}
-          language="sql"
-          height={200}
-          showMiniMap={false}
-          showLineNumbers={true}
-          onChange={(value) => onChange({ ...query, rawSql: value })}
-          onBlur={(value) => {
-            onChange({ ...query, rawSql: value });
-            onRunQuery();
-          }}
-        />
+        <>
+          <div style={{ marginTop: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+            <Button variant="primary" size="sm" icon="play" onClick={onRunQuery}>
+              Run query
+            </Button>
+            <RadioButtonGroup
+              id="query-editor-editor-mode-code"
+              options={EDITOR_MODE_OPTIONS}
+              value={editorMode}
+              onChange={onEditorModeChange}
+              size="sm"
+              fullWidth={false}
+            />
+          </div>
+          <CodeEditor
+            value={query.rawSql ?? ''}
+            language="sql"
+            height={200}
+            showMiniMap={false}
+            showLineNumbers={true}
+            onChange={(value) => onChange({ ...query, rawSql: value })}
+            onBlur={(value) => {
+              onChange({ ...query, rawSql: value });
+              onRunQuery();
+            }}
+          />
+        </>
       )}
 
-      <div style={{ marginTop: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: editorMode === 'builder' ? 'space-between' : 'flex-end' }}>
-        {editorMode === 'builder' && (
+      {editorMode === 'builder' && (
+        <div style={{ marginTop: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <RadioButtonGroup
             id="query-editor-time-field"
             options={TIME_FIELD_OPTIONS}
@@ -413,16 +428,16 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
             size="sm"
             fullWidth={false}
           />
-        )}
-        <RadioButtonGroup
-          id="query-editor-editor-mode"
-          options={EDITOR_MODE_OPTIONS}
-          value={editorMode}
-          onChange={onEditorModeChange}
-          size="sm"
-          fullWidth={false}
-        />
-      </div>
+          <RadioButtonGroup
+            id="query-editor-editor-mode"
+            options={EDITOR_MODE_OPTIONS}
+            value={editorMode}
+            onChange={onEditorModeChange}
+            size="sm"
+            fullWidth={false}
+          />
+        </div>
+      )}
       {editorMode === 'builder' && (
         <CollapsableSection label="Advanced" isOpen={false}>
           <InlineField label="From Override" labelWidth={16} tooltip="Absolute start time (optional)">
