@@ -79,6 +79,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       ...query,
       queryType: query.queryType ?? 'telemetry',
       timeField: query.timeField ?? 'time',
+      aggregation: query.aggregation ?? 'avg',
     }) as { sql?: string };
     return result.sql ?? '';
   }
