@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"slices"
 	"strings"
 	"time"
@@ -55,17 +56,88 @@ type queryModel struct {
 	TimeOverrideFrom string       `json:"timeOverrideFrom,omitempty"`
 	TimeOverrideTo   string       `json:"timeOverrideTo,omitempty"`
 	Aggregation      string       `json:"aggregation,omitempty"`
+	RawSql           *string      `json:"rawSql,omitempty"`
 }
 
 func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, query backend.DataQuery) backend.DataResponse {
 	// Unmarshal the JSON into our queryModel.
 	var qm queryModel
 
-	err := json.Unmarshal(query.JSON, &qm)
-	if err != nil {
+	if err := json.Unmarshal(query.JSON, &qm); err != nil {
 		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("json unmarshal: %v", err.Error()))
 	}
 
+	queryFrom, queryTo, timeColumn, err := queryComputeCommonArgs(query, qm)
+	if err != nil {
+		return backend.ErrDataResponse(backend.StatusBadRequest, err.Error())
+	}
+
+	var querySQL string
+	var queryArgs []any
+	if qm.RawSql == nil {
+		switch qm.QueryType {
+		case "events":
+			querySQL, queryArgs = queryEventsBuildSql(qm, queryFrom, queryTo, timeColumn)
+		case "telemetry":
+			querySQL, queryArgs, err = queryTelemetryBuildSql(qm, queryFrom, queryTo, query.Interval, timeColumn)
+			if err != nil {
+				return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("query telemetry build sql: %v", err.Error()))
+			}
+		default:
+			return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid query type: %s", qm.QueryType))
+		}
+	} else {
+		querySQL = *qm.RawSql
+		queryArgs = nil
+	}
+
+	switch qm.QueryType {
+	case "events":
+		return d.queryEvents(ctx, pCtx, querySQL, queryArgs, timeColumn)
+	case "telemetry":
+		return d.queryTelemetry(ctx, pCtx, qm, querySQL, queryArgs, timeColumn, query.Interval)
+	}
+	return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid query type: %s", qm.QueryType))
+}
+
+// Returns the raw SQL query string.
+func (d *Datasource) handleGetQueryRaw(w http.ResponseWriter, r *http.Request) {
+	var qm queryModel
+	if err := json.NewDecoder(r.Body).Decode(&qm); err != nil {
+		http.Error(w, fmt.Sprintf("json unmarshal: %v", err.Error()), http.StatusBadRequest)
+		return
+	}
+
+	queryFrom, queryTo, timeColumn, err := queryComputeCommonArgs(backend.DataQuery{}, qm)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("query compute common args: %v", err.Error()), http.StatusBadRequest)
+		return
+	}
+
+	switch qm.QueryType {
+	case "events":
+		eventSQL, queryArgs := queryEventsBuildSql(qm, queryFrom, queryTo, timeColumn)
+		writeJSONResponse(w, map[string]any{
+			"sql":  eventSQL,
+			"args": queryArgs,
+		})
+	case "telemetry":
+		rawSQL, queryArgs, err := queryTelemetryBuildSql(qm, queryFrom, queryTo, 0, timeColumn)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("query telemetry build sql: %v", err.Error()), http.StatusBadRequest)
+			return
+		}
+		writeJSONResponse(w, map[string]any{
+			"sql":  rawSQL,
+			"args": queryArgs,
+		})
+	default:
+		http.Error(w, fmt.Sprintf("invalid query type: %s", qm.QueryType), http.StatusBadRequest)
+	}
+}
+
+// Compute the args necessary for the query before passing it to event or telemetry specific query functions.
+func queryComputeCommonArgs(query backend.DataQuery, qm queryModel) (time.Time, time.Time, string, error) {
 	queryFrom := query.TimeRange.From
 	queryTo := query.TimeRange.To
 	if qm.TimeOverrideFrom != "" {
@@ -86,16 +158,9 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	case "ert":
 		timeColumn = "ert"
 	default:
-		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid time type: %s", qm.TimeField))
+		return time.Time{}, time.Time{}, "", fmt.Errorf("invalid time type: %s", qm.TimeField)
 	}
-
-	switch qm.QueryType {
-	case "events":
-		return d.queryEvents(ctx, pCtx, qm, queryFrom, queryTo, timeColumn)
-	case "telemetry":
-		return d.queryTelemetry(ctx, pCtx, qm, queryFrom, queryTo, timeColumn, query.Interval)
-	}
-	return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid query type: %s", qm.QueryType))
+	return queryFrom, queryTo, timeColumn, nil
 }
 
 var severityLabels = map[int64]string{
@@ -115,9 +180,7 @@ func severityLabel(sev int64) string {
 	return fmt.Sprintf("UNKNOWN(%d)", sev)
 }
 
-func (d *Datasource) queryEvents(ctx context.Context, _ backend.PluginContext, qm queryModel, queryFrom time.Time, queryTo time.Time, timeColumn string) backend.DataResponse {
-	var response backend.DataResponse
-
+func queryEventsBuildSql(qm queryModel, queryFrom time.Time, queryTo time.Time, timeColumn string) (string, []any) {
 	queryArgs := []any{
 		pq.Array(qm.Sources),
 		queryFrom,
@@ -139,7 +202,10 @@ func (d *Datasource) queryEvents(ctx context.Context, _ backend.PluginContext, q
 		  AND e.%s >= $2
 		  AND e.%s <= $3
 		ORDER BY e.%s ASC;`, timeColumn, timeColumn, timeColumn, timeColumn)
+	return eventSQL, queryArgs
+}
 
+func (d *Datasource) queryEvents(ctx context.Context, _ backend.PluginContext, eventSQL string, queryArgs []any, timeColumn string) backend.DataResponse {
 	rows, err := d.db.QueryContext(ctx, eventSQL, queryArgs...)
 	if err != nil {
 		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("events query execution failed: %v", err.Error()))
@@ -173,14 +239,14 @@ func (d *Datasource) queryEvents(ctx context.Context, _ backend.PluginContext, q
 		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("events row iteration error: %v", err.Error()))
 	}
 
+	var response backend.DataResponse
 	response.Frames = append(response.Frames, frame)
 	return response
 }
 
-func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext, qm queryModel, queryFrom time.Time, queryTo time.Time, timeColumn string, queryInterval time.Duration) backend.DataResponse {
-	var response backend.DataResponse
+func queryTelemetryBuildSql(qm queryModel, queryFrom time.Time, queryTo time.Time, queryInterval time.Duration, timeColumn string) (string, []any, error) {
 	if len(qm.Channels) == 0 {
-		return response
+		return "", nil, fmt.Errorf("no telemetry channels selected")
 	}
 
 	// Extract unique components and names from structured channels
@@ -254,7 +320,7 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 	case "count":
 		aggregationOp = "COUNT"
 	default:
-		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("invalid data aggregation type: %s", qm.Aggregation))
+		return "", nil, fmt.Errorf("invalid data aggregation type: %s", qm.Aggregation)
 	}
 
 	// TODO: also consider having valueType in telemetryDefs instead of telemetry
@@ -279,18 +345,21 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 		  AND ($6::text[] = '{}' OR t.key LIKE ANY($6))
 		%s
 		ORDER BY time_bucket ASC;`, intervalExpr, aggregationOp, aggregationOp, aggregationOp, stringAggregationOp, timeColumn, timeColumn, groupByClause)
+	return rawSQL, queryArgs, nil
+}
 
+func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext, qm queryModel, telemetrySQL string, queryArgs []any, timeColumn string, queryInterval time.Duration) backend.DataResponse {
 	// Execute the query
-	rows, err := d.db.QueryContext(ctx, rawSQL, queryArgs...)
+	rows, err := d.db.QueryContext(ctx, telemetrySQL, queryArgs...)
 	if err != nil {
 		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("telemetry query execution failed: %v", err.Error()))
 	}
 	defer func() { _ = rows.Close() }()
 
-	return buildResponse(qm, rows, response)
+	return buildResponse(qm, rows)
 }
 
-func buildResponse(qm queryModel, rows *sql.Rows, response backend.DataResponse) backend.DataResponse {
+func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 	frames := make(map[string]*data.Frame)
 
 	for rows.Next() {
@@ -387,6 +456,7 @@ func buildResponse(qm queryModel, rows *sql.Rows, response backend.DataResponse)
 	multiSource := len(sourceSet) > 1
 
 	// Return all data frames with display names
+	var response backend.DataResponse
 	for _, frame := range frames {
 		var frameName string
 		for _, field := range frame.Fields {
