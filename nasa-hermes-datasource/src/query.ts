@@ -27,8 +27,7 @@ export function buildQueryOptions(q: MyQuery, options: DataQueryRequest): { from
 }
 
 export function buildEventsQuery(q: MyQuery, from: string, to: string): string {
-    const queryArgs = [q.sources, from, to];
-    const eventSql = format(`
+    return format(`
 		SELECT 
 			e.%s,
 			d.component,
@@ -39,11 +38,12 @@ export function buildEventsQuery(q: MyQuery, from: string, to: string): string {
 			e.args::text AS arguments
 		FROM eventDefs d
 		JOIN events e ON e.eventDefId = d.id
-		WHERE ($1::text[] = '{}' OR e.source = ANY($1))
-		  AND e.%s >= $2
-		  AND e.%s <= $3
-		ORDER BY e.%s ASC;`, q.timeField, q.timeField, q.timeField, q.timeField);
-    return formatSql(eventSql, ...queryArgs);
+		WHERE (%s::text[] = '{}' OR e.source = ANY(%s))
+		  AND e.%s >= %s
+		  AND e.%s <= %s
+		ORDER BY e.%s ASC;`,
+        q.timeField, escArr(q.sources), escArr(q.sources),
+        q.timeField, escDate(from), q.timeField, escDate(to), q.timeField);
 }
 
 export function buildTelemetryQuery(q: MyQuery, from: string, to: string): string {
@@ -51,10 +51,20 @@ export function buildTelemetryQuery(q: MyQuery, from: string, to: string): strin
         throw new Error("No telemetry channels specified for query");
     }
 
-    const components = [...new Set(q.channels.map(ch => ch.component))];
-    const channels = q.channels.map(ch => ch.name);
-    const keys = q.keys.map(k => k.key + "%");
-    const queryArgs = [components, channels, q.sources, from, to, keys];
+    // Build a per-channel predicate so that keys selected on one channel do not
+    // filter out rows from other channels (e.g. scalar channels whose only key
+    // is "value"). Each channel matches all of its keys unless specific keys are
+    // selected for that channel.
+    const channelClauses = q.channels.map((ch) => {
+        const chKeys = q.keys.filter(
+            (k) => k.component === ch.component && k.channel === ch.name
+        );
+        if (chKeys.length) {
+            return `(d.component = ${esc(ch.component)} AND d.name = ${esc(ch.name)} AND t.key LIKE ANY(${escArr(chKeys.map(k => k.key + "%"))}))`;
+        }
+        return `(d.component = ${esc(ch.component)} AND d.name = ${esc(ch.name)})`;
+    });
+    const channelPredicate = channelClauses.join("\n\t\t       OR ");
 
     let intervalExpr;
     if (q.aggregation !== "raw" && q.aggregation !== "deriv") {
@@ -116,15 +126,16 @@ export function buildTelemetryQuery(q: MyQuery, from: string, to: string): strin
 			%s(t.string) AS val_str 
 		FROM telemetryDefs d
 		JOIN telemetry t ON t.telemetryDefId = d.id
-		WHERE d.component = ANY($1)
-		  AND d.name = ANY($2)
-		  AND ($3::text[] = '{}' OR t.source = ANY($3))
-		  AND t.%s >= $4 AND t.%s <= $5
-		  AND ($6::text[] = '{}' OR t.key LIKE ANY($6))
+		WHERE (%s)
+		  AND (%s::text[] = '{}' OR t.source = ANY(%s))
+		  AND t.%s >= %s AND t.%s <= %s
 		%s
-		ORDER BY time_bucket ASC;`, intervalExpr, aggregationExpr, aggregationExpr, aggregationExpr, aggregationStringExpr, q.timeField, q.timeField, groupByExpr);
+		ORDER BY time_bucket ASC;`,
+        intervalExpr, aggregationExpr, aggregationExpr, aggregationExpr, aggregationStringExpr,
+        channelPredicate, escArr(q.sources), escArr(q.sources),
+        q.timeField, escDate(from), q.timeField, escDate(to), groupByExpr);
 
-    return formatSql(telemetrySql, ...queryArgs);
+    return telemetrySql;
 }
 
 export function format(sql: string, ...args: any): string {
@@ -132,26 +143,14 @@ export function format(sql: string, ...args: any): string {
     return sql.replace(/%s/g, () => args[i++]);
 }
 
-export function formatSql(sql: string, ...args: any): string {
-  let result = sql;
+export function esc(v: string): string {
+    return `'${v.replace(/'/g, "''")}'`;
+}
 
-  for (const [index, arg] of args.entries()) {
-    let argStr = "";
+export function escArr(arr: string[]): string {
+    return `'{${arr.map(v => `"${v}"`).join(",")}}'`;
+}
 
-    if (arg === null || arg === undefined) {
-      argStr = "NULL";
-    } else if (Array.isArray(arg)) {
-      argStr = `'{${arg.map(v => `"${v}"`).join(",")}}'`;
-    } else if (typeof arg === "string" && !isNaN(Date.parse(arg)) && (arg.includes("-") || arg.includes("T"))) {
-      argStr = `'${arg.replace("T", " ").replace("Z", "")}'`;
-    } else if (typeof arg === "string") {
-      argStr = `'${arg.replace(/'/g, "''")}'`;
-    } else {
-      argStr = String(arg);
-    }
-
-    result = result.split(`$${index + 1}`).join(argStr);
-  }
-
-  return result;
+export function escDate(d: string): string {
+    return `'${d.replace("T", " ").replace("Z", "")}'`;
 }
