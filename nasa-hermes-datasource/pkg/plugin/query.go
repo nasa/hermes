@@ -84,7 +84,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 
 	if strings.Contains(querySQL, "$__interval") {
 		intervalStr := fmt.Sprintf("%d milliseconds", int(query.Interval.Milliseconds()))
-		querySQL = strings.ReplaceAll(querySQL, "$__interval", fmt.Sprintf("%s::interval", intervalStr))
+		querySQL = strings.ReplaceAll(querySQL, "$__interval", fmt.Sprintf("'%s'::interval", intervalStr))
 	}
 
 	switch qm.QueryType {
