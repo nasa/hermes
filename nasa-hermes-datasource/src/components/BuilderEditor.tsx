@@ -16,6 +16,7 @@ interface BuilderEditorProps {
 const QUERY_TYPE_OPTIONS: Array<SelectableValue<QueryType>> = [
   { label: 'Telemetry', value: 'telemetry' },
   { label: 'Events', value: 'events' },
+  { label: 'Raw SQL', value: 'raw' },
 ];
 
 const TIME_FIELD_OPTIONS: Array<SelectableValue<TimeField>> = [
@@ -86,7 +87,7 @@ export function BuilderEditor({ query, onChange, onRunQuery, datasource }: Build
         />
         <RadioButtonGroup
           id="query-editor-query-type"
-          options={QUERY_TYPE_OPTIONS}
+          options={QUERY_TYPE_OPTIONS.filter(opt => opt.value !== 'raw')}
           value={queryType}
           onChange={onQueryTypeChange}
           size="sm"

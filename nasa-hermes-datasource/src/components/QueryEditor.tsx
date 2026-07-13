@@ -18,11 +18,15 @@ const EDITOR_MODE_OPTIONS: Array<SelectableValue<string>> = [
 export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: Props) {
   const [editorMode, setEditorMode] = useState<string>('builder');
   const [showConfirmSwitch, setShowConfirmSwitch] = useState(false);
+  const [builderQueryType, setBuilderQueryType] = useState<string>(query.queryType ?? 'telemetry');
 
   const onEditorModeChange = (mode: string) => {
     if (mode === 'builder' && editorMode === 'code') {
       setShowConfirmSwitch(true);
       return;
+    }
+    if (mode === 'code') {
+      setBuilderQueryType(query.queryType ?? 'telemetry');
     }
     setEditorMode(mode);
     if (mode === 'code') {
@@ -83,13 +87,13 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
         dismissText="Cancel"
         onConfirm={() => {
           navigator.clipboard.writeText(query.rawSql ?? '');
-          onChange({ ...query, rawSql: undefined });
+          onChange({ ...query, rawSql: undefined, queryType: builderQueryType as any });
           setEditorMode('builder');
           setShowConfirmSwitch(false);
           onRunQuery();
         }}
         onAlternative={() => {
-          onChange({ ...query, rawSql: undefined });
+          onChange({ ...query, rawSql: undefined, queryType: builderQueryType as any });
           setEditorMode('builder');
           setShowConfirmSwitch(false);
           onRunQuery();
