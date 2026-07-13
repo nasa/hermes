@@ -91,6 +91,12 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		queryArgs = nil
 	}
 
+	if strings.Contains(querySQL, "$__interval") {
+		intervalStr := fmt.Sprintf("%d milliseconds", int(query.Interval.Milliseconds()))
+		queryArgs = append(queryArgs, intervalStr)
+		querySQL = strings.ReplaceAll(querySQL, "$__interval", fmt.Sprintf("$%d::interval", len(queryArgs)))
+	}
+
 	switch qm.QueryType {
 	case "events":
 		return d.queryEvents(ctx, pCtx, querySQL, queryArgs, timeColumn)
