@@ -288,16 +288,18 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
 
   return (
     <>
-      <div style={{ marginTop: 8, marginBottom: 8 }}>
-        <RadioButtonGroup
-          id="query-editor-query-type"
-          options={QUERY_TYPE_OPTIONS}
-          value={queryType}
-          onChange={onQueryTypeChange}
-          size="sm"
-          fullWidth={true}
-        />
-      </div>
+      {editorMode === 'builder' && (
+        <div style={{ marginTop: 8, marginBottom: 8 }}>
+          <RadioButtonGroup
+            id="query-editor-query-type"
+            options={QUERY_TYPE_OPTIONS}
+            value={queryType}
+            onChange={onQueryTypeChange}
+            size="sm"
+            fullWidth={true}
+          />
+        </div>
+      )}
 
       {editorMode === 'builder' && queryType === 'telemetry' && (
         <>
@@ -401,15 +403,17 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
         />
       )}
 
-      <div style={{ marginTop: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <RadioButtonGroup
-          id="query-editor-time-field"
-          options={TIME_FIELD_OPTIONS}
-          value={query.timeField ?? 'ert'}
-          onChange={onTimeFieldChange}
-          size="sm"
-          fullWidth={false}
-        />
+      <div style={{ marginTop: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: editorMode === 'builder' ? 'space-between' : 'flex-end' }}>
+        {editorMode === 'builder' && (
+          <RadioButtonGroup
+            id="query-editor-time-field"
+            options={TIME_FIELD_OPTIONS}
+            value={query.timeField ?? 'ert'}
+            onChange={onTimeFieldChange}
+            size="sm"
+            fullWidth={false}
+          />
+        )}
         <RadioButtonGroup
           id="query-editor-editor-mode"
           options={EDITOR_MODE_OPTIONS}
@@ -419,22 +423,24 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
           fullWidth={false}
         />
       </div>
-      <CollapsableSection label="Advanced" isOpen={false}>
-        <InlineField label="From Override" labelWidth={16} tooltip="Absolute start time (optional)">
-          <DateTimePicker
-            date={query.timeOverrideFrom ? dateTime(query.timeOverrideFrom) : undefined}
-            onChange={onTimeOverrideFromChange}
-            clearable
-          />
-        </InlineField>
-        <InlineField label="To Override" labelWidth={16} tooltip="Absolute end time (optional)">
-          <DateTimePicker
-            date={query.timeOverrideTo ? dateTime(query.timeOverrideTo) : undefined}
-            onChange={onTimeOverrideToChange}
-            clearable
-          />
-        </InlineField>
-      </CollapsableSection>
+      {editorMode === 'builder' && (
+        <CollapsableSection label="Advanced" isOpen={false}>
+          <InlineField label="From Override" labelWidth={16} tooltip="Absolute start time (optional)">
+            <DateTimePicker
+              date={query.timeOverrideFrom ? dateTime(query.timeOverrideFrom) : undefined}
+              onChange={onTimeOverrideFromChange}
+              clearable
+            />
+          </InlineField>
+          <InlineField label="To Override" labelWidth={16} tooltip="Absolute end time (optional)">
+            <DateTimePicker
+              date={query.timeOverrideTo ? dateTime(query.timeOverrideTo) : undefined}
+              onChange={onTimeOverrideToChange}
+              clearable
+            />
+          </InlineField>
+        </CollapsableSection>
+      )}
       <ConfirmModal
         isOpen={showConfirmSwitch}
         title="Warning"
