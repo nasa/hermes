@@ -40,23 +40,28 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     const templateSrv = getTemplateSrv();
     return {
       ...query,
-      channels: query.channels.map(ch => ({
+      channels: query.channels?.map(ch => ({
         component: templateSrv.replace(ch.component, scopedVars),
         name: templateSrv.replace(ch.name, scopedVars),
-      })),
-      sources: query.sources.map(s => templateSrv.replace(s, scopedVars)),
-      keys: query.keys.map(k => ({
+      })) ?? [],
+      sources: query.sources?.map(s => templateSrv.replace(s, scopedVars)) ?? [],
+      keys: query.keys?.map(k => ({
         component: templateSrv.replace(k.component, scopedVars),
         channel: templateSrv.replace(k.channel, scopedVars),
         key: templateSrv.replace(k.key, scopedVars),
-      })),
+      })) ?? [],
     };
   }
 
   filterQuery(query: MyQuery): boolean {
+    if (query.rawSql) {
+      return true;
+    }
+
     if (query.queryType === 'events') {
       return true;
     }
+
     return !!query.channels.length;
   }
 

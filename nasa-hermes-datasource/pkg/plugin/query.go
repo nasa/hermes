@@ -65,12 +65,9 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("json unmarshal: %v", err.Error()))
 	}
 
-	var timeColumn string
 	switch qm.TimeField {
 	case "time":
-		timeColumn = "time"
 	case "ert":
-		timeColumn = "ert"
 	default:
 		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid time type: %s", qm.TimeField))
 	}
@@ -89,9 +86,9 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 
 	switch qm.QueryType {
 	case "events":
-		return d.queryEvents(ctx, pCtx, querySQL, timeColumn)
+		return d.queryEvents(ctx, pCtx, qm, querySQL)
 	case "telemetry":
-		return d.queryTelemetry(ctx, pCtx, qm, querySQL, timeColumn, query.Interval)
+		return d.queryTelemetry(ctx, pCtx, qm, querySQL)
 	}
 	return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid query type: %s", qm.QueryType))
 }
@@ -113,7 +110,7 @@ func severityLabel(sev int64) string {
 	return fmt.Sprintf("UNKNOWN(%d)", sev)
 }
 
-func (d *Datasource) queryEvents(ctx context.Context, _ backend.PluginContext, eventSQL string, timeColumn string) backend.DataResponse {
+func (d *Datasource) queryEvents(ctx context.Context, _ backend.PluginContext, qm queryModel, eventSQL string) backend.DataResponse {
 	rows, err := d.db.QueryContext(ctx, eventSQL)
 	if err != nil {
 		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("events query execution failed: %v", err.Error()))
@@ -122,7 +119,7 @@ func (d *Datasource) queryEvents(ctx context.Context, _ backend.PluginContext, e
 
 	frame := data.NewFrame("Events")
 	frame.Fields = append(frame.Fields,
-		data.NewField(timeColumn, nil, []time.Time{}),
+		data.NewField(qm.TimeField, nil, []time.Time{}),
 		data.NewField("component", nil, []string{}),
 		data.NewField("name", nil, []string{}),
 		data.NewField("severity", nil, []string{}),
@@ -152,7 +149,7 @@ func (d *Datasource) queryEvents(ctx context.Context, _ backend.PluginContext, e
 	return response
 }
 
-func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext, qm queryModel, telemetrySQL string, timeColumn string, queryInterval time.Duration) backend.DataResponse {
+func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext, qm queryModel, telemetrySQL string) backend.DataResponse {
 	// Execute the query
 	rows, err := d.db.QueryContext(ctx, telemetrySQL)
 	if err != nil {
