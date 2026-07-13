@@ -22,7 +22,13 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
 
   const onEditorModeChange = (mode: string) => {
     if (mode === 'builder' && editorMode === 'code') {
-      setShowConfirmSwitch(true);
+      if (query.rawSql?.trim()) {
+        setShowConfirmSwitch(true);
+        return;
+      }
+      onChange({ ...query, rawSql: undefined, queryType: builderQueryType as any });
+      setEditorMode('builder');
+      onRunQuery();
       return;
     }
     if (mode === 'code') {

@@ -27,6 +27,10 @@ export function SqlEditor({ query, onChange, onRunQuery }: SqlEditorProps) {
         showMiniMap={false}
         showLineNumbers={true}
         onChange={(value) => onChange({ ...query, rawSql: value })}
+        onSave={(value) => {
+          onChange({ ...query, rawSql: value, queryType: 'raw' });
+          onRunQuery();
+        }}
         onBlur={(value) => {
           onChange({ ...query, rawSql: value });
           onRunQuery();

@@ -23,7 +23,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       map((response) => {
         for (const result of response.data) {
           const query = request.targets.find((t) => t.refId === result.refId);
-          if (query?.queryType === 'events' && query.sources.length) {
+          if (query?.queryType === 'events' && query.sources?.length) {
             result.fields = result.fields.filter((f: { name: string }) => f.name !== 'source');
           }
         }
@@ -62,7 +62,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       return true;
     }
 
-    return !!query.channels.length;
+    return !!(query.channels && query.channels.length);
   }
 
   // Telemetry resources

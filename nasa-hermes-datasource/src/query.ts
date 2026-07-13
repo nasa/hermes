@@ -47,7 +47,7 @@ export function buildEventsQuery(q: MyQuery, from: string, to: string): string {
 }
 
 export function buildTelemetryQuery(q: MyQuery, from: string, to: string): string {
-    if (q.channels.length === 0) {
+    if (!q.channels || q.channels.length === 0) {
         throw new Error("No telemetry channels specified for query");
     }
 
