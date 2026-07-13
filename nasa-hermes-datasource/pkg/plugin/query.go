@@ -55,7 +55,7 @@ type queryModel struct {
 	TimeField        string       `json:"timeField"`
 	TimeOverrideFrom string       `json:"timeOverrideFrom,omitempty"`
 	TimeOverrideTo   string       `json:"timeOverrideTo,omitempty"`
-	Aggregation      string       `json:"aggregation,omitempty"`
+	Aggregation      string       `json:"aggregation"`
 	RawSql           *string      `json:"rawSql,omitempty"`
 }
 
