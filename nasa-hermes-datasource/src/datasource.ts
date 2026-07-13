@@ -77,7 +77,11 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
 
   // Raw SQL generation
   async getRawSql(query: MyQuery): Promise<string> {
-    const result = await this.postResource('query/raw', query) as { sql?: string };
+    const result = await this.postResource('query/raw', {
+      ...query,
+      queryType: query.queryType ?? 'telemetry',
+      timeField: query.timeField ?? 'time',
+    }) as { sql?: string };
     return result.sql ?? '';
   }
 }
