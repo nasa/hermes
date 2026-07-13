@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { css } from '@emotion/css';
 import { ConfirmModal } from '@grafana/ui';
-import { QueryEditorProps } from '@grafana/data';
+import { dateTime, QueryEditorProps } from '@grafana/data';
 import { DataSource } from '../datasource';
-import { MyDataSourceOptions, MyQuery } from '../types';
+import { MyDataSourceOptions, MyQuery, withDefaults } from '../types';
 import { BuilderEditor } from './BuilderEditor';
 import { SqlEditor } from './SqlEditor';
+import { buildQuery } from '../query';
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
-export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) {
+export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: Props) {
   const [editorMode, setEditorMode] = useState<string>('builder');
   const [showConfirmSwitch, setShowConfirmSwitch] = useState(false);
 
@@ -20,10 +21,15 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) 
     }
     setEditorMode(mode);
     if (mode === 'code') {
-      datasource
-        .getRawSql(query)
-        .then((sql) => onChange({ ...query, rawSql: sql }))
-        .catch(() => {});
+      try {
+        const filled = withDefaults(query);
+        const from = range?.from ?? dateTime();
+        const to = range?.to ?? dateTime();
+        const sql = buildQuery(filled, { range: { from, to, raw: { from, to } } } as any);
+        onChange({ ...query, rawSql: sql });
+      } catch (e) {
+        console.warn('Could not generate SQL for code editor:', e);
+      }
     }
   };
 

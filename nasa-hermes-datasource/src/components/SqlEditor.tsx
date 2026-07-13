@@ -38,7 +38,7 @@ export function SqlEditor({ query, onChange, onRunQuery, editorMode, onEditorMod
       <CodeEditor
         value={query.rawSql ?? ''}
         language="sql"
-        height={200}
+        height={250}
         showMiniMap={false}
         showLineNumbers={true}
         onChange={(value) => onChange({ ...query, rawSql: value })}
