@@ -6,14 +6,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"slices"
 	"strings"
 	"time"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
-	"github.com/lib/pq"
 )
 
 // QueryData handles multiple queries and returns multiple responses.
@@ -67,96 +65,6 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("json unmarshal: %v", err.Error()))
 	}
 
-	queryFrom, queryTo, timeColumn, err := queryComputeCommonArgs(query, qm)
-	if err != nil {
-		return backend.ErrDataResponse(backend.StatusBadRequest, err.Error())
-	}
-
-	var querySQL string
-	var queryArgs []any
-	if qm.RawSql == nil {
-		switch qm.QueryType {
-		case "events":
-			querySQL, queryArgs = queryEventsBuildSql(qm, queryFrom, queryTo, timeColumn)
-		case "telemetry":
-			querySQL, queryArgs, err = queryTelemetryBuildSql(qm, queryFrom, queryTo, query.Interval, timeColumn)
-			if err != nil {
-				return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("query telemetry build sql: %v", err.Error()))
-			}
-		default:
-			return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid query type: %s", qm.QueryType))
-		}
-	} else {
-		querySQL = *qm.RawSql
-		queryArgs = nil
-	}
-
-	if strings.Contains(querySQL, "$__interval") {
-		intervalStr := fmt.Sprintf("%d milliseconds", int(query.Interval.Milliseconds()))
-		queryArgs = append(queryArgs, intervalStr)
-		querySQL = strings.ReplaceAll(querySQL, "$__interval", fmt.Sprintf("$%d::interval", len(queryArgs)))
-	}
-
-	switch qm.QueryType {
-	case "events":
-		return d.queryEvents(ctx, pCtx, querySQL, queryArgs, timeColumn)
-	case "telemetry":
-		return d.queryTelemetry(ctx, pCtx, qm, querySQL, queryArgs, timeColumn, query.Interval)
-	}
-	return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid query type: %s", qm.QueryType))
-}
-
-// Returns the raw SQL query string.
-func (d *Datasource) handleGetQueryRaw(w http.ResponseWriter, r *http.Request) {
-	var qm queryModel
-	if err := json.NewDecoder(r.Body).Decode(&qm); err != nil {
-		http.Error(w, fmt.Sprintf("json unmarshal: %v", err.Error()), http.StatusBadRequest)
-		return
-	}
-
-	queryFrom, queryTo, timeColumn, err := queryComputeCommonArgs(backend.DataQuery{}, qm)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("query compute common args: %v", err.Error()), http.StatusBadRequest)
-		return
-	}
-
-	switch qm.QueryType {
-	case "events":
-		eventSQL, queryArgs := queryEventsBuildSql(qm, queryFrom, queryTo, timeColumn)
-		writeJSONResponse(w, map[string]any{
-			"sql":  eventSQL,
-			"args": queryArgs,
-		})
-	case "telemetry":
-		rawSQL, queryArgs, err := queryTelemetryBuildSql(qm, queryFrom, queryTo, 0, timeColumn)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("query telemetry build sql: %v", err.Error()), http.StatusBadRequest)
-			return
-		}
-		writeJSONResponse(w, map[string]any{
-			"sql":  rawSQL,
-			"args": queryArgs,
-		})
-	default:
-		http.Error(w, fmt.Sprintf("invalid query type: %s", qm.QueryType), http.StatusBadRequest)
-	}
-}
-
-// Compute the args necessary for the query before passing it to event or telemetry specific query functions.
-func queryComputeCommonArgs(query backend.DataQuery, qm queryModel) (time.Time, time.Time, string, error) {
-	queryFrom := query.TimeRange.From
-	queryTo := query.TimeRange.To
-	if qm.TimeOverrideFrom != "" {
-		if t, err := time.Parse(time.RFC3339Nano, qm.TimeOverrideFrom); err == nil {
-			queryFrom = t
-		}
-	}
-	if qm.TimeOverrideTo != "" {
-		if t, err := time.Parse(time.RFC3339Nano, qm.TimeOverrideTo); err == nil {
-			queryTo = t
-		}
-	}
-
 	var timeColumn string
 	switch qm.TimeField {
 	case "time":
@@ -164,9 +72,28 @@ func queryComputeCommonArgs(query backend.DataQuery, qm queryModel) (time.Time, 
 	case "ert":
 		timeColumn = "ert"
 	default:
-		return time.Time{}, time.Time{}, "", fmt.Errorf("invalid time type: %s", qm.TimeField)
+		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid time type: %s", qm.TimeField))
 	}
-	return queryFrom, queryTo, timeColumn, nil
+
+	var querySQL string
+	if qm.RawSql != nil {
+		querySQL = *qm.RawSql
+	} else {
+		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid query: %s", *qm.RawSql))
+	}
+
+	if strings.Contains(querySQL, "$__interval") {
+		intervalStr := fmt.Sprintf("%d milliseconds", int(query.Interval.Milliseconds()))
+		querySQL = strings.ReplaceAll(querySQL, "$__interval", fmt.Sprintf("%s::interval", intervalStr))
+	}
+
+	switch qm.QueryType {
+	case "events":
+		return d.queryEvents(ctx, pCtx, querySQL, timeColumn)
+	case "telemetry":
+		return d.queryTelemetry(ctx, pCtx, qm, querySQL, timeColumn, query.Interval)
+	}
+	return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid query type: %s", qm.QueryType))
 }
 
 var severityLabels = map[int64]string{
@@ -186,33 +113,8 @@ func severityLabel(sev int64) string {
 	return fmt.Sprintf("UNKNOWN(%d)", sev)
 }
 
-func queryEventsBuildSql(qm queryModel, queryFrom time.Time, queryTo time.Time, timeColumn string) (string, []any) {
-	queryArgs := []any{
-		pq.Array(qm.Sources),
-		queryFrom,
-		queryTo,
-	}
-
-	eventSQL := fmt.Sprintf(`
-		SELECT 
-			e.%s,
-			d.component,
-			d.name,
-			d.severity,
-			e.message,
-			e.source,
-			e.args::text AS arguments
-		FROM eventDefs d
-		JOIN events e ON e.eventDefId = d.id
-		WHERE ($1::text[] = '{}' OR e.source = ANY($1))
-		  AND e.%s >= $2
-		  AND e.%s <= $3
-		ORDER BY e.%s ASC;`, timeColumn, timeColumn, timeColumn, timeColumn)
-	return eventSQL, queryArgs
-}
-
-func (d *Datasource) queryEvents(ctx context.Context, _ backend.PluginContext, eventSQL string, queryArgs []any, timeColumn string) backend.DataResponse {
-	rows, err := d.db.QueryContext(ctx, eventSQL, queryArgs...)
+func (d *Datasource) queryEvents(ctx context.Context, _ backend.PluginContext, eventSQL string, timeColumn string) backend.DataResponse {
+	rows, err := d.db.QueryContext(ctx, eventSQL)
 	if err != nil {
 		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("events query execution failed: %v", err.Error()))
 	}
@@ -250,113 +152,9 @@ func (d *Datasource) queryEvents(ctx context.Context, _ backend.PluginContext, e
 	return response
 }
 
-func queryTelemetryBuildSql(qm queryModel, queryFrom time.Time, queryTo time.Time, queryInterval time.Duration, timeColumn string) (string, []any, error) {
-	if len(qm.Channels) == 0 {
-		return "", nil, fmt.Errorf("no telemetry channels selected")
-	}
-
-	// Extract unique components and names from structured channels
-	componentSet := make(map[string]struct{})
-	names := make([]string, len(qm.Channels))
-	for i, ch := range qm.Channels {
-		componentSet[ch.Component] = struct{}{}
-		names[i] = ch.Name
-	}
-	components := make([]string, 0, len(componentSet))
-	for c := range componentSet {
-		components = append(components, c)
-	}
-
-	keyStrings := make([]string, len(qm.Keys))
-	for i, k := range qm.Keys {
-		keyStrings[i] = k.Key
-	}
-	sqlKeyParam := pq.Array(keyStrings)
-	if len(keyStrings) > 0 {
-		keyPatterns := make([]string, len(keyStrings))
-		for i, key := range keyStrings {
-			keyPatterns[i] = key + "%"
-		}
-		sqlKeyParam = pq.Array(keyPatterns)
-	}
-
-	queryArgs := []any{
-		pq.Array(components),
-		pq.Array(names),
-		pq.Array(qm.Sources),
-		queryFrom,
-		queryTo,
-		sqlKeyParam,
-	}
-
-	// Set time grouping interval
-	var intervalExpr string
-	if queryInterval.Milliseconds() >= 1 && qm.Aggregation != "raw" && qm.Aggregation != "deriv" {
-		queryArgs = append(queryArgs, fmt.Sprintf("%d milliseconds", int(queryInterval.Milliseconds())))
-		intervalExpr = "time_bucket($7::interval, t." + timeColumn + ")"
-	} else {
-		intervalExpr = "t." + timeColumn
-	}
-
-	// Data aggregation operations
-	var aggregationOp string
-	stringAggregationOp := "MAX"
-	groupByClause := "GROUP BY time_bucket, d.component, d.name, t.source, t.valueType, t.key"
-	switch qm.Aggregation {
-	case "raw":
-		aggregationOp = ""
-		stringAggregationOp = ""
-		groupByClause = ""
-	case "avg":
-		aggregationOp = "AVG"
-	case "min":
-		aggregationOp = "MIN"
-	case "max":
-		aggregationOp = "MAX"
-	case "first":
-		aggregationOp = "FIRST"
-	case "last":
-		aggregationOp = "LAST"
-	case "deriv":
-		aggregationOp = ""
-		stringAggregationOp = ""
-		groupByClause = ""
-	case "sum":
-		aggregationOp = "SUM"
-	case "count":
-		aggregationOp = "COUNT"
-	default:
-		return "", nil, fmt.Errorf("invalid data aggregation type: %s", qm.Aggregation)
-	}
-
-	// TODO: also consider having valueType in telemetryDefs instead of telemetry
-	rawSQL := fmt.Sprintf(`
-		SELECT
-			%s AS time_bucket,
-			d.component,
-			d.name,
-			t.source,
-			t.valueType,
-			t.key,
-			%s(t.integral::double precision) AS val_int,
-			%s(t.floating::double precision) AS val_float,
-			%s(t.boolval::int::double precision) AS val_bool,
-			%s(t.string) AS val_str 
-		FROM telemetryDefs d
-		JOIN telemetry t ON t.telemetryDefId = d.id
-		WHERE d.component = ANY($1)
-		  AND d.name = ANY($2)
-		  AND ($3::text[] = '{}' OR t.source = ANY($3))
-		  AND t.%s >= $4 AND t.%s <= $5
-		  AND ($6::text[] = '{}' OR t.key LIKE ANY($6))
-		%s
-		ORDER BY time_bucket ASC;`, intervalExpr, aggregationOp, aggregationOp, aggregationOp, stringAggregationOp, timeColumn, timeColumn, groupByClause)
-	return rawSQL, queryArgs, nil
-}
-
-func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext, qm queryModel, telemetrySQL string, queryArgs []any, timeColumn string, queryInterval time.Duration) backend.DataResponse {
+func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext, qm queryModel, telemetrySQL string, timeColumn string, queryInterval time.Duration) backend.DataResponse {
 	// Execute the query
-	rows, err := d.db.QueryContext(ctx, telemetrySQL, queryArgs...)
+	rows, err := d.db.QueryContext(ctx, telemetrySQL)
 	if err != nil {
 		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("telemetry query execution failed: %v", err.Error()))
 	}
