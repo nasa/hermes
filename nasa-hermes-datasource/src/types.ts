@@ -28,7 +28,16 @@ export interface MyQuery extends DataQuery {
   rawSql?: string;
 }
 
-export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], timeField: 'time', aggregation: 'avg' };
+export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], timeField: 'ert', aggregation: 'avg' };
+
+export function withDefaults(query: MyQuery): MyQuery {
+  return {
+    ...query,
+    queryType: query.queryType ?? DEFAULT_QUERY.queryType!,
+    timeField: query.timeField ?? DEFAULT_QUERY.timeField!,
+    aggregation: query.aggregation ?? DEFAULT_QUERY.aggregation!,
+  };
+}
 
 /**
  * These are options configured for each DataSource instance
