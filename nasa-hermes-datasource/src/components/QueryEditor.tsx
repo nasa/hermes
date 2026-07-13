@@ -83,12 +83,16 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
         dismissText="Cancel"
         onConfirm={() => {
           navigator.clipboard.writeText(query.rawSql ?? '');
+          onChange({ ...query, rawSql: undefined });
           setEditorMode('builder');
           setShowConfirmSwitch(false);
+          onRunQuery();
         }}
         onAlternative={() => {
+          onChange({ ...query, rawSql: undefined });
           setEditorMode('builder');
           setShowConfirmSwitch(false);
+          onRunQuery();
         }}
         onDismiss={() => setShowConfirmSwitch(false)}
       />
