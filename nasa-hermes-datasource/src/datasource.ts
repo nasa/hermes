@@ -2,6 +2,7 @@ import { DataQueryRequest, DataSourceInstanceSettings, CoreApp, ScopedVars } fro
 import { DataSourceWithBackend, getTemplateSrv } from '@grafana/runtime';
 import { map } from 'rxjs/operators';
 import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, ChannelRef, KeyRef } from './types';
+import { buildQuery } from 'query';
 
 export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptions> {
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
@@ -9,6 +10,16 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
   }
 
   query(request: DataQueryRequest<MyQuery>) {
+    // Build raw SQL for each target if not already provided
+    request.targets.forEach((target) => {
+      target.queryType = target.queryType ?? 'telemetry';
+      target.timeField = target.timeField ?? 'time';
+      target.aggregation = target.aggregation ?? 'avg';
+      if (!target.rawSql) {
+        target.rawSql = buildQuery(target, request);
+      }
+    });
+
     return super.query(request).pipe(
       map((response) => {
         for (const result of response.data) {
@@ -30,7 +41,6 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     const templateSrv = getTemplateSrv();
     return {
       ...query,
-      queryType: query.queryType ?? 'telemetry',
       channels: query.channels.map(ch => ({
         component: templateSrv.replace(ch.component, scopedVars),
         name: templateSrv.replace(ch.name, scopedVars),
@@ -41,10 +51,6 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
         channel: templateSrv.replace(k.channel, scopedVars),
         key: templateSrv.replace(k.key, scopedVars),
       })),
-      timeOverrideFrom: query.timeOverrideFrom,
-      timeOverrideTo: query.timeOverrideTo,
-      timeField: query.timeField ?? 'time',
-      aggregation: query.aggregation ?? 'avg',
     };
   }
 
