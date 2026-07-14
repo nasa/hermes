@@ -27,21 +27,21 @@ export function buildQueryOptions(q: MyQuery, options: DataQueryRequest): { from
 }
 
 export function buildEventsQuery(q: MyQuery, from: string, to: string): string {
-    return format(`
-		SELECT 
-			e.%s,
-			d.component,
-			d.name,
-			d.severity,
-			e.message,
-			e.source,
-			e.args::text AS arguments
-		FROM eventDefs d
-		JOIN events e ON e.eventDefId = d.id
-		WHERE (%s::text[] = '{}' OR e.source = ANY(%s))
-		  AND e.%s >= %s
-		  AND e.%s <= %s
-		ORDER BY e.%s ASC;`,
+    return format(
+`SELECT
+	e.%s,
+	d.component,
+	d.name,
+	d.severity,
+	e.message,
+	e.source,
+	e.args::text AS arguments
+FROM eventDefs d
+JOIN events e ON e.eventDefId = d.id
+WHERE (%s::text[] = '{}' OR e.source = ANY(%s))
+  AND e.%s >= %s
+  AND e.%s <= %s
+ORDER BY e.%s ASC;`,
         q.timeField, escArr(q.sources), escArr(q.sources),
         q.timeField, escDate(from), q.timeField, escDate(to), q.timeField);
 }
@@ -115,7 +115,7 @@ export function buildTelemetryQuery(q: MyQuery, from: string, to: string): strin
     }
 
     const telemetrySql = format(
-`SELECT
+        `SELECT
 	%s AS time_bucket,
 	d.component,
 	d.name,
