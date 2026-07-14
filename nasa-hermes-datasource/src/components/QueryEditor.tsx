@@ -41,7 +41,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
         const from = range?.from ?? dateTime();
         const to = range?.to ?? dateTime();
         const sql = buildQuery(filled, { range: { from, to, raw: { from, to } } } as any);
-        onChange({ ...query, rawSql: sql });
+        onChange({ ...query, rawSql: sql, queryType: 'raw' });
       } catch (e) {
         console.warn('Could not generate SQL for code editor:', e);
       }

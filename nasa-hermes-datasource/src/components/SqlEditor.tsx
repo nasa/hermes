@@ -33,7 +33,6 @@ export function SqlEditor({ query, onChange, onRunQuery }: SqlEditorProps) {
         }}
         onBlur={(value) => {
           onChange({ ...query, rawSql: value });
-          onRunQuery();
         }}
       />
     </>

@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"slices"
 	"strings"
 	"time"
@@ -345,6 +346,17 @@ func computeDerivatives(frames *map[string]*data.Frame) {
 	}
 }
 
+// nullFloat32Converter handles nullable REAL/FLOAT4 (float32) columns from
+// PostgreSQL. The SDK's built-in converters only register float64 for nullable
+// floats, so a NULL in a REAL column would otherwise fail to scan. Scanning into
+// sql.NullFloat64 (which lib/pq widens float4 into) handles NULL cleanly.
+var nullFloat32Converter = sqlutil.Converter{
+	Name:           "nullable float32 converter",
+	InputScanType:  reflect.TypeFor[sql.NullFloat64](),
+	InputTypeName:  "FLOAT4",
+	FrameConverter: sqlutil.NullDecimalConverter.FrameConverter,
+}
+
 func (d *Datasource) queryRaw(ctx context.Context, _ backend.PluginContext, eventSQL string) backend.DataResponse {
 	rows, err := d.db.QueryContext(ctx, eventSQL)
 	if err != nil {
@@ -352,7 +364,7 @@ func (d *Datasource) queryRaw(ctx context.Context, _ backend.PluginContext, even
 	}
 	defer func() { _ = rows.Close() }()
 
-	frame, err := sqlutil.FrameFromRows(rows, -1)
+	frame, err := sqlutil.FrameFromRows(rows, -1, nullFloat32Converter)
 	if err != nil {
 		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("failed to parse rows to frame: %v", err.Error()))
 	}
