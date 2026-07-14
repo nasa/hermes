@@ -114,25 +114,25 @@ export function buildTelemetryQuery(q: MyQuery, from: string, to: string): strin
             throw new Error(`Invalid aggregation type: ${q.aggregation}`);
     }
 
-    const telemetrySql = format(`
-        SELECT
-			%s AS time_bucket,
-			d.component,
-			d.name,
-			t.source,
-			t.valueType,
-			t.key,
-			%s AS val_int,
-			%s AS val_float,
-			%s AS val_bool,
-			%s AS val_str 
-		FROM telemetryDefs d
-		JOIN telemetry t ON t.telemetryDefId = d.id
-		WHERE (%s)
-		  AND (%s::text[] = '{}' OR t.source = ANY(%s))
-		  AND t.%s >= %s AND t.%s <= %s
-		%s
-		ORDER BY time_bucket ASC;`,
+    const telemetrySql = format(
+`SELECT
+	%s AS time_bucket,
+	d.component,
+	d.name,
+	t.source,
+	t.valueType,
+	t.key,
+	%s AS val_int,
+	%s AS val_float,
+	%s AS val_bool,
+	%s AS val_str
+FROM telemetryDefs d
+JOIN telemetry t ON t.telemetryDefId = d.id
+WHERE (%s)
+  AND (%s::text[] = '{}' OR t.source = ANY(%s))
+  AND t.%s >= %s AND t.%s <= %s
+%s
+ORDER BY time_bucket ASC;`,
         intervalExpr, aggInt, aggFloat, aggBool, aggStr,
         channelPredicate, escArr(q.sources), escArr(q.sources),
         q.timeField, escDate(from), q.timeField, escDate(to), groupByExpr);

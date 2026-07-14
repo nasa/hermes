@@ -19,10 +19,12 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
   const [editorMode, setEditorMode] = useState<string>('builder');
   const [showConfirmSwitch, setShowConfirmSwitch] = useState(false);
   const [builderQueryType, setBuilderQueryType] = useState<string>(query.queryType ?? 'telemetry');
+  const [generatedSql, setGeneratedSql] = useState<string | undefined>(undefined);
 
   const onEditorModeChange = (mode: string) => {
     if (mode === 'builder' && editorMode === 'code') {
-      if (query.rawSql?.trim()) {
+      const userEdited = query.rawSql?.trim() && query.rawSql !== generatedSql;
+      if (userEdited) {
         setShowConfirmSwitch(true);
         return;
       }
@@ -41,6 +43,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
         const from = range?.from ?? dateTime();
         const to = range?.to ?? dateTime();
         const sql = buildQuery(filled, { range: { from, to, raw: { from, to } } } as any);
+        setGeneratedSql(sql);
         onChange({ ...query, rawSql: sql, queryType: 'raw' });
       } catch (e) {
         console.warn('Could not generate SQL for code editor:', e);
