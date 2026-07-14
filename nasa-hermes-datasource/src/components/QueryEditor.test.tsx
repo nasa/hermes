@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { QueryEditor } from './QueryEditor';
 import { DataSource } from '../datasource';
 import { ChannelRef, DEFAULT_QUERY, MyDataSourceOptions, MyQuery, withDefaults } from '../types';
@@ -50,7 +50,7 @@ function buildProps(
 
 describe('QueryEditor — Telemetry', () => {
   it('renders query type toggle and telemetry dropdowns', async () => {
-    render(<QueryEditor {...buildProps()} />);
+    await act(async () => { render(<QueryEditor {...buildProps()} />); });
 
     expect(screen.getByRole('radio', { name: /Telemetry/ })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /Events/ })).toBeInTheDocument();
@@ -154,21 +154,23 @@ describe('QueryEditor — Telemetry', () => {
       { component: 'CDH', channel: 'Attitude', key: 'value.y' },
     ]),
     });
-    render(
-      <QueryEditor
-        {...buildProps({
-          datasource: ds,
-          query: {
-            refId: 'A',
-            queryType: 'telemetry',
-            channels: [ch('CDH', 'Attitude')],
-            sources: ['fsw-1'],
-            keys: [{ component: 'CDH', channel: 'Attitude', key: 'value.x' }],
-            aggregation: 'avg',
-          } as MyQuery,
-        })}
-      />
-    );
+    await act(async () => {
+      render(
+        <QueryEditor
+          {...buildProps({
+            datasource: ds,
+            query: {
+              refId: 'A',
+              queryType: 'telemetry',
+              channels: [ch('CDH', 'Attitude')],
+              sources: ['fsw-1'],
+              keys: [{ component: 'CDH', channel: 'Attitude', key: 'value.x' }],
+              aggregation: 'avg',
+            } as MyQuery,
+          })}
+        />
+      );
+    });
     expect(screen.getByText('fsw-1')).toBeInTheDocument();
 
     await waitFor(() => {
@@ -266,13 +268,15 @@ describe('QueryEditor — Telemetry', () => {
 
 describe('QueryEditor — Events', () => {
   it('renders only source dropdown when queryType is events', async () => {
-    render(
-      <QueryEditor
-        {...buildProps({
-          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
-        })}
-      />
-    );
+    await act(async () => {
+      render(
+        <QueryEditor
+          {...buildProps({
+            query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+          })}
+        />
+      );
+    });
 
     expect(screen.getByRole('combobox', { name: /Source/ })).toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: /Event name/ })).not.toBeInTheDocument();
@@ -280,13 +284,15 @@ describe('QueryEditor — Events', () => {
   });
 
   it('hides telemetry fields when queryType is events', async () => {
-    render(
-      <QueryEditor
-        {...buildProps({
-          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
-        })}
-      />
-    );
+    await act(async () => {
+      render(
+        <QueryEditor
+          {...buildProps({
+            query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+          })}
+        />
+      );
+    });
 
     expect(screen.queryByRole('combobox', { name: /Channel/ })).not.toBeInTheDocument();
   });
@@ -328,20 +334,22 @@ describe('QueryEditor — Events', () => {
   });
 
   it('displays existing event source value', async () => {
-    render(
-      <QueryEditor
-        {...buildProps({
-          query: {
-            refId: 'A',
-            queryType: 'events',
-            channels: [],
-            sources: ['fsw-1'],
-            keys: [],
-            aggregation: 'avg',
-          } as MyQuery,
-        })}
-      />
-    );
+    await act(async () => {
+      render(
+        <QueryEditor
+          {...buildProps({
+            query: {
+              refId: 'A',
+              queryType: 'events',
+              channels: [],
+              sources: ['fsw-1'],
+              keys: [],
+              aggregation: 'avg',
+            } as MyQuery,
+          })}
+        />
+      );
+    });
 
     expect(screen.getByText('fsw-1')).toBeInTheDocument();
   });
@@ -395,21 +403,23 @@ describe('QueryEditor — Multi-select', () => {
 
   it('renders multiple selected sources', async () => {
     const ds = mockDatasource();
-    render(
-      <QueryEditor
-        {...buildProps({
-          datasource: ds,
-          query: {
-            refId: 'A',
-            queryType: 'telemetry',
-            channels: [ch('CDH', 'Temperature')],
-            sources: ['fsw-1', 'fsw-2'],
-            keys: [],
-            aggregation: 'avg',
-          } as MyQuery,
-        })}
-      />
-    );
+    await act(async () => {
+      render(
+        <QueryEditor
+          {...buildProps({
+            datasource: ds,
+            query: {
+              refId: 'A',
+              queryType: 'telemetry',
+              channels: [ch('CDH', 'Temperature')],
+              sources: ['fsw-1', 'fsw-2'],
+              keys: [],
+              aggregation: 'avg',
+            } as MyQuery,
+          })}
+        />
+      );
+    });
 
     // MultiCombobox in jsdom may only render visible pills
     expect(screen.getByText('fsw-1')).toBeInTheDocument();
@@ -441,47 +451,51 @@ describe('withDefaults', () => {
 });
 
 describe('QueryEditor — Time field toggle', () => {
-  it('renders Receive Time/On-board Time radio buttons for telemetry', () => {
-    render(<QueryEditor {...buildProps()} />);
+  it('renders Receive Time/On-board Time radio buttons for telemetry', async () => {
+    await act(async () => { render(<QueryEditor {...buildProps()} />); });
 
     expect(screen.getByRole('radio', { name: /Receive Time/ })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /On-board Time/ })).toBeInTheDocument();
   });
 
-  it('defaults to Receive Time when timeField is not set', () => {
-    render(<QueryEditor {...buildProps()} />);
+  it('defaults to Receive Time when timeField is not set', async () => {
+    await act(async () => { render(<QueryEditor {...buildProps()} />); });
 
     expect(screen.getByRole('radio', { name: /Receive Time/ })).toBeChecked();
   });
 
-  it('selects Receive Time when timeField is ert', () => {
-    render(
-      <QueryEditor
-        {...buildProps({
-          query: {
-            refId: 'A',
-            queryType: 'telemetry',
-            channels: [],
-            sources: [],
-            keys: [],
-            timeField: 'ert',
-            aggregation: 'avg',
-          } as MyQuery,
-        })}
-      />
-    );
+  it('selects Receive Time when timeField is ert', async () => {
+    await act(async () => {
+      render(
+        <QueryEditor
+          {...buildProps({
+            query: {
+              refId: 'A',
+              queryType: 'telemetry',
+              channels: [],
+              sources: [],
+              keys: [],
+              timeField: 'ert',
+              aggregation: 'avg',
+            } as MyQuery,
+          })}
+        />
+      );
+    });
 
     expect(screen.getByRole('radio', { name: /Receive Time/ })).toBeChecked();
   });
 
-  it('renders Receive Time/On-board Time radio buttons for events', () => {
-    render(
-      <QueryEditor
-        {...buildProps({
-          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
-        })}
-      />
-    );
+  it('renders Receive Time/On-board Time radio buttons for events', async () => {
+    await act(async () => {
+      render(
+        <QueryEditor
+          {...buildProps({
+            query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+          })}
+        />
+      );
+    });
 
     expect(screen.getByRole('radio', { name: /Receive Time/ })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /On-board Time/ })).toBeInTheDocument();
