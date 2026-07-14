@@ -73,40 +73,42 @@ export function buildTelemetryQuery(q: MyQuery, from: string, to: string): strin
         intervalExpr = `t.${q.timeField}`;
     }
 
-    let aggregationExpr;
-    let aggregationStringExpr = "MAX";
+    const intCol = "t.integral::double precision";
+    const floatCol = "t.floating::double precision";
+    const boolCol = "t.boolval::int::double precision";
+    const strCol = "t.string";
+
+    // wrap builds the aggregation expression for a column. numFn is applied to
+    // numeric columns and strFn to the string column (defaults to numFn).
+    const wrap = (numFn: (col: string) => string, strFn: (col: string) => string = numFn) =>
+        [numFn(intCol), numFn(floatCol), numFn(boolCol), strFn(strCol)];
+
+    const plain = (col: string) => col;
+    const call = (fn: string) => (col: string) => `${fn}(${col})`;
+    const ordered = (fn: string) => (col: string) => `${fn}(${col}, t.${q.timeField})`;
+
     let groupByExpr = `GROUP BY time_bucket, d.component, d.name, t.source, t.valueType, t.key`;
+    let aggInt: string, aggFloat: string, aggBool: string, aggStr: string;
     switch (q.aggregation) {
         case "raw":
-            aggregationExpr = "";
-            aggregationStringExpr = "";
+        case "deriv":
+            [aggInt, aggFloat, aggBool, aggStr] = wrap(plain);
             groupByExpr = "";
             break;
         case "avg":
-            aggregationExpr = "AVG";
+        case "sum":
+            [aggInt, aggFloat, aggBool, aggStr] = wrap(call(q.aggregation.toUpperCase()), call("MAX"));
             break;
         case "min":
-            aggregationExpr = "MIN";
-            break;
         case "max":
-            aggregationExpr = "MAX";
-            break;
-        case "first":
-            aggregationExpr = "FIRST";
-            break;
-        case "last":
-            aggregationExpr = "LAST";
-            break;
-        case "deriv":
-            aggregationExpr = "";
-            aggregationStringExpr = "";
-            groupByExpr = "";
-            break;
-        case "sum":
-            aggregationExpr = "SUM";
+            [aggInt, aggFloat, aggBool, aggStr] = wrap(call(q.aggregation.toUpperCase()));
             break;
         case "count":
-            aggregationExpr = "COUNT";
+            [aggInt, aggFloat, aggBool, aggStr] = wrap(call("COUNT"), (col) => `COUNT(${col})::text`);
+            break;
+        case "first":
+        case "last":
+            [aggInt, aggFloat, aggBool, aggStr] = wrap(ordered(q.aggregation));
             break;
         default:
             throw new Error(`Invalid aggregation type: ${q.aggregation}`);
@@ -120,10 +122,10 @@ export function buildTelemetryQuery(q: MyQuery, from: string, to: string): strin
 			t.source,
 			t.valueType,
 			t.key,
-			%s(t.integral::double precision) AS val_int,
-			%s(t.floating::double precision) AS val_float,
-			%s(t.boolval::int::double precision) AS val_bool,
-			%s(t.string) AS val_str 
+			%s AS val_int,
+			%s AS val_float,
+			%s AS val_bool,
+			%s AS val_str 
 		FROM telemetryDefs d
 		JOIN telemetry t ON t.telemetryDefId = d.id
 		WHERE (%s)
@@ -131,7 +133,7 @@ export function buildTelemetryQuery(q: MyQuery, from: string, to: string): strin
 		  AND t.%s >= %s AND t.%s <= %s
 		%s
 		ORDER BY time_bucket ASC;`,
-        intervalExpr, aggregationExpr, aggregationExpr, aggregationExpr, aggregationStringExpr,
+        intervalExpr, aggInt, aggFloat, aggBool, aggStr,
         channelPredicate, escArr(q.sources), escArr(q.sources),
         q.timeField, escDate(from), q.timeField, escDate(to), groupByExpr);
 

@@ -113,3 +113,83 @@ describe('buildTelemetryQuery — per-channel key scoping', () => {
     expect(() => buildTelemetryQuery(baseQuery({ channels: [] }), FROM, TO)).toThrow();
   });
 });
+
+describe('buildTelemetryQuery — aggregations', () => {
+  const aggQuery = (aggregation: string, timeField = 'ert') =>
+    baseQuery({
+      channels: [{ component: 'CDH', name: 'Temperature' }],
+      aggregation: aggregation as MyQuery['aggregation'],
+      timeField: timeField as MyQuery['timeField'],
+    });
+
+  it.each([
+    ['avg', 'AVG'],
+    ['min', 'MIN'],
+    ['max', 'MAX'],
+    ['sum', 'SUM'],
+  ])('wraps numeric columns with %s -> %s()', (agg, fn) => {
+    const sql = buildTelemetryQuery(aggQuery(agg), FROM, TO);
+    expect(sql).toContain(`${fn}(t.integral::double precision) AS val_int`);
+    expect(sql).toContain(`${fn}(t.floating::double precision) AS val_float`);
+    expect(sql).toContain(`${fn}(t.boolval::int::double precision) AS val_bool`);
+    expect(sql).toContain('time_bucket($__interval, t.ert)');
+    expect(sql).toContain('GROUP BY time_bucket');
+  });
+
+  it.each([
+    ['avg'],
+    ['sum'],
+  ])('uses MAX for the string column with %s', (agg) => {
+    const sql = buildTelemetryQuery(aggQuery(agg), FROM, TO);
+    expect(sql).toContain('MAX(t.string) AS val_str');
+  });
+
+  it.each([
+    ['min'],
+    ['max'],
+  ])('applies %s to the string column too', (agg) => {
+    const sql = buildTelemetryQuery(aggQuery(agg), FROM, TO);
+    expect(sql).toContain(`${agg.toUpperCase()}(t.string) AS val_str`);
+  });
+
+  it('casts count on the string column to text', () => {
+    const sql = buildTelemetryQuery(aggQuery('count'), FROM, TO);
+    expect(sql).toContain('COUNT(t.integral::double precision) AS val_int');
+    expect(sql).toContain('COUNT(t.string)::text AS val_str');
+  });
+
+  it.each([
+    ['first'],
+    ['last'],
+  ])('uses two-argument %s(value, time) TimescaleDB syntax', (agg) => {
+    const sql = buildTelemetryQuery(aggQuery(agg, 'ert'), FROM, TO);
+    expect(sql).toContain(`${agg}(t.integral::double precision, t.ert) AS val_int`);
+    expect(sql).toContain(`${agg}(t.floating::double precision, t.ert) AS val_float`);
+    expect(sql).toContain(`${agg}(t.boolval::int::double precision, t.ert) AS val_bool`);
+    expect(sql).toContain(`${agg}(t.string, t.ert) AS val_str`);
+    expect(sql).toContain('GROUP BY time_bucket');
+  });
+
+  it('threads the selected timeField into first/last', () => {
+    const sql = buildTelemetryQuery(aggQuery('last', 'time'), FROM, TO);
+    expect(sql).toContain('last(t.integral::double precision, t.time) AS val_int');
+  });
+
+  it.each([
+    ['raw'],
+    ['deriv'],
+  ])('does not aggregate or group for %s', (agg) => {
+    const sql = buildTelemetryQuery(aggQuery(agg), FROM, TO);
+    expect(sql).toContain('t.integral::double precision AS val_int');
+    expect(sql).toContain('t.string AS val_str');
+    expect(sql).not.toContain('GROUP BY');
+    expect(sql).not.toContain('time_bucket($__interval');
+    expect(sql).toContain('t.ert AS time_bucket');
+  });
+
+  it('throws on an unknown aggregation', () => {
+    expect(() => buildTelemetryQuery(aggQuery('bogus'), FROM, TO)).toThrow(
+      /Invalid aggregation type/
+    );
+  });
+});
