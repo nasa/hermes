@@ -86,7 +86,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download versioned package.json files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: package-jsons
 
@@ -206,17 +206,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download versioned package.json files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: package-jsons
 
       - name: Download TypeScript build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: typescript-build
 
       - name: Download backend binary
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: backend-${{ matrix.platform }}
           path: out/
@@ -276,12 +276,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download versioned package.json files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: package-jsons
 
       - name: Download TypeScript build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: typescript-build
 
@@ -333,7 +333,7 @@ jobs:
           - win32-arm64
     steps:
       - name: Download core extension artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: hermes-${{ needs.prepare.outputs.version }}-${{ matrix.platform }}
 
@@ -352,7 +352,7 @@ jobs:
     if: github.event_name == 'release'
     steps:
       - name: Download fprime extension artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: hermes-fprime-${{ needs.prepare.outputs.version }}
 
