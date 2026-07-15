@@ -46,7 +46,7 @@
         "@types/vscode": "^1.99.0",
         "@typescript-eslint/eslint-plugin": "^8.63.0",
         "@typescript-eslint/parser": "^8.63.0",
-        "@vscode/test-electron": "^3.0.0",
+        "@vscode/test-electron": "^2.2.0",
         "async": "^3.2.4",
         "esbuild": "0.24.0",
         "esbuild-css-modules-plugin": "^3.1.1",
