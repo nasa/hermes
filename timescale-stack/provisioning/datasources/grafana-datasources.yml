@@ -2,6 +2,7 @@ apiVersion: 1
 
 datasources:
   - name: TimescaleDB
+    uid: timescaledb
     type: postgres
     access: proxy
     url: timescaledb:5432
@@ -10,6 +11,9 @@ datasources:
     secureJsonData:
       password: "password"
     jsonData:
+      # Modern Grafana reads the database from jsonData; the deprecated
+      # top-level key is kept for older releases.
+      database: hermes
       sslmode: "disable"
       timescaledb: true
     isDefault: true

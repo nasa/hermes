@@ -74,3 +74,23 @@ CREATE TABLE IF NOT EXISTS telemetry (
 );
 
 SELECT add_dimension('telemetry', by_range('ert', INTERVAL '1 day'), if_not_exists => true);
+
+-- One row per finished file downlink. Low volume (a session emits a single
+-- record on completion), so a plain table — not a hypertable — is enough.
+CREATE TABLE IF NOT EXISTS fileDownlinks (
+    uid TEXT PRIMARY KEY,
+    timeStart TIMESTAMP WITH TIME ZONE,
+    timeEnd TIMESTAMP WITH TIME ZONE NOT NULL,
+    status TEXT,
+    source TEXT,
+    sourcePath TEXT,
+    destinationPath TEXT,
+    filePath TEXT,
+    fileSize BIGINT,
+    missingChunks JSONB,
+    missingBytes BIGINT,
+    duplicateChunks JSONB,
+    duplicateBytes BIGINT,
+    metadata JSONB,
+    ert TIMESTAMP WITH TIME ZONE NOT NULL
+);

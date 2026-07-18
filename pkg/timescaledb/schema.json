@@ -34,6 +34,12 @@
             "title": "Log Telemetry",
             "default": true,
             "description": "Push telemetry channels to this database."
+        },
+        "downlinks": {
+            "type": "boolean",
+            "title": "Log File Downlinks",
+            "default": true,
+            "description": "Push completed file downlink records to this database."
         }
     },
     "required": [

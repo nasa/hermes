@@ -20,7 +20,7 @@ var (
 //go:embed schema.json
 var schema string
 
-var uiSchema = `{"ui:order": ["host", "user", "password", "database", "events", "telemetry"]}`
+var uiSchema = `{"ui:order": ["host", "user", "password", "database", "events", "telemetry", "downlinks"]}`
 
 //go:embed schema.sql
 var schemaSql string
@@ -32,6 +32,7 @@ type Params struct {
 	Database  string `json:"database"`
 	Events    *bool  `json:"events,omitempty"`
 	Telemetry *bool  `json:"telemetry,omitempty"`
+	Downlinks *bool  `json:"downlinks,omitempty"`
 }
 
 // EventsEnabled reports whether events should be pushed. Profiles saved
@@ -44,6 +45,13 @@ func (p Params) EventsEnabled() bool {
 // saved before this option existed have no key and must stay enabled.
 func (p Params) TelemetryEnabled() bool {
 	return p.Telemetry == nil || *p.Telemetry
+}
+
+// DownlinksEnabled reports whether finished file downlinks should be pushed.
+// Profiles saved before this option existed have no key and must be enabled
+// so the downlink dashboard works without reconfiguration.
+func (p Params) DownlinksEnabled() bool {
+	return p.Downlinks == nil || *p.Downlinks
 }
 
 type timescaleDbProvider struct{}
@@ -107,6 +115,17 @@ func (t *timescaleDbProvider) Start(
 		})
 	} else {
 		session.Log().Info("telemetry logging to timescaledb is disabled by profile settings")
+	}
+
+	if settings.DownlinksEnabled() {
+		session.Log().Info("creating file downlink bus listener to push to timescaledb")
+		host.FileDownlink.On(ctx, func(msg *pb.FileDownlink) {
+			if err := InsertDownlink(ctx, db, msg); err != nil {
+				session.Log().Error("failed to insert file downlink to timescaledb", "err", err)
+			}
+		})
+	} else {
+		session.Log().Info("file downlink logging to timescaledb is disabled by profile settings")
 	}
 
 	<-ctx.Done()

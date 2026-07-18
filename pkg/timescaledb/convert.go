@@ -20,6 +20,8 @@ const (
 		VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`
 	insertTelemetrySQL = `INSERT INTO telemetry (time, telemetryDefId, timeSclk, source, labels, key, valueType, integral, floating, boolval, string, bytes, ert)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) ON CONFLICT DO NOTHING`
+	insertDownlinkSQL = `INSERT INTO fileDownlinks (uid, timeStart, timeEnd, status, source, sourcePath, destinationPath, filePath, fileSize, missingChunks, missingBytes, duplicateChunks, duplicateBytes, metadata, ert)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) ON CONFLICT DO NOTHING`
 )
 
 func valuesToAnys(values []*pb.Value) ([]any, error) {
@@ -101,6 +103,64 @@ func InsertTelemetry(ctx context.Context, db *sql.DB, msg *pb.SourcedTelemetry) 
 	}
 
 	return tx.Commit()
+}
+
+func chunkBytes(chunks []*pb.FileDownlinkChunk) int64 {
+	total := int64(0)
+	for _, chunk := range chunks {
+		total += int64(chunk.GetSize())
+	}
+	return total
+}
+
+// downlinkArgs builds the insertDownlinkSQL parameters (all but ert) from a
+// finished downlink. Status is stored as the enum name so dashboards can map
+// the same strings the OTEL log path exported via FileDownlink.Record().
+func downlinkArgs(msg *pb.FileDownlink) ([]any, error) {
+	missingChunks, err := json.Marshal(msg.GetMissingChunks())
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal missing chunks: %w", err)
+	}
+
+	duplicateChunks, err := json.Marshal(msg.GetDuplicateChunks())
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal duplicate chunks: %w", err)
+	}
+
+	metadata, err := json.Marshal(msg.GetMetadata())
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal metadata: %w", err)
+	}
+
+	return []any{
+		msg.GetUid(),
+		msg.GetTimeStart().AsTime(),
+		msg.GetTimeEnd().AsTime(),
+		msg.GetStatus().String(),
+		msg.GetSource(),
+		msg.GetSourcePath(),
+		msg.GetDestinationPath(),
+		msg.GetFilePath(),
+		int64(msg.GetSize()),
+		string(missingChunks),
+		chunkBytes(msg.GetMissingChunks()),
+		string(duplicateChunks),
+		chunkBytes(msg.GetDuplicateChunks()),
+		string(metadata),
+	}, nil
+}
+
+func InsertDownlink(ctx context.Context, db *sql.DB, msg *pb.FileDownlink) error {
+	args, err := downlinkArgs(msg)
+	if err != nil {
+		return fmt.Errorf("failed to convert file downlink: %w", err)
+	}
+
+	if _, err := db.ExecContext(ctx, insertDownlinkSQL, append(args, stdtime.Now())...); err != nil {
+		return fmt.Errorf("failed to insert file downlink: %w", err)
+	}
+
+	return nil
 }
 
 func insertValue(ctx context.Context, tx *sql.Tx, time *pb.Time, telemetryDefId int32, source string, labels string, path string, value *pb.Value) error {
