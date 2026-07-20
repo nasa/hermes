@@ -4,14 +4,20 @@ icon: brands/grafana
 
 # Grafana
 
-Check out [using Grafana with TimescaleDB](db/timescaledb#using-grafana-with-timescaledb-hermes-docker-compose).
+## Grafana Hermes Data Source Plugin
 
-## Installing the Hermes data source plugin
+Hermes offers a Grafana Datasource plugin to easily query Hermes telemetry and events data from TimescaleDB. The plugin offers a visual query builder, which you can use to query and aggregate telemetry and events data. Additionally you can manually write queries using the raw SQL editor.
+
+![Grafana Dashboards page configuring a new panel using the Hermes data source](../assets/grafana-plugin-query.png)
+
+You can set this up quickly using Hermes's default docker compose which includes TimescaleDB, Grafana, and the plugin. Check out [using Grafana with TimescaleDB](db/timescaledb#using-grafana-with-timescaledb-hermes-docker-compose).
+
+## Installing the Hermes Data Source Plugin
 
 The Hermes data source plugin is distributed as a release asset on GitHub.
 
-- If you are using the default [docker compose](https://github.com/nasa/hermes/blob/main/docker-compose.yml), the plugin is pre-installed with a pinned version, and you can skip directly to [verifying the installation](#verifying-the-installation).
-- Otherwise, you need to install the plugin following the steps below. Also, because it is **unsigned**, Grafana must be configured to allow it in addition to installing the files.
+- **If you are using the [default docker compose](db/timescaledb#using-grafana-with-timescaledb-hermes-docker-compose)**, the plugin is pre-installed with a pinned version, and you can skip directly to [verifying the installation](#verifying-the-installation).
+- Otherwise, you need to install the plugin following the steps below. Also, because it is unsigned, Grafana must be configured to allow it in addition to installing the files.
 
 After [allowing the unsigned plugin](#allowing-the-unsigned-plugin), pick the method that matches your setup:
 
@@ -99,7 +105,7 @@ docker run -d -p 3000:3000 \
   --name grafana grafana/grafana:latest
 ```
 
-### Verifying the installation
+### Verifying the Installation
 
 Open [http://localhost:3000](http://localhost:3000) (default login `admin` /
 `admin`), then navigate to **Administration → Plugins and data → Plugins** and
@@ -108,3 +114,16 @@ as an unsigned plugin.
 
 If it does not appear, confirm the plugin was extracted into the correct plugins
 directory and that [unsigned plugins are allowed](#allowing-the-unsigned-plugin).
+
+## Using the Hermes Data Source Plugin
+
+We will be using the default docker compose, which comes with a TimescaleDB instance located at `timescaledb:5432` in this tutorial. Once the plugin is installed, we can configure the Hermes data source by navigating to `Connections → Data sources`. You should see a Hermes data source. If you do not see one, add a new data source with type `Hermes`. Next, fill out the connection information. The default config parameters are shown in the screenshot below, with password `password`. Once done, click `Save & test` to test the connection.
+
+![Grafana Data Sources page configuring the Hermes data source with a blue "Save & test" button](../../assets/grafana-plugin-datasource.png)
+
+!!! note
+    We may add a `Hermes` field to the connection settings, which would connect to the Hermes backend for dictionary information. You can use `host.docker.internal:port` to connect to a Hermes instance outside of the docker, on your host machine.
+
+Once connected, we can visualize the data. Navigate to the `Dashboards` page and create a new dashboard. Add a panel and select `Configure visualization` on the panel. A query editor should pop up, as shown in the screenshot below. You can query your data using the form, starting with selecting the Hermes data source. The query will be automatically sent when you fill out a box. You can also use the refresh button on the top right to send the query.
+
+![Grafana Dashboards page configuring a new panel using the Hermes data source](../../assets/grafana-plugin-query.png)
