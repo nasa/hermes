@@ -68,7 +68,7 @@ jobs:
           mv src/extensions/fprime/package.json.tmp src/extensions/fprime/package.json
 
       - name: Upload versioned package.json files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: package-jsons
           path: |
@@ -103,7 +103,7 @@ jobs:
         run: yarn build
 
       - name: Upload TypeScript build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: typescript-build
           path: |
@@ -182,7 +182,7 @@ jobs:
         run: make out/backend
 
       - name: Upload backend binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-${{ matrix.platform }}
           path: out/backend*
@@ -253,7 +253,7 @@ jobs:
           vsce package --yarn --target ${{ matrix.platform }} -o ../../../hermes-${{ needs.prepare.outputs.version }}-${{ matrix.platform }}.vsix
 
       - name: Upload core extension artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hermes-${{ needs.prepare.outputs.version }}-${{ matrix.platform }}
           path: hermes-${{ needs.prepare.outputs.version }}-${{ matrix.platform }}.vsix
@@ -303,7 +303,7 @@ jobs:
           vsce package -o ../../../hermes-fprime-${{ needs.prepare.outputs.version }}.vsix
 
       - name: Upload fprime extension artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hermes-fprime-${{ needs.prepare.outputs.version }}
           path: hermes-fprime-${{ needs.prepare.outputs.version }}.vsix
