@@ -927,10 +927,10 @@
   dependencies:
     "@lit-labs/ssr-dom-shim" "^1.4.0"
 
-"@mcap/core@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@mcap/core/-/core-1.3.0.tgz#da4fc409a762970391409aa9fb145585fd0b4129"
-  integrity sha512-jzZqJkDaKy6gKma8/PsSGzkBifoHo1jSZbFPNq1UOVpVJGvVCgqbz8eu95yZp9ANWq3fa6deZCSqxeirXkeO/Q==
+"@mcap/core@^2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@mcap/core/-/core-2.2.1.tgz#752b46581353f0883350618804a1ca983b1bd750"
+  integrity sha512-Qj0NSqxmFA6DlwYZqlnYHApcQl6jaVAFcUlYxFJCRKK6dymJAfdw98EIGnzAxLi/xw6rjQ8GFRyVzuoswFn+UA==
   dependencies:
     "@foxglove/crc" "^0.0.3"
     heap-js "^2.2.0"
