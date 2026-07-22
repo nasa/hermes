@@ -15,7 +15,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      GF_INSTALL_PLUGINS: "https://github.com/nasa/hermes/releases/download/v5.0.0/nasa-hermes-datasource-5.0.0.zip;nasa-hermes-datasource"
+      GF_INSTALL_PLUGINS: "https://github.com/nasa/hermes/releases/latest/download/nasa-hermes-datasource.zip;nasa-hermes-datasource"
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: nasa-hermes-datasource
     depends_on:
       timescaledb:
