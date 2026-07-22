@@ -7,12 +7,12 @@
     "sideEffects": false,
     "dependencies": {
         "@mcap/core": "^2.2.1",
-        "@types/node": "22.19.15",
+        "@types/node": "26.1.1",
         "@types/uuid": "^9.0.0",
         "ajv": "8.13.0",
         "buffer": "^6.0.3",
         "uuid": "^9.0.0",
-        "winston": "^3.11.0"
+        "winston": "^3.19.0"
     },
     "gitHead": "ae5d9bc28a728716fe9a9f81930c9ad8be87f55e",
     "devDependencies": {
