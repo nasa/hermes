@@ -32,7 +32,7 @@ jobs:
     env:
       GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Setup Node.js environment
@@ -150,7 +150,7 @@ jobs:
       matrix: ${{ steps.resolve-versions.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -179,7 +179,7 @@ jobs:
       run:
         working-directory: ./grafana-datasource-plugin
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
