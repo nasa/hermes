@@ -50,7 +50,7 @@ RUN rm -rf /var/lib/apt/lists/*
 WORKDIR /workspace
 
 # Copy virtual environment and built artifacts from builder
-COPY --from=fprime-builder /workspace/fprime/TestDeploymentsProject/Ref/build-artifacts /workspace
+COPY --from=fprime-builder /workspace/fprime/TestDeploymentsProject/build-artifacts /workspace
 
 ENV GROUND_ADDRESS=localhost
 ENV GROUND_PORT=50050
