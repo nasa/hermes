@@ -1,0 +1,94 @@
+# Thie workflow follows https://github.com/grafana/plugin-actions/tree/main/build-plugin, but is modifed to work with this monorepo.
+
+name: Grafana Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: grafana-datasource-plugin
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./grafana-datasource-plugin/go.mod
+
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Build frontend
+        run: npm run build
+
+      - name: Test backend
+        uses: magefile/mage-action@v4
+        with:
+          version: latest
+          args: coverage
+          workdir: ./grafana-datasource-plugin
+      - name: Build backend
+        uses: magefile/mage-action@v4
+        with:
+          version: latest
+          args: buildAll
+          workdir: ./grafana-datasource-plugin
+
+      - name: Get plugin metadata
+        id: metadata
+        run: |
+          sudo apt-get install jq
+
+          export GRAFANA_PLUGIN_ID=$(cat dist/plugin.json | jq -r .id)
+          export GRAFANA_PLUGIN_VERSION=$(cat dist/plugin.json | jq -r .info.version)
+          export GRAFANA_PLUGIN_TYPE=$(cat dist/plugin.json | jq -r .type)
+          export GRAFANA_PLUGIN_ARTIFACT=${GRAFANA_PLUGIN_ID}-${GRAFANA_PLUGIN_VERSION}.zip
+          export GRAFANA_PLUGIN_ARTIFACT_SHA1SUM=${GRAFANA_PLUGIN_ARTIFACT}.sha1
+
+          echo "plugin-id=${GRAFANA_PLUGIN_ID}" >> $GITHUB_OUTPUT
+          echo "plugin-version=${GRAFANA_PLUGIN_VERSION}" >> $GITHUB_OUTPUT
+          echo "plugin-type=${GRAFANA_PLUGIN_TYPE}" >> $GITHUB_OUTPUT
+          echo "archive=${GRAFANA_PLUGIN_ARTIFACT}" >> $GITHUB_OUTPUT
+          echo "archive-sha1sum=${GRAFANA_PLUGIN_ARTIFACT_SHA1SUM}" >> $GITHUB_OUTPUT
+
+          echo "github-tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+        shell: bash
+        working-directory: ./grafana-datasource-plugin
+      - name: Package plugin
+        id: package-plugin
+        run: |
+          mv dist $PLUGIN_ID
+          zip $PLUGIN_ARCHIVE $PLUGIN_ID -r
+          sha1sum $PLUGIN_ARCHIVE | cut -f1 -d' ' > $PLUGIN_ARCHIVE_SHA1SUM
+        shell: bash
+        env:
+          PLUGIN_ID: ${{ steps.metadata.outputs.plugin-id }}
+          PLUGIN_ARCHIVE: ${{ steps.metadata.outputs.archive }}
+          PLUGIN_ARCHIVE_SHA1SUM: ${{ steps.metadata.outputs.archive-sha1sum }}
+        working-directory: ./grafana-datasource-plugin
+
+      - name: Validate plugin
+        run: |
+          npx -y @grafana/plugin-validator@latest -sourceCodeUri file://./ $PLUGIN_ARCHIVE
+        shell: bash
+        env:
+          PLUGIN_ARCHIVE: ${{ steps.metadata.outputs.archive }}
+        working-directory: ./grafana-datasource-plugin
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./grafana-datasource-plugin/${{ steps.metadata.outputs.archive }}
+            ./grafana-datasource-plugin/${{ steps.metadata.outputs.archive-sha1sum }}
