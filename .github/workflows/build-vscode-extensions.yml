@@ -91,7 +91,7 @@ jobs:
           name: package-jsons
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'yarn'
@@ -222,7 +222,7 @@ jobs:
           path: out/
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'yarn'
@@ -286,7 +286,7 @@ jobs:
           name: typescript-build
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'yarn'
