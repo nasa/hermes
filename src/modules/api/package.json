@@ -12,7 +12,7 @@
         "ajv": "8.13.0",
         "buffer": "^6.0.3",
         "uuid": "^9.0.0",
-        "winston": "^3.11.0"
+        "winston": "^3.19.0"
     },
     "gitHead": "ae5d9bc28a728716fe9a9f81930c9ad8be87f55e",
     "devDependencies": {
