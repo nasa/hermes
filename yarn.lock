@@ -2319,15 +2319,10 @@
     "@lit/react" "^1.0.7"
     "@vscode-elements/elements" "^2.4.0"
 
-"@vscode/codicons@^0.0.36":
-  version "0.0.36"
-  resolved "https://registry.yarnpkg.com/@vscode/codicons/-/codicons-0.0.36.tgz#ccdabfaef5db596b266644ab85fc25aa701058f0"
-  integrity sha512-wsNOvNMMJ2BY8rC2N2MNBG7yOowV3ov8KlvUE/AiVUlHKTfWsw3OgAOQduX7h0Un6GssKD3aoTVH+TF3DSQwKQ==
-
-"@vscode/codicons@^0.0.44":
-  version "0.0.44"
-  resolved "https://registry.yarnpkg.com/@vscode/codicons/-/codicons-0.0.44.tgz#c1b6bebc5ae318314894df0e4dc154bd26946c6c"
-  integrity sha512-F7qPRumUK3EHjNdopfICLGRf3iNPoZQt+McTHAn4AlOWPB3W2kL4H0S7uqEqbyZ6rCxaeDjpAn3MCUnwTu/VJQ==
+"@vscode/codicons@^0.0.45":
+  version "0.0.45"
+  resolved "https://registry.yarnpkg.com/@vscode/codicons/-/codicons-0.0.45.tgz#e5d0531d3c8d0ba26e7b9175ae2e0e579cc73d4f"
+  integrity sha512-1KAZ7XCMagp5Gdrlr4bbbcAqgcIL623iO1wW6rfcSVGAVUQvR0WP7bQx1SbJ11gmV3fdQTSEFIJQ/5C+HuVasw==
 
 "@vscode/test-electron@^2.2.0":
   version "2.4.1"
