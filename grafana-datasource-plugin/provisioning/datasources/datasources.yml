@@ -1,0 +1,16 @@
+apiVersion: 1
+
+datasources:
+  - name: 'hermes-datasource'
+    type: 'nasa-hermes-datasource'
+    access: proxy
+    isDefault: false
+    orgId: 1
+    version: 1
+    editable: true
+    jsonData:
+      host: 'timescaledb:5432'
+      user: 'postgres'
+      database: 'hermes'
+    secureJsonData:
+      password: 'password'

@@ -25,11 +25,25 @@ var (
 //go:embed schema.json
 var schema string
 
+var uiSchema = `{"ui:order": ["endpoint", "serviceName", "events", "telemetry"]}`
+
 type Params struct {
 	Endpoint    string `json:"endpoint"`
 	ServiceName string `json:"serviceName"`
-	Events      bool   `json:"events"`
-	Telemetry   bool   `json:"telemetry"`
+	Events      *bool  `json:"events,omitempty"`
+	Telemetry   *bool  `json:"telemetry,omitempty"`
+}
+
+// EventsEnabled reports whether events should be pushed. Profiles saved
+// before this option existed have no key and must stay enabled.
+func (p Params) EventsEnabled() bool {
+	return p.Events == nil || *p.Events
+}
+
+// TelemetryEnabled reports whether telemetry should be pushed. Profiles
+// saved before this option existed have no key and must stay enabled.
+func (p Params) TelemetryEnabled() bool {
+	return p.Telemetry == nil || *p.Telemetry
 }
 
 type otelProvider struct{}
@@ -38,8 +52,6 @@ func (o *otelProvider) Default() Params {
 	return Params{
 		Endpoint:    "localhost:4317",
 		ServiceName: "hermes",
-		Events:      true,
-		Telemetry:   true,
 	}
 }
 
@@ -48,7 +60,7 @@ func (o *otelProvider) Start(
 	settings Params,
 	session host.ConnectSession,
 ) error {
-	if !settings.Events && !settings.Telemetry {
+	if !settings.EventsEnabled() && !settings.TelemetryEnabled() {
 		return fmt.Errorf("at least one of events or telemetry must be enabled")
 	}
 
@@ -61,7 +73,7 @@ func (o *otelProvider) Start(
 		return fmt.Errorf("failed to create OTEL resource: %w", err)
 	}
 
-	if settings.Events {
+	if settings.EventsEnabled() {
 		session.Log().Info("exporting events to OTEL collector")
 
 		logOpts := []otlploggrpc.Option{otlploggrpc.WithInsecure()}
@@ -88,9 +100,11 @@ func (o *otelProvider) Start(
 		host.Event.On(ctx, func(msg *pb.SourcedEvent) {
 			handler.Handle(context.Background(), msg.GetEvent().Record())
 		})
+	} else {
+		session.Log().Info("event logging to OTEL collector is disabled by profile settings")
 	}
 
-	if settings.Telemetry {
+	if settings.TelemetryEnabled() {
 		session.Log().Info("exporting telemetry to OTEL collector")
 
 		metricOpts := []otlpmetricgrpc.Option{otlpmetricgrpc.WithInsecure()}
@@ -140,6 +154,8 @@ func (o *otelProvider) Start(
 				cache <- m
 			}
 		})
+	} else {
+		session.Log().Info("telemetry logging to OTEL collector is disabled by profile settings")
 	}
 
 	session.Started()
@@ -153,7 +169,7 @@ func Init() error {
 		"OpenTelemetry",
 		&otelProvider{},
 		schema,
-		`{"ui:order": ["endpoint", "serviceName", "events", "telemetry"]}`,
+		uiSchema,
 	)
 	return err
 }
