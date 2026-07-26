@@ -6,6 +6,7 @@
 #
 Hermes is a plugin driven spacecraft telemetry processing and commanding
 framework built around a variety of mature open-source software.
+It is developed at [NASA JPL](https://www.jpl.nasa.gov).
 
 ![alt text](docs/assets/full-screenshot.png)
 
