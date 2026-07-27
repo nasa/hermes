@@ -1,0 +1,50 @@
+{
+    "type": "object",
+    "description": "TCP Relay that enables multiple connections to a single TCP source port. Supports both duplex (bidirectional) and readable (downlink-only) relay ports.",
+    "properties": {
+        "sourceAddress": {
+            "type": "string",
+            "title": "Source Address",
+            "description": "Address of the source TCP socket to connect to",
+            "default": "localhost"
+        },
+        "sourcePort": {
+            "type": "integer",
+            "title": "Source Port",
+            "description": "Port of the source TCP socket to connect to",
+            "minimum": 1,
+            "maximum": 65535
+        },
+        "serverMode": {
+            "type": "boolean",
+            "title": "Server Mode",
+            "default": false,
+            "description": "If true, act as a TCP server for the source connection instead of connecting to an active server"
+        },
+        "duplexPorts": {
+            "type": "array",
+            "title": "Duplex Ports",
+            "description": "Relay ports that support both reading and writing (bidirectional). Data written to these ports is relayed back to the source.",
+            "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+            },
+            "default": []
+        },
+        "readablePorts": {
+            "type": "array",
+            "title": "Readable Ports",
+            "description": "Relay ports that only support reading (downlink-only). Data written to these ports will be dropped with a warning.",
+            "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 65535
+            },
+            "default": []
+        }
+    },
+    "required": [
+        "sourcePort"
+    ]
+}
