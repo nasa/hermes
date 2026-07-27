@@ -1,11 +1,16 @@
 package tcprelay
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"net"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -15,9 +20,121 @@ import (
 )
 
 const (
-	testTimeout    = 5 * time.Second
+	testTimeout    = 10 * time.Second
 	connectTimeout = 2 * time.Second
 )
+
+type relayProcess struct {
+	cmd    *exec.Cmd
+	cancel context.CancelFunc
+	t      *testing.T
+}
+
+func startRelay(t *testing.T, ctx context.Context, sourcePort int, duplexPorts []int, readablePorts []int, serverMode bool) relayProcess {
+	scriptPath := filepath.Join("..", "..", "src", "scripts", "out", "tcp-relay")
+	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
+		require.FailNow(t, fmt.Sprintf("tcp-relay script not found at %s (run build first)", scriptPath))
+	}
+
+	// Build command line args
+	args := []string{
+		"--source-port", fmt.Sprintf("%d", sourcePort),
+	}
+	if serverMode {
+		args = append(args, "--server")
+	}
+	for _, port := range duplexPorts {
+		args = append(args, "--duplex-ports", fmt.Sprintf("%d", port))
+	}
+	for _, port := range readablePorts {
+		args = append(args, "--readable-ports", fmt.Sprintf("%d", port))
+	}
+
+	cmdCtx, cancel := context.WithCancel(ctx)
+	cmd := exec.CommandContext(cmdCtx, scriptPath, args...)
+
+	stdout, err := cmd.StdoutPipe()
+	require.NoError(t, err)
+	stderr, err := cmd.StderrPipe()
+	require.NoError(t, err)
+
+	err = cmd.Start()
+	require.NoError(t, err)
+
+	t.Logf("Started tcp-relay (PID %d): %s", cmd.Process.Pid, strings.Join(cmd.Args, " "))
+
+	go func() {
+		scanner := bufio.NewScanner(stderr)
+		if err := scanner.Err(); err != nil {
+			t.Logf("Error reading tcp-relay stderr: %v", err)
+		}
+		for scanner.Scan() {
+			t.Logf("tcp-relay stderr: %s", scanner.Text())
+		}
+	}()
+
+	waitForRelayStartup(t, stdout)
+	return relayProcess{
+		cmd:    cmd,
+		cancel: cancel,
+		t:      t,
+	}
+}
+
+func waitForRelayStartup(t *testing.T, stdout io.Reader) {
+	scanner := bufio.NewScanner(stdout)
+	foundSource := false
+	foundRelay := false
+	deadline := time.Now().Add(5 * time.Second)
+
+	go func() {
+		if err := scanner.Err(); err != nil {
+			t.Logf("Error reading tcp-relay stdout: %v", err)
+		}
+		for scanner.Scan() {
+			line := scanner.Text()
+			t.Logf("tcp-relay: %s", line)
+
+			if strings.Contains(line, "Source connection active") || strings.Contains(line, "Source server listening") {
+				foundSource = true
+			}
+			if strings.Contains(line, "listening on port") {
+				foundRelay = true
+			}
+		}
+	}()
+
+	for time.Now().Before(deadline) {
+		if foundSource && foundRelay {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	require.FailNow(t, fmt.Sprintf("tcp-relay did not start (source=%v, relay=%v)", foundSource, foundRelay))
+}
+
+func (p *relayProcess) Stop() {
+	if p.cancel != nil {
+		p.cancel()
+	}
+
+	if p.cmd != nil && p.cmd.Process != nil {
+		p.t.Logf("Stopping tcp-relay (PID %d)", p.cmd.Process.Pid)
+		p.cmd.Process.Signal(os.Interrupt)
+
+		done := make(chan error, 1)
+		go func() {
+			done <- p.cmd.Wait()
+		}()
+
+		select {
+		case <-done:
+		case <-time.After(2 * time.Second):
+			p.cmd.Process.Kill()
+		}
+	}
+}
 
 // mockTCPSource simulates a Hermes backend TCP source port
 type mockTCPSource struct {
@@ -25,26 +142,30 @@ type mockTCPSource struct {
 	port     int
 	conns    []net.Conn
 	mu       sync.Mutex
+	t        *testing.T
 }
 
-func newMockTCPSource(t *testing.T) *mockTCPSource {
-	listener, err := net.Listen("tcp", "localhost:0")
+func newMockSource(t *testing.T, port int) *mockTCPSource {
+	var listener net.Listener
+	var err error
+
+	listener, err = net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 	require.NoError(t, err)
 
-	port := listener.Addr().(*net.TCPAddr).Port
-
+	actualPort := listener.Addr().(*net.TCPAddr).Port
 	mock := &mockTCPSource{
 		listener: listener,
-		port:     port,
+		port:     actualPort,
+		t:        t,
 	}
 
-	// Accept connections in background
 	go func() {
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
 				return
 			}
+			t.Logf("Mock source accepted connection from %s", conn.RemoteAddr())
 			mock.mu.Lock()
 			mock.conns = append(mock.conns, conn)
 			mock.mu.Unlock()
@@ -60,10 +181,6 @@ func newMockTCPSource(t *testing.T) *mockTCPSource {
 
 func (m *mockTCPSource) Port() int {
 	return m.port
-}
-
-func (m *mockTCPSource) Address() string {
-	return fmt.Sprintf("localhost:%d", m.port)
 }
 
 func (m *mockTCPSource) WaitForConnection(timeout time.Duration) (net.Conn, error) {
@@ -90,139 +207,39 @@ func (m *mockTCPSource) Close() {
 	}
 }
 
-// TestSourceConnection tests connecting to a TCP source (client mode)
-func TestSourceConnection(t *testing.T) {
-	source := newMockTCPSource(t)
+func TestRelayDuplex(t *testing.T) {
+	source := newMockSource(t, 50100)
+	ctx := context.Background()
 
-	// Connect to source
-	ctx, cancel := context.WithTimeout(context.Background(), connectTimeout)
-	defer cancel()
+	duplexPort := 50101
+	relay := startRelay(t, ctx, source.Port(), []int{duplexPort}, nil, false)
+	defer relay.Stop()
+	time.Sleep(500 * time.Millisecond)
 
-	dialer := &net.Dialer{}
-	conn, err := dialer.DialContext(ctx, "tcp", source.Address())
-	require.NoError(t, err)
-	defer conn.Close()
-
-	// Verify source received connection
-	serverConn, err := source.WaitForConnection(testTimeout)
-	require.NoError(t, err)
-	assert.NotNil(t, serverConn)
-}
-
-// TestServerMode tests tcp-relay acting as a TCP server for the source
-func TestServerMode(t *testing.T) {
-	// Start a TCP server for the source to connect to (relay in server mode)
-	relayListener, err := net.Listen("tcp", "localhost:0")
-	require.NoError(t, err)
-	defer relayListener.Close()
-
-	relayPort := relayListener.Addr().(*net.TCPAddr).Port
-
-	// Channel to receive the source connection
-	sourceConnChan := make(chan net.Conn, 1)
-
-	// Accept source connection
-	go func() {
-		conn, err := relayListener.Accept()
-		if err != nil {
-			return
-		}
-		sourceConnChan <- conn
-	}()
-
-	// Source connects to relay (relay is in server mode)
-	sourceConn, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", relayPort))
+	sourceConn, err := source.WaitForConnection(testTimeout)
 	require.NoError(t, err)
 	defer sourceConn.Close()
 
-	// Get the relay's view of the source connection
-	var relaySourceConn net.Conn
-	select {
-	case relaySourceConn = <-sourceConnChan:
-	case <-time.After(testTimeout):
-		t.Fatal("Relay did not accept source connection")
-	}
-	defer relaySourceConn.Close()
-
-	// Test data flow from source through relay
-	testData := []byte("data from source in server mode")
-	_, err = sourceConn.Write(testData)
-	require.NoError(t, err)
-
-	received := make([]byte, len(testData))
-	relaySourceConn.SetReadDeadline(time.Now().Add(testTimeout))
-	n, err := io.ReadFull(relaySourceConn, received)
-	require.NoError(t, err)
-	assert.Equal(t, len(testData), n)
-	assert.Equal(t, testData, received)
-}
-
-// TestDuplexRelay tests bidirectional relay
-func TestDuplexRelay(t *testing.T) {
-	source := newMockTCPSource(t)
-
-	// Connect relay to source
-	sourceConn, err := net.Dial("tcp", source.Address())
-	require.NoError(t, err)
-	defer sourceConn.Close()
-
-	// Get server-side connection
-	serverConn, err := source.WaitForConnection(testTimeout)
-	require.NoError(t, err)
-	defer serverConn.Close()
-
-	// Start relay server
-	relayListener, err := net.Listen("tcp", "localhost:0")
-	require.NoError(t, err)
-	defer relayListener.Close()
-
-	relayPort := relayListener.Addr().(*net.TCPAddr).Port
-
-	// Handle relay connection with bidirectional forwarding
-	go func() {
-		relayConn, err := relayListener.Accept()
-		if err != nil {
-			return
-		}
-		defer relayConn.Close()
-
-		done := make(chan struct{}, 2)
-		// Downlink: source -> relay client
-		go func() {
-			io.Copy(relayConn, sourceConn)
-			done <- struct{}{}
-		}()
-		// Uplink: relay client -> source
-		go func() {
-			io.Copy(sourceConn, relayConn)
-			done <- struct{}{}
-		}()
-		<-done
-		<-done
-	}()
-
-	// Connect client to relay
-	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", relayPort))
+	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", duplexPort))
 	require.NoError(t, err)
 	defer relayClient.Close()
-
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(200 * time.Millisecond)
 
 	// Test uplink: client -> relay -> source
-	uplinkData := []byte("uplink message")
+	uplinkData := []byte("uplink test")
 	_, err = relayClient.Write(uplinkData)
 	require.NoError(t, err)
 
 	uplinkReceived := make([]byte, len(uplinkData))
-	serverConn.SetReadDeadline(time.Now().Add(testTimeout))
-	n, err := io.ReadFull(serverConn, uplinkReceived)
+	sourceConn.SetReadDeadline(time.Now().Add(testTimeout))
+	n, err := io.ReadFull(sourceConn, uplinkReceived)
 	require.NoError(t, err)
 	assert.Equal(t, len(uplinkData), n)
-	assert.Equal(t, uplinkData, uplinkReceived)
+	assert.Equal(t, uplinkData, uplinkReceived, "Uplink data should be relayed")
 
 	// Test downlink: source -> relay -> client
-	downlinkData := []byte("downlink message")
-	_, err = serverConn.Write(downlinkData)
+	downlinkData := []byte("downlink test")
+	_, err = sourceConn.Write(downlinkData)
 	require.NoError(t, err)
 
 	downlinkReceived := make([]byte, len(downlinkData))
@@ -230,63 +247,30 @@ func TestDuplexRelay(t *testing.T) {
 	n, err = io.ReadFull(relayClient, downlinkReceived)
 	require.NoError(t, err)
 	assert.Equal(t, len(downlinkData), n)
-	assert.Equal(t, downlinkData, downlinkReceived)
+	assert.Equal(t, downlinkData, downlinkReceived, "Downlink data should be relayed")
 }
 
-// TestReadableRelay tests downlink-only relay
-func TestReadableRelay(t *testing.T) {
-	source := newMockTCPSource(t)
+func TestRelayReadable(t *testing.T) {
+	source := newMockSource(t, 50110)
+	ctx := context.Background()
 
-	// Connect relay to source
-	sourceConn, err := net.Dial("tcp", source.Address())
+	readablePort := 50111
+	relay := startRelay(t, ctx, source.Port(), nil, []int{readablePort}, false)
+	defer relay.Stop()
+	time.Sleep(500 * time.Millisecond)
+
+	sourceConn, err := source.WaitForConnection(testTimeout)
 	require.NoError(t, err)
 	defer sourceConn.Close()
 
-	serverConn, err := source.WaitForConnection(testTimeout)
-	require.NoError(t, err)
-	defer serverConn.Close()
-
-	// Start readable-only relay
-	relayListener, err := net.Listen("tcp", "localhost:0")
-	require.NoError(t, err)
-	defer relayListener.Close()
-
-	relayPort := relayListener.Addr().(*net.TCPAddr).Port
-
-	// Handle relay: only forward downlink, drop uplink
-	go func() {
-		relayConn, err := relayListener.Accept()
-		if err != nil {
-			return
-		}
-		defer relayConn.Close()
-
-		// Drop uplink data (readable mode)
-		go func() {
-			buf := make([]byte, 4096)
-			for {
-				_, err := relayConn.Read(buf)
-				if err != nil {
-					return
-				}
-				// Data is dropped
-			}
-		}()
-
-		// Only copy downlink
-		io.Copy(relayConn, sourceConn)
-	}()
-
-	// Connect client
-	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", relayPort))
+	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", readablePort))
 	require.NoError(t, err)
 	defer relayClient.Close()
-
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(200 * time.Millisecond)
 
 	// Test downlink works
 	downlinkData := []byte("downlink only")
-	_, err = serverConn.Write(downlinkData)
+	_, err = sourceConn.Write(downlinkData)
 	require.NoError(t, err)
 
 	downlinkReceived := make([]byte, len(downlinkData))
@@ -296,208 +280,82 @@ func TestReadableRelay(t *testing.T) {
 	assert.Equal(t, len(downlinkData), n)
 	assert.Equal(t, downlinkData, downlinkReceived)
 
-	// Test uplink is dropped
-	uplinkData := []byte("uplink dropped")
+	// Test uplink is dropped (not sent to source)
+	uplinkData := []byte("uplink should be dropped")
 	_, err = relayClient.Write(uplinkData)
 	require.NoError(t, err)
 
-	// Server should NOT receive uplink
-	serverConn.SetReadDeadline(time.Now().Add(300 * time.Millisecond))
+	// Source should NOT receive uplink
+	sourceConn.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
 	buf := make([]byte, len(uplinkData))
-	_, err = serverConn.Read(buf)
+	_, err = sourceConn.Read(buf)
 	assert.Error(t, err, "Source should not receive uplink in readable mode")
 }
 
-// TestMultipleRelayConnections tests one source broadcasting to multiple relay clients
-func TestMultipleRelayConnections(t *testing.T) {
-	source := newMockTCPSource(t)
+func TestRelayMultipleClients(t *testing.T) {
+	source := newMockSource(t, 50120)
+	ctx := context.Background()
 
-	// Connect relay to source
-	sourceConn, err := net.Dial("tcp", source.Address())
+	duplexPort := 50121
+	relay := startRelay(t, ctx, source.Port(), []int{duplexPort}, nil, false)
+	defer relay.Stop()
+	time.Sleep(500 * time.Millisecond)
+
+	sourceConn, err := source.WaitForConnection(testTimeout)
 	require.NoError(t, err)
 	defer sourceConn.Close()
 
-	serverConn, err := source.WaitForConnection(testTimeout)
-	require.NoError(t, err)
-	defer serverConn.Close()
-
-	// Start relay that broadcasts to multiple clients
-	relayListener, err := net.Listen("tcp", "localhost:0")
-	require.NoError(t, err)
-	defer relayListener.Close()
-
-	relayPort := relayListener.Addr().(*net.TCPAddr).Port
-
-	// Track relay connections for broadcasting
-	type relayConn struct {
-		conn net.Conn
-		mu   sync.Mutex
-	}
-	var relayConns []*relayConn
-	var connMu sync.Mutex
-
-	// Accept multiple connections and broadcast
-	go func() {
-		for {
-			conn, err := relayListener.Accept()
-			if err != nil {
-				return
-			}
-
-			rc := &relayConn{conn: conn}
-			connMu.Lock()
-			relayConns = append(relayConns, rc)
-			connMu.Unlock()
-		}
-	}()
-
-	// Background goroutine to broadcast from source to all relay clients
-	go func() {
-		buf := make([]byte, 4096)
-		for {
-			n, err := sourceConn.Read(buf)
-			if err != nil {
-				return
-			}
-
-			data := make([]byte, n)
-			copy(data, buf[:n])
-
-			// Broadcast to all connected clients
-			connMu.Lock()
-			for _, rc := range relayConns {
-				go func(rc *relayConn, data []byte) {
-					rc.mu.Lock()
-					rc.conn.Write(data)
-					rc.mu.Unlock()
-				}(rc, data)
-			}
-			connMu.Unlock()
-		}
-	}()
-
-	// Connect multiple clients
 	const numClients = 3
 	clients := make([]net.Conn, numClients)
 	for i := range numClients {
-		client, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", relayPort))
+		client, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", duplexPort))
 		require.NoError(t, err)
 		defer client.Close()
 		clients[i] = client
+		time.Sleep(50 * time.Millisecond)
 	}
-
-	// Wait for all connections
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(200 * time.Millisecond)
 
 	// Send broadcast message from source
-	testData := []byte("broadcast message")
-	_, err = serverConn.Write(testData)
+	broadcastData := []byte("broadcast to all")
+	_, err = sourceConn.Write(broadcastData)
 	require.NoError(t, err)
 
 	// Each client should receive the message
 	for i, client := range clients {
-		received := make([]byte, len(testData))
+		received := make([]byte, len(broadcastData))
 		client.SetReadDeadline(time.Now().Add(testTimeout))
 		n, err := io.ReadFull(client, received)
-		require.NoError(t, err, "Client %d should receive", i)
-		assert.Equal(t, len(testData), n)
-		assert.Equal(t, testData, received)
+		require.NoError(t, err, "Client %d should receive broadcast", i)
+		assert.Equal(t, len(broadcastData), n)
+		assert.Equal(t, broadcastData, received)
 	}
 }
 
-// TestSourceReconnection tests handling of source reconnection
-func TestSourceReconnection(t *testing.T) {
-	// Create two separate mock sources to avoid race conditions
-	source1 := newMockTCPSource(t)
+func TestRelayLargeData(t *testing.T) {
+	source := newMockSource(t, 50130)
+	ctx := context.Background()
 
-	// First connection
-	conn1, err := net.Dial("tcp", source1.Address())
-	require.NoError(t, err)
+	duplexPort := 50131
+	relay := startRelay(t, ctx, source.Port(), []int{duplexPort}, nil, false)
+	defer relay.Stop()
+	time.Sleep(500 * time.Millisecond)
 
-	serverConn1, err := source1.WaitForConnection(testTimeout)
-	require.NoError(t, err)
-
-	// Send some data
-	testData := []byte("first connection")
-	_, err = conn1.Write(testData)
-	require.NoError(t, err)
-
-	received := make([]byte, len(testData))
-	serverConn1.SetReadDeadline(time.Now().Add(testTimeout))
-	_, err = io.ReadFull(serverConn1, received)
-	require.NoError(t, err)
-	assert.Equal(t, testData, received)
-
-	// Close first connection
-	conn1.Close()
-	serverConn1.Close()
-
-	// Create new source for reconnection
-	source2 := newMockTCPSource(t)
-
-	// Second connection (reconnection to new source)
-	conn2, err := net.Dial("tcp", source2.Address())
-	require.NoError(t, err)
-	defer conn2.Close()
-
-	serverConn2, err := source2.WaitForConnection(testTimeout)
-	require.NoError(t, err)
-	defer serverConn2.Close()
-
-	// Verify second connection works
-	testData2 := []byte("second connection")
-	_, err = conn2.Write(testData2)
-	require.NoError(t, err)
-
-	received2 := make([]byte, len(testData2))
-	serverConn2.SetReadDeadline(time.Now().Add(testTimeout))
-	_, err = io.ReadFull(serverConn2, received2)
-	require.NoError(t, err)
-	assert.Equal(t, testData2, received2)
-}
-
-// TestLargeDataTransfer tests relay with large payloads
-func TestLargeDataTransfer(t *testing.T) {
-	source := newMockTCPSource(t)
-
-	// Connect relay to source
-	sourceConn, err := net.Dial("tcp", source.Address())
+	sourceConn, err := source.WaitForConnection(testTimeout)
 	require.NoError(t, err)
 	defer sourceConn.Close()
 
-	serverConn, err := source.WaitForConnection(testTimeout)
-	require.NoError(t, err)
-	defer serverConn.Close()
-
-	// Start relay
-	relayListener, err := net.Listen("tcp", "localhost:0")
-	require.NoError(t, err)
-	defer relayListener.Close()
-
-	relayPort := relayListener.Addr().(*net.TCPAddr).Port
-
-	go func() {
-		conn, err := relayListener.Accept()
-		if err != nil {
-			return
-		}
-		defer conn.Close()
-		io.Copy(conn, sourceConn)
-	}()
-
-	// Connect client
-	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", relayPort))
+	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", duplexPort))
 	require.NoError(t, err)
 	defer relayClient.Close()
+	time.Sleep(200 * time.Millisecond)
 
-	time.Sleep(50 * time.Millisecond)
+	// Large payload (100 KB)
+	largeData := bytes.Repeat([]byte("NASA/JPL"), 12800)
 
-	// Large payload (1 MB)
-	largeData := bytes.Repeat([]byte("ABCDEFGH"), 128*1024)
-
-	// Send in background
+	// Send downlink data in background
 	go func() {
-		serverConn.Write(largeData)
+		sourceConn.Write(largeData)
 	}()
 
 	// Receive and verify
@@ -509,160 +367,36 @@ func TestLargeDataTransfer(t *testing.T) {
 	assert.Equal(t, largeData, received)
 }
 
-// TestConnectionClose tests cleanup when source closes
-func TestConnectionClose(t *testing.T) {
-	source := newMockTCPSource(t)
+func TestRelayServerMode(t *testing.T) {
+	ctx := context.Background()
 
-	// Connect relay to source
-	sourceConn, err := net.Dial("tcp", source.Address())
+	sourcePort := 50140
+	duplexPort := 50141
+	relay := startRelay(t, ctx, sourcePort, []int{duplexPort}, nil, true)
+	defer relay.Stop()
+	time.Sleep(500 * time.Millisecond)
+
+	// Connect source to the relay server
+	sourceConn, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", sourcePort))
 	require.NoError(t, err)
 	defer sourceConn.Close()
+	time.Sleep(200 * time.Millisecond)
 
-	serverConn, err := source.WaitForConnection(testTimeout)
-	require.NoError(t, err)
-
-	// Start relay
-	relayListener, err := net.Listen("tcp", "localhost:0")
-	require.NoError(t, err)
-	defer relayListener.Close()
-
-	relayPort := relayListener.Addr().(*net.TCPAddr).Port
-
-	relayDone := make(chan struct{})
-	go func() {
-		conn, err := relayListener.Accept()
-		if err != nil {
-			return
-		}
-		io.Copy(conn, serverConn)
-		conn.Close()
-		relayDone <- struct{}{}
-	}()
-
-	// Connect client
-	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", relayPort))
-	require.NoError(t, err)
-
-	time.Sleep(50 * time.Millisecond)
-
-	// Close source
-	serverConn.Close()
-
-	// Relay should close
-	select {
-	case <-relayDone:
-		// Success
-	case <-time.After(testTimeout):
-		t.Fatal("Relay did not close after source closed")
-	}
-
-	// Reading from relay should get EOF
-	buf := make([]byte, 1024)
-	relayClient.SetReadDeadline(time.Now().Add(testTimeout))
-	_, err = relayClient.Read(buf)
-	assert.Error(t, err, "Should get error after source closes")
-}
-
-// TestConcurrentDataFlow tests simultaneous bidirectional data flow
-func TestConcurrentDataFlow(t *testing.T) {
-	source := newMockTCPSource(t)
-
-	// Connect relay to source
-	sourceConn, err := net.Dial("tcp", source.Address())
-	require.NoError(t, err)
-	defer sourceConn.Close()
-
-	serverConn, err := source.WaitForConnection(testTimeout)
-	require.NoError(t, err)
-	defer serverConn.Close()
-
-	// Start relay
-	relayListener, err := net.Listen("tcp", "localhost:0")
-	require.NoError(t, err)
-	defer relayListener.Close()
-
-	relayPort := relayListener.Addr().(*net.TCPAddr).Port
-
-	go func() {
-		relayConn, err := relayListener.Accept()
-		if err != nil {
-			return
-		}
-		defer relayConn.Close()
-
-		done := make(chan struct{}, 2)
-		go func() {
-			io.Copy(relayConn, sourceConn)
-			done <- struct{}{}
-		}()
-		go func() {
-			io.Copy(sourceConn, relayConn)
-			done <- struct{}{}
-		}()
-		<-done
-		<-done
-	}()
-
-	// Connect client
-	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", relayPort))
+	// Connect client to relay
+	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", duplexPort))
 	require.NoError(t, err)
 	defer relayClient.Close()
+	time.Sleep(200 * time.Millisecond)
 
-	time.Sleep(50 * time.Millisecond)
+	// Test downlink: source -> relay -> client
+	testData := []byte("server mode test")
+	_, err = sourceConn.Write(testData)
+	require.NoError(t, err)
 
-	// Send multiple messages concurrently in both directions
-	const numMessages = 5
-	var wg sync.WaitGroup
-
-	// Downlink messages
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for i := range numMessages {
-			msg := []byte(fmt.Sprintf("down%d", i))
-			serverConn.Write(msg)
-			time.Sleep(10 * time.Millisecond)
-		}
-	}()
-
-	// Uplink messages
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for i := range numMessages {
-			msg := []byte(fmt.Sprintf("up%d", i))
-			relayClient.Write(msg)
-			time.Sleep(10 * time.Millisecond)
-		}
-	}()
-
-	// Receive downlink
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for i := range numMessages {
-			expected := []byte(fmt.Sprintf("down%d", i))
-			received := make([]byte, len(expected))
-			relayClient.SetReadDeadline(time.Now().Add(testTimeout))
-			_, err := io.ReadFull(relayClient, received)
-			assert.NoError(t, err)
-			assert.Equal(t, expected, received)
-		}
-	}()
-
-	// Receive uplink
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for i := range numMessages {
-			expected := []byte(fmt.Sprintf("up%d", i))
-			received := make([]byte, len(expected))
-			serverConn.SetReadDeadline(time.Now().Add(testTimeout))
-			_, err := io.ReadFull(serverConn, received)
-			assert.NoError(t, err)
-			assert.Equal(t, expected, received)
-		}
-	}()
-
-	wg.Wait()
+	received := make([]byte, len(testData))
+	relayClient.SetReadDeadline(time.Now().Add(testTimeout))
+	n, err := io.ReadFull(relayClient, received)
+	require.NoError(t, err)
+	assert.Equal(t, len(testData), n)
+	assert.Equal(t, testData, received)
 }
