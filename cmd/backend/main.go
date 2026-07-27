@@ -15,6 +15,7 @@ import (
 	"github.com/nasa/hermes/pkg/influxdb"
 	"github.com/nasa/hermes/pkg/infra"
 	"github.com/nasa/hermes/pkg/log"
+	hermesotel "github.com/nasa/hermes/pkg/otel"
 	"github.com/nasa/hermes/pkg/pb"
 	"github.com/nasa/hermes/pkg/rpc"
 	"github.com/nasa/hermes/pkg/timescaledb"
@@ -76,6 +77,12 @@ func main() {
 	err = timescaledb.Init()
 	if err != nil {
 		logger.Error("failed to initialize timescaledb", "err", err)
+		os.Exit(1)
+	}
+
+	err = hermesotel.Init()
+	if err != nil {
+		logger.Error("failed to initialize otel", "err", err)
 		os.Exit(1)
 	}
 

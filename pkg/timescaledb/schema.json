@@ -22,6 +22,18 @@
             "type": "string",
             "title": "Database",
             "description": "Database name where telemetry and events will be stored."
+        },
+        "events": {
+            "type": "boolean",
+            "title": "Log Events",
+            "default": true,
+            "description": "Push events (EVRs) to this database."
+        },
+        "telemetry": {
+            "type": "boolean",
+            "title": "Log Telemetry",
+            "default": true,
+            "description": "Push telemetry channels to this database."
         }
     },
     "required": [

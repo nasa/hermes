@@ -21,6 +21,8 @@ var (
 //go:embed schema.json
 var schema string
 
+var uiSchema = `{"ui:order": ["url", "token", "orgId", "bucket", "defaultTags", "ert", "events", "telemetry"]}`
+
 type Params struct {
 	Url string `json:"url"`
 
@@ -29,10 +31,24 @@ type Params struct {
 		Value string `json:"value"`
 	} `json:"defaultTags"`
 
-	Token  string `json:"token"`
-	OrgId  string `json:"orgId"`
-	Bucket string `json:"bucket"`
-	Ert    bool   `json:"ert"`
+	Token     string `json:"token"`
+	OrgId     string `json:"orgId"`
+	Bucket    string `json:"bucket"`
+	Ert       bool   `json:"ert"`
+	Events    *bool  `json:"events,omitempty"`
+	Telemetry *bool  `json:"telemetry,omitempty"`
+}
+
+// EventsEnabled reports whether events should be pushed. Profiles saved
+// before this option existed have no key and must stay enabled.
+func (p Params) EventsEnabled() bool {
+	return p.Events == nil || *p.Events
+}
+
+// TelemetryEnabled reports whether telemetry should be pushed. Profiles
+// saved before this option existed have no key and must stay enabled.
+func (p Params) TelemetryEnabled() bool {
+	return p.Telemetry == nil || *p.Telemetry
 }
 
 type influxDbProvider struct{}
@@ -114,35 +130,43 @@ func (i *influxDbProvider) Start(
 		}
 	}()
 
-	session.Log().Info("creating event bus listener to push to influxdb")
-	host.Event.On(ctx, func(msg *pb.SourcedEvent) {
-		mtr, err := SourcedEventAsMetric(msg)
+	if settings.EventsEnabled() {
+		session.Log().Info("creating event bus listener to push to influxdb")
+		host.Event.On(ctx, func(msg *pb.SourcedEvent) {
+			mtr, err := SourcedEventAsMetric(msg)
 
-		if settings.Ert {
-			mtr.AddField("ert", time.Now().UnixMilli())
-		}
+			if settings.Ert {
+				mtr.AddField("ert", time.Now().UnixMilli())
+			}
 
-		if err != nil {
-			session.Log().Warn("failed to convert event to influxdb metric", "err", err)
-		} else {
-			writeAPI.WritePoint(metricAsPoint(mtr))
-		}
-	})
+			if err != nil {
+				session.Log().Warn("failed to convert event to influxdb metric", "err", err)
+			} else {
+				writeAPI.WritePoint(metricAsPoint(mtr))
+			}
+		})
+	} else {
+		session.Log().Info("event logging to influxdb is disabled by profile settings")
+	}
 
-	session.Log().Info("creating telemetry bus listener to push to influxdb")
-	host.Telemetry.On(ctx, func(msg *pb.SourcedTelemetry) {
-		mtr, err := SourcedTelemetryAsMetric(msg)
+	if settings.TelemetryEnabled() {
+		session.Log().Info("creating telemetry bus listener to push to influxdb")
+		host.Telemetry.On(ctx, func(msg *pb.SourcedTelemetry) {
+			mtr, err := SourcedTelemetryAsMetric(msg)
 
-		if settings.Ert {
-			mtr.AddField("ert", time.Now().UnixMilli())
-		}
+			if settings.Ert {
+				mtr.AddField("ert", time.Now().UnixMilli())
+			}
 
-		if err != nil {
-			session.Log().Warn("failed to convert telemetry to influxdb metric", "err", err)
-		} else {
-			writeAPI.WritePoint(metricAsPoint(mtr))
-		}
-	})
+			if err != nil {
+				session.Log().Warn("failed to convert telemetry to influxdb metric", "err", err)
+			} else {
+				writeAPI.WritePoint(metricAsPoint(mtr))
+			}
+		})
+	} else {
+		session.Log().Info("telemetry logging to influxdb is disabled by profile settings")
+	}
 
 	wg.Wait()
 	return nil
@@ -153,7 +177,7 @@ func Init() error {
 		"InfluxDB",
 		&influxDbProvider{},
 		schema,
-		`{"ui:order": ["url", "token", "orgId", "bucket", "defaultTags", "ert"]}`,
+		uiSchema,
 	)
 
 	if err != nil {

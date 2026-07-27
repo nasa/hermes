@@ -18,6 +18,8 @@ icon: fontawesome/solid/play
 4. A basic understanding of writing and running [F Prime](https://github.com/nasa/fprime) Flight Software
 5. (Optional) Read through the [core concepts](../arch/core-concepts.md) document to get more context about Hermes.
 
+A detailed guide of the first three steps can be found in the [installation](./installation) page.
+
 ## Overview
 
 This guide will walk you through:

@@ -1,0 +1,31 @@
+{
+    "type": "object",
+    "description": "Exports Events and Telemetry as OpenTelemetry log records to an OTLP-compatible collector",
+    "properties": {
+        "endpoint": {
+            "type": "string",
+            "title": "Collector Endpoint",
+            "default": "localhost:4317",
+            "description": "OTLP gRPC collector endpoint. Leave empty to use OTEL_EXPORTER_OTLP_ENDPOINT env var."
+        },
+        "serviceName": {
+            "type": "string",
+            "title": "Service Name",
+            "default": "hermes",
+            "description": "Identifies this source in the collector"
+        },
+        "events": {
+            "type": "boolean",
+            "title": "Export Events",
+            "default": true,
+            "description": "Export flight software events as log records (e.g. to Loki)"
+        },
+        "telemetry": {
+            "type": "boolean",
+            "title": "Export Telemetry",
+            "default": true,
+            "description": "Export channelized telemetry as metrics (e.g. to Prometheus)"
+        }
+    },
+    "required": []
+}
