@@ -1,23 +1,23 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "datasource",
-  "name": "Hermes-Datasource",
+  "name": "Hermes",
   "id": "nasa-hermes-datasource",
   "metrics": true,
   "backend": true,
   "executable": "gpx_hermes_datasource",
   "info": {
-    "description": "",
+    "description": "Datasource Plugin for NASA's Hermes lightweight ground data system",
     "author": {
-      "name": "Nasa"
+      "name": "NASA Jet Propulsion Laboratory"
     },
-    "keywords": ["datasource"],
+    "keywords": ["datasource", "PostgreSQL", "TimescaleDB", "Hermes"],
     "logos": {
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     },
     "links": [],
-    "screenshots": [],
+    "screenshots": [{ "name": "Query Editor", "path": "img/ui.png" }],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },

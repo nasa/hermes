@@ -6,13 +6,13 @@ on:
       - master
       - main
     paths:
-      - 'nasa-hermes-datasource/**'
+      - 'grafana-datasource-plugin/**'
   pull_request:
     branches:
       - master
       - main
     paths:
-      - 'nasa-hermes-datasource/**'
+      - 'grafana-datasource-plugin/**'
 
 permissions:
   contents: read
@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./nasa-hermes-datasource
+        working-directory: ./grafana-datasource-plugin
     outputs:
       plugin-id: ${{ steps.metadata.outputs.plugin-id }}
       plugin-version: ${{ steps.metadata.outputs.plugin-version }}
@@ -32,15 +32,15 @@ jobs:
     env:
       GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: ./nasa-hermes-datasource/package-lock.json
+          cache-dependency-path: ./grafana-datasource-plugin/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -66,14 +66,14 @@ jobs:
         if: steps.check-for-backend.outputs.has-backend == 'true'
         uses: actions/setup-go@v6
         with:
-          go-version-file: ./nasa-hermes-datasource/go.mod
+          go-version-file: ./grafana-datasource-plugin/go.mod
 
       - name: Lint backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
-        uses: golangci/golangci-lint-action@82606bf257cbaff209d206a39f5134f0cfbfd2ee # v9.2.1
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: latest
-          working-directory: ./nasa-hermes-datasource
+          working-directory: ./grafana-datasource-plugin
 
       - name: Build backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
@@ -81,7 +81,7 @@ jobs:
         with:
           version: latest
           args: buildAll
-          workdir: ./nasa-hermes-datasource
+          workdir: ./grafana-datasource-plugin
 
       - name: Test backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
@@ -89,7 +89,7 @@ jobs:
         with:
           version: latest
           args: test
-          workdir: ./nasa-hermes-datasource
+          workdir: ./grafana-datasource-plugin
 
       - name: Check for E2E
         id: check-for-e2e
@@ -137,7 +137,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.metadata.outputs.plugin-id }}-${{ steps.metadata.outputs.plugin-version }}
-          path: nasa-hermes-datasource/${{ steps.metadata.outputs.plugin-id }}
+          path: grafana-datasource-plugin/${{ steps.metadata.outputs.plugin-id }}
           retention-days: 5
 
   resolve-versions:
@@ -150,19 +150,19 @@ jobs:
       matrix: ${{ steps.resolve-versions.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
       - name: Read grafanaDependency from plugin.json
         id: plugin-dep
         run: |
-          DEP=$(jq -r '.dependencies.grafanaDependency' nasa-hermes-datasource/src/plugin.json)
+          DEP=$(jq -r '.dependencies.grafanaDependency' grafana-datasource-plugin/src/plugin.json)
           echo "grafana-dependency=${DEP}" >> "$GITHUB_OUTPUT"
 
       - name: Resolve Grafana E2E versions
         id: resolve-versions
-        uses: grafana/plugin-actions/e2e-version@e2e-version/v2.0.0
+        uses: grafana/plugin-actions/e2e-version@e2e-version/v3.0.2
         with:
           grafana-dependency: ${{ steps.plugin-dep.outputs.grafana-dependency }}
 
@@ -177,16 +177,16 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./nasa-hermes-datasource
+        working-directory: ./grafana-datasource-plugin
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
       - name: Download plugin
         uses: actions/download-artifact@v8
         with:
-          path: nasa-hermes-datasource/dist
+          path: grafana-datasource-plugin/dist
           name: ${{ needs.build.outputs.plugin-id }}-${{ needs.build.outputs.plugin-version }}
 
       - name: Execute permissions on binary
@@ -195,11 +195,11 @@ jobs:
           chmod +x ./dist/gpx_*
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: ./nasa-hermes-datasource/package-lock.json
+          cache-dependency-path: ./grafana-datasource-plugin/package-lock.json
 
       - name: Install dev dependencies
         run: npm ci
@@ -210,7 +210,7 @@ jobs:
           ANONYMOUS_AUTH_ENABLED=false DEVELOPMENT=false GRAFANA_VERSION=${{ matrix.GRAFANA_IMAGE.VERSION }} GRAFANA_IMAGE=${{ matrix.GRAFANA_IMAGE.NAME }} docker compose up -d
 
       - name: Wait for grafana server
-        uses: grafana/plugin-actions/wait-for-grafana@wait-for-grafana/v1.0.2
+        uses: grafana/plugin-actions/wait-for-grafana@wait-for-grafana/v1.0.5
         with:
           url: http://localhost:3000/login
 

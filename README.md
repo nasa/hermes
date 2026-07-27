@@ -6,6 +6,7 @@
 #
 Hermes is a plugin driven spacecraft telemetry processing and commanding
 framework built around a variety of mature open-source software.
+It is developed at [NASA JPL](https://www.jpl.nasa.gov).
 
 ![alt text](docs/assets/full-screenshot.png)
 
@@ -23,3 +24,18 @@ and our [documentation](https://nasa.github.io/hermes/).
 - An extensible and pluggable telemetry processing framework for interacting with flight software downlink
 - Out of the box support for [F Prime](https://github.com/nasa/fprime)
 - Integration with [Grafana](https://grafana.com)
+
+## Development & Building
+
+### VS Code Extension
+
+Run the `All` configuration from the VS Code run window to run the extension development host with the plugin.
+
+### Docs
+```
+. .venv/bin/activate
+zensical serve
+```
+
+### Grafana Plugin
+See [grafana-datasource-plugin/README.md](grafana-datasource-plugin/README.md)

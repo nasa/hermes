@@ -161,8 +161,8 @@ func TestBuildResponseIntType(t *testing.T) {
 	if len(frame.Fields) != 2 {
 		t.Fatalf("expected 2 fields, got %d", len(frame.Fields))
 	}
-	if frame.Fields[1].Name != "value" {
-		t.Errorf("expected value field 'value', got %q", frame.Fields[1].Name)
+	if frame.Fields[1].Name != "comp.ch" {
+		t.Errorf("expected value field 'comp.ch', got %q", frame.Fields[1].Name)
 	}
 	if frame.Fields[0].Len() != 2 {
 		t.Errorf("expected 2 rows, got %d", frame.Fields[0].Len())
@@ -424,8 +424,8 @@ func TestQueryTelemetryWithMock(t *testing.T) {
 	if frame.Name != "comp1.ch1" {
 		t.Errorf("expected frame name 'comp1.ch1', got %q", frame.Name)
 	}
-	if frame.Fields[1].Name != "value" {
-		t.Errorf("expected field name 'value', got %q", frame.Fields[1].Name)
+	if frame.Fields[1].Name != "comp1.ch1" {
+		t.Errorf("expected field name 'comp1.ch1', got %q", frame.Fields[1].Name)
 	}
 	if frame.Fields[0].Len() != 2 {
 		t.Errorf("expected 2 rows, got %d", frame.Fields[0].Len())

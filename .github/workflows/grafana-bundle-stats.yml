@@ -6,12 +6,12 @@ on:
     branches:
       - main
     paths:
-      - 'nasa-hermes-datasource/**'
+      - 'grafana-datasource-plugin/**'
   push:
     branches:
       - main
     paths:
-      - 'nasa-hermes-datasource/**'
+      - 'grafana-datasource-plugin/**'
 
 permissions:
   contents: read
@@ -24,10 +24,21 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: ./grafana-datasource-plugin/package-lock.json
+
+      - name: Install plugin dependencies
+        working-directory: ./grafana-datasource-plugin
+        run: npm ci
+
       - uses: grafana/plugin-actions/bundle-size@bundle-size/v1.0.2
         with:
-          path: ./nasa-hermes-datasource
+          working-directory: ./grafana-datasource-plugin

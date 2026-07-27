@@ -276,6 +276,7 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			if multiSource {
 				displayName += " (" + field.Labels["source"] + ")"
 			}
+			field.Name = displayName
 			field.SetConfig(&data.FieldConfig{
 				DisplayNameFromDS: displayName,
 			})
