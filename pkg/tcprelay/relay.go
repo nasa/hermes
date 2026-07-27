@@ -42,7 +42,7 @@ func (t *tcpRelayProvider) Default() Params {
 // Source manages the connection to the source TCP socket and broadcasts data to all relay clients
 type Source struct {
 	mu       sync.RWMutex
-	handlers map[int]func([]byte)
+	handlers map[int]func([]byte) // the relay clients that this source broadcasts to
 	nextID   int
 	conn     net.Conn
 	logger   host.ConnectSession
@@ -104,11 +104,13 @@ func (s *Source) write(data []byte) error {
 	return err
 }
 
+// Listens for data from the source connection,
+// regardless of whether the source is in server or client mode,
+// and broadcasts it to all relay clients.
 func (s *Source) listen(ctx context.Context, conn net.Conn) {
 	s.setConnection(conn)
 
-	// Close the connection on shutdown so the blocking Read below is unblocked
-	// and the source connection is not leaked.
+	// Close on shutdown to unblock the Read below.
 	stop := context.AfterFunc(ctx, func() { conn.Close() })
 	defer stop()
 
@@ -180,17 +182,11 @@ func createRelayServer(
 	return nil
 }
 
-// downlinkQueueSize bounds how much downlink data may be buffered for a single
-// slow relay client before it is disconnected. This isolates a stalled client so
-// it cannot block the broadcast to other clients (mirroring Node's per-socket
-// write buffering in the TypeScript relay).
+// Max downlink buffered per client before it's dropped as too slow.
 const downlinkQueueSize = 256
 
-// handleRelayClient registers the downlink handler synchronously (so no source
-// data can be broadcast before this client is subscribed) and then spawns the
-// per-client writer and reader goroutines. This mirrors the TypeScript relay,
-// where the downlink handler is registered synchronously in the net.createServer
-// accept callback before the callback returns.
+// handleRelayClient subscribes the client to downlink synchronously
+// (so no data is missed), then spawns its writer and reader goroutines.
 func handleRelayClient(
 	ctx context.Context,
 	conn net.Conn,
@@ -203,14 +199,11 @@ func handleRelayClient(
 
 	clientCtx, cancel := context.WithCancel(ctx)
 
-	// Close the connection when the client is cancelled (client disconnect,
-	// failed write, or profile shutdown). This unblocks the reader's conn.Read
-	// and ensures accepted connections are not leaked on shutdown.
+	// Close on cancel so the reader's conn.Read unblocks and the conn isn't leaked.
 	context.AfterFunc(clientCtx, func() { conn.Close() })
 
-	// Downlink is delivered through a buffered channel drained by a dedicated
-	// writer goroutine, so a slow client only backs up its own queue and never
-	// blocks the source broadcast. If the queue overflows, the client is dropped.
+	// A dedicated writer drains this channel so one slow client can't block the
+	// broadcast; if it overflows, the client is dropped.
 	sendCh := make(chan []byte, downlinkQueueSize)
 	handlerID := source.addHandler(func(data []byte) {
 		select {
@@ -222,7 +215,6 @@ func handleRelayClient(
 		}
 	})
 
-	// Log connection after handler is registered
 	session.Log().Info("relay client connected", "port", port, "addr", addr)
 
 	go func() {
@@ -243,10 +235,7 @@ func handleRelayClient(
 	go runRelayClientReadLoop(clientCtx, cancel, conn, source, handlerID, port, isDuplex, session, addr)
 }
 
-// runRelayClientReadLoop consumes the client's uplink until the connection closes
-// or the context is cancelled, cleaning up the downlink handler on exit. In duplex
-// mode uplink is relayed to the source; in readable mode it is dropped with a
-// warning.
+// runRelayClientReadLoop reads client uplink until the conn closes.
 func runRelayClientReadLoop(
 	clientCtx context.Context,
 	cancel context.CancelFunc,

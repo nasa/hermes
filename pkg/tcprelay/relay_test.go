@@ -34,8 +34,11 @@ func (m *mockConnectSession) Started()                {}
 func (m *mockConnectSession) Connect(fsw host.Fsw)    {}
 func (m *mockConnectSession) Disconnect(fsw host.Fsw) {}
 
-// startRelay starts the TCP relay in the same process using the Go implementation
 func startRelay(t *testing.T, ctx context.Context, sourcePort int, duplexPorts []int, readablePorts []int, serverMode bool) {
+	startRelaySession(t, ctx, &mockConnectSession{}, sourcePort, duplexPorts, readablePorts, serverMode)
+}
+
+func startRelaySession(t *testing.T, ctx context.Context, session host.ConnectSession, sourcePort int, duplexPorts []int, readablePorts []int, serverMode bool) {
 	provider := &tcpRelayProvider{}
 	params := Params{
 		SourceAddress: "localhost",
@@ -46,7 +49,7 @@ func startRelay(t *testing.T, ctx context.Context, sourcePort int, duplexPorts [
 	}
 
 	go func() {
-		err := provider.Start(ctx, params, &mockConnectSession{})
+		err := provider.Start(ctx, params, session)
 		if err != nil && ctx.Err() == nil {
 			t.Errorf("Relay failed: %v", err)
 		}
@@ -130,9 +133,8 @@ func getFreePort(t *testing.T) int {
 	return port
 }
 
-// syncUplink sends a single byte from a relay client and drains it at the source.
-// Because the relay only reads a client's uplink after registering that client's
-// downlink handler, a completed round-trip proves the client is subscribed.
+// syncUplink round-trips a byte client->source to prove the client is subscribed
+// (the relay only reads uplink after registering the downlink handler).
 func syncUplink(t *testing.T, client, sourceConn net.Conn) {
 	t.Helper()
 	_, err := client.Write([]byte{0})
@@ -228,10 +230,7 @@ func TestRelayMultipleClients(t *testing.T) {
 	require.NoError(t, err)
 	defer sourceConn.Close()
 
-	// Connect multiple clients. Each sends an uplink byte that we drain at the
-	// source; because the relay only reads uplink after registering the client's
-	// downlink handler, draining it proves the client is subscribed and no
-	// broadcast can be missed.
+	// Connect several clients, each synced so it won't miss the broadcast.
 	const numClients = 3
 	clients := make([]net.Conn, numClients)
 	for i := range numClients {
@@ -272,12 +271,9 @@ func TestRelayLargeData(t *testing.T) {
 	require.NoError(t, err)
 	defer relayClient.Close()
 
-	// Round-trip an uplink byte to confirm the client's downlink handler is
-	// registered before the source sends downlink data.
 	syncUplink(t, relayClient, sourceConn)
 
-	// Large payload (100 KB)
-	largeData := bytes.Repeat([]byte("NASA/JPL"), 12800)
+	largeData := bytes.Repeat([]byte("NASA/JPL"), 12800) // 100 KB
 
 	go func() {
 		_, err := sourceConn.Write(largeData)
@@ -307,11 +303,9 @@ func TestRelayServerMode(t *testing.T) {
 	require.NoError(t, err)
 	defer relayClient.Close()
 
-	// Round-trip an uplink byte to confirm the client's downlink handler is
-	// registered before the source sends downlink data.
 	syncUplink(t, relayClient, sourceConn)
 
-	// Test downlink: source -> relay -> client
+	// Downlink: source -> relay -> client
 	testData := []byte("server mode test")
 	_, err = sourceConn.Write(testData)
 	require.NoError(t, err)
@@ -324,10 +318,7 @@ func TestRelayServerMode(t *testing.T) {
 	assert.Equal(t, testData, received)
 }
 
-// TestRelaySlowClientDoesNotBlockOthers verifies that a relay client which stops
-// reading its downlink cannot stall the broadcast to healthy clients. The slow
-// client is isolated (and eventually dropped) while a healthy client keeps
-// receiving data.
+// A client that stops reading must not stall the broadcast to others.
 func TestRelaySlowClientDoesNotBlockOthers(t *testing.T) {
 	source := newMockSource(t)
 	duplexPort := getFreePort(t)
@@ -337,19 +328,19 @@ func TestRelaySlowClientDoesNotBlockOthers(t *testing.T) {
 	require.NoError(t, err)
 	defer sourceConn.Close()
 
-	// Slow client: connects, subscribes, then never reads.
+	// Slow client subscribes then never reads.
 	slow, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%d", duplexPort), connectTimeout)
 	require.NoError(t, err)
 	defer slow.Close()
 	syncUplink(t, slow, sourceConn)
 
-	// Healthy client: connects, subscribes, and reads normally.
+	// Healthy client reads normally.
 	healthy, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%d", duplexPort), connectTimeout)
 	require.NoError(t, err)
 	defer healthy.Close()
 	syncUplink(t, healthy, sourceConn)
 
-	// Flood downlink well past the slow client's queue so its send blocks/drops.
+	// Flood downlink past the slow client's queue.
 	chunk := bytes.Repeat([]byte("x"), 64*1024)
 	go func() {
 		for range 64 {
@@ -359,7 +350,7 @@ func TestRelaySlowClientDoesNotBlockOthers(t *testing.T) {
 		}
 	}()
 
-	// The healthy client must keep receiving despite the slow client being stuck.
+	// Healthy client keeps receiving despite the slow one being stuck.
 	healthy.SetReadDeadline(time.Now().Add(testTimeout))
 	buf := make([]byte, len(chunk))
 	total := 0
@@ -370,10 +361,7 @@ func TestRelaySlowClientDoesNotBlockOthers(t *testing.T) {
 	}
 }
 
-// TestRelayClientClosedOnShutdown verifies that accepted client connections are
-// closed when the profile shuts down (ctx cancel), rather than being leaked. A
-// closed connection surfaces to the client as EOF; a leak would surface as a read
-// timeout.
+// Client conns must be closed on shutdown, not leaked (EOF, not a read timeout).
 func TestRelayClientClosedOnShutdown(t *testing.T) {
 	source := newMockSource(t)
 	duplexPort := getFreePort(t)
@@ -392,13 +380,29 @@ func TestRelayClientClosedOnShutdown(t *testing.T) {
 
 	cancel()
 
-	// The relay should close the connection; the client's blocked read returns
-	// promptly with EOF (or a connection-closed error), not a deadline timeout.
+	// Read should return promptly (closed), not hit the deadline.
 	client.SetReadDeadline(time.Now().Add(testTimeout))
 	buf := make([]byte, 1)
 	_, err = client.Read(buf)
 	require.Error(t, err)
-	if netErr, ok := errors.AsType[net.Error](err); ok {
-		assert.False(t, netErr.Timeout(), "connection should be closed on shutdown, not left to time out")
+	assert.True(t, errors.Is(err, io.EOF), "connection should be closed on shutdown, not left to time out")
+}
+
+// In client mode, a failed source dial must make Start return an error.
+func TestRelaySourceConnectFailure(t *testing.T) {
+	// getFreePort releases the port, so the dial fails.
+	deadPort := getFreePort(t)
+	duplexPort := getFreePort(t)
+
+	provider := &tcpRelayProvider{}
+	params := Params{
+		SourceAddress: "localhost",
+		SourcePort:    deadPort,
+		ServerMode:    false,
+		DuplexPorts:   []int{duplexPort},
 	}
+
+	err := provider.Start(t.Context(), params, &mockConnectSession{})
+	require.Error(t, err, "Start should fail when the source cannot be dialed")
+	assert.Contains(t, err.Error(), "failed to connect to source")
 }
