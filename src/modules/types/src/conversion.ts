@@ -201,7 +201,7 @@ export function typeFromProto(
         return {
             kind: Def.TypeKind.enum,
             name: ctx.value(proto.enum, 'name'),
-            encodeType: optional(proto.enum.encodeType, integerKindFromProto),
+            encodeType: integerKindFromProto(proto.enum.encodeType ?? Proto.IntKind.INT_U8),
             values: new DualKeyMap('value', proto.enum.items?.map((item) => {
                 const defItem = enumItemFromProto(item, ctx.with(item.name ?? 'unknown'));
                 return [defItem.name, defItem];
@@ -212,7 +212,7 @@ export function typeFromProto(
         return {
             kind: Def.TypeKind.bitmask,
             name: ctx.value(proto.bitmask, 'name'),
-            encodeType: optional(proto.bitmask.encodeType, integerKindFromProto),
+            encodeType: integerKindFromProto(proto.bitmask.encodeType ?? Proto.IntKind.INT_U8),
             values: new DualKeyMap('value', proto.bitmask.items?.map((item) => {
                 const defItem = enumItemFromProto(item, ctx.with(item.name ?? 'unknown'));
                 return [defItem.name, defItem];
