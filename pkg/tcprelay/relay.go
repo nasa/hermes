@@ -166,7 +166,7 @@ func createRelayServer(
 				}
 			}
 
-			go handleRelayClient(ctx, conn, source, port, isDuplex, session)
+			handleRelayClient(ctx, conn, source, port, isDuplex, session)
 		}
 	}()
 
@@ -182,15 +182,8 @@ func handleRelayClient(
 	session host.ConnectSession,
 ) {
 	addr := conn.RemoteAddr().String()
-	session.Log().Info("relay client connected", "port", port, "addr", addr)
-
-	defer func() {
-		conn.Close()
-		session.Log().Info("relay client disconnected", "port", port, "addr", addr)
-	}()
 
 	clientCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
 
 	handlerID := source.addHandler(func(data []byte) {
 		select {
@@ -204,7 +197,33 @@ func handleRelayClient(
 			}
 		}
 	})
+
+	// Log connection after handler is registered
+	session.Log().Info("relay client connected", "port", port, "addr", addr)
+
+	go runRelayClientReadLoop(clientCtx, cancel, conn, source, handlerID, port, isDuplex, session, addr)
+}
+
+// runRelayClientReadLoop consumes the client's uplink until the connection closes
+// or the context is cancelled, cleaning up the downlink handler on exit.
+func runRelayClientReadLoop(
+	clientCtx context.Context,
+	cancel context.CancelFunc,
+	conn net.Conn,
+	source *Source,
+	handlerID int,
+	port int,
+	isDuplex bool,
+	session host.ConnectSession,
+	addr string,
+) {
+	defer cancel()
 	defer source.removeHandler(handlerID)
+
+	defer func() {
+		conn.Close()
+		session.Log().Info("relay client disconnected", "port", port, "addr", addr)
+	}()
 
 	if isDuplex {
 		buf := make([]byte, 32768)

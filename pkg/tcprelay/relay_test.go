@@ -152,7 +152,7 @@ func TestRelayDuplex(t *testing.T) {
 	n, err := io.ReadFull(sourceConn, uplinkReceived)
 	require.NoError(t, err)
 	assert.Equal(t, len(uplinkData), n)
-	assert.Equal(t, uplinkData, uplinkReceived, "Uplink data should be relayed")
+	assert.Equal(t, uplinkData, uplinkReceived)
 
 	// Test downlink: source -> relay -> client
 	downlinkData := []byte("downlink test")
@@ -164,7 +164,7 @@ func TestRelayDuplex(t *testing.T) {
 	n, err = io.ReadFull(relayClient, downlinkReceived)
 	require.NoError(t, err)
 	assert.Equal(t, len(downlinkData), n)
-	assert.Equal(t, downlinkData, downlinkReceived, "Downlink data should be relayed")
+	assert.Equal(t, downlinkData, downlinkReceived)
 }
 
 func TestRelayReadable(t *testing.T) {
@@ -180,7 +180,19 @@ func TestRelayReadable(t *testing.T) {
 	require.NoError(t, err)
 	defer relayClient.Close()
 
-	// Test downlink works
+	// Test uplink is dropped (not sent to source)
+	// Do this first to ensure relay has set up the broadcast handler
+	uplinkData := []byte("uplink should be dropped")
+	_, err = relayClient.Write(uplinkData)
+	require.NoError(t, err)
+
+	// Source should NOT receive uplink
+	sourceConn.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
+	buf := make([]byte, len(uplinkData))
+	_, err = sourceConn.Read(buf)
+	assert.Error(t, err)
+
+	// Test downlink works (handler is now guaranteed to be registered)
 	downlinkData := []byte("downlink only")
 	_, err = sourceConn.Write(downlinkData)
 	require.NoError(t, err)
@@ -191,17 +203,6 @@ func TestRelayReadable(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, len(downlinkData), n)
 	assert.Equal(t, downlinkData, downlinkReceived)
-
-	// Test uplink is dropped (not sent to source)
-	uplinkData := []byte("uplink should be dropped")
-	_, err = relayClient.Write(uplinkData)
-	require.NoError(t, err)
-
-	// Source should NOT receive uplink
-	sourceConn.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
-	buf := make([]byte, len(uplinkData))
-	_, err = sourceConn.Read(buf)
-	assert.Error(t, err, "Source should not receive uplink in readable mode")
 }
 
 func TestRelayMultipleClients(t *testing.T) {
@@ -213,7 +214,10 @@ func TestRelayMultipleClients(t *testing.T) {
 	require.NoError(t, err)
 	defer sourceConn.Close()
 
-	// Connect multiple clients
+	// Connect multiple clients. Each sends an uplink byte that we drain at the
+	// source; because the relay only reads uplink after registering the client's
+	// downlink handler, draining it proves the client is subscribed and no
+	// broadcast can be missed.
 	const numClients = 3
 	clients := make([]net.Conn, numClients)
 	for i := range numClients {
@@ -221,6 +225,13 @@ func TestRelayMultipleClients(t *testing.T) {
 		require.NoError(t, err)
 		defer client.Close()
 		clients[i] = client
+
+		_, err = client.Write([]byte{byte(i)})
+		require.NoError(t, err)
+		sync := make([]byte, 1)
+		sourceConn.SetReadDeadline(time.Now().Add(testTimeout))
+		_, err = io.ReadFull(sourceConn, sync)
+		require.NoError(t, err)
 	}
 
 	// Send broadcast message from source
@@ -252,11 +263,23 @@ func TestRelayLargeData(t *testing.T) {
 	require.NoError(t, err)
 	defer relayClient.Close()
 
+	// Round-trip an uplink byte to confirm the client's downlink handler is
+	// registered before the source sends downlink data.
+	_, err = relayClient.Write([]byte{0})
+	require.NoError(t, err)
+	sync := make([]byte, 1)
+	sourceConn.SetReadDeadline(time.Now().Add(testTimeout))
+	_, err = io.ReadFull(sourceConn, sync)
+	require.NoError(t, err)
+
 	// Large payload (100 KB)
 	largeData := bytes.Repeat([]byte("NASA/JPL"), 12800)
 
 	go func() {
-		sourceConn.Write(largeData)
+		_, err := sourceConn.Write(largeData)
+		if err != nil {
+			t.Errorf("Failed to write large data: %v", err)
+		}
 	}()
 
 	received := make([]byte, len(largeData))
@@ -279,6 +302,15 @@ func TestRelayServerMode(t *testing.T) {
 	relayClient, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%d", duplexPort), connectTimeout)
 	require.NoError(t, err)
 	defer relayClient.Close()
+
+	// Round-trip an uplink byte to confirm the client's downlink handler is
+	// registered before the source sends downlink data.
+	_, err = relayClient.Write([]byte{0})
+	require.NoError(t, err)
+	sync := make([]byte, 1)
+	sourceConn.SetReadDeadline(time.Now().Add(testTimeout))
+	_, err = io.ReadFull(sourceConn, sync)
+	require.NoError(t, err)
 
 	// Test downlink: source -> relay -> client
 	testData := []byte("server mode test")
