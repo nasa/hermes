@@ -72,8 +72,13 @@ func (s *Source) removeHandler(id int) {
 
 func (s *Source) broadcast(data []byte) {
 	s.mu.RLock()
-	defer s.mu.RUnlock()
+	handlers := make([]func([]byte), 0, len(s.handlers))
 	for _, handler := range s.handlers {
+		handlers = append(handlers, handler)
+	}
+	s.mu.RUnlock()
+
+	for _, handler := range handlers {
 		handler(data)
 	}
 }
@@ -90,16 +95,23 @@ func (s *Source) setConnection(conn net.Conn) {
 
 func (s *Source) write(data []byte) error {
 	s.mu.RLock()
-	defer s.mu.RUnlock()
-	if s.conn == nil {
+	conn := s.conn
+	s.mu.RUnlock()
+	if conn == nil {
 		return fmt.Errorf("no source connection available")
 	}
-	_, err := s.conn.Write(data)
+	_, err := conn.Write(data)
 	return err
 }
 
 func (s *Source) listen(ctx context.Context, conn net.Conn) {
 	s.setConnection(conn)
+
+	// Close the connection on shutdown so the blocking Read below is unblocked
+	// and the source connection is not leaked.
+	stop := context.AfterFunc(ctx, func() { conn.Close() })
+	defer stop()
+
 	defer func() {
 		s.mu.Lock()
 		if s.conn == conn {
@@ -110,22 +122,17 @@ func (s *Source) listen(ctx context.Context, conn net.Conn) {
 
 	buf := make([]byte, 32768)
 	for {
-		select {
-		case <-ctx.Done():
+		n, err := conn.Read(buf)
+		if err != nil {
+			if err != io.EOF && ctx.Err() == nil {
+				s.logger.Log().Error("source connection read error", "err", err)
+			}
 			return
-		default:
-			n, err := conn.Read(buf)
-			if err != nil {
-				if err != io.EOF {
-					s.logger.Log().Error("source connection read error", "err", err)
-				}
-				return
-			}
-			if n > 0 {
-				data := make([]byte, n)
-				copy(data, buf[:n])
-				s.broadcast(data)
-			}
+		}
+		if n > 0 {
+			data := make([]byte, n)
+			copy(data, buf[:n])
+			s.broadcast(data)
 		}
 	}
 }
@@ -173,6 +180,17 @@ func createRelayServer(
 	return nil
 }
 
+// downlinkQueueSize bounds how much downlink data may be buffered for a single
+// slow relay client before it is disconnected. This isolates a stalled client so
+// it cannot block the broadcast to other clients (mirroring Node's per-socket
+// write buffering in the TypeScript relay).
+const downlinkQueueSize = 256
+
+// handleRelayClient registers the downlink handler synchronously (so no source
+// data can be broadcast before this client is subscribed) and then spawns the
+// per-client writer and reader goroutines. This mirrors the TypeScript relay,
+// where the downlink handler is registered synchronously in the net.createServer
+// accept callback before the callback returns.
 func handleRelayClient(
 	ctx context.Context,
 	conn net.Conn,
@@ -185,27 +203,50 @@ func handleRelayClient(
 
 	clientCtx, cancel := context.WithCancel(ctx)
 
+	// Close the connection when the client is cancelled (client disconnect,
+	// failed write, or profile shutdown). This unblocks the reader's conn.Read
+	// and ensures accepted connections are not leaked on shutdown.
+	context.AfterFunc(clientCtx, func() { conn.Close() })
+
+	// Downlink is delivered through a buffered channel drained by a dedicated
+	// writer goroutine, so a slow client only backs up its own queue and never
+	// blocks the source broadcast. If the queue overflows, the client is dropped.
+	sendCh := make(chan []byte, downlinkQueueSize)
 	handlerID := source.addHandler(func(data []byte) {
 		select {
+		case sendCh <- data:
 		case <-clientCtx.Done():
-			return
 		default:
-			_, err := conn.Write(data)
-			if err != nil {
-				session.Log().Debug("failed to write to relay client", "port", port, "addr", addr, "err", err)
-				cancel()
-			}
+			session.Log().Warn("relay client too slow, dropping connection", "port", port, "addr", addr)
+			cancel()
 		}
 	})
 
 	// Log connection after handler is registered
 	session.Log().Info("relay client connected", "port", port, "addr", addr)
 
+	go func() {
+		for {
+			select {
+			case <-clientCtx.Done():
+				return
+			case data := <-sendCh:
+				if _, err := conn.Write(data); err != nil {
+					session.Log().Debug("failed to write to relay client", "port", port, "addr", addr, "err", err)
+					cancel()
+					return
+				}
+			}
+		}
+	}()
+
 	go runRelayClientReadLoop(clientCtx, cancel, conn, source, handlerID, port, isDuplex, session, addr)
 }
 
 // runRelayClientReadLoop consumes the client's uplink until the connection closes
-// or the context is cancelled, cleaning up the downlink handler on exit.
+// or the context is cancelled, cleaning up the downlink handler on exit. In duplex
+// mode uplink is relayed to the source; in readable mode it is dropped with a
+// warning.
 func runRelayClientReadLoop(
 	clientCtx context.Context,
 	cancel context.CancelFunc,
@@ -219,56 +260,32 @@ func runRelayClientReadLoop(
 ) {
 	defer cancel()
 	defer source.removeHandler(handlerID)
+	defer session.Log().Info("relay client disconnected", "port", port, "addr", addr)
 
-	defer func() {
-		conn.Close()
-		session.Log().Info("relay client disconnected", "port", port, "addr", addr)
-	}()
-
-	if isDuplex {
-		buf := make([]byte, 32768)
-		for {
-			select {
-			case <-clientCtx.Done():
-				return
-			default:
-				n, err := conn.Read(buf)
-				if err != nil {
-					if err != io.EOF {
-						session.Log().Debug("relay client read error", "port", port, "addr", addr, "err", err)
-					}
-					return
-				}
-				if n > 0 {
-					data := make([]byte, n)
-					copy(data, buf[:n])
-					err := source.write(data)
-					if err != nil {
-						session.Log().Warn("failed to relay uplink to source", "port", port, "addr", addr, "size", n, "err", err)
-					} else {
-						session.Log().Debug("relayed uplink to source", "port", port, "addr", addr, "size", n)
-					}
-				}
+	buf := make([]byte, 32768)
+	for {
+		n, err := conn.Read(buf)
+		if err != nil {
+			if err != io.EOF && clientCtx.Err() == nil {
+				session.Log().Debug("relay client read error", "port", port, "addr", addr, "err", err)
 			}
+			return
 		}
-	} else {
-		buf := make([]byte, 32768)
-		for {
-			select {
-			case <-clientCtx.Done():
-				return
-			default:
-				n, err := conn.Read(buf)
-				if err != nil {
-					if err != io.EOF {
-						session.Log().Debug("relay client read error", "port", port, "addr", addr, "err", err)
-					}
-					return
-				}
-				if n > 0 {
-					session.Log().Warn("received uplink data on readable-only port, dropping", "port", port, "addr", addr, "size", n)
-				}
-			}
+		if n == 0 {
+			continue
+		}
+
+		if !isDuplex {
+			session.Log().Warn("received uplink data on readable-only port, dropping", "port", port, "addr", addr, "size", n)
+			continue
+		}
+
+		data := make([]byte, n)
+		copy(data, buf[:n])
+		if err := source.write(data); err != nil {
+			session.Log().Warn("failed to relay uplink to source", "port", port, "addr", addr, "size", n, "err", err)
+		} else {
+			session.Log().Debug("relayed uplink to source", "port", port, "addr", addr, "size", n)
 		}
 	}
 }

@@ -3,6 +3,7 @@ package tcprelay
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -129,6 +130,19 @@ func getFreePort(t *testing.T) int {
 	return port
 }
 
+// syncUplink sends a single byte from a relay client and drains it at the source.
+// Because the relay only reads a client's uplink after registering that client's
+// downlink handler, a completed round-trip proves the client is subscribed.
+func syncUplink(t *testing.T, client, sourceConn net.Conn) {
+	t.Helper()
+	_, err := client.Write([]byte{0})
+	require.NoError(t, err)
+	sync := make([]byte, 1)
+	sourceConn.SetReadDeadline(time.Now().Add(testTimeout))
+	_, err = io.ReadFull(sourceConn, sync)
+	require.NoError(t, err)
+}
+
 func TestRelayDuplex(t *testing.T) {
 	source := newMockSource(t)
 	duplexPort := getFreePort(t)
@@ -226,12 +240,7 @@ func TestRelayMultipleClients(t *testing.T) {
 		defer client.Close()
 		clients[i] = client
 
-		_, err = client.Write([]byte{byte(i)})
-		require.NoError(t, err)
-		sync := make([]byte, 1)
-		sourceConn.SetReadDeadline(time.Now().Add(testTimeout))
-		_, err = io.ReadFull(sourceConn, sync)
-		require.NoError(t, err)
+		syncUplink(t, client, sourceConn)
 	}
 
 	// Send broadcast message from source
@@ -265,12 +274,7 @@ func TestRelayLargeData(t *testing.T) {
 
 	// Round-trip an uplink byte to confirm the client's downlink handler is
 	// registered before the source sends downlink data.
-	_, err = relayClient.Write([]byte{0})
-	require.NoError(t, err)
-	sync := make([]byte, 1)
-	sourceConn.SetReadDeadline(time.Now().Add(testTimeout))
-	_, err = io.ReadFull(sourceConn, sync)
-	require.NoError(t, err)
+	syncUplink(t, relayClient, sourceConn)
 
 	// Large payload (100 KB)
 	largeData := bytes.Repeat([]byte("NASA/JPL"), 12800)
@@ -305,12 +309,7 @@ func TestRelayServerMode(t *testing.T) {
 
 	// Round-trip an uplink byte to confirm the client's downlink handler is
 	// registered before the source sends downlink data.
-	_, err = relayClient.Write([]byte{0})
-	require.NoError(t, err)
-	sync := make([]byte, 1)
-	sourceConn.SetReadDeadline(time.Now().Add(testTimeout))
-	_, err = io.ReadFull(sourceConn, sync)
-	require.NoError(t, err)
+	syncUplink(t, relayClient, sourceConn)
 
 	// Test downlink: source -> relay -> client
 	testData := []byte("server mode test")
@@ -323,4 +322,83 @@ func TestRelayServerMode(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, len(testData), n)
 	assert.Equal(t, testData, received)
+}
+
+// TestRelaySlowClientDoesNotBlockOthers verifies that a relay client which stops
+// reading its downlink cannot stall the broadcast to healthy clients. The slow
+// client is isolated (and eventually dropped) while a healthy client keeps
+// receiving data.
+func TestRelaySlowClientDoesNotBlockOthers(t *testing.T) {
+	source := newMockSource(t)
+	duplexPort := getFreePort(t)
+	startRelay(t, t.Context(), source.Port(), []int{duplexPort}, nil, false)
+
+	sourceConn, err := source.WaitForConnection(testTimeout)
+	require.NoError(t, err)
+	defer sourceConn.Close()
+
+	// Slow client: connects, subscribes, then never reads.
+	slow, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%d", duplexPort), connectTimeout)
+	require.NoError(t, err)
+	defer slow.Close()
+	syncUplink(t, slow, sourceConn)
+
+	// Healthy client: connects, subscribes, and reads normally.
+	healthy, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%d", duplexPort), connectTimeout)
+	require.NoError(t, err)
+	defer healthy.Close()
+	syncUplink(t, healthy, sourceConn)
+
+	// Flood downlink well past the slow client's queue so its send blocks/drops.
+	chunk := bytes.Repeat([]byte("x"), 64*1024)
+	go func() {
+		for range 64 {
+			if _, err := sourceConn.Write(chunk); err != nil {
+				return
+			}
+		}
+	}()
+
+	// The healthy client must keep receiving despite the slow client being stuck.
+	healthy.SetReadDeadline(time.Now().Add(testTimeout))
+	buf := make([]byte, len(chunk))
+	total := 0
+	for total < 4*len(chunk) {
+		n, err := healthy.Read(buf)
+		require.NoError(t, err, "healthy client stalled after %d bytes (head-of-line blocking)", total)
+		total += n
+	}
+}
+
+// TestRelayClientClosedOnShutdown verifies that accepted client connections are
+// closed when the profile shuts down (ctx cancel), rather than being leaked. A
+// closed connection surfaces to the client as EOF; a leak would surface as a read
+// timeout.
+func TestRelayClientClosedOnShutdown(t *testing.T) {
+	source := newMockSource(t)
+	duplexPort := getFreePort(t)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	startRelay(t, ctx, source.Port(), []int{duplexPort}, nil, false)
+
+	sourceConn, err := source.WaitForConnection(testTimeout)
+	require.NoError(t, err)
+	defer sourceConn.Close()
+
+	client, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%d", duplexPort), connectTimeout)
+	require.NoError(t, err)
+	defer client.Close()
+	syncUplink(t, client, sourceConn)
+
+	cancel()
+
+	// The relay should close the connection; the client's blocked read returns
+	// promptly with EOF (or a connection-closed error), not a deadline timeout.
+	client.SetReadDeadline(time.Now().Add(testTimeout))
+	buf := make([]byte, 1)
+	_, err = client.Read(buf)
+	require.Error(t, err)
+	if netErr, ok := errors.AsType[net.Error](err); ok {
+		assert.False(t, netErr.Timeout(), "connection should be closed on shutdown, not left to time out")
+	}
 }
