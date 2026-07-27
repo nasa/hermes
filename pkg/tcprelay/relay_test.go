@@ -27,6 +27,7 @@ const (
 type relayProcess struct {
 	cmd    *exec.Cmd
 	cancel context.CancelFunc
+	ready  chan struct{}
 	t      *testing.T
 }
 
@@ -65,53 +66,61 @@ func startRelay(t *testing.T, ctx context.Context, sourcePort int, duplexPorts [
 
 	go func() {
 		scanner := bufio.NewScanner(stderr)
-		if err := scanner.Err(); err != nil {
-			t.Logf("Error reading tcp-relay stderr: %v", err)
-		}
 		for scanner.Scan() {
 			t.Logf("tcp-relay stderr: %s", scanner.Text())
 		}
+		if err := scanner.Err(); err != nil {
+			t.Logf("Error reading tcp-relay stderr: %v", err)
+		}
 	}()
 
-	waitForRelayStartup(t, stdout)
-	return relayProcess{
+	proc := relayProcess{
 		cmd:    cmd,
 		cancel: cancel,
+		ready:  make(chan struct{}),
 		t:      t,
 	}
+	go proc.waitForRelayStartup(stdout)
+	return proc
 }
 
-func waitForRelayStartup(t *testing.T, stdout io.Reader) {
+func (p *relayProcess) waitForRelayStartup(stdout io.Reader) {
 	scanner := bufio.NewScanner(stdout)
 	foundSource := false
 	foundRelay := false
-	deadline := time.Now().Add(5 * time.Second)
 
-	go func() {
-		if err := scanner.Err(); err != nil {
-			t.Logf("Error reading tcp-relay stdout: %v", err)
+	for scanner.Scan() {
+		line := scanner.Text()
+		p.t.Logf("tcp-relay: %s", line)
+
+		if strings.Contains(line, "Source connection active") || strings.Contains(line, "Source server listening") {
+			foundSource = true
 		}
-		for scanner.Scan() {
-			line := scanner.Text()
-			t.Logf("tcp-relay: %s", line)
-
-			if strings.Contains(line, "Source connection active") || strings.Contains(line, "Source server listening") {
-				foundSource = true
-			}
-			if strings.Contains(line, "listening on port") {
-				foundRelay = true
-			}
+		if strings.Contains(line, "listening on port") {
+			foundRelay = true
 		}
-	}()
 
-	for time.Now().Before(deadline) {
 		if foundSource && foundRelay {
-			return
+			close(p.ready)
+			for scanner.Scan() {
+				p.t.Logf("tcp-relay: %s", scanner.Text())
+			}
+			break
 		}
-		time.Sleep(10 * time.Millisecond)
 	}
 
-	require.FailNow(t, fmt.Sprintf("tcp-relay did not start (source=%v, relay=%v)", foundSource, foundRelay))
+	if err := scanner.Err(); err != nil {
+		p.t.Logf("Error reading tcp-relay stdout: %v", err)
+	}
+}
+
+func (p *relayProcess) WaitReady(timeout time.Duration) error {
+	select {
+	case <-p.ready:
+		return nil
+	case <-time.After(timeout):
+		return fmt.Errorf("timeout waiting for tcp-relay to be ready")
+	}
 }
 
 func (p *relayProcess) Stop() {
@@ -145,17 +154,15 @@ type mockTCPSource struct {
 	t        *testing.T
 }
 
-func newMockSource(t *testing.T, port int) *mockTCPSource {
-	var listener net.Listener
-	var err error
-
-	listener, err = net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+func newMockSource(t *testing.T) *mockTCPSource {
+	// Port 0 = OS assigns a random free port
+	listener, err := net.Listen("tcp", "localhost:0")
 	require.NoError(t, err)
 
-	actualPort := listener.Addr().(*net.TCPAddr).Port
+	port := listener.Addr().(*net.TCPAddr).Port
 	mock := &mockTCPSource{
 		listener: listener,
-		port:     actualPort,
+		port:     port,
 		t:        t,
 	}
 
@@ -207,14 +214,23 @@ func (m *mockTCPSource) Close() {
 	}
 }
 
+func getFreePort(t *testing.T) int {
+	listener, err := net.Listen("tcp", "localhost:0")
+	require.NoError(t, err)
+	port := listener.Addr().(*net.TCPAddr).Port
+	listener.Close()
+	return port
+}
+
 func TestRelayDuplex(t *testing.T) {
-	source := newMockSource(t, 50100)
+	source := newMockSource(t)
 	ctx := context.Background()
 
-	duplexPort := 50101
+	duplexPort := getFreePort(t)
 	relay := startRelay(t, ctx, source.Port(), []int{duplexPort}, nil, false)
 	defer relay.Stop()
-	time.Sleep(500 * time.Millisecond)
+	err := relay.WaitReady(5 * time.Second)
+	require.NoError(t, err)
 
 	sourceConn, err := source.WaitForConnection(testTimeout)
 	require.NoError(t, err)
@@ -223,7 +239,7 @@ func TestRelayDuplex(t *testing.T) {
 	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", duplexPort))
 	require.NoError(t, err)
 	defer relayClient.Close()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	// Test uplink: client -> relay -> source
 	uplinkData := []byte("uplink test")
@@ -251,13 +267,14 @@ func TestRelayDuplex(t *testing.T) {
 }
 
 func TestRelayReadable(t *testing.T) {
-	source := newMockSource(t, 50110)
+	source := newMockSource(t)
 	ctx := context.Background()
 
-	readablePort := 50111
+	readablePort := getFreePort(t)
 	relay := startRelay(t, ctx, source.Port(), nil, []int{readablePort}, false)
 	defer relay.Stop()
-	time.Sleep(500 * time.Millisecond)
+	err := relay.WaitReady(5 * time.Second)
+	require.NoError(t, err)
 
 	sourceConn, err := source.WaitForConnection(testTimeout)
 	require.NoError(t, err)
@@ -266,7 +283,7 @@ func TestRelayReadable(t *testing.T) {
 	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", readablePort))
 	require.NoError(t, err)
 	defer relayClient.Close()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	// Test downlink works
 	downlinkData := []byte("downlink only")
@@ -293,18 +310,20 @@ func TestRelayReadable(t *testing.T) {
 }
 
 func TestRelayMultipleClients(t *testing.T) {
-	source := newMockSource(t, 50120)
+	source := newMockSource(t)
 	ctx := context.Background()
 
-	duplexPort := 50121
+	duplexPort := getFreePort(t)
 	relay := startRelay(t, ctx, source.Port(), []int{duplexPort}, nil, false)
 	defer relay.Stop()
-	time.Sleep(500 * time.Millisecond)
+	err := relay.WaitReady(5 * time.Second)
+	require.NoError(t, err)
 
 	sourceConn, err := source.WaitForConnection(testTimeout)
 	require.NoError(t, err)
 	defer sourceConn.Close()
 
+	// Connect multiple clients
 	const numClients = 3
 	clients := make([]net.Conn, numClients)
 	for i := range numClients {
@@ -314,7 +333,6 @@ func TestRelayMultipleClients(t *testing.T) {
 		clients[i] = client
 		time.Sleep(50 * time.Millisecond)
 	}
-	time.Sleep(200 * time.Millisecond)
 
 	// Send broadcast message from source
 	broadcastData := []byte("broadcast to all")
@@ -333,13 +351,14 @@ func TestRelayMultipleClients(t *testing.T) {
 }
 
 func TestRelayLargeData(t *testing.T) {
-	source := newMockSource(t, 50130)
+	source := newMockSource(t)
 	ctx := context.Background()
 
-	duplexPort := 50131
+	duplexPort := getFreePort(t)
 	relay := startRelay(t, ctx, source.Port(), []int{duplexPort}, nil, false)
 	defer relay.Stop()
-	time.Sleep(500 * time.Millisecond)
+	err := relay.WaitReady(5 * time.Second)
+	require.NoError(t, err)
 
 	sourceConn, err := source.WaitForConnection(testTimeout)
 	require.NoError(t, err)
@@ -348,7 +367,7 @@ func TestRelayLargeData(t *testing.T) {
 	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", duplexPort))
 	require.NoError(t, err)
 	defer relayClient.Close()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	// Large payload (100 KB)
 	largeData := bytes.Repeat([]byte("NASA/JPL"), 12800)
@@ -370,23 +389,24 @@ func TestRelayLargeData(t *testing.T) {
 func TestRelayServerMode(t *testing.T) {
 	ctx := context.Background()
 
-	sourcePort := 50140
-	duplexPort := 50141
+	sourcePort := getFreePort(t)
+	duplexPort := getFreePort(t)
 	relay := startRelay(t, ctx, sourcePort, []int{duplexPort}, nil, true)
 	defer relay.Stop()
-	time.Sleep(500 * time.Millisecond)
+	err := relay.WaitReady(5 * time.Second)
+	require.NoError(t, err)
 
 	// Connect source to the relay server
 	sourceConn, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", sourcePort))
 	require.NoError(t, err)
 	defer sourceConn.Close()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	// Connect client to relay
 	relayClient, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", duplexPort))
 	require.NoError(t, err)
 	defer relayClient.Close()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	// Test downlink: source -> relay -> client
 	testData := []byte("server mode test")
