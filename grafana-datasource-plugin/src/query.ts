@@ -81,8 +81,8 @@ export function buildTelemetryQuery(q: MyQuery, from: string, to: string): strin
 
     // wrap builds the aggregation expression for a column. numFn is applied to
     // numeric columns and strFn to the string column (defaults to numFn).
-    const wrap = (numFn: (col: string) => string, strFn: (col: string) => string = numFn) =>
-        [numFn(intCol), numFn(floatCol), numFn(boolCol), strFn(strCol), strFn(bytesCol)];
+    const wrap = (numFn: (col: string) => string, strFn: (col: string) => string = numFn, bytesFn: (col: string) => string = strFn) =>
+        [numFn(intCol), numFn(floatCol), numFn(boolCol), strFn(strCol), bytesFn(bytesCol)];
 
     const plain = (col: string) => col;
     const call = (fn: string) => (col: string) => `${fn}(${col})`;
@@ -98,11 +98,11 @@ export function buildTelemetryQuery(q: MyQuery, from: string, to: string): strin
             break;
         case "avg":
         case "sum":
-            [aggInt, aggFloat, aggBool, aggStr, aggBytes] = wrap(call(q.aggregation.toUpperCase()), call("MAX"));
+            [aggInt, aggFloat, aggBool, aggStr, aggBytes] = wrap(call(q.aggregation.toUpperCase()), ordered("FIRST"));
             break;
         case "min":
         case "max":
-            [aggInt, aggFloat, aggBool, aggStr, aggBytes] = wrap(call(q.aggregation.toUpperCase()));
+            [aggInt, aggFloat, aggBool, aggStr, aggBytes] = wrap(call(q.aggregation.toUpperCase()), call(q.aggregation.toUpperCase()), ordered("FIRST"));
             break;
         case "count":
             [aggInt, aggFloat, aggBool, aggStr, aggBytes] = wrap(call("COUNT"), (col) => `COUNT(${col})::text`);
