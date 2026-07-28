@@ -2,24 +2,24 @@ package timescaledb
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	stdtime "time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/nasa/hermes/pkg/pb"
 )
 
 const (
 	insertEventDefSQL = `INSERT INTO eventDefs (id, component, name, severity, args)
-		VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING`
+		VALUES (:id, :component, :name, :severity, :args) ON CONFLICT DO NOTHING`
 	insertEventSQL = `INSERT INTO events (eventDefId, time, timeSclk, message, source, args, ert)
-		VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING`
+		VALUES (:eventDefId, :time, :timeSclk, :message, :source, :args, :ert) ON CONFLICT DO NOTHING`
 	insertTelemetryDefSQL = `INSERT INTO telemetryDefs (id, name, component)
-		VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`
+		VALUES (:id, :name, :component) ON CONFLICT DO NOTHING`
 	insertTelemetrySQL = `INSERT INTO telemetry (time, telemetryDefId, timeSclk, source, labels, key, valueType, integral, floating, boolval, string, bytes, ert)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) ON CONFLICT DO NOTHING`
+		VALUES (:time, :telemetryDefId, :timeSclk, :source, :labels, :key, :valueType, :integral, :floating, :boolval, :string, :bytes, :ert) ON CONFLICT DO NOTHING`
 )
 
 func valuesToAnys(values []*pb.Value) ([]any, error) {
@@ -34,7 +34,7 @@ func valuesToAnys(values []*pb.Value) ([]any, error) {
 	return valueAnys, nil
 }
 
-func InsertEvent(ctx context.Context, db *sql.DB, msg *pb.SourcedEvent) error {
+func InsertEvent(ctx context.Context, db *sqlx.DB, msg *pb.SourcedEvent) error {
 	event := msg.GetEvent()
 
 	eventArgsArray, err := valuesToAnys(event.GetArgs())
@@ -52,30 +52,39 @@ func InsertEvent(ctx context.Context, db *sql.DB, msg *pb.SourcedEvent) error {
 		return fmt.Errorf("failed to marshal def args: %w", err)
 	}
 
-	tx, err := db.BeginTx(ctx, nil)
+	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback()
 
 	ref := event.GetRef()
-	if _, err := tx.ExecContext(ctx, insertEventDefSQL,
-		ref.GetId(), ref.GetComponent(), ref.GetName(), ref.GetSeverity(), string(defArgs),
-	); err != nil {
+	if _, err := tx.NamedExecContext(ctx, insertEventDefSQL, map[string]any{
+		"id":        ref.GetId(),
+		"component": ref.GetComponent(),
+		"name":      ref.GetName(),
+		"severity":  ref.GetSeverity(),
+		"args":      string(defArgs),
+	}); err != nil {
 		return fmt.Errorf("failed to insert event def: %w", err)
 	}
 
-	if _, err := tx.ExecContext(ctx, insertEventSQL,
-		ref.GetId(), event.GetTime().GetUnix().AsTime(), event.GetTime().GetSclk(),
-		event.GetMessage(), msg.GetSource(), string(eventArgs), stdtime.Now(),
-	); err != nil {
+	if _, err := tx.NamedExecContext(ctx, insertEventSQL, map[string]any{
+		"eventDefId": ref.GetId(),
+		"time":       event.GetTime().GetUnix().AsTime(),
+		"timeSclk":   event.GetTime().GetSclk(),
+		"message":    event.GetMessage(),
+		"source":     msg.GetSource(),
+		"args":       string(eventArgs),
+		"ert":        stdtime.Now(),
+	}); err != nil {
 		return fmt.Errorf("failed to insert event: %w", err)
 	}
 
 	return tx.Commit()
 }
 
-func InsertTelemetry(ctx context.Context, db *sql.DB, msg *pb.SourcedTelemetry) error {
+func InsertTelemetry(ctx context.Context, db *sqlx.DB, msg *pb.SourcedTelemetry) error {
 	tlm := msg.GetTelemetry()
 	def := tlm.GetRef()
 
@@ -84,15 +93,17 @@ func InsertTelemetry(ctx context.Context, db *sql.DB, msg *pb.SourcedTelemetry) 
 		return fmt.Errorf("failed to marshal telemetry labels: %w", err)
 	}
 
-	tx, err := db.BeginTx(ctx, nil)
+	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback()
 
-	if _, err := tx.ExecContext(ctx, insertTelemetryDefSQL,
-		def.GetId(), def.GetName(), def.GetComponent(),
-	); err != nil {
+	if _, err := tx.NamedExecContext(ctx, insertTelemetryDefSQL, map[string]any{
+		"id":        def.GetId(),
+		"name":      def.GetName(),
+		"component": def.GetComponent(),
+	}); err != nil {
 		return fmt.Errorf("failed to insert telemetry def: %w", err)
 	}
 
@@ -103,7 +114,7 @@ func InsertTelemetry(ctx context.Context, db *sql.DB, msg *pb.SourcedTelemetry) 
 	return tx.Commit()
 }
 
-func insertValue(ctx context.Context, tx *sql.Tx, time *pb.Time, telemetryDefId int32, source string, labels string, path string, value *pb.Value) error {
+func insertValue(ctx context.Context, tx *sqlx.Tx, time *pb.Time, telemetryDefId int32, source string, labels string, path string, value *pb.Value) error {
 	var (
 		valueType          string
 		integral, floating any
@@ -151,11 +162,20 @@ func insertValue(ctx context.Context, tx *sql.Tx, time *pb.Time, telemetryDefId 
 		bytes = valueTy.R.Value
 	}
 
-	now := stdtime.Now()
-	_, err := tx.ExecContext(ctx, insertTelemetrySQL,
-		time.GetUnix().AsTime(), telemetryDefId, time.GetSclk(),
-		source, labels, path, valueType,
-		integral, floating, boolval, str, bytes, now,
-	)
+	_, err := tx.NamedExecContext(ctx, insertTelemetrySQL, map[string]any{
+		"time":           time.GetUnix().AsTime(),
+		"telemetryDefId": telemetryDefId,
+		"timeSclk":       time.GetSclk(),
+		"source":         source,
+		"labels":         labels,
+		"key":            path,
+		"valueType":      valueType,
+		"integral":       integral,
+		"floating":       floating,
+		"boolval":        boolval,
+		"string":         str,
+		"bytes":          bytes,
+		"ert":            stdtime.Now(),
+	})
 	return err
 }
