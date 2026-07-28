@@ -49,6 +49,9 @@ RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
 
+# F Prime expects this directory to exist at runtime (whitelisted for file uplink)
+RUN mkdir -p /tmp/uplink
+
 # Copy virtual environment and built artifacts from builder
 COPY --from=fprime-builder /workspace/fprime/TestDeploymentsProject/build-artifacts /workspace
 
@@ -65,6 +68,10 @@ GROUND_ADDRESS=\$(getent hosts "\${GROUND_ADDRESS}" | awk '{ print \$1 }')
 echo "Launching F Prime Ref deployment"
 echo "Ground Hostname: \${GROUND_ADDRESS_ORIG} (\${GROUND_ADDRESS})"
 echo "Ground Port: \${GROUND_PORT}"
+
+
+# Change to the uplink directory where F Prime expects files to be uplinked
+cd /tmp/uplink
 
 exec /workspace/Linux/Ref/bin/Ref -a \${GROUND_ADDRESS} -p \${GROUND_PORT}
 EOF
