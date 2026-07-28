@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -192,8 +193,6 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 				valueField = data.NewField("value", nil, []*float64{})
 			case "bool":
 				valueField = data.NewField("value", nil, []*bool{})
-			case "bytes":
-				valueField = data.NewField("value", nil, []*[]byte{})
 			default:
 				valueField = data.NewField("value", nil, []*string{})
 			}
@@ -230,9 +229,10 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			}
 			frame.AppendRow(t, valPtr)
 		case "bytes":
-			var valPtr *[]byte
+			var valPtr *string
 			if vBytes != nil {
-				valPtr = &vBytes
+				s := hex.EncodeToString(vBytes)
+				valPtr = &s
 			}
 			frame.AppendRow(t, valPtr)
 		default:
