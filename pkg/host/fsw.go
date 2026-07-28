@@ -27,8 +27,10 @@ type FswInfo struct {
 	// connection capability
 	Capabilities []pb.FswCapability
 
-	// (optional) Dictionary ID to use to command this FSW
+	// Dictionary ID to use to command this FSW
 	Dictionary string `json:"dictionary,omitempty"`
+	// Dictionary version to use to command this FSW
+	Version string `json:"version,omitempty"`
 }
 
 func (f FswInfo) HasCapability(c pb.FswCapability) bool {

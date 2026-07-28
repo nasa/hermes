@@ -5,12 +5,12 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/nasa/hermes/pkg/fprime"
 	"github.com/nasa/hermes/pkg/host"
 	"github.com/nasa/hermes/pkg/pb"
 	"github.com/nasa/hermes/pkg/serial"
 	"github.com/nasa/hermes/pkg/spice"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -336,7 +336,7 @@ func TestTelemPacket(t *testing.T) {
 
 		tlms := []*pb.Telemetry{}
 		for _, v := range pkt.Payload.([]*fprime.TelemValue) {
-			tlm, err := v.ToTelemetry()
+			tlm, err := v.ToTelemetry("", "")
 			assert.NoError(t, err)
 			tlms = append(tlms, tlm)
 		}
@@ -356,7 +356,7 @@ func TestTelemPacket(t *testing.T) {
 						},
 						Sclk: 684371162.929382,
 					},
-					Ref: test1Telem.ToRef(),
+					Ref: test1Telem.ToRef("", ""),
 				},
 			},
 			tlms,

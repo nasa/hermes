@@ -9,6 +9,7 @@ export interface Fsw {
   'forwards'?: (string)[];
   'capabilities'?: (_hermes_FswCapability)[];
   'dictionary'?: (string);
+  'version'?: (string);
 }
 
 export interface Fsw__Output {
@@ -18,4 +19,5 @@ export interface Fsw__Output {
   'forwards'?: (string)[];
   'capabilities'?: (_hermes_FswCapability__Output)[];
   'dictionary'?: (string);
+  'version'?: (string);
 }

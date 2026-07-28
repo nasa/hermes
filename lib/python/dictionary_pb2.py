@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 import type_pb2 as type__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x64ictionary.proto\x12\x06hermes\x1a\ntype.proto\"i\n\x0cParameterDef\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x11\n\tcomponent\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x1a\n\x04type\x18\x04 \x01(\x0b\x32\x0c.hermes.Type\x12\x10\n\x08metadata\x18\x05 \x01(\t\"u\n\nCommandDef\x12\x0e\n\x06opcode\x18\x01 \x01(\x05\x12\x10\n\x08mnemonic\x18\x02 \x01(\t\x12\x11\n\tcomponent\x18\x03 \x01(\t\x12 \n\targuments\x18\x04 \x03(\x0b\x32\r.hermes.Field\x12\x10\n\x08metadata\x18\x05 \x01(\t\"z\n\x0f\x46ormatSpecifier\x12)\n\x04type\x18\x01 \x01(\x0e\x32\x1b.hermes.FormatSpecifierType\x12\x16\n\tprecision\x18\x02 \x01(\rH\x00\x88\x01\x01\x12\x16\n\x0e\x61rgument_index\x18\x03 \x01(\rB\x0c\n\n_precision\"Z\n\x0e\x46ormatFragment\x12\x0e\n\x04text\x18\x01 \x01(\tH\x00\x12,\n\tspecifier\x18\x02 \x01(\x0b\x32\x17.hermes.FormatSpecifierH\x00\x42\n\n\x08\x66ragment\"K\n\x0c\x46ormatString\x12)\n\tfragments\x18\x01 \x03(\x0b\x32\x16.hermes.FormatFragment\x12\x10\n\x08original\x18\x02 \x01(\t\"\xd3\x01\n\x08\x45ventDef\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x11\n\tcomponent\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12%\n\x08severity\x18\x04 \x01(\x0e\x32\x13.hermes.EvrSeverity\x12\x19\n\rformat_string\x18\x05 \x01(\tB\x02\x18\x01\x12 \n\targuments\x18\x06 \x03(\x0b\x32\r.hermes.Field\x12\x10\n\x08metadata\x18\x07 \x01(\t\x12$\n\x06\x66ormat\x18\x08 \x01(\x0b\x32\x14.hermes.FormatString\"\x85\x01\n\x08\x45ventRef\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tcomponent\x18\x03 \x01(\t\x12%\n\x08severity\x18\x04 \x01(\x0e\x32\x13.hermes.EvrSeverity\x12\x11\n\targuments\x18\x05 \x03(\t\x12\x12\n\ndictionary\x18\n \x01(\t\"o\n\x0cTelemetryDef\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tcomponent\x18\x03 \x01(\t\x12\x1a\n\x04type\x18\x04 \x01(\x0b\x32\x0c.hermes.Type\x12\x10\n\x08metadata\x18\x06 \x01(\tJ\x04\x08\x05\x10\x06\"O\n\x0cTelemetryRef\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tcomponent\x18\x03 \x01(\t\x12\x12\n\ndictionary\x18\n \x01(\t\"=\n\x0e\x44ictionaryHead\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\t\"\x95\x05\n\x13\x44ictionaryNamespace\x12;\n\x08\x63ommands\x18\x01 \x03(\x0b\x32).hermes.DictionaryNamespace.CommandsEntry\x12\x37\n\x06\x65vents\x18\x02 \x03(\x0b\x32\'.hermes.DictionaryNamespace.EventsEntry\x12=\n\ttelemetry\x18\x03 \x03(\x0b\x32*.hermes.DictionaryNamespace.TelemetryEntry\x12?\n\nparameters\x18\x04 \x03(\x0b\x32+.hermes.DictionaryNamespace.ParametersEntry\x12\x35\n\x05types\x18\x05 \x03(\x0b\x32&.hermes.DictionaryNamespace.TypesEntry\x1a\x43\n\rCommandsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.hermes.CommandDef:\x02\x38\x01\x1a?\n\x0b\x45ventsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\x05value\x18\x02 \x01(\x0b\x32\x10.hermes.EventDef:\x02\x38\x01\x1a\x46\n\x0eTelemetryEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.hermes.TelemetryDef:\x02\x38\x01\x1aG\n\x0fParametersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.hermes.ParameterDef:\x02\x38\x01\x1a:\n\nTypesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1b\n\x05value\x18\x02 \x01(\x0b\x32\x0c.hermes.Type:\x02\x38\x01\"\xa2\x02\n\nDictionary\x12$\n\x04head\x18\x01 \x01(\x0b\x32\x16.hermes.DictionaryHead\x12\x30\n\x07\x63ontent\x18\x02 \x03(\x0b\x32\x1f.hermes.Dictionary.ContentEntry\x12\x32\n\x08metadata\x18\x03 \x03(\x0b\x32 .hermes.Dictionary.MetadataEntry\x12\n\n\x02id\x18\x04 \x01(\t\x1aK\n\x0c\x43ontentEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12*\n\x05value\x18\x02 \x01(\x0b\x32\x1b.hermes.DictionaryNamespace:\x02\x38\x01\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01*\x99\x01\n\x0b\x45vrSeverity\x12\x12\n\x0e\x45VR_DIAGNOSTIC\x10\x00\x12\x14\n\x10\x45VR_ACTIVITY_LOW\x10\x01\x12\x15\n\x11\x45VR_ACTIVITY_HIGH\x10\x02\x12\x13\n\x0f\x45VR_WARNING_LOW\x10\x03\x12\x14\n\x10\x45VR_WARNING_HIGH\x10\x04\x12\x0f\n\x0b\x45VR_COMMAND\x10\x05\x12\r\n\tEVR_FATAL\x10\x06*\xf8\x01\n\x13\x46ormatSpecifierType\x12\x0f\n\x0b\x46MT_DEFAULT\x10\x00\x12\x0c\n\x08\x46MT_CHAR\x10\x01\x12\x0f\n\x0b\x46MT_DECIMAL\x10\x02\x12\x11\n\rFMT_HEX_LOWER\x10\x03\x12\x11\n\rFMT_HEX_UPPER\x10\x04\x12\r\n\tFMT_OCTAL\x10\x05\x12\x11\n\rFMT_EXP_LOWER\x10\x06\x12\x11\n\rFMT_EXP_UPPER\x10\x07\x12\x13\n\x0f\x46MT_FIXED_LOWER\x10\x08\x12\x13\n\x0f\x46MT_FIXED_UPPER\x10\t\x12\x15\n\x11\x46MT_GENERAL_LOWER\x10\n\x12\x15\n\x11\x46MT_GENERAL_UPPER\x10\x0b\x42\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x64ictionary.proto\x12\x06hermes\x1a\ntype.proto\"i\n\x0cParameterDef\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x11\n\tcomponent\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x1a\n\x04type\x18\x04 \x01(\x0b\x32\x0c.hermes.Type\x12\x10\n\x08metadata\x18\x05 \x01(\t\"u\n\nCommandDef\x12\x0e\n\x06opcode\x18\x01 \x01(\x05\x12\x10\n\x08mnemonic\x18\x02 \x01(\t\x12\x11\n\tcomponent\x18\x03 \x01(\t\x12 \n\targuments\x18\x04 \x03(\x0b\x32\r.hermes.Field\x12\x10\n\x08metadata\x18\x05 \x01(\t\"z\n\x0f\x46ormatSpecifier\x12)\n\x04type\x18\x01 \x01(\x0e\x32\x1b.hermes.FormatSpecifierType\x12\x16\n\tprecision\x18\x02 \x01(\rH\x00\x88\x01\x01\x12\x16\n\x0e\x61rgument_index\x18\x03 \x01(\rB\x0c\n\n_precision\"Z\n\x0e\x46ormatFragment\x12\x0e\n\x04text\x18\x01 \x01(\tH\x00\x12,\n\tspecifier\x18\x02 \x01(\x0b\x32\x17.hermes.FormatSpecifierH\x00\x42\n\n\x08\x66ragment\"K\n\x0c\x46ormatString\x12)\n\tfragments\x18\x01 \x03(\x0b\x32\x16.hermes.FormatFragment\x12\x10\n\x08original\x18\x02 \x01(\t\"\xd3\x01\n\x08\x45ventDef\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x11\n\tcomponent\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12%\n\x08severity\x18\x04 \x01(\x0e\x32\x13.hermes.EvrSeverity\x12\x19\n\rformat_string\x18\x05 \x01(\tB\x02\x18\x01\x12 \n\targuments\x18\x06 \x03(\x0b\x32\r.hermes.Field\x12\x10\n\x08metadata\x18\x07 \x01(\t\x12$\n\x06\x66ormat\x18\x08 \x01(\x0b\x32\x14.hermes.FormatString\"\x96\x01\n\x08\x45ventRef\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tcomponent\x18\x03 \x01(\t\x12%\n\x08severity\x18\x04 \x01(\x0e\x32\x13.hermes.EvrSeverity\x12\x11\n\targuments\x18\x05 \x03(\t\x12\x12\n\ndictionary\x18\n \x01(\t\x12\x0f\n\x07version\x18\x0b \x01(\t\"o\n\x0cTelemetryDef\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tcomponent\x18\x03 \x01(\t\x12\x1a\n\x04type\x18\x04 \x01(\x0b\x32\x0c.hermes.Type\x12\x10\n\x08metadata\x18\x06 \x01(\tJ\x04\x08\x05\x10\x06\"`\n\x0cTelemetryRef\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tcomponent\x18\x03 \x01(\t\x12\x12\n\ndictionary\x18\n \x01(\t\x12\x0f\n\x07version\x18\x0b \x01(\t\"=\n\x0e\x44ictionaryHead\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\t\"\x95\x05\n\x13\x44ictionaryNamespace\x12;\n\x08\x63ommands\x18\x01 \x03(\x0b\x32).hermes.DictionaryNamespace.CommandsEntry\x12\x37\n\x06\x65vents\x18\x02 \x03(\x0b\x32\'.hermes.DictionaryNamespace.EventsEntry\x12=\n\ttelemetry\x18\x03 \x03(\x0b\x32*.hermes.DictionaryNamespace.TelemetryEntry\x12?\n\nparameters\x18\x04 \x03(\x0b\x32+.hermes.DictionaryNamespace.ParametersEntry\x12\x35\n\x05types\x18\x05 \x03(\x0b\x32&.hermes.DictionaryNamespace.TypesEntry\x1a\x43\n\rCommandsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.hermes.CommandDef:\x02\x38\x01\x1a?\n\x0b\x45ventsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\x05value\x18\x02 \x01(\x0b\x32\x10.hermes.EventDef:\x02\x38\x01\x1a\x46\n\x0eTelemetryEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.hermes.TelemetryDef:\x02\x38\x01\x1aG\n\x0fParametersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.hermes.ParameterDef:\x02\x38\x01\x1a:\n\nTypesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1b\n\x05value\x18\x02 \x01(\x0b\x32\x0c.hermes.Type:\x02\x38\x01\"\xa2\x02\n\nDictionary\x12$\n\x04head\x18\x01 \x01(\x0b\x32\x16.hermes.DictionaryHead\x12\x30\n\x07\x63ontent\x18\x02 \x03(\x0b\x32\x1f.hermes.Dictionary.ContentEntry\x12\x32\n\x08metadata\x18\x03 \x03(\x0b\x32 .hermes.Dictionary.MetadataEntry\x12\n\n\x02id\x18\x04 \x01(\t\x1aK\n\x0c\x43ontentEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12*\n\x05value\x18\x02 \x01(\x0b\x32\x1b.hermes.DictionaryNamespace:\x02\x38\x01\x1a/\n\rMetadataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01*\x99\x01\n\x0b\x45vrSeverity\x12\x12\n\x0e\x45VR_DIAGNOSTIC\x10\x00\x12\x14\n\x10\x45VR_ACTIVITY_LOW\x10\x01\x12\x15\n\x11\x45VR_ACTIVITY_HIGH\x10\x02\x12\x13\n\x0f\x45VR_WARNING_LOW\x10\x03\x12\x14\n\x10\x45VR_WARNING_HIGH\x10\x04\x12\x0f\n\x0b\x45VR_COMMAND\x10\x05\x12\r\n\tEVR_FATAL\x10\x06*\xf8\x01\n\x13\x46ormatSpecifierType\x12\x0f\n\x0b\x46MT_DEFAULT\x10\x00\x12\x0c\n\x08\x46MT_CHAR\x10\x01\x12\x0f\n\x0b\x46MT_DECIMAL\x10\x02\x12\x11\n\rFMT_HEX_LOWER\x10\x03\x12\x11\n\rFMT_HEX_UPPER\x10\x04\x12\r\n\tFMT_OCTAL\x10\x05\x12\x11\n\rFMT_EXP_LOWER\x10\x06\x12\x11\n\rFMT_EXP_UPPER\x10\x07\x12\x13\n\x0f\x46MT_FIXED_LOWER\x10\x08\x12\x13\n\x0f\x46MT_FIXED_UPPER\x10\t\x12\x15\n\x11\x46MT_GENERAL_LOWER\x10\n\x12\x15\n\x11\x46MT_GENERAL_UPPER\x10\x0b\x42\x1fZ\x1dgithub.com/nasa/hermes/pkg/pbb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -49,10 +49,10 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_DICTIONARY_CONTENTENTRY']._serialized_options = b'8\001'
   _globals['_DICTIONARY_METADATAENTRY']._loaded_options = None
   _globals['_DICTIONARY_METADATAENTRY']._serialized_options = b'8\001'
-  _globals['_EVRSEVERITY']._serialized_start=2124
-  _globals['_EVRSEVERITY']._serialized_end=2277
-  _globals['_FORMATSPECIFIERTYPE']._serialized_start=2280
-  _globals['_FORMATSPECIFIERTYPE']._serialized_end=2528
+  _globals['_EVRSEVERITY']._serialized_start=2158
+  _globals['_EVRSEVERITY']._serialized_end=2311
+  _globals['_FORMATSPECIFIERTYPE']._serialized_start=2314
+  _globals['_FORMATSPECIFIERTYPE']._serialized_end=2562
   _globals['_PARAMETERDEF']._serialized_start=40
   _globals['_PARAMETERDEF']._serialized_end=145
   _globals['_COMMANDDEF']._serialized_start=147
@@ -66,29 +66,29 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_EVENTDEF']._serialized_start=560
   _globals['_EVENTDEF']._serialized_end=771
   _globals['_EVENTREF']._serialized_start=774
-  _globals['_EVENTREF']._serialized_end=907
-  _globals['_TELEMETRYDEF']._serialized_start=909
-  _globals['_TELEMETRYDEF']._serialized_end=1020
-  _globals['_TELEMETRYREF']._serialized_start=1022
-  _globals['_TELEMETRYREF']._serialized_end=1101
-  _globals['_DICTIONARYHEAD']._serialized_start=1103
-  _globals['_DICTIONARYHEAD']._serialized_end=1164
-  _globals['_DICTIONARYNAMESPACE']._serialized_start=1167
-  _globals['_DICTIONARYNAMESPACE']._serialized_end=1828
-  _globals['_DICTIONARYNAMESPACE_COMMANDSENTRY']._serialized_start=1491
-  _globals['_DICTIONARYNAMESPACE_COMMANDSENTRY']._serialized_end=1558
-  _globals['_DICTIONARYNAMESPACE_EVENTSENTRY']._serialized_start=1560
-  _globals['_DICTIONARYNAMESPACE_EVENTSENTRY']._serialized_end=1623
-  _globals['_DICTIONARYNAMESPACE_TELEMETRYENTRY']._serialized_start=1625
-  _globals['_DICTIONARYNAMESPACE_TELEMETRYENTRY']._serialized_end=1695
-  _globals['_DICTIONARYNAMESPACE_PARAMETERSENTRY']._serialized_start=1697
-  _globals['_DICTIONARYNAMESPACE_PARAMETERSENTRY']._serialized_end=1768
-  _globals['_DICTIONARYNAMESPACE_TYPESENTRY']._serialized_start=1770
-  _globals['_DICTIONARYNAMESPACE_TYPESENTRY']._serialized_end=1828
-  _globals['_DICTIONARY']._serialized_start=1831
-  _globals['_DICTIONARY']._serialized_end=2121
-  _globals['_DICTIONARY_CONTENTENTRY']._serialized_start=1997
-  _globals['_DICTIONARY_CONTENTENTRY']._serialized_end=2072
-  _globals['_DICTIONARY_METADATAENTRY']._serialized_start=2074
-  _globals['_DICTIONARY_METADATAENTRY']._serialized_end=2121
+  _globals['_EVENTREF']._serialized_end=924
+  _globals['_TELEMETRYDEF']._serialized_start=926
+  _globals['_TELEMETRYDEF']._serialized_end=1037
+  _globals['_TELEMETRYREF']._serialized_start=1039
+  _globals['_TELEMETRYREF']._serialized_end=1135
+  _globals['_DICTIONARYHEAD']._serialized_start=1137
+  _globals['_DICTIONARYHEAD']._serialized_end=1198
+  _globals['_DICTIONARYNAMESPACE']._serialized_start=1201
+  _globals['_DICTIONARYNAMESPACE']._serialized_end=1862
+  _globals['_DICTIONARYNAMESPACE_COMMANDSENTRY']._serialized_start=1525
+  _globals['_DICTIONARYNAMESPACE_COMMANDSENTRY']._serialized_end=1592
+  _globals['_DICTIONARYNAMESPACE_EVENTSENTRY']._serialized_start=1594
+  _globals['_DICTIONARYNAMESPACE_EVENTSENTRY']._serialized_end=1657
+  _globals['_DICTIONARYNAMESPACE_TELEMETRYENTRY']._serialized_start=1659
+  _globals['_DICTIONARYNAMESPACE_TELEMETRYENTRY']._serialized_end=1729
+  _globals['_DICTIONARYNAMESPACE_PARAMETERSENTRY']._serialized_start=1731
+  _globals['_DICTIONARYNAMESPACE_PARAMETERSENTRY']._serialized_end=1802
+  _globals['_DICTIONARYNAMESPACE_TYPESENTRY']._serialized_start=1804
+  _globals['_DICTIONARYNAMESPACE_TYPESENTRY']._serialized_end=1862
+  _globals['_DICTIONARY']._serialized_start=1865
+  _globals['_DICTIONARY']._serialized_end=2155
+  _globals['_DICTIONARY_CONTENTENTRY']._serialized_start=2031
+  _globals['_DICTIONARY_CONTENTENTRY']._serialized_end=2106
+  _globals['_DICTIONARY_METADATAENTRY']._serialized_start=2108
+  _globals['_DICTIONARY_METADATAENTRY']._serialized_end=2155
 # @@protoc_insertion_point(module_scope)

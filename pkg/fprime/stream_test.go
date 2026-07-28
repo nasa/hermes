@@ -82,7 +82,7 @@ func TestFPrimeTCP(t *testing.T) {
 
 	logger := log.GetLogger(t.Context())
 
-	fsw := fprime.NewFprimeFsw(logger, "tcp", "", dictHost.Namespace(""))
+	fsw := fprime.NewFprimeFsw(logger, "tcp", "", "", dictHost.Namespace(""))
 
 	wg := sync.WaitGroup{}
 	fprime.ConnectPipeline(

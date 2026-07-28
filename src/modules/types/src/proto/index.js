@@ -11530,6 +11530,7 @@ $root.hermes = (function() {
          * @property {hermes.EvrSeverity|null} [severity] EventRef severity
          * @property {Array.<string>|null} ["arguments"] EventRef arguments
          * @property {string|null} [dictionary] EventRef dictionary
+         * @property {string|null} [version] EventRef version
          */
 
         /**
@@ -11597,6 +11598,14 @@ $root.hermes = (function() {
         EventRef.prototype.dictionary = "";
 
         /**
+         * EventRef version.
+         * @member {string} version
+         * @memberof hermes.EventRef
+         * @instance
+         */
+        EventRef.prototype.version = "";
+
+        /**
          * Creates a new EventRef instance using the specified properties.
          * @function create
          * @memberof hermes.EventRef
@@ -11633,6 +11642,8 @@ $root.hermes = (function() {
                     writer.uint32(/* id 5, wireType 2 =*/42).string(message["arguments"][i]);
             if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
                 writer.uint32(/* id 10, wireType 2 =*/82).string(message.dictionary);
+            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
+                writer.uint32(/* id 11, wireType 2 =*/90).string(message.version);
             return writer;
         };
 
@@ -11691,6 +11702,10 @@ $root.hermes = (function() {
                     }
                 case 10: {
                         message.dictionary = reader.string();
+                        break;
+                    }
+                case 11: {
+                        message.version = reader.string();
                         break;
                     }
                 default:
@@ -11760,6 +11775,9 @@ $root.hermes = (function() {
             if (message.dictionary != null && message.hasOwnProperty("dictionary"))
                 if (!$util.isString(message.dictionary))
                     return "dictionary: string expected";
+            if (message.version != null && message.hasOwnProperty("version"))
+                if (!$util.isString(message.version))
+                    return "version: string expected";
             return null;
         };
 
@@ -11826,6 +11844,8 @@ $root.hermes = (function() {
             }
             if (object.dictionary != null)
                 message.dictionary = String(object.dictionary);
+            if (object.version != null)
+                message.version = String(object.version);
             return message;
         };
 
@@ -11850,6 +11870,7 @@ $root.hermes = (function() {
                 object.component = "";
                 object.severity = options.enums === String ? "EVR_DIAGNOSTIC" : 0;
                 object.dictionary = "";
+                object.version = "";
             }
             if (message.id != null && message.hasOwnProperty("id"))
                 object.id = message.id;
@@ -11866,6 +11887,8 @@ $root.hermes = (function() {
             }
             if (message.dictionary != null && message.hasOwnProperty("dictionary"))
                 object.dictionary = message.dictionary;
+            if (message.version != null && message.hasOwnProperty("version"))
+                object.version = message.version;
             return object;
         };
 
@@ -12209,6 +12232,7 @@ $root.hermes = (function() {
          * @property {string|null} [name] TelemetryRef name
          * @property {string|null} [component] TelemetryRef component
          * @property {string|null} [dictionary] TelemetryRef dictionary
+         * @property {string|null} [version] TelemetryRef version
          */
 
         /**
@@ -12259,6 +12283,14 @@ $root.hermes = (function() {
         TelemetryRef.prototype.dictionary = "";
 
         /**
+         * TelemetryRef version.
+         * @member {string} version
+         * @memberof hermes.TelemetryRef
+         * @instance
+         */
+        TelemetryRef.prototype.version = "";
+
+        /**
          * Creates a new TelemetryRef instance using the specified properties.
          * @function create
          * @memberof hermes.TelemetryRef
@@ -12290,6 +12322,8 @@ $root.hermes = (function() {
                 writer.uint32(/* id 3, wireType 2 =*/26).string(message.component);
             if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
                 writer.uint32(/* id 10, wireType 2 =*/82).string(message.dictionary);
+            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
+                writer.uint32(/* id 11, wireType 2 =*/90).string(message.version);
             return writer;
         };
 
@@ -12340,6 +12374,10 @@ $root.hermes = (function() {
                         message.dictionary = reader.string();
                         break;
                     }
+                case 11: {
+                        message.version = reader.string();
+                        break;
+                    }
                 default:
                     reader.skipType(tag & 7);
                     break;
@@ -12387,6 +12425,9 @@ $root.hermes = (function() {
             if (message.dictionary != null && message.hasOwnProperty("dictionary"))
                 if (!$util.isString(message.dictionary))
                     return "dictionary: string expected";
+            if (message.version != null && message.hasOwnProperty("version"))
+                if (!$util.isString(message.version))
+                    return "version: string expected";
             return null;
         };
 
@@ -12410,6 +12451,8 @@ $root.hermes = (function() {
                 message.component = String(object.component);
             if (object.dictionary != null)
                 message.dictionary = String(object.dictionary);
+            if (object.version != null)
+                message.version = String(object.version);
             return message;
         };
 
@@ -12431,6 +12474,7 @@ $root.hermes = (function() {
                 object.name = "";
                 object.component = "";
                 object.dictionary = "";
+                object.version = "";
             }
             if (message.id != null && message.hasOwnProperty("id"))
                 object.id = message.id;
@@ -12440,6 +12484,8 @@ $root.hermes = (function() {
                 object.component = message.component;
             if (message.dictionary != null && message.hasOwnProperty("dictionary"))
                 object.dictionary = message.dictionary;
+            if (message.version != null && message.hasOwnProperty("version"))
+                object.version = message.version;
             return object;
         };
 
@@ -15488,6 +15534,7 @@ $root.hermes = (function() {
          * @property {Array.<string>|null} [forwards] Fsw forwards
          * @property {Array.<hermes.FswCapability>|null} [capabilities] Fsw capabilities
          * @property {string|null} [dictionary] Fsw dictionary
+         * @property {string|null} [version] Fsw version
          */
 
         /**
@@ -15556,6 +15603,14 @@ $root.hermes = (function() {
         Fsw.prototype.dictionary = "";
 
         /**
+         * Fsw version.
+         * @member {string} version
+         * @memberof hermes.Fsw
+         * @instance
+         */
+        Fsw.prototype.version = "";
+
+        /**
          * Creates a new Fsw instance using the specified properties.
          * @function create
          * @memberof hermes.Fsw
@@ -15596,6 +15651,8 @@ $root.hermes = (function() {
             }
             if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
                 writer.uint32(/* id 8, wireType 2 =*/66).string(message.dictionary);
+            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
+                writer.uint32(/* id 9, wireType 2 =*/74).string(message.version);
             return writer;
         };
 
@@ -15661,6 +15718,10 @@ $root.hermes = (function() {
                     }
                 case 8: {
                         message.dictionary = reader.string();
+                        break;
+                    }
+                case 9: {
+                        message.version = reader.string();
                         break;
                     }
                 default:
@@ -15733,6 +15794,9 @@ $root.hermes = (function() {
             if (message.dictionary != null && message.hasOwnProperty("dictionary"))
                 if (!$util.isString(message.dictionary))
                     return "dictionary: string expected";
+            if (message.version != null && message.hasOwnProperty("version"))
+                if (!$util.isString(message.version))
+                    return "version: string expected";
             return null;
         };
 
@@ -15800,6 +15864,8 @@ $root.hermes = (function() {
             }
             if (object.dictionary != null)
                 message.dictionary = String(object.dictionary);
+            if (object.version != null)
+                message.version = String(object.version);
             return message;
         };
 
@@ -15825,6 +15891,7 @@ $root.hermes = (function() {
                 object.type = "";
                 object.profileId = "";
                 object.dictionary = "";
+                object.version = "";
             }
             if (message.id != null && message.hasOwnProperty("id"))
                 object.id = message.id;
@@ -15844,6 +15911,8 @@ $root.hermes = (function() {
             }
             if (message.dictionary != null && message.hasOwnProperty("dictionary"))
                 object.dictionary = message.dictionary;
+            if (message.version != null && message.hasOwnProperty("version"))
+                object.version = message.version;
             return object;
         };
 

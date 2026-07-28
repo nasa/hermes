@@ -1,11 +1,12 @@
 CREATE TABLE IF NOT EXISTS eventDefs (
     id SERIAL PRIMARY KEY,
+    version TEXT,
 	component TEXT,
 	name TEXT,
     severity BIGINT,
     formatString TEXT,
     args JSONB,
-    UNIQUE(component, name)
+    UNIQUE(version, component, name)
 );
 
 CREATE TABLE IF NOT EXISTS events (
@@ -29,9 +30,10 @@ SELECT add_dimension('events', by_range('ert', INTERVAL '1 day'), if_not_exists 
 
 CREATE TABLE IF NOT EXISTS telemetryDefs (
     id SERIAL PRIMARY KEY,
+    version TEXT,
     name TEXT,
     component TEXT,
-    UNIQUE(name, component)
+    UNIQUE(version, name, component)
 );
 
 DO $$ BEGIN

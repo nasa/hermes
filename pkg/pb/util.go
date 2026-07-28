@@ -18,22 +18,24 @@ func (e *CommandDef) ArgNames() []string {
 	return out
 }
 
-func (e *EventDef) ToRef() *EventRef {
+func (e *EventDef) ToRef(dictId string, dictVersion string) *EventRef {
 	return &EventRef{
 		Id:         e.GetId(),
 		Component:  e.GetComponent(),
 		Name:       e.GetName(),
 		Severity:   e.GetSeverity(),
 		Arguments:  e.ArgNames(),
-		Dictionary: "", // TODO(tumbar) Is there an easy way to fill this
+		Dictionary: dictId,
+		Version:    dictVersion,
 	}
 }
 
-func (e *TelemetryDef) ToRef() *TelemetryRef {
+func (e *TelemetryDef) ToRef(dictId string, dictVersion string) *TelemetryRef {
 	return &TelemetryRef{
 		Id:         e.GetId(),
 		Component:  e.GetComponent(),
 		Name:       e.GetName(),
-		Dictionary: "", // TODO(tumbar) Is there an easy way to fill this
+		Dictionary: dictId,
+		Version:    dictVersion,
 	}
 }

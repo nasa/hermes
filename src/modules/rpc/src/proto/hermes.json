@@ -370,6 +370,10 @@
             "dictionary": {
               "type": "string",
               "id": 10
+            },
+            "version": {
+              "type": "string",
+              "id": 11
             }
           }
         },
@@ -420,6 +424,10 @@
             "dictionary": {
               "type": "string",
               "id": 10
+            },
+            "version": {
+              "type": "string",
+              "id": 11
             }
           }
         },
@@ -1071,6 +1079,10 @@
             "dictionary": {
               "type": "string",
               "id": 8
+            },
+            "version": {
+              "type": "string",
+              "id": 9
             }
           },
           "reserved": [

@@ -70,6 +70,7 @@ func gdsProvider(
 		session.Log(),
 		fswName,
 		dictId,
+		dict.Head.Version,
 		primaryDict,
 	)
 

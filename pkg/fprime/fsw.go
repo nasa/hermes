@@ -68,6 +68,7 @@ func NewFprimeFsw(
 	logger log.Logger,
 	name string,
 	dictionaryId string,
+	dictionaryVersion string,
 	dictionary *host.DictionaryNamespace,
 ) *Fsw {
 	f := &Fsw{
@@ -75,6 +76,7 @@ func NewFprimeFsw(
 			Id:         name,
 			Type:       "fprime",
 			Dictionary: dictionaryId,
+			Version:    dictionaryVersion,
 		},
 
 		Up:         stream.NewPort[*Packet](),
@@ -100,7 +102,7 @@ func (f *Fsw) downlinkLoop() {
 			}
 		case []*TelemValue:
 			for _, tlmRaw := range data {
-				tlm, err := tlmRaw.ToTelemetry()
+				tlm, err := tlmRaw.ToTelemetry(f.Info().Dictionary, f.Info().Version)
 				if err != nil {
 					f.Logger.Error("failed to convert telemetry", "err", err)
 				} else {
@@ -111,7 +113,7 @@ func (f *Fsw) downlinkLoop() {
 				}
 			}
 		case *LogValue:
-			evr, err := data.ToEvent()
+			evr, err := data.ToEvent(f.Info().Dictionary, f.Info().Version)
 			if err != nil {
 				f.Logger.Error("failed to convert event", "err", err)
 			} else {

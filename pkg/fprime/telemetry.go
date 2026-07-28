@@ -32,15 +32,15 @@ func timeToTimestamp(t *Time) *pb.Time {
 	return out
 }
 
-func (p *TelemValue) ToTelemetry() (*pb.Telemetry, error) {
+func (p *TelemValue) ToTelemetry(dictId string, dictVersion string) (*pb.Telemetry, error) {
 	return &pb.Telemetry{
-		Ref:   p.Def.ToRef(),
+		Ref:   p.Def.ToRef(dictId, dictVersion),
 		Time:  timeToTimestamp(p.Time),
 		Value: p.Value,
 	}, nil
 }
 
-func (p *LogValue) ToEvent() (*pb.Event, error) {
+func (p *LogValue) ToEvent(dictId string, dictVersion string) (*pb.Event, error) {
 	args := []*pb.Value{}
 	argsAny := []any{}
 
@@ -73,7 +73,7 @@ func (p *LogValue) ToEvent() (*pb.Event, error) {
 	}
 
 	return &pb.Event{
-		Ref:     p.Def.ToRef(),
+		Ref:     p.Def.ToRef(dictId, dictVersion),
 		Time:    timeToTimestamp(p.Time),
 		Message: fmt.Sprintf(fmtString, argsAny...),
 		Args:    args,
