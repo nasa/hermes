@@ -3,6 +3,8 @@ services:
     extends:
       file: .config/docker-compose-base.yaml
       service: grafana
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     depends_on:
       - timescaledb

@@ -51,8 +51,17 @@ func NewDatasource(_ context.Context, settings backend.DataSourceInstanceSetting
 		return nil, fmt.Errorf("unable to initialize postgres database driver: %w", err)
 	}
 
+	if config.Hermes == "" {
+		return nil, fmt.Errorf("unable to initialize hermes client: Hermes connection string is empty")
+	}
+	hermesConn, err := newHermesConn(context.Background(), config.Hermes)
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize hermes client: %w", err)
+	}
+
 	ds := &Datasource{
 		db:     db,
+		hermes: hermesConn,
 		config: config,
 	}
 
@@ -71,6 +80,7 @@ func NewDatasource(_ context.Context, settings backend.DataSourceInstanceSetting
 // its health and has streaming skills.
 type Datasource struct {
 	db     *sql.DB
+	hermes *HermesConnection
 	config *models.PluginSettings
 	backend.CallResourceHandler
 }
@@ -115,8 +125,23 @@ func (d *Datasource) CheckHealth(ctx context.Context, _ *backend.CheckHealthRequ
 		return res, nil
 	}
 
+	return d.checkHermesHealth()
+}
+
+func (d *Datasource) checkHermesHealth() (*backend.CheckHealthResult, error) {
+	d.hermes.mu.RLock()
+	cacheSize := len(d.hermes.dictHeads)
+	d.hermes.mu.RUnlock()
+
+	if cacheSize > 0 {
+		return &backend.CheckHealthResult{
+			Status:  backend.HealthStatusOk,
+			Message: fmt.Sprintf("Successfully connected to database '%s' at '%s' and Hermes at '%s' with %d active dictionaries.", d.config.Database, d.config.Host, d.config.Hermes, cacheSize),
+		}, nil
+	}
+
 	return &backend.CheckHealthResult{
-		Status:  backend.HealthStatusOk,
-		Message: fmt.Sprintf("Successfully connected to database '%s' at '%s'", d.config.Database, d.config.Host),
+		Status:  backend.HealthStatusUnknown,
+		Message: "Status of connection to Hermes is unknown, no dictionaries are loaded or registered yet.",
 	}, nil
 }

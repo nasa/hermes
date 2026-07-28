@@ -45,6 +45,13 @@ export function ConfigEditor(props: Props) {
     });
   };
 
+  const onHermesChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onOptionsChange({
+      ...options,
+      jsonData: { ...jsonData, hermes: event.target.value }
+    })
+  }
+
   return (
     <>
       <InlineField label="Host" labelWidth={14} tooltip="TimescaleDB host and port (e.g. localhost:5432, or timescaledb:5432 if using docker)" required>
@@ -82,6 +89,15 @@ export function ConfigEditor(props: Props) {
           onChange={onDatabaseChange}
           value={jsonData.database ?? ''}
           placeholder=""
+          width={40}
+        />
+      </InlineField>
+      <InlineField label="Hermes" labelWidth={14} tooltip="The gRPC endpoint of the Hermes backend to fetch the dictionary from" required>
+        <Input
+          id="config-editor-hermes-backend"
+          onChange={onHermesChange}
+          value={jsonData.hermes ?? ''}
+          placeholder="host.docker.internal:6880"
           width={40}
         />
       </InlineField>
