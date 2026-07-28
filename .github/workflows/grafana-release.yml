@@ -75,12 +75,14 @@ jobs:
           export GRAFANA_PLUGIN_TYPE=$(cat dist/plugin.json | jq -r .type)
           export GRAFANA_PLUGIN_ARTIFACT=${GRAFANA_PLUGIN_ID}-${GRAFANA_PLUGIN_VERSION}.zip
           export GRAFANA_PLUGIN_ARTIFACT_SHA1SUM=${GRAFANA_PLUGIN_ARTIFACT}.sha1
+          export GRAFANA_PLUGIN_ARTIFACT_LATEST=${GRAFANA_PLUGIN_ID}.zip
 
           echo "plugin-id=${GRAFANA_PLUGIN_ID}" >> $GITHUB_OUTPUT
           echo "plugin-version=${GRAFANA_PLUGIN_VERSION}" >> $GITHUB_OUTPUT
           echo "plugin-type=${GRAFANA_PLUGIN_TYPE}" >> $GITHUB_OUTPUT
           echo "archive=${GRAFANA_PLUGIN_ARTIFACT}" >> $GITHUB_OUTPUT
           echo "archive-sha1sum=${GRAFANA_PLUGIN_ARTIFACT_SHA1SUM}" >> $GITHUB_OUTPUT
+          echo "archive-latest=${GRAFANA_PLUGIN_ARTIFACT_LATEST}" >> $GITHUB_OUTPUT
 
           echo "github-tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
         shell: bash
@@ -91,11 +93,13 @@ jobs:
           mv dist $PLUGIN_ID
           zip $PLUGIN_ARCHIVE $PLUGIN_ID -r
           sha1sum $PLUGIN_ARCHIVE | cut -f1 -d' ' > $PLUGIN_ARCHIVE_SHA1SUM
+          cp $PLUGIN_ARCHIVE $PLUGIN_ARCHIVE_LATEST
         shell: bash
         env:
           PLUGIN_ID: ${{ steps.metadata.outputs.plugin-id }}
           PLUGIN_ARCHIVE: ${{ steps.metadata.outputs.archive }}
           PLUGIN_ARCHIVE_SHA1SUM: ${{ steps.metadata.outputs.archive-sha1sum }}
+          PLUGIN_ARCHIVE_LATEST: ${{ steps.metadata.outputs.archive-latest }}
         working-directory: ./grafana-datasource-plugin
 
       - name: Validate plugin
@@ -109,5 +113,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
+            ./grafana-datasource-plugin/${{ steps.metadata.outputs.archive-latest }}
             ./grafana-datasource-plugin/${{ steps.metadata.outputs.archive }}
             ./grafana-datasource-plugin/${{ steps.metadata.outputs.archive-sha1sum }}
