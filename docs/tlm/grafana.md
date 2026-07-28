@@ -47,7 +47,9 @@ Restart Grafana after changing `grafana.ini`.
 
 ### Install to Docker Compose
 
-**This is the recommended approach.** Use Grafana's built-in `GF_INSTALL_PLUGINS` environment variable to install a specific pinned version of the plugin. This is the approach used in the default [`docker-compose.yml`](https://github.com/nasa/hermes/blob/main/docker-compose.yml):
+**This is the recommended approach.** Use Grafana's built-in `GF_INSTALL_PLUGINS` environment variable to install the plugin automatically. This is the approach used in the default [`docker-compose.yml`](https://github.com/nasa/hermes/blob/main/docker-compose.yml).
+
+The recommended URL uses GitHub's `latest` redirect so you always track the newest release without editing the version by hand:
 
 ```diff
 services:
@@ -57,7 +59,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-+     GF_INSTALL_PLUGINS: "https://github.com/nasa/hermes/releases/download/v5.0.0/nasa-hermes-datasource-5.0.0.zip;nasa-hermes-datasource"
++     GF_INSTALL_PLUGINS: "https://github.com/nasa/hermes/releases/latest/download/nasa-hermes-datasource.zip;nasa-hermes-datasource"
 +     GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: "nasa-hermes-datasource"
     volumes:
       - grafana-data:/var/lib/grafana
@@ -66,7 +68,15 @@ volumes:
   grafana-data:
 ```
 
-The plugin is downloaded and installed automatically when the container starts. To upgrade to a newer version, update the release URL in `GF_INSTALL_PLUGINS` to point to the desired version from the [releases page](https://github.com/nasa/hermes/releases) and recreate the container.
+The plugin is downloaded and installed automatically when the container starts. Recreating the container picks up the newest release automatically. `latest` tracks the most recent non-prerelease release.
+
+If you prefer to pin a specific version instead, point `GF_INSTALL_PLUGINS` at a versioned release URL from the [releases page](https://github.com/nasa/hermes/releases) and update it when upgrading:
+
+```yaml
+    environment:
+      GF_INSTALL_PLUGINS: "https://github.com/nasa/hermes/releases/download/v5.0.0/nasa-hermes-datasource-5.0.0.zip;nasa-hermes-datasource"
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: "nasa-hermes-datasource"
+```
 
 ### Install to an Existing Grafana Instance
 

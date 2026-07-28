@@ -208,7 +208,7 @@
         "jet-propulsion-laboratory.hermes"
     ],
     "devDependencies": {
-        "fast-xml-parser": "^4.2.7"
+        "fast-xml-parser": "^5.10.1"
     },
     "gitHead": "28d4edeb3c753a29612706e3c9d2be717324ff24"
 }

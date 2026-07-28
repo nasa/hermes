@@ -32,11 +32,11 @@ jobs:
     env:
       GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
@@ -150,7 +150,7 @@ jobs:
       matrix: ${{ steps.resolve-versions.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -162,7 +162,7 @@ jobs:
 
       - name: Resolve Grafana E2E versions
         id: resolve-versions
-        uses: grafana/plugin-actions/e2e-version@e2e-version/v2.0.0
+        uses: grafana/plugin-actions/e2e-version@e2e-version/v3.0.2
         with:
           grafana-dependency: ${{ steps.plugin-dep.outputs.grafana-dependency }}
 
@@ -179,7 +179,7 @@ jobs:
       run:
         working-directory: ./grafana-datasource-plugin
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -195,7 +195,7 @@ jobs:
           chmod +x ./dist/gpx_*
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'

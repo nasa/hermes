@@ -17,7 +17,7 @@
     "sideEffects": false,
     "gitHead": "ae5d9bc28a728716fe9a9f81930c9ad8be87f55e",
     "devDependencies": {
-        "@vscode/codicons": "^0.0.36",
+        "@vscode/codicons": "^0.0.45",
         "@vscode/webview-ui-toolkit": "^1.4.0",
         "react-contenteditable": "^3.3.7"
     }
