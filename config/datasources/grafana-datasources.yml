@@ -11,5 +11,6 @@ datasources:
       host: 'timescaledb:5432'
       user: 'postgres'
       database: 'hermes'
+      hermes: 'host.docker.internal:6880'
     secureJsonData:
       password: 'password'

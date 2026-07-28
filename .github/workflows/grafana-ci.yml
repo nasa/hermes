@@ -226,6 +226,16 @@ jobs:
         run: |
           docker logs nasa-hermes-datasource >& grafana-server.log
 
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v7
+        if: ${{ always() && steps.run-tests.outcome == 'failure' }}
+        with:
+          name: playwright-results-${{ matrix.GRAFANA_IMAGE.NAME }}-v${{ matrix.GRAFANA_IMAGE.VERSION }}
+          path: |
+            grafana-datasource-plugin/test-results/
+            grafana-datasource-plugin/grafana-server.log
+          retention-days: 5
+
       - name: Stop grafana docker
         run: docker compose down
 
