@@ -173,7 +173,8 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 		var key string
 		var vInt, vFloat, vBool sql.NullFloat64
 		var vStr sql.NullString
-		if err := rows.Scan(&t, &component, &channel, &source, &dbValueType, &key, &vInt, &vFloat, &vBool, &vStr); err != nil {
+		var vBytes []byte
+		if err := rows.Scan(&t, &component, &channel, &source, &dbValueType, &key, &vInt, &vFloat, &vBool, &vStr, &vBytes); err != nil {
 			return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("telemetry row scan failure: %v", err.Error()))
 		}
 
@@ -191,6 +192,8 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 				valueField = data.NewField("value", nil, []*float64{})
 			case "bool":
 				valueField = data.NewField("value", nil, []*bool{})
+			case "bytes":
+				valueField = data.NewField("value", nil, []*[]byte{})
 			default:
 				valueField = data.NewField("value", nil, []*string{})
 			}
@@ -224,6 +227,12 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			if vBool.Valid {
 				b := vBool.Float64 > 0
 				valPtr = &b
+			}
+			frame.AppendRow(t, valPtr)
+		case "bytes":
+			var valPtr *[]byte
+			if vBytes != nil {
+				valPtr = &vBytes
 			}
 			frame.AppendRow(t, valPtr)
 		default:
