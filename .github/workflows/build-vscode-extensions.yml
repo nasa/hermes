@@ -21,7 +21,7 @@ jobs:
       prerelease_flag: ${{ steps.version.outputs.prerelease_flag }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Get version
         id: version
@@ -83,7 +83,7 @@ jobs:
     needs: prepare
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download versioned package.json files
         uses: actions/download-artifact@v8
@@ -91,7 +91,7 @@ jobs:
           name: package-jsons
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'yarn'
@@ -126,7 +126,7 @@ jobs:
           - win32-arm64
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -203,7 +203,7 @@ jobs:
           - win32-arm64
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download versioned package.json files
         uses: actions/download-artifact@v8
@@ -222,7 +222,7 @@ jobs:
           path: out/
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'yarn'
@@ -273,7 +273,7 @@ jobs:
     needs: [prepare, build-typescript]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download versioned package.json files
         uses: actions/download-artifact@v8
@@ -286,7 +286,7 @@ jobs:
           name: typescript-build
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'yarn'

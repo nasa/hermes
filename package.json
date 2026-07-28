@@ -56,7 +56,7 @@
         "jest": "^30.4.2",
         "jest-text-transformer": "^1.0.4",
         "patch-package": "^8.0.0",
-        "protobufjs": "^7.4.0",
+        "protobufjs": "^7.6.5",
         "protobufjs-cli": "^2.6.1",
         "sass-embedded": "^1.71.1",
         "tmp": "^0.2.1",
