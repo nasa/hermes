@@ -128,7 +128,7 @@ export function buildTelemetryQuery(q: MyQuery, from: string, to: string): strin
 	%s AS val_float,
 	%s AS val_bool,
 	%s AS val_str,
-    %s AS val_bytes
+	%s AS val_bytes
 FROM telemetryDefs d
 JOIN telemetry t ON t.telemetryDefId = d.id
 WHERE (%s)
