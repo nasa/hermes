@@ -165,6 +165,20 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 	return buildResponse(qm, rows)
 }
 
+func validateAggregation(aggregation string, dbValueType string) error {
+	var invalid bool
+	switch aggregation {
+	case "avg", "sum":
+		invalid = dbValueType == "string" || dbValueType == "enum" || dbValueType == "bytes"
+	case "min", "max":
+		invalid = dbValueType == "bytes"
+	}
+	if invalid {
+		return fmt.Errorf("aggregation %q cannot be applied to %q values; use first, last, count, or raw", aggregation, dbValueType)
+	}
+	return nil
+}
+
 func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 	frames := make(map[string]*data.Frame)
 
@@ -177,6 +191,10 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 		var vBytes []byte
 		if err := rows.Scan(&t, &component, &channel, &source, &dbValueType, &key, &vInt, &vFloat, &vBool, &vStr, &vBytes); err != nil {
 			return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("telemetry row scan failure: %v", err.Error()))
+		}
+
+		if err := validateAggregation(qm.Aggregation, dbValueType); err != nil {
+			return backend.ErrDataResponse(backend.StatusBadRequest, err.Error())
 		}
 
 		frameId := fmt.Sprintf("%s.%s.%s/%s(%s)", component, channel, key, qm.TimeField, source)

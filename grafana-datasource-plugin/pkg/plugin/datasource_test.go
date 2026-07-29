@@ -258,7 +258,7 @@ func TestBuildResponseStringType(t *testing.T) {
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "avg"}, resultRows)
+	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "first"}, resultRows)
 
 	val := resp.Frames[0].Fields[1].At(0).(*string)
 	if *val != "hello" {
@@ -280,7 +280,7 @@ func TestBuildResponseBytesType(t *testing.T) {
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "avg"}, resultRows)
+	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "first"}, resultRows)
 
 	if len(resp.Frames) != 1 {
 		t.Fatalf("expected 1 frame, got %d", len(resp.Frames))
@@ -293,6 +293,62 @@ func TestBuildResponseBytesType(t *testing.T) {
 	// NULL bytes yield a nil *string.
 	if null := resp.Frames[0].Fields[1].At(1).(*string); null != nil {
 		t.Errorf("expected nil *string for null bytes, got %v", *null)
+	}
+}
+
+func TestValidateAggregation(t *testing.T) {
+	tests := []struct {
+		aggregation string
+		valueType   string
+		wantErr     bool
+	}{
+		{"avg", "float", false},
+		{"avg", "int", false},
+		{"avg", "bool", false},
+		{"avg", "string", true},
+		{"avg", "enum", true},
+		{"avg", "bytes", true},
+		{"sum", "string", true},
+		{"min", "float", false},
+		{"min", "string", false},
+		{"min", "bytes", true},
+		{"max", "bytes", true},
+		{"first", "string", false},
+		{"first", "bytes", false},
+		{"last", "bytes", false},
+		{"count", "string", false},
+		{"raw", "bytes", false},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("%s_%s", tt.aggregation, tt.valueType), func(t *testing.T) {
+			err := validateAggregation(tt.aggregation, tt.valueType)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateAggregation(%q, %q) error = %v, wantErr %v", tt.aggregation, tt.valueType, err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestBuildResponseRejectsInvalidAggregation(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("sqlmock: %v", err)
+	}
+	defer func() { _ = db.Close() }()
+
+	now := time.Now().Truncate(time.Second)
+	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "c", "ch", "src", "string", "", nil, nil, nil, nil, nil)
+
+	mock.ExpectQuery("SELECT").WillReturnRows(rows)
+	resultRows, _ := db.Query("SELECT")
+	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "avg"}, resultRows)
+
+	if resp.Status != backend.StatusBadRequest {
+		t.Fatalf("expected StatusBadRequest for avg on string, got %v", resp.Status)
+	}
+	if len(resp.Frames) != 0 {
+		t.Errorf("expected no frames on validation error, got %d", len(resp.Frames))
 	}
 }
 
@@ -310,7 +366,7 @@ func TestBuildResponseEnumType(t *testing.T) {
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "avg"}, resultRows)
+	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "first"}, resultRows)
 
 	val := resp.Frames[0].Fields[1].At(0).(*string)
 	if *val != "MY_ENUM_VAL" {
