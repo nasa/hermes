@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -164,6 +165,20 @@ func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext
 	return buildResponse(qm, rows)
 }
 
+func validateAggregation(aggregation string, dbValueType string) error {
+	var invalid bool
+	switch aggregation {
+	case "avg", "sum":
+		invalid = dbValueType == "string" || dbValueType == "enum" || dbValueType == "bytes"
+	case "min", "max":
+		invalid = dbValueType == "bytes"
+	}
+	if invalid {
+		return fmt.Errorf("aggregation %q cannot be applied to %q values; use first, last, count, or raw", aggregation, dbValueType)
+	}
+	return nil
+}
+
 func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 	frames := make(map[string]*data.Frame)
 
@@ -173,8 +188,13 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 		var key string
 		var vInt, vFloat, vBool sql.NullFloat64
 		var vStr sql.NullString
-		if err := rows.Scan(&t, &component, &channel, &source, &dbValueType, &key, &vInt, &vFloat, &vBool, &vStr); err != nil {
+		var vBytes []byte
+		if err := rows.Scan(&t, &component, &channel, &source, &dbValueType, &key, &vInt, &vFloat, &vBool, &vStr, &vBytes); err != nil {
 			return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("telemetry row scan failure: %v", err.Error()))
+		}
+
+		if err := validateAggregation(qm.Aggregation, dbValueType); err != nil {
+			return backend.ErrDataResponse(backend.StatusBadRequest, err.Error())
 		}
 
 		frameId := fmt.Sprintf("%s.%s.%s/%s(%s)", component, channel, key, qm.TimeField, source)
@@ -224,6 +244,13 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			if vBool.Valid {
 				b := vBool.Float64 > 0
 				valPtr = &b
+			}
+			frame.AppendRow(t, valPtr)
+		case "bytes":
+			var valPtr *string
+			if vBytes != nil {
+				s := hex.EncodeToString(vBytes)
+				valPtr = &s
 			}
 			frame.AppendRow(t, valPtr)
 		default:
