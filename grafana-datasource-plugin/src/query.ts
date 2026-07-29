@@ -84,6 +84,7 @@ export function buildTelemetryQuery(q: MyQuery, from: string, to: string): strin
     const wrap = (numFn: (col: string) => string, strFn: (col: string) => string = numFn, bytesFn: (col: string) => string = strFn) =>
         [numFn(intCol), numFn(floatCol), numFn(boolCol), strFn(strCol), bytesFn(bytesCol)];
 
+    // Usages of null should match validate aggregation on the backend in query.go
     const nullify = () => "NULL";
     const plain = (col: string) => col;
     const call = (fn: string) => (col: string) => `${fn}(${col})`;
