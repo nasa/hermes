@@ -8,6 +8,7 @@ on:
     paths:
       - 'grafana-datasource-plugin/**'
   pull_request:
+    types: [opened, synchronize, reopened, closed]
     branches:
       - master
       - main
@@ -21,6 +22,7 @@ jobs:
   build:
     name: Build, lint and unit tests
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' || github.event.action != 'closed' }}
     defaults:
       run:
         working-directory: ./grafana-datasource-plugin
@@ -237,3 +239,87 @@ jobs:
       #     name: ${{ matrix.GRAFANA_IMAGE.NAME }}-v${{ matrix.GRAFANA_IMAGE.VERSION }}-${{github.run_id}}-server-log
       #     path: grafana-server.log
       #     retention-days: 5
+
+  publish-dev:
+    name: Publish dev build to GitHub Releases
+    runs-on: ubuntu-latest
+    needs: build
+    if: >-
+      ${{ github.event_name == 'pull_request' && github.event.action != 'closed'
+          && github.event.pull_request.head.repo.full_name == github.repository }}
+    permissions:
+      contents: write
+    steps:
+      - name: Compute build metadata
+        id: meta
+        run: |
+          SHA="${{ github.event.pull_request.head.sha }}"
+          echo "pr-tag=grafana-plugin-pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          echo "short=${SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Download built plugin
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.build.outputs.plugin-id }}-${{ needs.build.outputs.plugin-version }}
+          path: ${{ needs.build.outputs.plugin-id }}
+
+      - name: Package plugin
+        id: package
+        run: |
+          ROLLING="${PLUGIN_ID}.zip"
+          PINNED="${PLUGIN_ID}-${SHORT_SHA}.zip"
+          zip -r "${ROLLING}" "${PLUGIN_ID}"
+          cp "${ROLLING}" "${PINNED}"
+          sha1sum "${ROLLING}" | cut -f1 -d' ' > "${ROLLING}.sha1"
+          echo "rolling=${ROLLING}" >> "$GITHUB_OUTPUT"
+          echo "rolling-sha1=${ROLLING}.sha1" >> "$GITHUB_OUTPUT"
+          echo "pinned=${PINNED}" >> "$GITHUB_OUTPUT"
+        env:
+          PLUGIN_ID: ${{ needs.build.outputs.plugin-id }}
+          SHORT_SHA: ${{ steps.meta.outputs.short }}
+
+      - name: Publish rolling PR release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.pr-tag }}
+          name: Grafana plugin (PR #${{ github.event.pull_request.number }})
+          prerelease: true
+          body: |
+            Development build of the Grafana datasource plugin for pull request #${{ github.event.pull_request.number }}.
+            Commit: ${{ steps.meta.outputs.sha }}
+          files: |
+            ${{ steps.package.outputs.rolling }}
+            ${{ steps.package.outputs.rolling-sha1 }}
+
+      - name: Publish per-commit release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: grafana-plugin-${{ steps.meta.outputs.short }}
+          name: Grafana plugin (${{ steps.meta.outputs.short }})
+          prerelease: true
+          body: |
+            Development build of the Grafana datasource plugin.
+            Commit: ${{ steps.meta.outputs.sha }}
+          files: |
+            ${{ steps.package.outputs.pinned }}
+
+  cleanup-pr-release:
+    name: Delete per-PR dev release on close
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository }}
+    permissions:
+      contents: write
+    steps:
+      - name: Delete PR release and tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_TAG: grafana-plugin-pr-${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          if gh release view "$PR_TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release delete "$PR_TAG" --repo "$REPO" --cleanup-tag --yes
+            echo "Deleted release and tag $PR_TAG"
+          else
+            echo "No release found for $PR_TAG; nothing to clean up."
+          fi
