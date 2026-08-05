@@ -255,7 +255,6 @@ jobs:
         run: |
           SHA="${{ github.event.pull_request.head.sha }}"
           echo "pr-tag=grafana-plugin-pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
-          echo "short=${SHA::7}" >> "$GITHUB_OUTPUT"
           echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
 
       - name: Download built plugin
@@ -268,22 +267,18 @@ jobs:
         id: package
         run: |
           ROLLING="${PLUGIN_ID}.zip"
-          PINNED="${PLUGIN_ID}-${SHORT_SHA}.zip"
           zip -r "${ROLLING}" "${PLUGIN_ID}"
-          cp "${ROLLING}" "${PINNED}"
           sha1sum "${ROLLING}" | cut -f1 -d' ' > "${ROLLING}.sha1"
           echo "rolling=${ROLLING}" >> "$GITHUB_OUTPUT"
           echo "rolling-sha1=${ROLLING}.sha1" >> "$GITHUB_OUTPUT"
-          echo "pinned=${PINNED}" >> "$GITHUB_OUTPUT"
         env:
           PLUGIN_ID: ${{ needs.build.outputs.plugin-id }}
-          SHORT_SHA: ${{ steps.meta.outputs.short }}
 
       - name: Publish rolling PR release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.pr-tag }}
-          name: Grafana plugin (PR #${{ github.event.pull_request.number }})
+          name: "Grafana plugin (PR #${{ github.event.pull_request.number }})"
           prerelease: true
           body: |
             Development build of the Grafana datasource plugin for pull request #${{ github.event.pull_request.number }}.
@@ -291,18 +286,6 @@ jobs:
           files: |
             ${{ steps.package.outputs.rolling }}
             ${{ steps.package.outputs.rolling-sha1 }}
-
-      - name: Publish per-commit release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: grafana-plugin-${{ steps.meta.outputs.short }}
-          name: Grafana plugin (${{ steps.meta.outputs.short }})
-          prerelease: true
-          body: |
-            Development build of the Grafana datasource plugin.
-            Commit: ${{ steps.meta.outputs.sha }}
-          files: |
-            ${{ steps.package.outputs.pinned }}
 
   cleanup-pr-release:
     name: Delete per-PR dev release on close
