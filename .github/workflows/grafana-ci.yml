@@ -249,6 +249,7 @@ jobs:
           && github.event.pull_request.head.repo.full_name == github.repository }}
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - name: Compute build metadata
         id: meta
@@ -286,6 +287,46 @@ jobs:
           files: |
             ${{ steps.package.outputs.rolling }}
             ${{ steps.package.outputs.rolling-sha1 }}
+
+      - name: Comment plugin build link on PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TAG: ${{ steps.meta.outputs.pr-tag }}
+          SHA: ${{ steps.meta.outputs.sha }}
+          PLUGIN_ID: ${{ needs.build.outputs.plugin-id }}
+        run: |
+          MARKER="<!-- grafana-plugin-build -->"
+          RELEASE_URL="https://github.com/${REPO}/releases/tag/${PR_TAG}"
+          ZIP_URL="https://github.com/${REPO}/releases/download/${PR_TAG}/${PLUGIN_ID}.zip"
+          SHORT_SHA="${SHA:0:7}"
+
+          BODY=$(cat <<EOF
+          ${MARKER}
+          ### Grafana plugin dev build
+
+          A development build of the Grafana datasource plugin is available for this PR (updated on every push).
+
+          - **Release:** [${PR_TAG}](${RELEASE_URL})
+          - **Download:** [\`${PLUGIN_ID}.zip\`](${ZIP_URL})
+          - **Commit:** \`${SHORT_SHA}\`
+
+          To try it, set \`GF_INSTALL_PLUGINS\` to \`${ZIP_URL};${PLUGIN_ID}\`.
+          EOF
+          )
+
+          # Find an existing sticky comment (by marker) and update it, else create one.
+          COMMENT_ID=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" --paginate \
+            --jq "map(select(.body | contains(\"${MARKER}\"))) | .[0].id // empty")
+
+          if [ -n "$COMMENT_ID" ]; then
+            gh api --method PATCH "repos/${REPO}/issues/comments/${COMMENT_ID}" -f body="$BODY" >/dev/null
+            echo "Updated sticky comment $COMMENT_ID"
+          else
+            gh api --method POST "repos/${REPO}/issues/${PR_NUMBER}/comments" -f body="$BODY" >/dev/null
+            echo "Created sticky comment"
+          fi
 
   cleanup-pr-release:
     name: Delete per-PR dev release on close
