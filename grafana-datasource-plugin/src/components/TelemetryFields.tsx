@@ -20,6 +20,7 @@ const AGGREGATION_OPTIONS: Array<ComboboxOption<Aggregation>> = [
   { label: 'Sum', value: 'sum' },
   { label: 'Derivative', value: 'deriv' },
   { label: 'Raw (none)', value: 'raw' },
+  { label: 'Latest Value', value: 'latest' },
 ];
 
 function toOptions(values: string[]): Array<ComboboxOption<string>> {
