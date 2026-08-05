@@ -65,6 +65,8 @@ npm run lint:fix
 
 The Grafana plugin is released together with the VSCode extensions as part of the unified release process. Releasing a tag with the `v*` prefix (e.g., `v4.1.0`) will trigger a release build that includes both the VSCode extensions and the Grafana plugin. The workflow creates a release with all artifacts attached.
 
+Additionally, PRs that modify the plugin will trigger a CI build that includes the plugin artifacts.
+
 ## Project Structure
 
 ```
