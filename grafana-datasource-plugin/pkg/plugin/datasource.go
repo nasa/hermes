@@ -51,10 +51,10 @@ func NewDatasource(_ context.Context, settings backend.DataSourceInstanceSetting
 		return nil, fmt.Errorf("unable to initialize postgres database driver: %w", err)
 	}
 
-	if config.Hermes == "" {
+	if config.HermesUrl == "" {
 		return nil, fmt.Errorf("unable to initialize hermes client: Hermes connection string is empty")
 	}
-	hermesConn, err := newHermesConn(context.Background(), config.Hermes)
+	hermesConn, err := newHermesConn(context.Background(), config.HermesUrl)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize hermes client: %w", err)
 	}
@@ -136,7 +136,7 @@ func (d *Datasource) checkHermesHealth() (*backend.CheckHealthResult, error) {
 	if cacheSize > 0 {
 		return &backend.CheckHealthResult{
 			Status:  backend.HealthStatusOk,
-			Message: fmt.Sprintf("Successfully connected to database '%s' at '%s' and Hermes at '%s' with %d active dictionaries.", d.config.Database, d.config.Host, d.config.Hermes, cacheSize),
+			Message: fmt.Sprintf("Successfully connected to database '%s' at '%s' and Hermes at '%s' with %d active dictionaries.", d.config.Database, d.config.Host, d.config.HermesUrl, cacheSize),
 		}, nil
 	}
 

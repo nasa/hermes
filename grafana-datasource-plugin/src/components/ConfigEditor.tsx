@@ -48,7 +48,7 @@ export function ConfigEditor(props: Props) {
   const onHermesChange = (event: ChangeEvent<HTMLInputElement>) => {
     onOptionsChange({
       ...options,
-      jsonData: { ...jsonData, hermes: event.target.value }
+      jsonData: { ...jsonData, hermesUrl: event.target.value }
     })
   }
 
@@ -92,11 +92,11 @@ export function ConfigEditor(props: Props) {
           width={40}
         />
       </InlineField>
-      <InlineField label="Hermes" labelWidth={14} tooltip="The gRPC endpoint of the Hermes backend to fetch the dictionary from" required>
+      <InlineField label="Hermes" labelWidth={14} tooltip="The gRPC endpoint of the Hermes backend" required>
         <Input
           id="config-editor-hermes-backend"
           onChange={onHermesChange}
-          value={jsonData.hermes ?? ''}
+          value={jsonData.hermesUrl ?? ''}
           placeholder="host.docker.internal:6880"
           width={40}
         />

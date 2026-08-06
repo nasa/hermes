@@ -57,6 +57,7 @@ func (d *Datasource) handleGetTelemetryComponents(w http.ResponseWriter, r *http
 type channelEntry struct {
 	Component string `json:"component"`
 	Name      string `json:"name"`
+	Metadata  string `json:"metadata"`
 }
 
 func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.Request) {
@@ -69,6 +70,7 @@ func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.R
 				channelMap[channelEntry{
 					Component: telemetryDef.GetComponent(),
 					Name:      telemetryDef.GetName(),
+					Metadata:  telemetryDef.GetMetadata(),
 				}] = true
 			}
 		}
