@@ -10,8 +10,14 @@ export interface ChannelRef {
   name: string;
 }
 
-export interface ChannelRefWithMetadata extends ChannelRef {
+export interface ChannelRefResponse extends ChannelRef {
   metadata: string;
+}
+
+export interface ChannelRefWithMetadata extends ChannelRef {
+  metadata: {
+    description?: string;
+  };
 }
 
 export interface KeyRef {

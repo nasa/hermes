@@ -73,7 +73,7 @@ function toChannelOptions(entries: ChannelRefWithMetadata[]): Array<ComboboxOpti
   return entries.map((e) => ({
     label: `${e.component}.${e.name}`,
     group: e.component,
-    description: e.metadata,
+    description: e.metadata.description,
     value: channelToKey(e),
   }));
 }

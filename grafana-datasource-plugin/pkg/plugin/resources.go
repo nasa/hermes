@@ -54,6 +54,11 @@ func (d *Datasource) handleGetTelemetryComponents(w http.ResponseWriter, r *http
 	writeJSONResponse(w, items)
 }
 
+type channelKey struct {
+	Component string
+	Name      string
+}
+
 type channelEntry struct {
 	Component string `json:"component"`
 	Name      string `json:"name"`
@@ -61,24 +66,27 @@ type channelEntry struct {
 }
 
 func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.Request) {
-	channelMap := make(map[channelEntry]bool)
+	channelMap := make(map[channelKey]channelEntry)
 
 	d.hermes.mu.RLock()
 	for _, dict := range d.hermes.dicts {
 		for _, ns := range dict.GetContent() {
 			for _, telemetryDef := range ns.Telemetry {
-				channelMap[channelEntry{
+				channelMap[channelKey{
+					Component: telemetryDef.GetComponent(),
+					Name:      telemetryDef.GetName(),
+				}] = channelEntry{
 					Component: telemetryDef.GetComponent(),
 					Name:      telemetryDef.GetName(),
 					Metadata:  telemetryDef.GetMetadata(),
-				}] = true
+				}
 			}
 		}
 	}
 	d.hermes.mu.RUnlock()
 
 	items := []channelEntry{}
-	for entry := range channelMap {
+	for _, entry := range channelMap {
 		items = append(items, entry)
 	}
 
