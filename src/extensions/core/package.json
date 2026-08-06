@@ -574,7 +574,7 @@
         "prop-types": "^15.8.1",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
-        "sass": "^1.53.0",
+        "sass": "^1.102.0",
         "uplot": "^1.6.30",
         "util": "^0.12.4",
         "vscode-notebook-error-overlay": "^1.0.1"
