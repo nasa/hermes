@@ -261,7 +261,7 @@ jobs:
 
       - name: Upload core extension to release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: hermes-${{ needs.prepare.outputs.version }}-${{ matrix.platform }}.vsix
         env:
@@ -311,7 +311,7 @@ jobs:
 
       - name: Upload fprime extension to release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: hermes-fprime-${{ needs.prepare.outputs.version }}.vsix
         env:

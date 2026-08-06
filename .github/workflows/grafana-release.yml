@@ -110,7 +110,7 @@ jobs:
           PLUGIN_ARCHIVE: ${{ steps.metadata.outputs.archive }}
         working-directory: ./grafana-datasource-plugin
       - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             ./grafana-datasource-plugin/${{ steps.metadata.outputs.archive-latest }}
