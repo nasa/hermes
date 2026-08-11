@@ -110,6 +110,24 @@ export interface ApiClient extends grpc.Client {
   command(argument: _hermes_CommandValue, options: grpc.CallOptions, callback: grpc.requestCallback<_hermes_Reply__Output>): grpc.ClientUnaryCall;
   command(argument: _hermes_CommandValue, callback: grpc.requestCallback<_hermes_Reply__Output>): grpc.ClientUnaryCall;
   
+  EmitEvent(metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedEvent>;
+  EmitEvent(metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedEvent>;
+  EmitEvent(options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedEvent>;
+  EmitEvent(callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedEvent>;
+  emitEvent(metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedEvent>;
+  emitEvent(metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedEvent>;
+  emitEvent(options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedEvent>;
+  emitEvent(callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedEvent>;
+  
+  EmitTelemetry(metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedTelemetry>;
+  EmitTelemetry(metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedTelemetry>;
+  EmitTelemetry(options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedTelemetry>;
+  EmitTelemetry(callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedTelemetry>;
+  emitTelemetry(metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedTelemetry>;
+  emitTelemetry(metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedTelemetry>;
+  emitTelemetry(options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedTelemetry>;
+  emitTelemetry(callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientWritableStream<_hermes_SourcedTelemetry>;
+  
   GetDictionary(argument: _hermes_Id, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_hermes_Dictionary__Output>): grpc.ClientUnaryCall;
   GetDictionary(argument: _hermes_Id, metadata: grpc.Metadata, callback: grpc.requestCallback<_hermes_Dictionary__Output>): grpc.ClientUnaryCall;
   GetDictionary(argument: _hermes_Id, options: grpc.CallOptions, callback: grpc.requestCallback<_hermes_Dictionary__Output>): grpc.ClientUnaryCall;
@@ -293,6 +311,10 @@ export interface ApiHandlers extends grpc.UntypedServiceImplementation {
   
   Command: grpc.handleUnaryCall<_hermes_CommandValue__Output, _hermes_Reply>;
   
+  EmitEvent: grpc.handleClientStreamingCall<_hermes_SourcedEvent__Output, _google_protobuf_Empty>;
+  
+  EmitTelemetry: grpc.handleClientStreamingCall<_hermes_SourcedTelemetry__Output, _google_protobuf_Empty>;
+  
   GetDictionary: grpc.handleUnaryCall<_hermes_Id__Output, _hermes_Dictionary>;
   
   GetFileTransferState: grpc.handleUnaryCall<_google_protobuf_Empty__Output, _hermes_FileTransferState>;
@@ -349,6 +371,8 @@ export interface ApiDefinition extends grpc.ServiceDefinition {
   ClearDownlinkTransferState: MethodDefinition<_google_protobuf_Empty, _google_protobuf_Empty, _google_protobuf_Empty__Output, _google_protobuf_Empty__Output>
   ClearUplinkTransferState: MethodDefinition<_google_protobuf_Empty, _google_protobuf_Empty, _google_protobuf_Empty__Output, _google_protobuf_Empty__Output>
   Command: MethodDefinition<_hermes_CommandValue, _hermes_Reply, _hermes_CommandValue__Output, _hermes_Reply__Output>
+  EmitEvent: MethodDefinition<_hermes_SourcedEvent, _google_protobuf_Empty, _hermes_SourcedEvent__Output, _google_protobuf_Empty__Output>
+  EmitTelemetry: MethodDefinition<_hermes_SourcedTelemetry, _google_protobuf_Empty, _hermes_SourcedTelemetry__Output, _google_protobuf_Empty__Output>
   GetDictionary: MethodDefinition<_hermes_Id, _hermes_Dictionary, _hermes_Id__Output, _hermes_Dictionary__Output>
   GetFileTransferState: MethodDefinition<_google_protobuf_Empty, _hermes_FileTransferState, _google_protobuf_Empty__Output, _hermes_FileTransferState__Output>
   GetFsw: MethodDefinition<_hermes_Id, _hermes_Fsw, _hermes_Id__Output, _hermes_Fsw__Output>
