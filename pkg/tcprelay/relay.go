@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"maps"
 	"net"
 	"sync"
 
@@ -72,10 +73,7 @@ func (s *Source) removeHandler(id int) {
 
 func (s *Source) broadcast(data []byte) {
 	s.mu.RLock()
-	handlers := make([]func([]byte), 0, len(s.handlers))
-	for _, handler := range s.handlers {
-		handlers = append(handlers, handler)
-	}
+	handlers := maps.Clone(s.handlers)
 	s.mu.RUnlock()
 
 	for _, handler := range handlers {
