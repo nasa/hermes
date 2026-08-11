@@ -1,28 +1,47 @@
 import { DataQueryRequest, DataSourceInstanceSettings, CoreApp, ScopedVars } from '@grafana/data';
 import { DataSourceWithBackend, getTemplateSrv } from '@grafana/runtime';
-import { map } from 'rxjs/operators';
+import { from } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, ChannelRef, KeyRef, withDefaults } from './types';
-import { buildQuery } from 'query';
+import { buildQuery, resolveChannels } from 'query';
 
 export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptions> {
+  private knownChannels?: Promise<ChannelRef[]>;
+
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
   }
 
+  // Fetch (and cache) the known channel list.
+  private getKnownChannels(): Promise<ChannelRef[]> {
+    if (!this.knownChannels) {
+      this.knownChannels = this.getChannels().catch(() => []);
+    }
+    return this.knownChannels;
+  }
+
   query(request: DataQueryRequest<MyQuery>) {
-    request.targets.forEach((target) => {
-      const filled = withDefaults(target);
-      Object.assign(target, filled);
+    const needsChannels = request.targets.some((t) =>
+      (t.channels ?? []).some((c) => c.raw !== undefined)
+    );
+    const known$ = from(needsChannels ? this.getKnownChannels() : Promise.resolve<ChannelRef[]>([]));
 
-      const withVars = this.applyTemplateVariables(target, request.scopedVars);
-      Object.assign(target, withVars);
+    return known$.pipe(
+      switchMap((known) => {
+        request.targets.forEach((target) => {
+          const filled = withDefaults(target);
+          Object.assign(target, filled);
 
-      if (!target.rawSql) {
-        target.rawSql = buildQuery(target, request);
-      }
-    });
+          const withVars = this.resolveTargetVariables(target, request.scopedVars, known);
+          Object.assign(target, withVars);
 
-    return super.query(request).pipe(
+          if (!target.rawSql) {
+            target.rawSql = buildQuery(target, request);
+          }
+        });
+
+        return super.query(request);
+      }),
       map((response) => {
         for (const result of response.data) {
           const query = request.targets.find((t) => t.refId === result.refId);
@@ -39,19 +58,17 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     return DEFAULT_QUERY;
   }
 
-  applyTemplateVariables(query: MyQuery, scopedVars: ScopedVars) {
+  private resolveTargetVariables(query: MyQuery, scopedVars: ScopedVars, known: ChannelRef[] = []) {
     const templateSrv = getTemplateSrv();
+    const replace = (value: string) => templateSrv.replace(value, scopedVars);
     return {
       ...query,
-      channels: query.channels?.map(ch => ({
-        component: templateSrv.replace(ch.component, scopedVars),
-        name: templateSrv.replace(ch.name, scopedVars),
-      })) ?? [],
-      sources: query.sources?.map(s => templateSrv.replace(s, scopedVars)) ?? [],
+      channels: resolveChannels(query.channels ?? [], replace, known),
+      sources: query.sources?.map(replace) ?? [],
       keys: query.keys?.map(k => ({
-        component: templateSrv.replace(k.component, scopedVars),
-        channel: templateSrv.replace(k.channel, scopedVars),
-        key: templateSrv.replace(k.key, scopedVars),
+        component: replace(k.component),
+        channel: replace(k.channel),
+        key: replace(k.key),
       })) ?? [],
     };
   }
@@ -79,10 +96,8 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
 
   async getKeys(channels: ChannelRef[]): Promise<KeyRef[]> {
     const templateSrv = getTemplateSrv();
-    const expanded = channels.map((ch) => ({
-      component: templateSrv.replace(ch.component),
-      name: templateSrv.replace(ch.name),
-    }));
+    const known = channels.some((c) => c.raw !== undefined) ? await this.getKnownChannels() : [];
+    const expanded = resolveChannels(channels, (value) => templateSrv.replace(value), known);
     const components = [...new Set(expanded.map((ch) => ch.component))];
     const names = expanded.map((ch) => ch.name);
     return this.getResource('telemetry/keys', { components, channels: names });

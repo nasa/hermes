@@ -8,7 +8,8 @@ export type Aggregation = 'avg' | 'min' | 'max' | 'count' | 'first' | 'last' | '
 export interface ChannelRef {
   component: string;
   name: string;
-}
+  raw?: string;
+}  // Raw is included for template variable queries as they may not yet be matchable
 
 export interface KeyRef {
   component: string;

@@ -1,5 +1,5 @@
-import { buildTelemetryQuery } from './query';
-import { MyQuery } from './types';
+import { buildTelemetryQuery, resolveChannels } from './query';
+import { ChannelRef, MyQuery } from './types';
 
 function baseQuery(overrides: Partial<MyQuery>): MyQuery {
   return {
@@ -196,5 +196,56 @@ describe('buildTelemetryQuery — aggregations', () => {
     expect(() => buildTelemetryQuery(aggQuery('bogus'), FROM, TO)).toThrow(
       /Invalid aggregation type/
     );
+  });
+});
+
+describe('resolveChannels', () => {
+  const known: ChannelRef[] = [
+    { component: 'CDH', name: 'Temperature' },
+    { component: 'CDH', name: 'Attitude' },
+    // A component whose name legitimately contains a dot — positional
+    // splitting would get this wrong; channel-list matching gets it right.
+    { component: 'A.B', name: 'C.D' },
+  ];
+
+  const vars: Record<string, string> = {
+    $component: 'CDH',
+    $channel: 'Temperature',
+    $full: 'CDH.Temperature',
+    $dotted: 'A.B.C.D',
+  };
+
+  const replace = (value: string) =>
+    value.replace(/\$\w+/g, (m) => (m in vars ? vars[m] : m));
+
+  it('passes through concrete channels unchanged', () => {
+    expect(resolveChannels([{ component: 'CDH', name: 'Attitude' }], replace, known)).toEqual([
+      { component: 'CDH', name: 'Attitude' },
+    ]);
+  });
+
+  it('resolves a single variable that expands to a full channel', () => {
+    expect(resolveChannels([{ component: '', name: '', raw: '$full' }], replace, known)).toEqual([
+      { component: 'CDH', name: 'Temperature' },
+    ]);
+  });
+
+  it('resolves a $component.$channel combination', () => {
+    expect(
+      resolveChannels([{ component: '', name: '', raw: '$component.$channel' }], replace, known)
+    ).toEqual([{ component: 'CDH', name: 'Temperature' }]);
+  });
+
+  it('splits at the boundary defined by the channel list, not by dots', () => {
+    // $dotted expands to "A.B.C.D"; the correct split is component "A.B" / name "C.D".
+    expect(resolveChannels([{ component: '', name: '', raw: '$dotted' }], replace, known)).toEqual([
+      { component: 'A.B', name: 'C.D' },
+    ]);
+  });
+
+  it('keeps an unmatched raw channel as a well-formed (empty-result) ref', () => {
+    expect(resolveChannels([{ component: '', name: '', raw: '$component.Missing' }], replace, known)).toEqual([
+      { component: 'CDH.Missing', name: '' },
+    ]);
   });
 });

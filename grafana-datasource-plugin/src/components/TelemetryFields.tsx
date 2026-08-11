@@ -66,10 +66,6 @@ function channelToKey(ch: ChannelRef): string {
   return JSON.stringify(ch);
 }
 
-function keyToChannel(key: string): ChannelRef {
-  return JSON.parse(key) as ChannelRef;
-}
-
 function toChannelOptions(entries: ChannelRef[]): Array<ComboboxOption<string>> {
   return entries.map((e) => ({
     label: `${e.component}.${e.name}`,
@@ -78,17 +74,36 @@ function toChannelOptions(entries: ChannelRef[]): Array<ComboboxOption<string>> 
   }));
 }
 
-function channelValuesOrOptions(channels: ChannelRef[]): Array<ComboboxOption<string>> | string[] {
-  const hasVariables = channels.some(ch => ch.component.includes('$') || ch.name.includes('$'));
-
-  if (!hasVariables) {
-    return channels.map(channelToKey);
+function channelLabel(ch: ChannelRef): string {
+  if (ch.raw !== undefined) {
+    return ch.raw;
   }
+  // Avoid rendering a stray trailing dot when a channel has no name.
+  return ch.name ? `${ch.component}.${ch.name}` : ch.component;
+}
 
+function channelValue(ch: ChannelRef): string {
+  return ch.raw !== undefined ? ch.raw : channelToKey(ch);
+}
+
+function channelValuesOrOptions(channels: ChannelRef[]): Array<ComboboxOption<string>> {
   return channels.map(ch => ({
-    label: `${ch.component}.${ch.name}`,
-    value: channelToKey(ch),
+    label: channelLabel(ch),
+    value: channelValue(ch),
   }));
+}
+
+function referencedVariables(input: string): string[] {
+  return (input.match(/\$\{?\w+\}?/g) ?? []).map((tok) => tok.replace(/[${}]/g, ''));
+}
+
+function isVariableReference(input: string): boolean {
+  const refs = referencedVariables(input);
+  if (refs.length === 0) {
+    return false;
+  }
+  const defined = new Set(getTemplateSrv().getVariables().map((v) => v.name));
+  return refs.every((name) => defined.has(name));
 }
 
 export function TelemetryFields({ query, onChange, onRunQuery, datasource }: TelemetryFieldsProps) {
@@ -103,73 +118,63 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource }: Tel
   // --- Helpers ---
 
   const getChannelOptionsWithVariables = async (inputValue: string): Promise<Array<ComboboxOption<string>>> => {
-    const hasVariable = inputValue.includes('$');
+    const options: Array<ComboboxOption<string>> = [];
 
-    // show autcomplete hints when typing a template variable
-    if (hasVariable) {
-      const partialMatch = inputValue.match(/\$\w*$/);
-      if (!partialMatch) {
-        return [];
-      }
-
-      const partial = partialMatch[0];
-      const prefix = inputValue.slice(0, partialMatch.index);
-      const variableNames = getTemplateSrv().getVariables().map((v) => `$${v.name}`);
-
-      return variableNames
-        .filter((name) => name.toLowerCase().startsWith(partial.toLowerCase()))
-        .map((name) => `${prefix}${name}`)
-        .filter((suggestion) => suggestion !== inputValue)  // don't show the exact suggestion if it already exists (otherwise custom value option won't show)
-        .map((suggestion) => ({ label: suggestion, value: suggestion, infoOption: true, icon: 'code-branch' as const }));
+    if (isVariableReference(inputValue)) {
+      options.push({ label: inputValue, value: inputValue, description: 'Use template variable' });
     }
 
-    return channelOptions.filter(opt =>
+    // Autocomplete hints for the template variable currently being typed.
+    if (inputValue.includes('$')) {
+      const partialMatch = inputValue.match(/\$\w*$/);
+      if (partialMatch) {
+        const partial = partialMatch[0];
+        const prefix = inputValue.slice(0, partialMatch.index);
+        const variableNames = getTemplateSrv().getVariables().map((v) => `$${v.name}`);
+
+        const hints = variableNames
+          .filter((name) => name.toLowerCase().startsWith(partial.toLowerCase()))
+          .map((name) => `${prefix}${name}`)
+          .filter((suggestion) => suggestion !== inputValue)
+          .map((suggestion) => ({ label: suggestion, value: suggestion, infoOption: true, icon: 'code-branch' as const }));
+        options.push(...hints);
+      }
+      return options;
+    }
+
+    const matches = channelOptions.filter(opt =>
       opt.label?.toLowerCase().includes(inputValue.toLowerCase())
     );
+    options.push(...matches);
+    return options;
   };
 
   // --- Handlers ---
 
   const onChannelChange = (options: Array<ComboboxOption<string>>) => {
-    const templateSrv = getTemplateSrv();
-
     const channels = options
-      .map(({ value, label }) => {
-        const valueStr = typeof value === 'string' ? value : String(value);
+      .map(({ value, label }): ChannelRef | null => {
+        const valueStr = typeof value === 'string' ? value : String(value ?? '');
 
-        if (valueStr.includes('$') || label?.includes('$')) {
-          const input = label || valueStr;
-          const varMatches = input.match(/\$\w+/g) || [];
-
-          // if any variable is not resolved, return null
-          for (const varName of varMatches) {
-            if (templateSrv.replace(varName) === varName) {
-              return null;
+        // Known-channel options encode a { component, name } object as JSON.
+        if (valueStr.startsWith('{')) {
+          try {
+            const parsed = JSON.parse(valueStr) as ChannelRef;
+            if (typeof parsed.component === 'string' && typeof parsed.name === 'string') {
+              return { component: parsed.component, name: parsed.name };
             }
+          } catch {
+            // Treat as raw text
           }
-
-          const expanded = templateSrv.replace(input);
-          const match = channelOptions.find(opt => opt.label === expanded);
-
-          if (!match) {
-            return { component: input, name: '' };
-          }
-
-          const matchedChannel = keyToChannel(match.value);
-
-          let resultComponent = matchedChannel.component;
-          let resultName = matchedChannel.name;
-
-          for (const varName of varMatches) {
-            const varValue = templateSrv.replace(varName);
-            resultComponent = resultComponent.replace(varValue, varName);
-            resultName = resultName.replace(varValue, varName);
-          }
-
-          return { component: resultComponent, name: resultName };
         }
 
-        return keyToChannel(valueStr);
+        // Custom template variable reference
+        const raw = valueStr || label || '';
+        if (!isVariableReference(raw)) {
+          return null;
+        }
+
+        return { component: '', name: '', raw };
       })
       .filter((ch): ch is ChannelRef => ch !== null);
 
@@ -239,10 +244,11 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource }: Tel
   // Update keys when vars change
   const templateSrv = getTemplateSrv();
   const resolvedChannelsKey = JSON.stringify(
-    (query.channels ?? []).map((ch) => ({
-      component: templateSrv.replace(ch.component),
-      name: templateSrv.replace(ch.name),
-    }))
+    (query.channels ?? []).map((ch) =>
+      ch.raw !== undefined
+        ? templateSrv.replace(ch.raw)
+        : `${templateSrv.replace(ch.component)}\u0000${templateSrv.replace(ch.name)}`
+    )
   );
 
   useEffect(() => {
@@ -294,8 +300,6 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource }: Tel
           loading={channelLoading}
           placeholder="Select channel"
           prefixIcon="channel-add"
-          createCustomValue={true}
-          customValueDescription="Use template variable"
         />
       </InlineField>
       <InlineField label="Aggregation" labelWidth={16} tooltip="Data aggregation method used when the data interval is smaller than the requested interval. The requested interval can be found in the query options at the top of this query." grow shrink>

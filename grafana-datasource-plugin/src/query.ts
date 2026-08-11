@@ -1,5 +1,25 @@
-import { MyQuery } from "types";
+import { ChannelRef, MyQuery } from "types";
 import { DataQueryRequest } from "@grafana/data";
+
+
+// Resolve channel references to concrete { component, name } pairs.
+export function resolveChannels(
+    channels: ChannelRef[],
+    replace: (value: string) => string,
+    known: ChannelRef[]
+): ChannelRef[] {
+    return channels.map((ch) => {
+        if (ch.raw === undefined) {
+            return { component: replace(ch.component), name: replace(ch.name) };
+        }
+        const expanded = replace(ch.raw);
+        const match = known.find((k) => `${k.component}.${k.name}` === expanded);
+        if (match) {
+            return { component: match.component, name: match.name };
+        }
+        return { component: expanded, name: '' };
+    });
+}
 
 export function buildQuery(q: MyQuery, options: DataQueryRequest): string {
     const { from, to } = buildQueryOptions(q, options);
