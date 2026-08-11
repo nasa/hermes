@@ -6,8 +6,7 @@ import (
 
 	_ "embed"
 
-	"database/sql"
-
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/nasa/hermes/pkg/host"
 	"github.com/nasa/hermes/pkg/pb"
@@ -70,7 +69,7 @@ func (t *timescaleDbProvider) Start(
 		dsn,
 	)
 
-	db, err := sql.Open("postgres", dsn)
+	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
 		return fmt.Errorf("failed to open timescaledb connection: %w", err)
 	}
