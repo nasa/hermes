@@ -1,6 +1,5 @@
 {
   "options": {
-    "syntax": "proto3",
     "go_package": "github.com/nasa/hermes/pkg/pb"
   },
   "nested": {
