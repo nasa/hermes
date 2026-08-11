@@ -184,6 +184,7 @@ const builds = {
     },
 
     'src/scripts': {
+        'tcp-relay': { ...cliOptions(true), outfile: 'out/tcp-relay', entryPoints: ['tcp-relay.ts'] },
         'fprime-xml-dictionary': { ...cliOptions(true), outfile: 'out/fprime-xml-dictionary', entryPoints: ['fprime-xml-dictionary.ts'] },
         'fprime-json-dictionary': { ...cliOptions(true), outfile: 'out/fprime-json-dictionary', entryPoints: ['fprime-json-dictionary.ts'] },
         'dictionary-to-protocol': { ...cliOptions(true), outfile: 'out/dictionary-to-protocol', entryPoints: ['dictionary-to-protocol.ts'] },
