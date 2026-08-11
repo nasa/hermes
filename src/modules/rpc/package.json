@@ -14,14 +14,14 @@
         "proto": "yarn build-proto-hermes && yarn build-proto-hermes-json"
     },
     "dependencies": {
-        "@grpc/grpc-js": "1.12.2",
+        "@grpc/grpc-js": "1.14.4",
         "@grpc/proto-loader": "^0.7.13",
         "@types/uuid": "^9.0.0",
         "async": "^3.2.4",
         "buffer": "^6.0.3",
-        "eslint": "^9.5.0",
+        "eslint": "^10.8.0",
         "globals": "^15.6.0",
-        "typescript": "^5.5.2",
+        "typescript": "^5.9.3",
         "uuid": "^9.0.0"
     },
     "gitHead": "ae5d9bc28a728716fe9a9f81930c9ad8be87f55e",

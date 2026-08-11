@@ -565,7 +565,7 @@
         "@types/tmp": "^0.2.6",
         "@types/vscode-notebook-renderer": "^1.72.3",
         "@vscode-elements/react-elements": "^2.4.0",
-        "@vscode/codicons": "^0.0.44",
+        "@vscode/codicons": "^0.0.45",
         "@vscode/webview-ui-toolkit": "^1.4.0",
         "ajv": "^8.12.0",
         "commander": "^13.1.0",
@@ -574,7 +574,7 @@
         "prop-types": "^15.8.1",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
-        "sass": "^1.53.0",
+        "sass": "^1.102.0",
         "uplot": "^1.6.30",
         "util": "^0.12.4",
         "vscode-notebook-error-overlay": "^1.0.1"

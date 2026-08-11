@@ -8,6 +8,7 @@ on:
     paths:
       - 'grafana-datasource-plugin/**'
   pull_request:
+    types: [opened, synchronize, reopened, closed]
     branches:
       - master
       - main
@@ -21,6 +22,7 @@ jobs:
   build:
     name: Build, lint and unit tests
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' || github.event.action != 'closed' }}
     defaults:
       run:
         working-directory: ./grafana-datasource-plugin
@@ -32,11 +34,11 @@ jobs:
     env:
       GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
@@ -64,7 +66,7 @@ jobs:
 
       - name: Setup Go environment
         if: steps.check-for-backend.outputs.has-backend == 'true'
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: ./grafana-datasource-plugin/go.mod
 
@@ -150,7 +152,7 @@ jobs:
       matrix: ${{ steps.resolve-versions.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -162,7 +164,7 @@ jobs:
 
       - name: Resolve Grafana E2E versions
         id: resolve-versions
-        uses: grafana/plugin-actions/e2e-version@e2e-version/v2.0.0
+        uses: grafana/plugin-actions/e2e-version@e2e-version/v3.0.2
         with:
           grafana-dependency: ${{ steps.plugin-dep.outputs.grafana-dependency }}
 
@@ -179,7 +181,7 @@ jobs:
       run:
         working-directory: ./grafana-datasource-plugin
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -195,7 +197,7 @@ jobs:
           chmod +x ./dist/gpx_*
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
@@ -237,3 +239,111 @@ jobs:
       #     name: ${{ matrix.GRAFANA_IMAGE.NAME }}-v${{ matrix.GRAFANA_IMAGE.VERSION }}-${{github.run_id}}-server-log
       #     path: grafana-server.log
       #     retention-days: 5
+
+  publish-dev:
+    name: Publish dev build to GitHub Releases
+    runs-on: ubuntu-latest
+    needs: build
+    if: >-
+      ${{ github.event_name == 'pull_request' && github.event.action != 'closed'
+          && github.event.pull_request.head.repo.full_name == github.repository }}
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Compute build metadata
+        id: meta
+        run: |
+          SHA="${{ github.event.pull_request.head.sha }}"
+          echo "pr-tag=grafana-plugin-pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Download built plugin
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.build.outputs.plugin-id }}-${{ needs.build.outputs.plugin-version }}
+          path: ${{ needs.build.outputs.plugin-id }}
+
+      - name: Package plugin
+        id: package
+        run: |
+          ROLLING="${PLUGIN_ID}.zip"
+          zip -r "${ROLLING}" "${PLUGIN_ID}"
+          sha1sum "${ROLLING}" | cut -f1 -d' ' > "${ROLLING}.sha1"
+          echo "rolling=${ROLLING}" >> "$GITHUB_OUTPUT"
+          echo "rolling-sha1=${ROLLING}.sha1" >> "$GITHUB_OUTPUT"
+        env:
+          PLUGIN_ID: ${{ needs.build.outputs.plugin-id }}
+
+      - name: Publish rolling PR release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.pr-tag }}
+          name: "Grafana plugin (PR #${{ github.event.pull_request.number }})"
+          prerelease: true
+          body: |
+            Development build of the Grafana datasource plugin for pull request #${{ github.event.pull_request.number }}.
+            Commit: ${{ steps.meta.outputs.sha }}
+          files: |
+            ${{ steps.package.outputs.rolling }}
+            ${{ steps.package.outputs.rolling-sha1 }}
+
+      - name: Comment plugin build link on PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TAG: ${{ steps.meta.outputs.pr-tag }}
+          SHA: ${{ steps.meta.outputs.sha }}
+          PLUGIN_ID: ${{ needs.build.outputs.plugin-id }}
+        run: |
+          MARKER="<!-- grafana-plugin-build -->"
+          RELEASE_URL="https://github.com/${REPO}/releases/tag/${PR_TAG}"
+          ZIP_URL="https://github.com/${REPO}/releases/download/${PR_TAG}/${PLUGIN_ID}.zip"
+          SHORT_SHA="${SHA:0:7}"
+
+          BODY=$(cat <<EOF
+          ${MARKER}
+          ### Grafana plugin dev build
+
+          A development build of the Grafana datasource plugin is available for this PR (updated on every push).
+
+          - **Release:** [${PR_TAG}](${RELEASE_URL})
+          - **Download:** [\`${PLUGIN_ID}.zip\`](${ZIP_URL})
+          - **Commit:** \`${SHORT_SHA}\`
+
+          To try it, set \`GF_INSTALL_PLUGINS\` to \`${ZIP_URL};${PLUGIN_ID}\`.
+          EOF
+          )
+
+          # Find an existing sticky comment (by marker) and update it, else create one.
+          COMMENT_ID=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" --paginate \
+            --jq "map(select(.body | contains(\"${MARKER}\"))) | .[0].id // empty")
+
+          if [ -n "$COMMENT_ID" ]; then
+            gh api --method PATCH "repos/${REPO}/issues/comments/${COMMENT_ID}" -f body="$BODY" >/dev/null
+            echo "Updated sticky comment $COMMENT_ID"
+          else
+            gh api --method POST "repos/${REPO}/issues/${PR_NUMBER}/comments" -f body="$BODY" >/dev/null
+            echo "Created sticky comment"
+          fi
+
+  cleanup-pr-release:
+    name: Delete per-PR dev release on close
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository }}
+    permissions:
+      contents: write
+    steps:
+      - name: Delete PR release and tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_TAG: grafana-plugin-pr-${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          if gh release view "$PR_TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release delete "$PR_TAG" --repo "$REPO" --cleanup-tag --yes
+            echo "Deleted release and tag $PR_TAG"
+          else
+            echo "No release found for $PR_TAG; nothing to clean up."
+          fi
