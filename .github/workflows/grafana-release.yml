@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: ./grafana-datasource-plugin/go.mod
 
@@ -110,7 +110,7 @@ jobs:
           PLUGIN_ARCHIVE: ${{ steps.metadata.outputs.archive }}
         working-directory: ./grafana-datasource-plugin
       - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             ./grafana-datasource-plugin/${{ steps.metadata.outputs.archive-latest }}
