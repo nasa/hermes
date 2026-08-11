@@ -11,6 +11,6 @@ datasources:
       host: 'timescaledb:5432'
       user: 'postgres'
       database: 'hermes'
-      hermes: 'hermes:6880'
+      hermesUrl: 'hermes:6880'
     secureJsonData:
       password: 'password'
