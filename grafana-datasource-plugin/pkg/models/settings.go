@@ -8,11 +8,11 @@ import (
 )
 
 type PluginSettings struct {
-	Host     string                `json:"host"`
-	User     string                `json:"user"`
-	Database string                `json:"database"`
-	Secrets  *SecretPluginSettings `json:"-"`
-	Hermes   string                `json:"hermes"`
+	Host      string                `json:"host"`
+	User      string                `json:"user"`
+	Database  string                `json:"database"`
+	Secrets   *SecretPluginSettings `json:"-"`
+	HermesUrl string                `json:"hermesUrl"`
 }
 
 type SecretPluginSettings struct {

@@ -10,6 +10,16 @@ export interface ChannelRef {
   name: string;
 }
 
+export interface ChannelRefResponse extends ChannelRef {
+  metadata: string;
+}
+
+export interface ChannelRefWithMetadata extends ChannelRef {
+  metadata: {
+    description?: string;
+  };
+}
+
 export interface KeyRef {
   component: string;
   channel: string;
@@ -46,7 +56,7 @@ export interface MyDataSourceOptions extends DataSourceJsonData {
   host?: string;
   user?: string;
   database?: string;
-  hermes?: string;
+  hermesUrl?: string;
 }
 
 /**
