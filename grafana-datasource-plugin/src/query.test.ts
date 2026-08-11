@@ -139,23 +139,26 @@ describe('buildTelemetryQuery — aggregations', () => {
   it.each([
     ['avg'],
     ['sum'],
-  ])('uses MAX for the string column with %s', (agg) => {
+  ])('nulls out the string and bytes columns with %s', (agg) => {
     const sql = buildTelemetryQuery(aggQuery(agg), FROM, TO);
-    expect(sql).toContain('MAX(t.string) AS val_str');
+    expect(sql).toContain('NULL AS val_str');
+    expect(sql).toContain('NULL AS val_bytes');
   });
 
   it.each([
     ['min'],
     ['max'],
-  ])('applies %s to the string column too', (agg) => {
+  ])('applies %s to the string column and nulls bytes', (agg) => {
     const sql = buildTelemetryQuery(aggQuery(agg), FROM, TO);
     expect(sql).toContain(`${agg.toUpperCase()}(t.string) AS val_str`);
+    expect(sql).toContain('NULL AS val_bytes');
   });
 
   it('casts count on the string column to text', () => {
     const sql = buildTelemetryQuery(aggQuery('count'), FROM, TO);
     expect(sql).toContain('COUNT(t.integral::double precision) AS val_int');
     expect(sql).toContain('COUNT(t.string)::text AS val_str');
+    expect(sql).toContain('COUNT(t.bytes)::text AS val_bytes');
   });
 
   it.each([
@@ -167,6 +170,7 @@ describe('buildTelemetryQuery — aggregations', () => {
     expect(sql).toContain(`${agg}(t.floating::double precision, t.ert) AS val_float`);
     expect(sql).toContain(`${agg}(t.boolval::int::double precision, t.ert) AS val_bool`);
     expect(sql).toContain(`${agg}(t.string, t.ert) AS val_str`);
+    expect(sql).toContain(`${agg}(t.bytes, t.ert) AS val_bytes`);
     expect(sql).toContain('GROUP BY time_bucket');
   });
 
@@ -182,6 +186,7 @@ describe('buildTelemetryQuery — aggregations', () => {
     const sql = buildTelemetryQuery(aggQuery(agg), FROM, TO);
     expect(sql).toContain('t.integral::double precision AS val_int');
     expect(sql).toContain('t.string AS val_str');
+    expect(sql).toContain('t.bytes AS val_bytes');
     expect(sql).not.toContain('GROUP BY');
     expect(sql).not.toContain('time_bucket($__interval');
     expect(sql).toContain('t.ert AS time_bucket');
