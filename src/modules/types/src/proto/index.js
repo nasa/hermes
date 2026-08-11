@@ -57,7 +57,7 @@ $root.hermes = (function() {
             this.names = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -106,9 +106,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        BusFilter.encode = function encode(message, writer) {
+        BusFilter.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.source != null && Object.hasOwnProperty.call(message, "source"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.source);
             if (message.names != null && message.names.length)
@@ -143,12 +147,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        BusFilter.decode = function decode(reader, length) {
+        BusFilter.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.BusFilter();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.source = reader.string();
@@ -165,7 +175,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -196,20 +206,24 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        BusFilter.verify = function verify(message) {
+        BusFilter.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.source != null && message.hasOwnProperty("source"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
                 if (!$util.isString(message.source))
                     return "source: string expected";
-            if (message.names != null && message.hasOwnProperty("names")) {
+            if (message.names != null && Object.hasOwnProperty.call(message, "names")) {
                 if (!Array.isArray(message.names))
                     return "names: array expected";
                 for (var i = 0; i < message.names.length; ++i)
                     if (!$util.isString(message.names[i]))
                         return "names: string[] expected";
             }
-            if (message.context != null && message.hasOwnProperty("context"))
+            if (message.context != null && Object.hasOwnProperty.call(message, "context"))
                 switch (message.context) {
                 default:
                     return "context: enum value expected";
@@ -229,9 +243,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.BusFilter} BusFilter
          */
-        BusFilter.fromObject = function fromObject(object) {
+        BusFilter.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.BusFilter)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.BusFilter: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.BusFilter();
             if (object.source != null)
                 message.source = String(object.source);
@@ -274,9 +294,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        BusFilter.toObject = function toObject(message, options) {
+        BusFilter.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object.names = [];
@@ -284,14 +308,14 @@ $root.hermes = (function() {
                 object.source = "";
                 object.context = options.enums === String ? "REALTIME_ONLY" : 0;
             }
-            if (message.source != null && message.hasOwnProperty("source"))
+            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
                 object.source = message.source;
             if (message.names && message.names.length) {
                 object.names = [];
                 for (var j = 0; j < message.names.length; ++j)
                     object.names[j] = message.names[j];
             }
-            if (message.context != null && message.hasOwnProperty("context"))
+            if (message.context != null && Object.hasOwnProperty.call(message, "context"))
                 object.context = options.enums === String ? $root.hermes.SourceContextFilter[message.context] === undefined ? message.context : $root.hermes.SourceContextFilter[message.context] : message.context;
             return object;
         };
@@ -365,7 +389,7 @@ $root.hermes = (function() {
             this.tags = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -430,22 +454,26 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        Event.encode = function encode(message, writer) {
+        Event.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.ref != null && Object.hasOwnProperty.call(message, "ref"))
-                $root.hermes.EventRef.encode(message.ref, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.hermes.EventRef.encode(message.ref, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.time != null && Object.hasOwnProperty.call(message, "time"))
-                $root.hermes.Time.encode(message.time, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.hermes.Time.encode(message.time, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             if (message.message != null && Object.hasOwnProperty.call(message, "message"))
                 writer.uint32(/* id 3, wireType 2 =*/26).string(message.message);
             if (message.args != null && message.args.length)
                 for (var i = 0; i < message.args.length; ++i)
-                    $root.hermes.Value.encode(message.args[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                    $root.hermes.Value.encode(message.args[i], writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
             if (message.tags != null && Object.hasOwnProperty.call(message, "tags"))
                 for (var keys = Object.keys(message.tags), i = 0; i < keys.length; ++i) {
                     writer.uint32(/* id 5, wireType 2 =*/42).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.Value.encode(message.tags[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                    $root.hermes.Value.encode(message.tags[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
                 }
             return writer;
         };
@@ -474,19 +502,25 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        Event.decode = function decode(reader, length) {
+        Event.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Event(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.ref = $root.hermes.EventRef.decode(reader, reader.uint32());
+                        message.ref = $root.hermes.EventRef.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
-                        message.time = $root.hermes.Time.decode(reader, reader.uint32());
+                        message.time = $root.hermes.Time.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 3: {
@@ -496,7 +530,7 @@ $root.hermes = (function() {
                 case 4: {
                         if (!(message.args && message.args.length))
                             message.args = [];
-                        message.args.push($root.hermes.Value.decode(reader, reader.uint32()));
+                        message.args.push($root.hermes.Value.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 case 5: {
@@ -512,18 +546,20 @@ $root.hermes = (function() {
                                 key = reader.string();
                                 break;
                             case 2:
-                                value = $root.hermes.Value.decode(reader, reader.uint32());
+                                value = $root.hermes.Value.decode(reader, reader.uint32(), undefined, long + 1);
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.tags, key);
                         message.tags[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -554,37 +590,41 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        Event.verify = function verify(message) {
+        Event.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.ref != null && message.hasOwnProperty("ref")) {
-                var error = $root.hermes.EventRef.verify(message.ref);
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.ref != null && Object.hasOwnProperty.call(message, "ref")) {
+                var error = $root.hermes.EventRef.verify(message.ref, long + 1);
                 if (error)
                     return "ref." + error;
             }
-            if (message.time != null && message.hasOwnProperty("time")) {
-                var error = $root.hermes.Time.verify(message.time);
+            if (message.time != null && Object.hasOwnProperty.call(message, "time")) {
+                var error = $root.hermes.Time.verify(message.time, long + 1);
                 if (error)
                     return "time." + error;
             }
-            if (message.message != null && message.hasOwnProperty("message"))
+            if (message.message != null && Object.hasOwnProperty.call(message, "message"))
                 if (!$util.isString(message.message))
                     return "message: string expected";
-            if (message.args != null && message.hasOwnProperty("args")) {
+            if (message.args != null && Object.hasOwnProperty.call(message, "args")) {
                 if (!Array.isArray(message.args))
                     return "args: array expected";
                 for (var i = 0; i < message.args.length; ++i) {
-                    var error = $root.hermes.Value.verify(message.args[i]);
+                    var error = $root.hermes.Value.verify(message.args[i], long + 1);
                     if (error)
                         return "args." + error;
                 }
             }
-            if (message.tags != null && message.hasOwnProperty("tags")) {
+            if (message.tags != null && Object.hasOwnProperty.call(message, "tags")) {
                 if (!$util.isObject(message.tags))
                     return "tags: object expected";
                 var key = Object.keys(message.tags);
                 for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.Value.verify(message.tags[key[i]]);
+                    var error = $root.hermes.Value.verify(message.tags[key[i]], long + 1);
                     if (error)
                         return "tags." + error;
                 }
@@ -600,19 +640,25 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.Event} Event
          */
-        Event.fromObject = function fromObject(object) {
+        Event.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.Event)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Event: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.Event();
             if (object.ref != null) {
-                if (typeof object.ref !== "object")
+                if (!$util.isObject(object.ref))
                     throw TypeError(".hermes.Event.ref: object expected");
-                message.ref = $root.hermes.EventRef.fromObject(object.ref);
+                message.ref = $root.hermes.EventRef.fromObject(object.ref, long + 1);
             }
             if (object.time != null) {
-                if (typeof object.time !== "object")
+                if (!$util.isObject(object.time))
                     throw TypeError(".hermes.Event.time: object expected");
-                message.time = $root.hermes.Time.fromObject(object.time);
+                message.time = $root.hermes.Time.fromObject(object.time, long + 1);
             }
             if (object.message != null)
                 message.message = String(object.message);
@@ -621,19 +667,21 @@ $root.hermes = (function() {
                     throw TypeError(".hermes.Event.args: array expected");
                 message.args = [];
                 for (var i = 0; i < object.args.length; ++i) {
-                    if (typeof object.args[i] !== "object")
+                    if (!$util.isObject(object.args[i]))
                         throw TypeError(".hermes.Event.args: object expected");
-                    message.args[i] = $root.hermes.Value.fromObject(object.args[i]);
+                    message.args[i] = $root.hermes.Value.fromObject(object.args[i], long + 1);
                 }
             }
             if (object.tags) {
-                if (typeof object.tags !== "object")
+                if (!$util.isObject(object.tags))
                     throw TypeError(".hermes.Event.tags: object expected");
                 message.tags = {};
                 for (var keys = Object.keys(object.tags), i = 0; i < keys.length; ++i) {
-                    if (typeof object.tags[keys[i]] !== "object")
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.tags, keys[i]);
+                    if (!$util.isObject(object.tags[keys[i]]))
                         throw TypeError(".hermes.Event.tags: object expected");
-                    message.tags[keys[i]] = $root.hermes.Value.fromObject(object.tags[keys[i]]);
+                    message.tags[keys[i]] = $root.hermes.Value.fromObject(object.tags[keys[i]], long + 1);
                 }
             }
             return message;
@@ -648,9 +696,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        Event.toObject = function toObject(message, options) {
+        Event.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object.args = [];
@@ -661,22 +713,25 @@ $root.hermes = (function() {
                 object.time = null;
                 object.message = "";
             }
-            if (message.ref != null && message.hasOwnProperty("ref"))
-                object.ref = $root.hermes.EventRef.toObject(message.ref, options);
-            if (message.time != null && message.hasOwnProperty("time"))
-                object.time = $root.hermes.Time.toObject(message.time, options);
-            if (message.message != null && message.hasOwnProperty("message"))
+            if (message.ref != null && Object.hasOwnProperty.call(message, "ref"))
+                object.ref = $root.hermes.EventRef.toObject(message.ref, options, q + 1);
+            if (message.time != null && Object.hasOwnProperty.call(message, "time"))
+                object.time = $root.hermes.Time.toObject(message.time, options, q + 1);
+            if (message.message != null && Object.hasOwnProperty.call(message, "message"))
                 object.message = message.message;
             if (message.args && message.args.length) {
                 object.args = [];
                 for (var j = 0; j < message.args.length; ++j)
-                    object.args[j] = $root.hermes.Value.toObject(message.args[j], options);
+                    object.args[j] = $root.hermes.Value.toObject(message.args[j], options, q + 1);
             }
             var keys2;
             if (message.tags && (keys2 = Object.keys(message.tags)).length) {
                 object.tags = {};
-                for (var j = 0; j < keys2.length; ++j)
-                    object.tags[keys2[j]] = $root.hermes.Value.toObject(message.tags[keys2[j]], options);
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.tags, keys2[j]);
+                    object.tags[keys2[j]] = $root.hermes.Value.toObject(message.tags[keys2[j]], options, q + 1);
+                }
             }
             return object;
         };
@@ -734,7 +789,7 @@ $root.hermes = (function() {
             this.labels = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -791,15 +846,19 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        Telemetry.encode = function encode(message, writer) {
+        Telemetry.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.ref != null && Object.hasOwnProperty.call(message, "ref"))
-                $root.hermes.TelemetryRef.encode(message.ref, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.hermes.TelemetryRef.encode(message.ref, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.time != null && Object.hasOwnProperty.call(message, "time"))
-                $root.hermes.Time.encode(message.time, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.hermes.Time.encode(message.time, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             if (message.value != null && Object.hasOwnProperty.call(message, "value"))
-                $root.hermes.Value.encode(message.value, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                $root.hermes.Value.encode(message.value, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
             if (message.labels != null && Object.hasOwnProperty.call(message, "labels"))
                 for (var keys = Object.keys(message.labels), i = 0; i < keys.length; ++i)
                     writer.uint32(/* id 4, wireType 2 =*/34).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.labels[keys[i]]).ldelim();
@@ -830,23 +889,29 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        Telemetry.decode = function decode(reader, length) {
+        Telemetry.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Telemetry(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.ref = $root.hermes.TelemetryRef.decode(reader, reader.uint32());
+                        message.ref = $root.hermes.TelemetryRef.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
-                        message.time = $root.hermes.Time.decode(reader, reader.uint32());
+                        message.time = $root.hermes.Time.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 3: {
-                        message.value = $root.hermes.Value.decode(reader, reader.uint32());
+                        message.value = $root.hermes.Value.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 4: {
@@ -865,15 +930,17 @@ $root.hermes = (function() {
                                 value = reader.string();
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.labels, key);
                         message.labels[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -904,25 +971,29 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        Telemetry.verify = function verify(message) {
+        Telemetry.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.ref != null && message.hasOwnProperty("ref")) {
-                var error = $root.hermes.TelemetryRef.verify(message.ref);
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.ref != null && Object.hasOwnProperty.call(message, "ref")) {
+                var error = $root.hermes.TelemetryRef.verify(message.ref, long + 1);
                 if (error)
                     return "ref." + error;
             }
-            if (message.time != null && message.hasOwnProperty("time")) {
-                var error = $root.hermes.Time.verify(message.time);
+            if (message.time != null && Object.hasOwnProperty.call(message, "time")) {
+                var error = $root.hermes.Time.verify(message.time, long + 1);
                 if (error)
                     return "time." + error;
             }
-            if (message.value != null && message.hasOwnProperty("value")) {
-                var error = $root.hermes.Value.verify(message.value);
+            if (message.value != null && Object.hasOwnProperty.call(message, "value")) {
+                var error = $root.hermes.Value.verify(message.value, long + 1);
                 if (error)
                     return "value." + error;
             }
-            if (message.labels != null && message.hasOwnProperty("labels")) {
+            if (message.labels != null && Object.hasOwnProperty.call(message, "labels")) {
                 if (!$util.isObject(message.labels))
                     return "labels: object expected";
                 var key = Object.keys(message.labels);
@@ -941,31 +1012,40 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.Telemetry} Telemetry
          */
-        Telemetry.fromObject = function fromObject(object) {
+        Telemetry.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.Telemetry)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Telemetry: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.Telemetry();
             if (object.ref != null) {
-                if (typeof object.ref !== "object")
+                if (!$util.isObject(object.ref))
                     throw TypeError(".hermes.Telemetry.ref: object expected");
-                message.ref = $root.hermes.TelemetryRef.fromObject(object.ref);
+                message.ref = $root.hermes.TelemetryRef.fromObject(object.ref, long + 1);
             }
             if (object.time != null) {
-                if (typeof object.time !== "object")
+                if (!$util.isObject(object.time))
                     throw TypeError(".hermes.Telemetry.time: object expected");
-                message.time = $root.hermes.Time.fromObject(object.time);
+                message.time = $root.hermes.Time.fromObject(object.time, long + 1);
             }
             if (object.value != null) {
-                if (typeof object.value !== "object")
+                if (!$util.isObject(object.value))
                     throw TypeError(".hermes.Telemetry.value: object expected");
-                message.value = $root.hermes.Value.fromObject(object.value);
+                message.value = $root.hermes.Value.fromObject(object.value, long + 1);
             }
             if (object.labels) {
-                if (typeof object.labels !== "object")
+                if (!$util.isObject(object.labels))
                     throw TypeError(".hermes.Telemetry.labels: object expected");
                 message.labels = {};
-                for (var keys = Object.keys(object.labels), i = 0; i < keys.length; ++i)
+                for (var keys = Object.keys(object.labels), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.labels, keys[i]);
                     message.labels[keys[i]] = String(object.labels[keys[i]]);
+                }
             }
             return message;
         };
@@ -979,9 +1059,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        Telemetry.toObject = function toObject(message, options) {
+        Telemetry.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.objects || options.defaults)
                 object.labels = {};
@@ -990,17 +1074,20 @@ $root.hermes = (function() {
                 object.time = null;
                 object.value = null;
             }
-            if (message.ref != null && message.hasOwnProperty("ref"))
-                object.ref = $root.hermes.TelemetryRef.toObject(message.ref, options);
-            if (message.time != null && message.hasOwnProperty("time"))
-                object.time = $root.hermes.Time.toObject(message.time, options);
-            if (message.value != null && message.hasOwnProperty("value"))
-                object.value = $root.hermes.Value.toObject(message.value, options);
+            if (message.ref != null && Object.hasOwnProperty.call(message, "ref"))
+                object.ref = $root.hermes.TelemetryRef.toObject(message.ref, options, q + 1);
+            if (message.time != null && Object.hasOwnProperty.call(message, "time"))
+                object.time = $root.hermes.Time.toObject(message.time, options, q + 1);
+            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
+                object.value = $root.hermes.Value.toObject(message.value, options, q + 1);
             var keys2;
             if (message.labels && (keys2 = Object.keys(message.labels)).length) {
                 object.labels = {};
-                for (var j = 0; j < keys2.length; ++j)
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.labels, keys2[j]);
                     object.labels[keys2[j]] = message.labels[keys2[j]];
+                }
             }
             return object;
         };
@@ -1056,7 +1143,7 @@ $root.hermes = (function() {
         function SourcedEvent(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -1105,11 +1192,15 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        SourcedEvent.encode = function encode(message, writer) {
+        SourcedEvent.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.event != null && Object.hasOwnProperty.call(message, "event"))
-                $root.hermes.Event.encode(message.event, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.hermes.Event.encode(message.event, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.source != null && Object.hasOwnProperty.call(message, "source"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.source);
             if (message.context != null && Object.hasOwnProperty.call(message, "context"))
@@ -1141,15 +1232,21 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        SourcedEvent.decode = function decode(reader, length) {
+        SourcedEvent.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.SourcedEvent();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.event = $root.hermes.Event.decode(reader, reader.uint32());
+                        message.event = $root.hermes.Event.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
@@ -1161,7 +1258,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -1192,18 +1289,22 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        SourcedEvent.verify = function verify(message) {
+        SourcedEvent.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.event != null && message.hasOwnProperty("event")) {
-                var error = $root.hermes.Event.verify(message.event);
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.event != null && Object.hasOwnProperty.call(message, "event")) {
+                var error = $root.hermes.Event.verify(message.event, long + 1);
                 if (error)
                     return "event." + error;
             }
-            if (message.source != null && message.hasOwnProperty("source"))
+            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
                 if (!$util.isString(message.source))
                     return "source: string expected";
-            if (message.context != null && message.hasOwnProperty("context"))
+            if (message.context != null && Object.hasOwnProperty.call(message, "context"))
                 switch (message.context) {
                 default:
                     return "context: enum value expected";
@@ -1222,14 +1323,20 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.SourcedEvent} SourcedEvent
          */
-        SourcedEvent.fromObject = function fromObject(object) {
+        SourcedEvent.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.SourcedEvent)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.SourcedEvent: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.SourcedEvent();
             if (object.event != null) {
-                if (typeof object.event !== "object")
+                if (!$util.isObject(object.event))
                     throw TypeError(".hermes.SourcedEvent.event: object expected");
-                message.event = $root.hermes.Event.fromObject(object.event);
+                message.event = $root.hermes.Event.fromObject(object.event, long + 1);
             }
             if (object.source != null)
                 message.source = String(object.source);
@@ -1261,20 +1368,24 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        SourcedEvent.toObject = function toObject(message, options) {
+        SourcedEvent.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.event = null;
                 object.source = "";
                 object.context = options.enums === String ? "REALTIME" : 0;
             }
-            if (message.event != null && message.hasOwnProperty("event"))
-                object.event = $root.hermes.Event.toObject(message.event, options);
-            if (message.source != null && message.hasOwnProperty("source"))
+            if (message.event != null && Object.hasOwnProperty.call(message, "event"))
+                object.event = $root.hermes.Event.toObject(message.event, options, q + 1);
+            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
                 object.source = message.source;
-            if (message.context != null && message.hasOwnProperty("context"))
+            if (message.context != null && Object.hasOwnProperty.call(message, "context"))
                 object.context = options.enums === String ? $root.hermes.SourceContext[message.context] === undefined ? message.context : $root.hermes.SourceContext[message.context] : message.context;
             return object;
         };
@@ -1330,7 +1441,7 @@ $root.hermes = (function() {
         function SourcedTelemetry(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -1379,11 +1490,15 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        SourcedTelemetry.encode = function encode(message, writer) {
+        SourcedTelemetry.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.telemetry != null && Object.hasOwnProperty.call(message, "telemetry"))
-                $root.hermes.Telemetry.encode(message.telemetry, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.hermes.Telemetry.encode(message.telemetry, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.source != null && Object.hasOwnProperty.call(message, "source"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.source);
             if (message.context != null && Object.hasOwnProperty.call(message, "context"))
@@ -1415,15 +1530,21 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        SourcedTelemetry.decode = function decode(reader, length) {
+        SourcedTelemetry.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.SourcedTelemetry();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.telemetry = $root.hermes.Telemetry.decode(reader, reader.uint32());
+                        message.telemetry = $root.hermes.Telemetry.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
@@ -1435,7 +1556,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -1466,18 +1587,22 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        SourcedTelemetry.verify = function verify(message) {
+        SourcedTelemetry.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.telemetry != null && message.hasOwnProperty("telemetry")) {
-                var error = $root.hermes.Telemetry.verify(message.telemetry);
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.telemetry != null && Object.hasOwnProperty.call(message, "telemetry")) {
+                var error = $root.hermes.Telemetry.verify(message.telemetry, long + 1);
                 if (error)
                     return "telemetry." + error;
             }
-            if (message.source != null && message.hasOwnProperty("source"))
+            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
                 if (!$util.isString(message.source))
                     return "source: string expected";
-            if (message.context != null && message.hasOwnProperty("context"))
+            if (message.context != null && Object.hasOwnProperty.call(message, "context"))
                 switch (message.context) {
                 default:
                     return "context: enum value expected";
@@ -1496,14 +1621,20 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.SourcedTelemetry} SourcedTelemetry
          */
-        SourcedTelemetry.fromObject = function fromObject(object) {
+        SourcedTelemetry.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.SourcedTelemetry)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.SourcedTelemetry: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.SourcedTelemetry();
             if (object.telemetry != null) {
-                if (typeof object.telemetry !== "object")
+                if (!$util.isObject(object.telemetry))
                     throw TypeError(".hermes.SourcedTelemetry.telemetry: object expected");
-                message.telemetry = $root.hermes.Telemetry.fromObject(object.telemetry);
+                message.telemetry = $root.hermes.Telemetry.fromObject(object.telemetry, long + 1);
             }
             if (object.source != null)
                 message.source = String(object.source);
@@ -1535,20 +1666,24 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        SourcedTelemetry.toObject = function toObject(message, options) {
+        SourcedTelemetry.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.telemetry = null;
                 object.source = "";
                 object.context = options.enums === String ? "REALTIME" : 0;
             }
-            if (message.telemetry != null && message.hasOwnProperty("telemetry"))
-                object.telemetry = $root.hermes.Telemetry.toObject(message.telemetry, options);
-            if (message.source != null && message.hasOwnProperty("source"))
+            if (message.telemetry != null && Object.hasOwnProperty.call(message, "telemetry"))
+                object.telemetry = $root.hermes.Telemetry.toObject(message.telemetry, options, q + 1);
+            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
                 object.source = message.source;
-            if (message.context != null && message.hasOwnProperty("context"))
+            if (message.context != null && Object.hasOwnProperty.call(message, "context"))
                 object.context = options.enums === String ? $root.hermes.SourceContext[message.context] === undefined ? message.context : $root.hermes.SourceContext[message.context] : message.context;
             return object;
         };
@@ -1621,7 +1756,7 @@ $root.hermes = (function() {
         function FileDownlinkChunk(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -1662,9 +1797,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FileDownlinkChunk.encode = function encode(message, writer) {
+        FileDownlinkChunk.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.offset != null && Object.hasOwnProperty.call(message, "offset"))
                 writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.offset);
             if (message.size != null && Object.hasOwnProperty.call(message, "size"))
@@ -1696,12 +1835,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FileDownlinkChunk.decode = function decode(reader, length) {
+        FileDownlinkChunk.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FileDownlinkChunk();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.offset = reader.uint64();
@@ -1712,7 +1857,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -1743,13 +1888,17 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FileDownlinkChunk.verify = function verify(message) {
+        FileDownlinkChunk.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.offset != null && message.hasOwnProperty("offset"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.offset != null && Object.hasOwnProperty.call(message, "offset"))
                 if (!$util.isInteger(message.offset) && !(message.offset && $util.isInteger(message.offset.low) && $util.isInteger(message.offset.high)))
                     return "offset: integer|Long expected";
-            if (message.size != null && message.hasOwnProperty("size"))
+            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
                 if (!$util.isInteger(message.size) && !(message.size && $util.isInteger(message.size.low) && $util.isInteger(message.size.high)))
                     return "size: integer|Long expected";
             return null;
@@ -1763,13 +1912,19 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FileDownlinkChunk} FileDownlinkChunk
          */
-        FileDownlinkChunk.fromObject = function fromObject(object) {
+        FileDownlinkChunk.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FileDownlinkChunk)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FileDownlinkChunk: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FileDownlinkChunk();
             if (object.offset != null)
                 if ($util.Long)
-                    (message.offset = $util.Long.fromValue(object.offset)).unsigned = true;
+                    message.offset = $util.Long.fromValue(object.offset, true);
                 else if (typeof object.offset === "string")
                     message.offset = parseInt(object.offset, 10);
                 else if (typeof object.offset === "number")
@@ -1778,7 +1933,7 @@ $root.hermes = (function() {
                     message.offset = new $util.LongBits(object.offset.low >>> 0, object.offset.high >>> 0).toNumber(true);
             if (object.size != null)
                 if ($util.Long)
-                    (message.size = $util.Long.fromValue(object.size)).unsigned = true;
+                    message.size = $util.Long.fromValue(object.size, true);
                 else if (typeof object.size === "string")
                     message.size = parseInt(object.size, 10);
                 else if (typeof object.size === "number")
@@ -1797,29 +1952,37 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FileDownlinkChunk.toObject = function toObject(message, options) {
+        FileDownlinkChunk.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, true);
-                    object.offset = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                    object.offset = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
                 } else
-                    object.offset = options.longs === String ? "0" : 0;
+                    object.offset = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, true);
-                    object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                    object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
                 } else
-                    object.size = options.longs === String ? "0" : 0;
+                    object.size = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
             }
-            if (message.offset != null && message.hasOwnProperty("offset"))
-                if (typeof message.offset === "number")
+            if (message.offset != null && Object.hasOwnProperty.call(message, "offset"))
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.offset = typeof message.offset === "number" ? BigInt(message.offset) : $util.Long.fromBits(message.offset.low >>> 0, message.offset.high >>> 0, true).toBigInt();
+                else if (typeof message.offset === "number")
                     object.offset = options.longs === String ? String(message.offset) : message.offset;
                 else
                     object.offset = options.longs === String ? $util.Long.prototype.toString.call(message.offset) : options.longs === Number ? new $util.LongBits(message.offset.low >>> 0, message.offset.high >>> 0).toNumber(true) : message.offset;
-            if (message.size != null && message.hasOwnProperty("size"))
-                if (typeof message.size === "number")
+            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.size = typeof message.size === "number" ? BigInt(message.size) : $util.Long.fromBits(message.size.low >>> 0, message.size.high >>> 0, true).toBigInt();
+                else if (typeof message.size === "number")
                     object.size = options.longs === String ? String(message.size) : message.size;
                 else
                     object.size = options.longs === String ? $util.Long.prototype.toString.call(message.size) : options.longs === Number ? new $util.LongBits(message.size.low >>> 0, message.size.high >>> 0).toNumber(true) : message.size;
@@ -1889,7 +2052,7 @@ $root.hermes = (function() {
             this.metadata = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -2010,15 +2173,19 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FileDownlink.encode = function encode(message, writer) {
+        FileDownlink.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.uid != null && Object.hasOwnProperty.call(message, "uid"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.uid);
             if (message.timeStart != null && Object.hasOwnProperty.call(message, "timeStart"))
-                $root.google.protobuf.Timestamp.encode(message.timeStart, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.google.protobuf.Timestamp.encode(message.timeStart, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             if (message.timeEnd != null && Object.hasOwnProperty.call(message, "timeEnd"))
-                $root.google.protobuf.Timestamp.encode(message.timeEnd, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                $root.google.protobuf.Timestamp.encode(message.timeEnd, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
             if (message.status != null && Object.hasOwnProperty.call(message, "status"))
                 writer.uint32(/* id 4, wireType 0 =*/32).int32(message.status);
             if (message.source != null && Object.hasOwnProperty.call(message, "source"))
@@ -2031,10 +2198,10 @@ $root.hermes = (function() {
                 writer.uint32(/* id 8, wireType 2 =*/66).string(message.filePath);
             if (message.missingChunks != null && message.missingChunks.length)
                 for (var i = 0; i < message.missingChunks.length; ++i)
-                    $root.hermes.FileDownlinkChunk.encode(message.missingChunks[i], writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
+                    $root.hermes.FileDownlinkChunk.encode(message.missingChunks[i], writer.uint32(/* id 9, wireType 2 =*/74).fork(), q + 1).ldelim();
             if (message.duplicateChunks != null && message.duplicateChunks.length)
                 for (var i = 0; i < message.duplicateChunks.length; ++i)
-                    $root.hermes.FileDownlinkChunk.encode(message.duplicateChunks[i], writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
+                    $root.hermes.FileDownlinkChunk.encode(message.duplicateChunks[i], writer.uint32(/* id 10, wireType 2 =*/82).fork(), q + 1).ldelim();
             if (message.size != null && Object.hasOwnProperty.call(message, "size"))
                 writer.uint32(/* id 11, wireType 0 =*/88).uint64(message.size);
             if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
@@ -2067,23 +2234,29 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FileDownlink.decode = function decode(reader, length) {
+        FileDownlink.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FileDownlink(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.uid = reader.string();
                         break;
                     }
                 case 2: {
-                        message.timeStart = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                        message.timeStart = $root.google.protobuf.Timestamp.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 3: {
-                        message.timeEnd = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                        message.timeEnd = $root.google.protobuf.Timestamp.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 4: {
@@ -2109,13 +2282,13 @@ $root.hermes = (function() {
                 case 9: {
                         if (!(message.missingChunks && message.missingChunks.length))
                             message.missingChunks = [];
-                        message.missingChunks.push($root.hermes.FileDownlinkChunk.decode(reader, reader.uint32()));
+                        message.missingChunks.push($root.hermes.FileDownlinkChunk.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 case 10: {
                         if (!(message.duplicateChunks && message.duplicateChunks.length))
                             message.duplicateChunks = [];
-                        message.duplicateChunks.push($root.hermes.FileDownlinkChunk.decode(reader, reader.uint32()));
+                        message.duplicateChunks.push($root.hermes.FileDownlinkChunk.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 case 11: {
@@ -2138,15 +2311,17 @@ $root.hermes = (function() {
                                 value = reader.string();
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.metadata, key);
                         message.metadata[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -2177,23 +2352,27 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FileDownlink.verify = function verify(message) {
+        FileDownlink.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.uid != null && message.hasOwnProperty("uid"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.uid != null && Object.hasOwnProperty.call(message, "uid"))
                 if (!$util.isString(message.uid))
                     return "uid: string expected";
-            if (message.timeStart != null && message.hasOwnProperty("timeStart")) {
-                var error = $root.google.protobuf.Timestamp.verify(message.timeStart);
+            if (message.timeStart != null && Object.hasOwnProperty.call(message, "timeStart")) {
+                var error = $root.google.protobuf.Timestamp.verify(message.timeStart, long + 1);
                 if (error)
                     return "timeStart." + error;
             }
-            if (message.timeEnd != null && message.hasOwnProperty("timeEnd")) {
-                var error = $root.google.protobuf.Timestamp.verify(message.timeEnd);
+            if (message.timeEnd != null && Object.hasOwnProperty.call(message, "timeEnd")) {
+                var error = $root.google.protobuf.Timestamp.verify(message.timeEnd, long + 1);
                 if (error)
                     return "timeEnd." + error;
             }
-            if (message.status != null && message.hasOwnProperty("status"))
+            if (message.status != null && Object.hasOwnProperty.call(message, "status"))
                 switch (message.status) {
                 default:
                     return "status: enum value expected";
@@ -2203,40 +2382,40 @@ $root.hermes = (function() {
                 case 2:
                     break;
                 }
-            if (message.source != null && message.hasOwnProperty("source"))
+            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
                 if (!$util.isString(message.source))
                     return "source: string expected";
-            if (message.sourcePath != null && message.hasOwnProperty("sourcePath"))
+            if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
                 if (!$util.isString(message.sourcePath))
                     return "sourcePath: string expected";
-            if (message.destinationPath != null && message.hasOwnProperty("destinationPath"))
+            if (message.destinationPath != null && Object.hasOwnProperty.call(message, "destinationPath"))
                 if (!$util.isString(message.destinationPath))
                     return "destinationPath: string expected";
-            if (message.filePath != null && message.hasOwnProperty("filePath"))
+            if (message.filePath != null && Object.hasOwnProperty.call(message, "filePath"))
                 if (!$util.isString(message.filePath))
                     return "filePath: string expected";
-            if (message.missingChunks != null && message.hasOwnProperty("missingChunks")) {
+            if (message.missingChunks != null && Object.hasOwnProperty.call(message, "missingChunks")) {
                 if (!Array.isArray(message.missingChunks))
                     return "missingChunks: array expected";
                 for (var i = 0; i < message.missingChunks.length; ++i) {
-                    var error = $root.hermes.FileDownlinkChunk.verify(message.missingChunks[i]);
+                    var error = $root.hermes.FileDownlinkChunk.verify(message.missingChunks[i], long + 1);
                     if (error)
                         return "missingChunks." + error;
                 }
             }
-            if (message.duplicateChunks != null && message.hasOwnProperty("duplicateChunks")) {
+            if (message.duplicateChunks != null && Object.hasOwnProperty.call(message, "duplicateChunks")) {
                 if (!Array.isArray(message.duplicateChunks))
                     return "duplicateChunks: array expected";
                 for (var i = 0; i < message.duplicateChunks.length; ++i) {
-                    var error = $root.hermes.FileDownlinkChunk.verify(message.duplicateChunks[i]);
+                    var error = $root.hermes.FileDownlinkChunk.verify(message.duplicateChunks[i], long + 1);
                     if (error)
                         return "duplicateChunks." + error;
                 }
             }
-            if (message.size != null && message.hasOwnProperty("size"))
+            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
                 if (!$util.isInteger(message.size) && !(message.size && $util.isInteger(message.size.low) && $util.isInteger(message.size.high)))
                     return "size: integer|Long expected";
-            if (message.metadata != null && message.hasOwnProperty("metadata")) {
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
                 if (!$util.isObject(message.metadata))
                     return "metadata: object expected";
                 var key = Object.keys(message.metadata);
@@ -2255,21 +2434,27 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FileDownlink} FileDownlink
          */
-        FileDownlink.fromObject = function fromObject(object) {
+        FileDownlink.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FileDownlink)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FileDownlink: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FileDownlink();
             if (object.uid != null)
                 message.uid = String(object.uid);
             if (object.timeStart != null) {
-                if (typeof object.timeStart !== "object")
+                if (!$util.isObject(object.timeStart))
                     throw TypeError(".hermes.FileDownlink.timeStart: object expected");
-                message.timeStart = $root.google.protobuf.Timestamp.fromObject(object.timeStart);
+                message.timeStart = $root.google.protobuf.Timestamp.fromObject(object.timeStart, long + 1);
             }
             if (object.timeEnd != null) {
-                if (typeof object.timeEnd !== "object")
+                if (!$util.isObject(object.timeEnd))
                     throw TypeError(".hermes.FileDownlink.timeEnd: object expected");
-                message.timeEnd = $root.google.protobuf.Timestamp.fromObject(object.timeEnd);
+                message.timeEnd = $root.google.protobuf.Timestamp.fromObject(object.timeEnd, long + 1);
             }
             switch (object.status) {
             default:
@@ -2308,9 +2493,9 @@ $root.hermes = (function() {
                     throw TypeError(".hermes.FileDownlink.missingChunks: array expected");
                 message.missingChunks = [];
                 for (var i = 0; i < object.missingChunks.length; ++i) {
-                    if (typeof object.missingChunks[i] !== "object")
+                    if (!$util.isObject(object.missingChunks[i]))
                         throw TypeError(".hermes.FileDownlink.missingChunks: object expected");
-                    message.missingChunks[i] = $root.hermes.FileDownlinkChunk.fromObject(object.missingChunks[i]);
+                    message.missingChunks[i] = $root.hermes.FileDownlinkChunk.fromObject(object.missingChunks[i], long + 1);
                 }
             }
             if (object.duplicateChunks) {
@@ -2318,14 +2503,14 @@ $root.hermes = (function() {
                     throw TypeError(".hermes.FileDownlink.duplicateChunks: array expected");
                 message.duplicateChunks = [];
                 for (var i = 0; i < object.duplicateChunks.length; ++i) {
-                    if (typeof object.duplicateChunks[i] !== "object")
+                    if (!$util.isObject(object.duplicateChunks[i]))
                         throw TypeError(".hermes.FileDownlink.duplicateChunks: object expected");
-                    message.duplicateChunks[i] = $root.hermes.FileDownlinkChunk.fromObject(object.duplicateChunks[i]);
+                    message.duplicateChunks[i] = $root.hermes.FileDownlinkChunk.fromObject(object.duplicateChunks[i], long + 1);
                 }
             }
             if (object.size != null)
                 if ($util.Long)
-                    (message.size = $util.Long.fromValue(object.size)).unsigned = true;
+                    message.size = $util.Long.fromValue(object.size, true);
                 else if (typeof object.size === "string")
                     message.size = parseInt(object.size, 10);
                 else if (typeof object.size === "number")
@@ -2333,11 +2518,14 @@ $root.hermes = (function() {
                 else if (typeof object.size === "object")
                     message.size = new $util.LongBits(object.size.low >>> 0, object.size.high >>> 0).toNumber(true);
             if (object.metadata) {
-                if (typeof object.metadata !== "object")
+                if (!$util.isObject(object.metadata))
                     throw TypeError(".hermes.FileDownlink.metadata: object expected");
                 message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i)
+                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.metadata, keys[i]);
                     message.metadata[keys[i]] = String(object.metadata[keys[i]]);
+                }
             }
             return message;
         };
@@ -2351,9 +2539,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FileDownlink.toObject = function toObject(message, options) {
+        FileDownlink.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults) {
                 object.missingChunks = [];
@@ -2372,46 +2564,51 @@ $root.hermes = (function() {
                 object.filePath = "";
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, true);
-                    object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                    object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
                 } else
-                    object.size = options.longs === String ? "0" : 0;
+                    object.size = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
             }
-            if (message.uid != null && message.hasOwnProperty("uid"))
+            if (message.uid != null && Object.hasOwnProperty.call(message, "uid"))
                 object.uid = message.uid;
-            if (message.timeStart != null && message.hasOwnProperty("timeStart"))
-                object.timeStart = $root.google.protobuf.Timestamp.toObject(message.timeStart, options);
-            if (message.timeEnd != null && message.hasOwnProperty("timeEnd"))
-                object.timeEnd = $root.google.protobuf.Timestamp.toObject(message.timeEnd, options);
-            if (message.status != null && message.hasOwnProperty("status"))
+            if (message.timeStart != null && Object.hasOwnProperty.call(message, "timeStart"))
+                object.timeStart = $root.google.protobuf.Timestamp.toObject(message.timeStart, options, q + 1);
+            if (message.timeEnd != null && Object.hasOwnProperty.call(message, "timeEnd"))
+                object.timeEnd = $root.google.protobuf.Timestamp.toObject(message.timeEnd, options, q + 1);
+            if (message.status != null && Object.hasOwnProperty.call(message, "status"))
                 object.status = options.enums === String ? $root.hermes.FileDownlinkCompletionStatus[message.status] === undefined ? message.status : $root.hermes.FileDownlinkCompletionStatus[message.status] : message.status;
-            if (message.source != null && message.hasOwnProperty("source"))
+            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
                 object.source = message.source;
-            if (message.sourcePath != null && message.hasOwnProperty("sourcePath"))
+            if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
                 object.sourcePath = message.sourcePath;
-            if (message.destinationPath != null && message.hasOwnProperty("destinationPath"))
+            if (message.destinationPath != null && Object.hasOwnProperty.call(message, "destinationPath"))
                 object.destinationPath = message.destinationPath;
-            if (message.filePath != null && message.hasOwnProperty("filePath"))
+            if (message.filePath != null && Object.hasOwnProperty.call(message, "filePath"))
                 object.filePath = message.filePath;
             if (message.missingChunks && message.missingChunks.length) {
                 object.missingChunks = [];
                 for (var j = 0; j < message.missingChunks.length; ++j)
-                    object.missingChunks[j] = $root.hermes.FileDownlinkChunk.toObject(message.missingChunks[j], options);
+                    object.missingChunks[j] = $root.hermes.FileDownlinkChunk.toObject(message.missingChunks[j], options, q + 1);
             }
             if (message.duplicateChunks && message.duplicateChunks.length) {
                 object.duplicateChunks = [];
                 for (var j = 0; j < message.duplicateChunks.length; ++j)
-                    object.duplicateChunks[j] = $root.hermes.FileDownlinkChunk.toObject(message.duplicateChunks[j], options);
+                    object.duplicateChunks[j] = $root.hermes.FileDownlinkChunk.toObject(message.duplicateChunks[j], options, q + 1);
             }
-            if (message.size != null && message.hasOwnProperty("size"))
-                if (typeof message.size === "number")
+            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.size = typeof message.size === "number" ? BigInt(message.size) : $util.Long.fromBits(message.size.low >>> 0, message.size.high >>> 0, true).toBigInt();
+                else if (typeof message.size === "number")
                     object.size = options.longs === String ? String(message.size) : message.size;
                 else
                     object.size = options.longs === String ? $util.Long.prototype.toString.call(message.size) : options.longs === Number ? new $util.LongBits(message.size.low >>> 0, message.size.high >>> 0).toNumber(true) : message.size;
             var keys2;
             if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
                 object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j)
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.metadata, keys2[j]);
                     object.metadata[keys2[j]] = message.metadata[keys2[j]];
+                }
             }
             return object;
         };
@@ -2474,7 +2671,7 @@ $root.hermes = (function() {
             this.metadata = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -2571,15 +2768,19 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FileUplink.encode = function encode(message, writer) {
+        FileUplink.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.uid != null && Object.hasOwnProperty.call(message, "uid"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.uid);
             if (message.timeStart != null && Object.hasOwnProperty.call(message, "timeStart"))
-                $root.google.protobuf.Timestamp.encode(message.timeStart, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.google.protobuf.Timestamp.encode(message.timeStart, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             if (message.timeEnd != null && Object.hasOwnProperty.call(message, "timeEnd"))
-                $root.google.protobuf.Timestamp.encode(message.timeEnd, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                $root.google.protobuf.Timestamp.encode(message.timeEnd, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
             if (message.fswId != null && Object.hasOwnProperty.call(message, "fswId"))
                 writer.uint32(/* id 5, wireType 2 =*/42).string(message.fswId);
             if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
@@ -2620,23 +2821,29 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FileUplink.decode = function decode(reader, length) {
+        FileUplink.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FileUplink(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.uid = reader.string();
                         break;
                     }
                 case 2: {
-                        message.timeStart = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                        message.timeStart = $root.google.protobuf.Timestamp.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 3: {
-                        message.timeEnd = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                        message.timeEnd = $root.google.protobuf.Timestamp.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 5: {
@@ -2675,15 +2882,17 @@ $root.hermes = (function() {
                                 value = reader.string();
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.metadata, key);
                         message.metadata[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -2714,38 +2923,42 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FileUplink.verify = function verify(message) {
+        FileUplink.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.uid != null && message.hasOwnProperty("uid"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.uid != null && Object.hasOwnProperty.call(message, "uid"))
                 if (!$util.isString(message.uid))
                     return "uid: string expected";
-            if (message.timeStart != null && message.hasOwnProperty("timeStart")) {
-                var error = $root.google.protobuf.Timestamp.verify(message.timeStart);
+            if (message.timeStart != null && Object.hasOwnProperty.call(message, "timeStart")) {
+                var error = $root.google.protobuf.Timestamp.verify(message.timeStart, long + 1);
                 if (error)
                     return "timeStart." + error;
             }
-            if (message.timeEnd != null && message.hasOwnProperty("timeEnd")) {
-                var error = $root.google.protobuf.Timestamp.verify(message.timeEnd);
+            if (message.timeEnd != null && Object.hasOwnProperty.call(message, "timeEnd")) {
+                var error = $root.google.protobuf.Timestamp.verify(message.timeEnd, long + 1);
                 if (error)
                     return "timeEnd." + error;
             }
-            if (message.fswId != null && message.hasOwnProperty("fswId"))
+            if (message.fswId != null && Object.hasOwnProperty.call(message, "fswId"))
                 if (!$util.isString(message.fswId))
                     return "fswId: string expected";
-            if (message.sourcePath != null && message.hasOwnProperty("sourcePath"))
+            if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
                 if (!$util.isString(message.sourcePath))
                     return "sourcePath: string expected";
-            if (message.destinationPath != null && message.hasOwnProperty("destinationPath"))
+            if (message.destinationPath != null && Object.hasOwnProperty.call(message, "destinationPath"))
                 if (!$util.isString(message.destinationPath))
                     return "destinationPath: string expected";
-            if (message.error != null && message.hasOwnProperty("error"))
+            if (message.error != null && Object.hasOwnProperty.call(message, "error"))
                 if (!$util.isString(message.error))
                     return "error: string expected";
-            if (message.size != null && message.hasOwnProperty("size"))
+            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
                 if (!$util.isInteger(message.size) && !(message.size && $util.isInteger(message.size.low) && $util.isInteger(message.size.high)))
                     return "size: integer|Long expected";
-            if (message.metadata != null && message.hasOwnProperty("metadata")) {
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
                 if (!$util.isObject(message.metadata))
                     return "metadata: object expected";
                 var key = Object.keys(message.metadata);
@@ -2764,21 +2977,27 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FileUplink} FileUplink
          */
-        FileUplink.fromObject = function fromObject(object) {
+        FileUplink.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FileUplink)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FileUplink: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FileUplink();
             if (object.uid != null)
                 message.uid = String(object.uid);
             if (object.timeStart != null) {
-                if (typeof object.timeStart !== "object")
+                if (!$util.isObject(object.timeStart))
                     throw TypeError(".hermes.FileUplink.timeStart: object expected");
-                message.timeStart = $root.google.protobuf.Timestamp.fromObject(object.timeStart);
+                message.timeStart = $root.google.protobuf.Timestamp.fromObject(object.timeStart, long + 1);
             }
             if (object.timeEnd != null) {
-                if (typeof object.timeEnd !== "object")
+                if (!$util.isObject(object.timeEnd))
                     throw TypeError(".hermes.FileUplink.timeEnd: object expected");
-                message.timeEnd = $root.google.protobuf.Timestamp.fromObject(object.timeEnd);
+                message.timeEnd = $root.google.protobuf.Timestamp.fromObject(object.timeEnd, long + 1);
             }
             if (object.fswId != null)
                 message.fswId = String(object.fswId);
@@ -2790,7 +3009,7 @@ $root.hermes = (function() {
                 message.error = String(object.error);
             if (object.size != null)
                 if ($util.Long)
-                    (message.size = $util.Long.fromValue(object.size)).unsigned = true;
+                    message.size = $util.Long.fromValue(object.size, true);
                 else if (typeof object.size === "string")
                     message.size = parseInt(object.size, 10);
                 else if (typeof object.size === "number")
@@ -2798,11 +3017,14 @@ $root.hermes = (function() {
                 else if (typeof object.size === "object")
                     message.size = new $util.LongBits(object.size.low >>> 0, object.size.high >>> 0).toNumber(true);
             if (object.metadata) {
-                if (typeof object.metadata !== "object")
+                if (!$util.isObject(object.metadata))
                     throw TypeError(".hermes.FileUplink.metadata: object expected");
                 message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i)
+                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.metadata, keys[i]);
                     message.metadata[keys[i]] = String(object.metadata[keys[i]]);
+                }
             }
             return message;
         };
@@ -2816,9 +3038,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FileUplink.toObject = function toObject(message, options) {
+        FileUplink.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.objects || options.defaults)
                 object.metadata = {};
@@ -2832,34 +3058,39 @@ $root.hermes = (function() {
                 object.error = "";
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, true);
-                    object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                    object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
                 } else
-                    object.size = options.longs === String ? "0" : 0;
+                    object.size = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
             }
-            if (message.uid != null && message.hasOwnProperty("uid"))
+            if (message.uid != null && Object.hasOwnProperty.call(message, "uid"))
                 object.uid = message.uid;
-            if (message.timeStart != null && message.hasOwnProperty("timeStart"))
-                object.timeStart = $root.google.protobuf.Timestamp.toObject(message.timeStart, options);
-            if (message.timeEnd != null && message.hasOwnProperty("timeEnd"))
-                object.timeEnd = $root.google.protobuf.Timestamp.toObject(message.timeEnd, options);
-            if (message.fswId != null && message.hasOwnProperty("fswId"))
+            if (message.timeStart != null && Object.hasOwnProperty.call(message, "timeStart"))
+                object.timeStart = $root.google.protobuf.Timestamp.toObject(message.timeStart, options, q + 1);
+            if (message.timeEnd != null && Object.hasOwnProperty.call(message, "timeEnd"))
+                object.timeEnd = $root.google.protobuf.Timestamp.toObject(message.timeEnd, options, q + 1);
+            if (message.fswId != null && Object.hasOwnProperty.call(message, "fswId"))
                 object.fswId = message.fswId;
-            if (message.sourcePath != null && message.hasOwnProperty("sourcePath"))
+            if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
                 object.sourcePath = message.sourcePath;
-            if (message.destinationPath != null && message.hasOwnProperty("destinationPath"))
+            if (message.destinationPath != null && Object.hasOwnProperty.call(message, "destinationPath"))
                 object.destinationPath = message.destinationPath;
-            if (message.error != null && message.hasOwnProperty("error"))
+            if (message.error != null && Object.hasOwnProperty.call(message, "error"))
                 object.error = message.error;
-            if (message.size != null && message.hasOwnProperty("size"))
-                if (typeof message.size === "number")
+            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.size = typeof message.size === "number" ? BigInt(message.size) : $util.Long.fromBits(message.size.low >>> 0, message.size.high >>> 0, true).toBigInt();
+                else if (typeof message.size === "number")
                     object.size = options.longs === String ? String(message.size) : message.size;
                 else
                     object.size = options.longs === String ? $util.Long.prototype.toString.call(message.size) : options.longs === Number ? new $util.LongBits(message.size.low >>> 0, message.size.high >>> 0).toNumber(true) : message.size;
             var keys2;
             if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
                 object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j)
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.metadata, keys2[j]);
                     object.metadata[keys2[j]] = message.metadata[keys2[j]];
+                }
             }
             return object;
         };
@@ -2918,7 +3149,7 @@ $root.hermes = (function() {
         function FileTransfer(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -2991,9 +3222,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FileTransfer.encode = function encode(message, writer) {
+        FileTransfer.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.uid != null && Object.hasOwnProperty.call(message, "uid"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.uid);
             if (message.fswId != null && Object.hasOwnProperty.call(message, "fswId"))
@@ -3033,12 +3268,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FileTransfer.decode = function decode(reader, length) {
+        FileTransfer.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FileTransfer();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.uid = reader.string();
@@ -3065,7 +3306,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -3096,25 +3337,29 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FileTransfer.verify = function verify(message) {
+        FileTransfer.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.uid != null && message.hasOwnProperty("uid"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.uid != null && Object.hasOwnProperty.call(message, "uid"))
                 if (!$util.isString(message.uid))
                     return "uid: string expected";
-            if (message.fswId != null && message.hasOwnProperty("fswId"))
+            if (message.fswId != null && Object.hasOwnProperty.call(message, "fswId"))
                 if (!$util.isString(message.fswId))
                     return "fswId: string expected";
-            if (message.sourcePath != null && message.hasOwnProperty("sourcePath"))
+            if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
                 if (!$util.isString(message.sourcePath))
                     return "sourcePath: string expected";
-            if (message.targetPath != null && message.hasOwnProperty("targetPath"))
+            if (message.targetPath != null && Object.hasOwnProperty.call(message, "targetPath"))
                 if (!$util.isString(message.targetPath))
                     return "targetPath: string expected";
-            if (message.size != null && message.hasOwnProperty("size"))
+            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
                 if (!$util.isInteger(message.size) && !(message.size && $util.isInteger(message.size.low) && $util.isInteger(message.size.high)))
                     return "size: integer|Long expected";
-            if (message.progress != null && message.hasOwnProperty("progress"))
+            if (message.progress != null && Object.hasOwnProperty.call(message, "progress"))
                 if (!$util.isInteger(message.progress) && !(message.progress && $util.isInteger(message.progress.low) && $util.isInteger(message.progress.high)))
                     return "progress: integer|Long expected";
             return null;
@@ -3128,9 +3373,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FileTransfer} FileTransfer
          */
-        FileTransfer.fromObject = function fromObject(object) {
+        FileTransfer.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FileTransfer)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FileTransfer: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FileTransfer();
             if (object.uid != null)
                 message.uid = String(object.uid);
@@ -3142,7 +3393,7 @@ $root.hermes = (function() {
                 message.targetPath = String(object.targetPath);
             if (object.size != null)
                 if ($util.Long)
-                    (message.size = $util.Long.fromValue(object.size)).unsigned = true;
+                    message.size = $util.Long.fromValue(object.size, true);
                 else if (typeof object.size === "string")
                     message.size = parseInt(object.size, 10);
                 else if (typeof object.size === "number")
@@ -3151,7 +3402,7 @@ $root.hermes = (function() {
                     message.size = new $util.LongBits(object.size.low >>> 0, object.size.high >>> 0).toNumber(true);
             if (object.progress != null)
                 if ($util.Long)
-                    (message.progress = $util.Long.fromValue(object.progress)).unsigned = true;
+                    message.progress = $util.Long.fromValue(object.progress, true);
                 else if (typeof object.progress === "string")
                     message.progress = parseInt(object.progress, 10);
                 else if (typeof object.progress === "number")
@@ -3170,9 +3421,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FileTransfer.toObject = function toObject(message, options) {
+        FileTransfer.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.uid = "";
@@ -3181,30 +3436,34 @@ $root.hermes = (function() {
                 object.targetPath = "";
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, true);
-                    object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                    object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
                 } else
-                    object.size = options.longs === String ? "0" : 0;
+                    object.size = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, true);
-                    object.progress = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                    object.progress = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
                 } else
-                    object.progress = options.longs === String ? "0" : 0;
+                    object.progress = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
             }
-            if (message.uid != null && message.hasOwnProperty("uid"))
+            if (message.uid != null && Object.hasOwnProperty.call(message, "uid"))
                 object.uid = message.uid;
-            if (message.fswId != null && message.hasOwnProperty("fswId"))
+            if (message.fswId != null && Object.hasOwnProperty.call(message, "fswId"))
                 object.fswId = message.fswId;
-            if (message.sourcePath != null && message.hasOwnProperty("sourcePath"))
+            if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
                 object.sourcePath = message.sourcePath;
-            if (message.targetPath != null && message.hasOwnProperty("targetPath"))
+            if (message.targetPath != null && Object.hasOwnProperty.call(message, "targetPath"))
                 object.targetPath = message.targetPath;
-            if (message.size != null && message.hasOwnProperty("size"))
-                if (typeof message.size === "number")
+            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.size = typeof message.size === "number" ? BigInt(message.size) : $util.Long.fromBits(message.size.low >>> 0, message.size.high >>> 0, true).toBigInt();
+                else if (typeof message.size === "number")
                     object.size = options.longs === String ? String(message.size) : message.size;
                 else
                     object.size = options.longs === String ? $util.Long.prototype.toString.call(message.size) : options.longs === Number ? new $util.LongBits(message.size.low >>> 0, message.size.high >>> 0).toNumber(true) : message.size;
-            if (message.progress != null && message.hasOwnProperty("progress"))
-                if (typeof message.progress === "number")
+            if (message.progress != null && Object.hasOwnProperty.call(message, "progress"))
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.progress = typeof message.progress === "number" ? BigInt(message.progress) : $util.Long.fromBits(message.progress.low >>> 0, message.progress.high >>> 0, true).toBigInt();
+                else if (typeof message.progress === "number")
                     object.progress = options.longs === String ? String(message.progress) : message.progress;
                 else
                     object.progress = options.longs === String ? $util.Long.prototype.toString.call(message.progress) : options.longs === Number ? new $util.LongBits(message.progress.low >>> 0, message.progress.high >>> 0).toNumber(true) : message.progress;
@@ -3267,7 +3526,7 @@ $root.hermes = (function() {
             this.uplinkInProgress = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -3324,21 +3583,25 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FileTransferState.encode = function encode(message, writer) {
+        FileTransferState.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.downlinkCompleted != null && message.downlinkCompleted.length)
                 for (var i = 0; i < message.downlinkCompleted.length; ++i)
-                    $root.hermes.FileDownlink.encode(message.downlinkCompleted[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    $root.hermes.FileDownlink.encode(message.downlinkCompleted[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.uplinkCompleted != null && message.uplinkCompleted.length)
                 for (var i = 0; i < message.uplinkCompleted.length; ++i)
-                    $root.hermes.FileUplink.encode(message.uplinkCompleted[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                    $root.hermes.FileUplink.encode(message.uplinkCompleted[i], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             if (message.downlinkInProgress != null && message.downlinkInProgress.length)
                 for (var i = 0; i < message.downlinkInProgress.length; ++i)
-                    $root.hermes.FileTransfer.encode(message.downlinkInProgress[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                    $root.hermes.FileTransfer.encode(message.downlinkInProgress[i], writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
             if (message.uplinkInProgress != null && message.uplinkInProgress.length)
                 for (var i = 0; i < message.uplinkInProgress.length; ++i)
-                    $root.hermes.FileTransfer.encode(message.uplinkInProgress[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                    $root.hermes.FileTransfer.encode(message.uplinkInProgress[i], writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -3366,39 +3629,45 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FileTransferState.decode = function decode(reader, length) {
+        FileTransferState.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FileTransferState();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         if (!(message.downlinkCompleted && message.downlinkCompleted.length))
                             message.downlinkCompleted = [];
-                        message.downlinkCompleted.push($root.hermes.FileDownlink.decode(reader, reader.uint32()));
+                        message.downlinkCompleted.push($root.hermes.FileDownlink.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 case 2: {
                         if (!(message.uplinkCompleted && message.uplinkCompleted.length))
                             message.uplinkCompleted = [];
-                        message.uplinkCompleted.push($root.hermes.FileUplink.decode(reader, reader.uint32()));
+                        message.uplinkCompleted.push($root.hermes.FileUplink.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 case 3: {
                         if (!(message.downlinkInProgress && message.downlinkInProgress.length))
                             message.downlinkInProgress = [];
-                        message.downlinkInProgress.push($root.hermes.FileTransfer.decode(reader, reader.uint32()));
+                        message.downlinkInProgress.push($root.hermes.FileTransfer.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 case 4: {
                         if (!(message.uplinkInProgress && message.uplinkInProgress.length))
                             message.uplinkInProgress = [];
-                        message.uplinkInProgress.push($root.hermes.FileTransfer.decode(reader, reader.uint32()));
+                        message.uplinkInProgress.push($root.hermes.FileTransfer.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -3429,41 +3698,45 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FileTransferState.verify = function verify(message) {
+        FileTransferState.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.downlinkCompleted != null && message.hasOwnProperty("downlinkCompleted")) {
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.downlinkCompleted != null && Object.hasOwnProperty.call(message, "downlinkCompleted")) {
                 if (!Array.isArray(message.downlinkCompleted))
                     return "downlinkCompleted: array expected";
                 for (var i = 0; i < message.downlinkCompleted.length; ++i) {
-                    var error = $root.hermes.FileDownlink.verify(message.downlinkCompleted[i]);
+                    var error = $root.hermes.FileDownlink.verify(message.downlinkCompleted[i], long + 1);
                     if (error)
                         return "downlinkCompleted." + error;
                 }
             }
-            if (message.uplinkCompleted != null && message.hasOwnProperty("uplinkCompleted")) {
+            if (message.uplinkCompleted != null && Object.hasOwnProperty.call(message, "uplinkCompleted")) {
                 if (!Array.isArray(message.uplinkCompleted))
                     return "uplinkCompleted: array expected";
                 for (var i = 0; i < message.uplinkCompleted.length; ++i) {
-                    var error = $root.hermes.FileUplink.verify(message.uplinkCompleted[i]);
+                    var error = $root.hermes.FileUplink.verify(message.uplinkCompleted[i], long + 1);
                     if (error)
                         return "uplinkCompleted." + error;
                 }
             }
-            if (message.downlinkInProgress != null && message.hasOwnProperty("downlinkInProgress")) {
+            if (message.downlinkInProgress != null && Object.hasOwnProperty.call(message, "downlinkInProgress")) {
                 if (!Array.isArray(message.downlinkInProgress))
                     return "downlinkInProgress: array expected";
                 for (var i = 0; i < message.downlinkInProgress.length; ++i) {
-                    var error = $root.hermes.FileTransfer.verify(message.downlinkInProgress[i]);
+                    var error = $root.hermes.FileTransfer.verify(message.downlinkInProgress[i], long + 1);
                     if (error)
                         return "downlinkInProgress." + error;
                 }
             }
-            if (message.uplinkInProgress != null && message.hasOwnProperty("uplinkInProgress")) {
+            if (message.uplinkInProgress != null && Object.hasOwnProperty.call(message, "uplinkInProgress")) {
                 if (!Array.isArray(message.uplinkInProgress))
                     return "uplinkInProgress: array expected";
                 for (var i = 0; i < message.uplinkInProgress.length; ++i) {
-                    var error = $root.hermes.FileTransfer.verify(message.uplinkInProgress[i]);
+                    var error = $root.hermes.FileTransfer.verify(message.uplinkInProgress[i], long + 1);
                     if (error)
                         return "uplinkInProgress." + error;
                 }
@@ -3479,18 +3752,24 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FileTransferState} FileTransferState
          */
-        FileTransferState.fromObject = function fromObject(object) {
+        FileTransferState.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FileTransferState)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FileTransferState: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FileTransferState();
             if (object.downlinkCompleted) {
                 if (!Array.isArray(object.downlinkCompleted))
                     throw TypeError(".hermes.FileTransferState.downlinkCompleted: array expected");
                 message.downlinkCompleted = [];
                 for (var i = 0; i < object.downlinkCompleted.length; ++i) {
-                    if (typeof object.downlinkCompleted[i] !== "object")
+                    if (!$util.isObject(object.downlinkCompleted[i]))
                         throw TypeError(".hermes.FileTransferState.downlinkCompleted: object expected");
-                    message.downlinkCompleted[i] = $root.hermes.FileDownlink.fromObject(object.downlinkCompleted[i]);
+                    message.downlinkCompleted[i] = $root.hermes.FileDownlink.fromObject(object.downlinkCompleted[i], long + 1);
                 }
             }
             if (object.uplinkCompleted) {
@@ -3498,9 +3777,9 @@ $root.hermes = (function() {
                     throw TypeError(".hermes.FileTransferState.uplinkCompleted: array expected");
                 message.uplinkCompleted = [];
                 for (var i = 0; i < object.uplinkCompleted.length; ++i) {
-                    if (typeof object.uplinkCompleted[i] !== "object")
+                    if (!$util.isObject(object.uplinkCompleted[i]))
                         throw TypeError(".hermes.FileTransferState.uplinkCompleted: object expected");
-                    message.uplinkCompleted[i] = $root.hermes.FileUplink.fromObject(object.uplinkCompleted[i]);
+                    message.uplinkCompleted[i] = $root.hermes.FileUplink.fromObject(object.uplinkCompleted[i], long + 1);
                 }
             }
             if (object.downlinkInProgress) {
@@ -3508,9 +3787,9 @@ $root.hermes = (function() {
                     throw TypeError(".hermes.FileTransferState.downlinkInProgress: array expected");
                 message.downlinkInProgress = [];
                 for (var i = 0; i < object.downlinkInProgress.length; ++i) {
-                    if (typeof object.downlinkInProgress[i] !== "object")
+                    if (!$util.isObject(object.downlinkInProgress[i]))
                         throw TypeError(".hermes.FileTransferState.downlinkInProgress: object expected");
-                    message.downlinkInProgress[i] = $root.hermes.FileTransfer.fromObject(object.downlinkInProgress[i]);
+                    message.downlinkInProgress[i] = $root.hermes.FileTransfer.fromObject(object.downlinkInProgress[i], long + 1);
                 }
             }
             if (object.uplinkInProgress) {
@@ -3518,9 +3797,9 @@ $root.hermes = (function() {
                     throw TypeError(".hermes.FileTransferState.uplinkInProgress: array expected");
                 message.uplinkInProgress = [];
                 for (var i = 0; i < object.uplinkInProgress.length; ++i) {
-                    if (typeof object.uplinkInProgress[i] !== "object")
+                    if (!$util.isObject(object.uplinkInProgress[i]))
                         throw TypeError(".hermes.FileTransferState.uplinkInProgress: object expected");
-                    message.uplinkInProgress[i] = $root.hermes.FileTransfer.fromObject(object.uplinkInProgress[i]);
+                    message.uplinkInProgress[i] = $root.hermes.FileTransfer.fromObject(object.uplinkInProgress[i], long + 1);
                 }
             }
             return message;
@@ -3535,9 +3814,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FileTransferState.toObject = function toObject(message, options) {
+        FileTransferState.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults) {
                 object.downlinkCompleted = [];
@@ -3548,22 +3831,22 @@ $root.hermes = (function() {
             if (message.downlinkCompleted && message.downlinkCompleted.length) {
                 object.downlinkCompleted = [];
                 for (var j = 0; j < message.downlinkCompleted.length; ++j)
-                    object.downlinkCompleted[j] = $root.hermes.FileDownlink.toObject(message.downlinkCompleted[j], options);
+                    object.downlinkCompleted[j] = $root.hermes.FileDownlink.toObject(message.downlinkCompleted[j], options, q + 1);
             }
             if (message.uplinkCompleted && message.uplinkCompleted.length) {
                 object.uplinkCompleted = [];
                 for (var j = 0; j < message.uplinkCompleted.length; ++j)
-                    object.uplinkCompleted[j] = $root.hermes.FileUplink.toObject(message.uplinkCompleted[j], options);
+                    object.uplinkCompleted[j] = $root.hermes.FileUplink.toObject(message.uplinkCompleted[j], options, q + 1);
             }
             if (message.downlinkInProgress && message.downlinkInProgress.length) {
                 object.downlinkInProgress = [];
                 for (var j = 0; j < message.downlinkInProgress.length; ++j)
-                    object.downlinkInProgress[j] = $root.hermes.FileTransfer.toObject(message.downlinkInProgress[j], options);
+                    object.downlinkInProgress[j] = $root.hermes.FileTransfer.toObject(message.downlinkInProgress[j], options, q + 1);
             }
             if (message.uplinkInProgress && message.uplinkInProgress.length) {
                 object.uplinkInProgress = [];
                 for (var j = 0; j < message.uplinkInProgress.length; ++j)
-                    object.uplinkInProgress[j] = $root.hermes.FileTransfer.toObject(message.uplinkInProgress[j], options);
+                    object.uplinkInProgress[j] = $root.hermes.FileTransfer.toObject(message.uplinkInProgress[j], options, q + 1);
             }
             return object;
         };
@@ -3743,7 +4026,7 @@ $root.hermes = (function() {
         function BooleanType(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -3776,9 +4059,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        BooleanType.encode = function encode(message, writer) {
+        BooleanType.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.encodeType != null && Object.hasOwnProperty.call(message, "encodeType"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.encodeType);
             return writer;
@@ -3808,19 +4095,25 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        BooleanType.decode = function decode(reader, length) {
+        BooleanType.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.BooleanType();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.encodeType = reader.int32();
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -3851,10 +4144,14 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        BooleanType.verify = function verify(message) {
+        BooleanType.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.encodeType != null && message.hasOwnProperty("encodeType"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.encodeType != null && Object.hasOwnProperty.call(message, "encodeType"))
                 switch (message.encodeType) {
                 default:
                     return "encodeType: enum value expected";
@@ -3875,9 +4172,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.BooleanType} BooleanType
          */
-        BooleanType.fromObject = function fromObject(object) {
+        BooleanType.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.BooleanType)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.BooleanType: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.BooleanType();
             switch (object.encodeType) {
             default:
@@ -3915,13 +4218,17 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        BooleanType.toObject = function toObject(message, options) {
+        BooleanType.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults)
                 object.encodeType = options.enums === String ? "UINT_U8" : 0;
-            if (message.encodeType != null && message.hasOwnProperty("encodeType"))
+            if (message.encodeType != null && Object.hasOwnProperty.call(message, "encodeType"))
                 object.encodeType = options.enums === String ? $root.hermes.UIntKind[message.encodeType] === undefined ? message.encodeType : $root.hermes.UIntKind[message.encodeType] : message.encodeType;
             return object;
         };
@@ -3977,7 +4284,7 @@ $root.hermes = (function() {
         function IntType(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -4026,9 +4333,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        IntType.encode = function encode(message, writer) {
+        IntType.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.kind);
             if (message.min != null && Object.hasOwnProperty.call(message, "min"))
@@ -4062,12 +4373,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        IntType.decode = function decode(reader, length) {
+        IntType.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.IntType();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.kind = reader.int32();
@@ -4082,7 +4399,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -4113,10 +4430,14 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        IntType.verify = function verify(message) {
+        IntType.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.kind != null && message.hasOwnProperty("kind"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 switch (message.kind) {
                 default:
                     return "kind: enum value expected";
@@ -4130,10 +4451,10 @@ $root.hermes = (function() {
                 case 7:
                     break;
                 }
-            if (message.min != null && message.hasOwnProperty("min"))
+            if (message.min != null && Object.hasOwnProperty.call(message, "min"))
                 if (!$util.isInteger(message.min) && !(message.min && $util.isInteger(message.min.low) && $util.isInteger(message.min.high)))
                     return "min: integer|Long expected";
-            if (message.max != null && message.hasOwnProperty("max"))
+            if (message.max != null && Object.hasOwnProperty.call(message, "max"))
                 if (!$util.isInteger(message.max) && !(message.max && $util.isInteger(message.max.low) && $util.isInteger(message.max.high)))
                     return "max: integer|Long expected";
             return null;
@@ -4147,9 +4468,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.IntType} IntType
          */
-        IntType.fromObject = function fromObject(object) {
+        IntType.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.IntType)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.IntType: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.IntType();
             switch (object.kind) {
             default:
@@ -4193,7 +4520,7 @@ $root.hermes = (function() {
             }
             if (object.min != null)
                 if ($util.Long)
-                    (message.min = $util.Long.fromValue(object.min)).unsigned = false;
+                    message.min = $util.Long.fromValue(object.min, false);
                 else if (typeof object.min === "string")
                     message.min = parseInt(object.min, 10);
                 else if (typeof object.min === "number")
@@ -4202,7 +4529,7 @@ $root.hermes = (function() {
                     message.min = new $util.LongBits(object.min.low >>> 0, object.min.high >>> 0).toNumber();
             if (object.max != null)
                 if ($util.Long)
-                    (message.max = $util.Long.fromValue(object.max)).unsigned = false;
+                    message.max = $util.Long.fromValue(object.max, false);
                 else if (typeof object.max === "string")
                     message.max = parseInt(object.max, 10);
                 else if (typeof object.max === "number")
@@ -4221,32 +4548,40 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        IntType.toObject = function toObject(message, options) {
+        IntType.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.kind = options.enums === String ? "INT_U8" : 0;
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, false);
-                    object.min = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                    object.min = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
                 } else
-                    object.min = options.longs === String ? "0" : 0;
+                    object.min = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, false);
-                    object.max = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                    object.max = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
                 } else
-                    object.max = options.longs === String ? "0" : 0;
+                    object.max = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
             }
-            if (message.kind != null && message.hasOwnProperty("kind"))
+            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 object.kind = options.enums === String ? $root.hermes.IntKind[message.kind] === undefined ? message.kind : $root.hermes.IntKind[message.kind] : message.kind;
-            if (message.min != null && message.hasOwnProperty("min"))
-                if (typeof message.min === "number")
+            if (message.min != null && Object.hasOwnProperty.call(message, "min"))
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.min = typeof message.min === "number" ? BigInt(message.min) : $util.Long.fromBits(message.min.low >>> 0, message.min.high >>> 0, false).toBigInt();
+                else if (typeof message.min === "number")
                     object.min = options.longs === String ? String(message.min) : message.min;
                 else
                     object.min = options.longs === String ? $util.Long.prototype.toString.call(message.min) : options.longs === Number ? new $util.LongBits(message.min.low >>> 0, message.min.high >>> 0).toNumber() : message.min;
-            if (message.max != null && message.hasOwnProperty("max"))
-                if (typeof message.max === "number")
+            if (message.max != null && Object.hasOwnProperty.call(message, "max"))
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.max = typeof message.max === "number" ? BigInt(message.max) : $util.Long.fromBits(message.max.low >>> 0, message.max.high >>> 0, false).toBigInt();
+                else if (typeof message.max === "number")
                     object.max = options.longs === String ? String(message.max) : message.max;
                 else
                     object.max = options.longs === String ? $util.Long.prototype.toString.call(message.max) : options.longs === Number ? new $util.LongBits(message.max.low >>> 0, message.max.high >>> 0).toNumber() : message.max;
@@ -4304,7 +4639,7 @@ $root.hermes = (function() {
         function FloatType(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -4353,9 +4688,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FloatType.encode = function encode(message, writer) {
+        FloatType.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.kind);
             if (message.min != null && Object.hasOwnProperty.call(message, "min"))
@@ -4389,12 +4728,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FloatType.decode = function decode(reader, length) {
+        FloatType.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FloatType();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.kind = reader.int32();
@@ -4409,7 +4754,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -4440,10 +4785,14 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FloatType.verify = function verify(message) {
+        FloatType.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.kind != null && message.hasOwnProperty("kind"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 switch (message.kind) {
                 default:
                     return "kind: enum value expected";
@@ -4451,10 +4800,10 @@ $root.hermes = (function() {
                 case 1:
                     break;
                 }
-            if (message.min != null && message.hasOwnProperty("min"))
+            if (message.min != null && Object.hasOwnProperty.call(message, "min"))
                 if (typeof message.min !== "number")
                     return "min: number expected";
-            if (message.max != null && message.hasOwnProperty("max"))
+            if (message.max != null && Object.hasOwnProperty.call(message, "max"))
                 if (typeof message.max !== "number")
                     return "max: number expected";
             return null;
@@ -4468,9 +4817,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FloatType} FloatType
          */
-        FloatType.fromObject = function fromObject(object) {
+        FloatType.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FloatType)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FloatType: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FloatType();
             switch (object.kind) {
             default:
@@ -4504,20 +4859,24 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FloatType.toObject = function toObject(message, options) {
+        FloatType.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.kind = options.enums === String ? "F_F32" : 0;
                 object.min = 0;
                 object.max = 0;
             }
-            if (message.kind != null && message.hasOwnProperty("kind"))
+            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 object.kind = options.enums === String ? $root.hermes.FloatKind[message.kind] === undefined ? message.kind : $root.hermes.FloatKind[message.kind] : message.kind;
-            if (message.min != null && message.hasOwnProperty("min"))
+            if (message.min != null && Object.hasOwnProperty.call(message, "min"))
                 object.min = options.json && !isFinite(message.min) ? String(message.min) : message.min;
-            if (message.max != null && message.hasOwnProperty("max"))
+            if (message.max != null && Object.hasOwnProperty.call(message, "max"))
                 object.max = options.json && !isFinite(message.max) ? String(message.max) : message.max;
             return object;
         };
@@ -4576,7 +4935,7 @@ $root.hermes = (function() {
         function StringType(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -4621,9 +4980,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        StringType.encode = function encode(message, writer) {
+        StringType.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.lengthType != null && Object.hasOwnProperty.call(message, "lengthType"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.lengthType);
             if (message.maxLength != null && Object.hasOwnProperty.call(message, "maxLength"))
@@ -4655,12 +5018,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        StringType.decode = function decode(reader, length) {
+        StringType.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.StringType();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.lengthType = reader.int32();
@@ -4671,7 +5040,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -4702,10 +5071,14 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        StringType.verify = function verify(message) {
+        StringType.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.lengthType != null && message.hasOwnProperty("lengthType"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.lengthType != null && Object.hasOwnProperty.call(message, "lengthType"))
                 switch (message.lengthType) {
                 default:
                     return "lengthType: enum value expected";
@@ -4715,7 +5088,7 @@ $root.hermes = (function() {
                 case 3:
                     break;
                 }
-            if (message.maxLength != null && message.hasOwnProperty("maxLength"))
+            if (message.maxLength != null && Object.hasOwnProperty.call(message, "maxLength"))
                 if (!$util.isInteger(message.maxLength))
                     return "maxLength: integer expected";
             return null;
@@ -4729,9 +5102,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.StringType} StringType
          */
-        StringType.fromObject = function fromObject(object) {
+        StringType.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.StringType)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.StringType: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.StringType();
             switch (object.lengthType) {
             default:
@@ -4771,17 +5150,21 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        StringType.toObject = function toObject(message, options) {
+        StringType.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.lengthType = options.enums === String ? "UINT_U8" : 0;
                 object.maxLength = 0;
             }
-            if (message.lengthType != null && message.hasOwnProperty("lengthType"))
+            if (message.lengthType != null && Object.hasOwnProperty.call(message, "lengthType"))
                 object.lengthType = options.enums === String ? $root.hermes.UIntKind[message.lengthType] === undefined ? message.lengthType : $root.hermes.UIntKind[message.lengthType] : message.lengthType;
-            if (message.maxLength != null && message.hasOwnProperty("maxLength"))
+            if (message.maxLength != null && Object.hasOwnProperty.call(message, "maxLength"))
                 object.maxLength = message.maxLength;
             return object;
         };
@@ -4837,7 +5220,7 @@ $root.hermes = (function() {
         function EnumItem(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -4886,9 +5269,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        EnumItem.encode = function encode(message, writer) {
+        EnumItem.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.value != null && Object.hasOwnProperty.call(message, "value"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.value);
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
@@ -4922,12 +5309,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        EnumItem.decode = function decode(reader, length) {
+        EnumItem.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.EnumItem();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.value = reader.int32();
@@ -4942,7 +5335,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -4973,16 +5366,20 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        EnumItem.verify = function verify(message) {
+        EnumItem.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.value != null && message.hasOwnProperty("value"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
                 if (!$util.isInteger(message.value))
                     return "value: integer expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 if (!$util.isString(message.metadata))
                     return "metadata: string expected";
             return null;
@@ -4996,9 +5393,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.EnumItem} EnumItem
          */
-        EnumItem.fromObject = function fromObject(object) {
+        EnumItem.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.EnumItem)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.EnumItem: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.EnumItem();
             if (object.value != null)
                 message.value = object.value | 0;
@@ -5018,20 +5421,24 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        EnumItem.toObject = function toObject(message, options) {
+        EnumItem.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.value = 0;
                 object.name = "";
                 object.metadata = "";
             }
-            if (message.value != null && message.hasOwnProperty("value"))
+            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
                 object.value = message.value;
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 object.metadata = message.metadata;
             return object;
         };
@@ -5094,7 +5501,7 @@ $root.hermes = (function() {
             this.items = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -5149,16 +5556,20 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        EnumType.encode = function encode(message, writer) {
+        EnumType.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
             if (message.encodeType != null && Object.hasOwnProperty.call(message, "encodeType"))
                 writer.uint32(/* id 2, wireType 0 =*/16).int32(message.encodeType);
             if (message.items != null && message.items.length)
                 for (var i = 0; i < message.items.length; ++i)
-                    $root.hermes.EnumItem.encode(message.items[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                    $root.hermes.EnumItem.encode(message.items[i], writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -5186,12 +5597,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        EnumType.decode = function decode(reader, length) {
+        EnumType.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.EnumType();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.name = reader.string();
@@ -5204,11 +5621,11 @@ $root.hermes = (function() {
                 case 3: {
                         if (!(message.items && message.items.length))
                             message.items = [];
-                        message.items.push($root.hermes.EnumItem.decode(reader, reader.uint32()));
+                        message.items.push($root.hermes.EnumItem.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -5239,13 +5656,17 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        EnumType.verify = function verify(message) {
+        EnumType.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.encodeType != null && message.hasOwnProperty("encodeType"))
+            if (message.encodeType != null && Object.hasOwnProperty.call(message, "encodeType"))
                 switch (message.encodeType) {
                 default:
                     return "encodeType: enum value expected";
@@ -5259,11 +5680,11 @@ $root.hermes = (function() {
                 case 7:
                     break;
                 }
-            if (message.items != null && message.hasOwnProperty("items")) {
+            if (message.items != null && Object.hasOwnProperty.call(message, "items")) {
                 if (!Array.isArray(message.items))
                     return "items: array expected";
                 for (var i = 0; i < message.items.length; ++i) {
-                    var error = $root.hermes.EnumItem.verify(message.items[i]);
+                    var error = $root.hermes.EnumItem.verify(message.items[i], long + 1);
                     if (error)
                         return "items." + error;
                 }
@@ -5279,9 +5700,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.EnumType} EnumType
          */
-        EnumType.fromObject = function fromObject(object) {
+        EnumType.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.EnumType)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.EnumType: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.EnumType();
             if (object.name != null)
                 message.name = String(object.name);
@@ -5330,9 +5757,9 @@ $root.hermes = (function() {
                     throw TypeError(".hermes.EnumType.items: array expected");
                 message.items = [];
                 for (var i = 0; i < object.items.length; ++i) {
-                    if (typeof object.items[i] !== "object")
+                    if (!$util.isObject(object.items[i]))
                         throw TypeError(".hermes.EnumType.items: object expected");
-                    message.items[i] = $root.hermes.EnumItem.fromObject(object.items[i]);
+                    message.items[i] = $root.hermes.EnumItem.fromObject(object.items[i], long + 1);
                 }
             }
             return message;
@@ -5347,9 +5774,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        EnumType.toObject = function toObject(message, options) {
+        EnumType.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object.items = [];
@@ -5357,14 +5788,14 @@ $root.hermes = (function() {
                 object.name = "";
                 object.encodeType = options.enums === String ? "INT_U8" : 0;
             }
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.encodeType != null && message.hasOwnProperty("encodeType"))
+            if (message.encodeType != null && Object.hasOwnProperty.call(message, "encodeType"))
                 object.encodeType = options.enums === String ? $root.hermes.IntKind[message.encodeType] === undefined ? message.encodeType : $root.hermes.IntKind[message.encodeType] : message.encodeType;
             if (message.items && message.items.length) {
                 object.items = [];
                 for (var j = 0; j < message.items.length; ++j)
-                    object.items[j] = $root.hermes.EnumItem.toObject(message.items[j], options);
+                    object.items[j] = $root.hermes.EnumItem.toObject(message.items[j], options, q + 1);
             }
             return object;
         };
@@ -5419,7 +5850,7 @@ $root.hermes = (function() {
         function BoundedArraySize(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -5460,9 +5891,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        BoundedArraySize.encode = function encode(message, writer) {
+        BoundedArraySize.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.min != null && Object.hasOwnProperty.call(message, "min"))
                 writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.min);
             if (message.max != null && Object.hasOwnProperty.call(message, "max"))
@@ -5494,12 +5929,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        BoundedArraySize.decode = function decode(reader, length) {
+        BoundedArraySize.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.BoundedArraySize();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.min = reader.uint32();
@@ -5510,7 +5951,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -5541,13 +5982,17 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        BoundedArraySize.verify = function verify(message) {
+        BoundedArraySize.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.min != null && message.hasOwnProperty("min"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.min != null && Object.hasOwnProperty.call(message, "min"))
                 if (!$util.isInteger(message.min))
                     return "min: integer expected";
-            if (message.max != null && message.hasOwnProperty("max"))
+            if (message.max != null && Object.hasOwnProperty.call(message, "max"))
                 if (!$util.isInteger(message.max))
                     return "max: integer expected";
             return null;
@@ -5561,9 +6006,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.BoundedArraySize} BoundedArraySize
          */
-        BoundedArraySize.fromObject = function fromObject(object) {
+        BoundedArraySize.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.BoundedArraySize)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.BoundedArraySize: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.BoundedArraySize();
             if (object.min != null)
                 message.min = object.min >>> 0;
@@ -5581,17 +6032,21 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        BoundedArraySize.toObject = function toObject(message, options) {
+        BoundedArraySize.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.min = 0;
                 object.max = 0;
             }
-            if (message.min != null && message.hasOwnProperty("min"))
+            if (message.min != null && Object.hasOwnProperty.call(message, "min"))
                 object.min = message.min;
-            if (message.max != null && message.hasOwnProperty("max"))
+            if (message.max != null && Object.hasOwnProperty.call(message, "max"))
                 object.max = message.max;
             return object;
         };
@@ -5653,7 +6108,7 @@ $root.hermes = (function() {
         function ArrayType(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -5743,17 +6198,21 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ArrayType.encode = function encode(message, writer) {
+        ArrayType.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
             if (message.elType != null && Object.hasOwnProperty.call(message, "elType"))
-                $root.hermes.Type.encode(message.elType, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.hermes.Type.encode(message.elType, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             if (message["static"] != null && Object.hasOwnProperty.call(message, "static"))
                 writer.uint32(/* id 3, wireType 0 =*/24).uint32(message["static"]);
             if (message.dynamic != null && Object.hasOwnProperty.call(message, "dynamic"))
-                $root.hermes.BoundedArraySize.encode(message.dynamic, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                $root.hermes.BoundedArraySize.encode(message.dynamic, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
             if (message.lengthType != null && Object.hasOwnProperty.call(message, "lengthType"))
                 writer.uint32(/* id 5, wireType 0 =*/40).int32(message.lengthType);
             return writer;
@@ -5783,19 +6242,25 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ArrayType.decode = function decode(reader, length) {
+        ArrayType.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ArrayType();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.name = reader.string();
                         break;
                     }
                 case 2: {
-                        message.elType = $root.hermes.Type.decode(reader, reader.uint32());
+                        message.elType = $root.hermes.Type.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 3: {
@@ -5803,7 +6268,7 @@ $root.hermes = (function() {
                         break;
                     }
                 case 4: {
-                        message.dynamic = $root.hermes.BoundedArraySize.decode(reader, reader.uint32());
+                        message.dynamic = $root.hermes.BoundedArraySize.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 5: {
@@ -5811,7 +6276,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -5842,34 +6307,38 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        ArrayType.verify = function verify(message) {
+        ArrayType.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
             var properties = {};
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.elType != null && message.hasOwnProperty("elType")) {
-                var error = $root.hermes.Type.verify(message.elType);
+            if (message.elType != null && Object.hasOwnProperty.call(message, "elType")) {
+                var error = $root.hermes.Type.verify(message.elType, long + 1);
                 if (error)
                     return "elType." + error;
             }
-            if (message["static"] != null && message.hasOwnProperty("static")) {
+            if (message["static"] != null && Object.hasOwnProperty.call(message, "static")) {
                 properties.size = 1;
                 if (!$util.isInteger(message["static"]))
                     return "static: integer expected";
             }
-            if (message.dynamic != null && message.hasOwnProperty("dynamic")) {
+            if (message.dynamic != null && Object.hasOwnProperty.call(message, "dynamic")) {
                 if (properties.size === 1)
                     return "size: multiple values";
                 properties.size = 1;
                 {
-                    var error = $root.hermes.BoundedArraySize.verify(message.dynamic);
+                    var error = $root.hermes.BoundedArraySize.verify(message.dynamic, long + 1);
                     if (error)
                         return "dynamic." + error;
                 }
             }
-            if (message.lengthType != null && message.hasOwnProperty("lengthType"))
+            if (message.lengthType != null && Object.hasOwnProperty.call(message, "lengthType"))
                 switch (message.lengthType) {
                 default:
                     return "lengthType: enum value expected";
@@ -5890,23 +6359,29 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.ArrayType} ArrayType
          */
-        ArrayType.fromObject = function fromObject(object) {
+        ArrayType.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.ArrayType)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.ArrayType: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.ArrayType();
             if (object.name != null)
                 message.name = String(object.name);
             if (object.elType != null) {
-                if (typeof object.elType !== "object")
+                if (!$util.isObject(object.elType))
                     throw TypeError(".hermes.ArrayType.elType: object expected");
-                message.elType = $root.hermes.Type.fromObject(object.elType);
+                message.elType = $root.hermes.Type.fromObject(object.elType, long + 1);
             }
             if (object["static"] != null)
                 message["static"] = object["static"] >>> 0;
             if (object.dynamic != null) {
-                if (typeof object.dynamic !== "object")
+                if (!$util.isObject(object.dynamic))
                     throw TypeError(".hermes.ArrayType.dynamic: object expected");
-                message.dynamic = $root.hermes.BoundedArraySize.fromObject(object.dynamic);
+                message.dynamic = $root.hermes.BoundedArraySize.fromObject(object.dynamic, long + 1);
             }
             switch (object.lengthType) {
             default:
@@ -5944,30 +6419,34 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        ArrayType.toObject = function toObject(message, options) {
+        ArrayType.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.name = "";
                 object.elType = null;
                 object.lengthType = options.enums === String ? "UINT_U8" : 0;
             }
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.elType != null && message.hasOwnProperty("elType"))
-                object.elType = $root.hermes.Type.toObject(message.elType, options);
-            if (message["static"] != null && message.hasOwnProperty("static")) {
+            if (message.elType != null && Object.hasOwnProperty.call(message, "elType"))
+                object.elType = $root.hermes.Type.toObject(message.elType, options, q + 1);
+            if (message["static"] != null && Object.hasOwnProperty.call(message, "static")) {
                 object["static"] = message["static"];
                 if (options.oneofs)
                     object.size = "static";
             }
-            if (message.dynamic != null && message.hasOwnProperty("dynamic")) {
-                object.dynamic = $root.hermes.BoundedArraySize.toObject(message.dynamic, options);
+            if (message.dynamic != null && Object.hasOwnProperty.call(message, "dynamic")) {
+                object.dynamic = $root.hermes.BoundedArraySize.toObject(message.dynamic, options, q + 1);
                 if (options.oneofs)
                     object.size = "dynamic";
             }
-            if (message.lengthType != null && message.hasOwnProperty("lengthType"))
+            if (message.lengthType != null && Object.hasOwnProperty.call(message, "lengthType"))
                 object.lengthType = options.enums === String ? $root.hermes.UIntKind[message.lengthType] === undefined ? message.lengthType : $root.hermes.UIntKind[message.lengthType] : message.lengthType;
             return object;
         };
@@ -6031,7 +6510,7 @@ $root.hermes = (function() {
         function BytesType(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -6117,9 +6596,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        BytesType.encode = function encode(message, writer) {
+        BytesType.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
             if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
@@ -6127,7 +6610,7 @@ $root.hermes = (function() {
             if (message["static"] != null && Object.hasOwnProperty.call(message, "static"))
                 writer.uint32(/* id 3, wireType 0 =*/24).uint32(message["static"]);
             if (message.dynamic != null && Object.hasOwnProperty.call(message, "dynamic"))
-                $root.hermes.BoundedArraySize.encode(message.dynamic, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                $root.hermes.BoundedArraySize.encode(message.dynamic, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
             if (message.lengthType != null && Object.hasOwnProperty.call(message, "lengthType"))
                 writer.uint32(/* id 5, wireType 0 =*/40).int32(message.lengthType);
             return writer;
@@ -6157,12 +6640,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        BytesType.decode = function decode(reader, length) {
+        BytesType.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.BytesType();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.name = reader.string();
@@ -6177,7 +6666,7 @@ $root.hermes = (function() {
                         break;
                     }
                 case 4: {
-                        message.dynamic = $root.hermes.BoundedArraySize.decode(reader, reader.uint32());
+                        message.dynamic = $root.hermes.BoundedArraySize.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 5: {
@@ -6185,7 +6674,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -6216,14 +6705,18 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        BytesType.verify = function verify(message) {
+        BytesType.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
             var properties = {};
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.kind != null && message.hasOwnProperty("kind"))
+            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 switch (message.kind) {
                 default:
                     return "kind: enum value expected";
@@ -6239,22 +6732,22 @@ $root.hermes = (function() {
                 case 9:
                     break;
                 }
-            if (message["static"] != null && message.hasOwnProperty("static")) {
+            if (message["static"] != null && Object.hasOwnProperty.call(message, "static")) {
                 properties.size = 1;
                 if (!$util.isInteger(message["static"]))
                     return "static: integer expected";
             }
-            if (message.dynamic != null && message.hasOwnProperty("dynamic")) {
+            if (message.dynamic != null && Object.hasOwnProperty.call(message, "dynamic")) {
                 if (properties.size === 1)
                     return "size: multiple values";
                 properties.size = 1;
                 {
-                    var error = $root.hermes.BoundedArraySize.verify(message.dynamic);
+                    var error = $root.hermes.BoundedArraySize.verify(message.dynamic, long + 1);
                     if (error)
                         return "dynamic." + error;
                 }
             }
-            if (message.lengthType != null && message.hasOwnProperty("lengthType"))
+            if (message.lengthType != null && Object.hasOwnProperty.call(message, "lengthType"))
                 switch (message.lengthType) {
                 default:
                     return "lengthType: enum value expected";
@@ -6275,9 +6768,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.BytesType} BytesType
          */
-        BytesType.fromObject = function fromObject(object) {
+        BytesType.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.BytesType)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.BytesType: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.BytesType();
             if (object.name != null)
                 message.name = String(object.name);
@@ -6332,9 +6831,9 @@ $root.hermes = (function() {
             if (object["static"] != null)
                 message["static"] = object["static"] >>> 0;
             if (object.dynamic != null) {
-                if (typeof object.dynamic !== "object")
+                if (!$util.isObject(object.dynamic))
                     throw TypeError(".hermes.BytesType.dynamic: object expected");
-                message.dynamic = $root.hermes.BoundedArraySize.fromObject(object.dynamic);
+                message.dynamic = $root.hermes.BoundedArraySize.fromObject(object.dynamic, long + 1);
             }
             switch (object.lengthType) {
             default:
@@ -6372,30 +6871,34 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        BytesType.toObject = function toObject(message, options) {
+        BytesType.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.name = "";
                 object.kind = options.enums === String ? "NUMBER_U8" : 0;
                 object.lengthType = options.enums === String ? "UINT_U8" : 0;
             }
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.kind != null && message.hasOwnProperty("kind"))
+            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 object.kind = options.enums === String ? $root.hermes.NumberKind[message.kind] === undefined ? message.kind : $root.hermes.NumberKind[message.kind] : message.kind;
-            if (message["static"] != null && message.hasOwnProperty("static")) {
+            if (message["static"] != null && Object.hasOwnProperty.call(message, "static")) {
                 object["static"] = message["static"];
                 if (options.oneofs)
                     object.size = "static";
             }
-            if (message.dynamic != null && message.hasOwnProperty("dynamic")) {
-                object.dynamic = $root.hermes.BoundedArraySize.toObject(message.dynamic, options);
+            if (message.dynamic != null && Object.hasOwnProperty.call(message, "dynamic")) {
+                object.dynamic = $root.hermes.BoundedArraySize.toObject(message.dynamic, options, q + 1);
                 if (options.oneofs)
                     object.size = "dynamic";
             }
-            if (message.lengthType != null && message.hasOwnProperty("lengthType"))
+            if (message.lengthType != null && Object.hasOwnProperty.call(message, "lengthType"))
                 object.lengthType = options.enums === String ? $root.hermes.UIntKind[message.lengthType] === undefined ? message.lengthType : $root.hermes.UIntKind[message.lengthType] : message.lengthType;
             return object;
         };
@@ -6452,7 +6955,7 @@ $root.hermes = (function() {
         function Field(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -6509,17 +7012,21 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        Field.encode = function encode(message, writer) {
+        Field.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
             if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                $root.hermes.Type.encode(message.type, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.hermes.Type.encode(message.type, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 writer.uint32(/* id 3, wireType 2 =*/26).string(message.metadata);
             if (message.value != null && Object.hasOwnProperty.call(message, "value"))
-                $root.hermes.Value.encode(message.value, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                $root.hermes.Value.encode(message.value, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -6547,19 +7054,25 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        Field.decode = function decode(reader, length) {
+        Field.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Field();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.name = reader.string();
                         break;
                     }
                 case 2: {
-                        message.type = $root.hermes.Type.decode(reader, reader.uint32());
+                        message.type = $root.hermes.Type.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 3: {
@@ -6567,11 +7080,11 @@ $root.hermes = (function() {
                         break;
                     }
                 case 4: {
-                        message.value = $root.hermes.Value.decode(reader, reader.uint32());
+                        message.value = $root.hermes.Value.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -6602,22 +7115,26 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        Field.verify = function verify(message) {
+        Field.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.type != null && message.hasOwnProperty("type")) {
-                var error = $root.hermes.Type.verify(message.type);
+            if (message.type != null && Object.hasOwnProperty.call(message, "type")) {
+                var error = $root.hermes.Type.verify(message.type, long + 1);
                 if (error)
                     return "type." + error;
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 if (!$util.isString(message.metadata))
                     return "metadata: string expected";
-            if (message.value != null && message.hasOwnProperty("value")) {
-                var error = $root.hermes.Value.verify(message.value);
+            if (message.value != null && Object.hasOwnProperty.call(message, "value")) {
+                var error = $root.hermes.Value.verify(message.value, long + 1);
                 if (error)
                     return "value." + error;
             }
@@ -6632,23 +7149,29 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.Field} Field
          */
-        Field.fromObject = function fromObject(object) {
+        Field.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.Field)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Field: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.Field();
             if (object.name != null)
                 message.name = String(object.name);
             if (object.type != null) {
-                if (typeof object.type !== "object")
+                if (!$util.isObject(object.type))
                     throw TypeError(".hermes.Field.type: object expected");
-                message.type = $root.hermes.Type.fromObject(object.type);
+                message.type = $root.hermes.Type.fromObject(object.type, long + 1);
             }
             if (object.metadata != null)
                 message.metadata = String(object.metadata);
             if (object.value != null) {
-                if (typeof object.value !== "object")
+                if (!$util.isObject(object.value))
                     throw TypeError(".hermes.Field.value: object expected");
-                message.value = $root.hermes.Value.fromObject(object.value);
+                message.value = $root.hermes.Value.fromObject(object.value, long + 1);
             }
             return message;
         };
@@ -6662,9 +7185,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        Field.toObject = function toObject(message, options) {
+        Field.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.name = "";
@@ -6672,14 +7199,14 @@ $root.hermes = (function() {
                 object.metadata = "";
                 object.value = null;
             }
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.type != null && message.hasOwnProperty("type"))
-                object.type = $root.hermes.Type.toObject(message.type, options);
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                object.type = $root.hermes.Type.toObject(message.type, options, q + 1);
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 object.metadata = message.metadata;
-            if (message.value != null && message.hasOwnProperty("value"))
-                object.value = $root.hermes.Value.toObject(message.value, options);
+            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
+                object.value = $root.hermes.Value.toObject(message.value, options, q + 1);
             return object;
         };
 
@@ -6734,7 +7261,7 @@ $root.hermes = (function() {
             this.fields = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -6775,14 +7302,18 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ObjectType.encode = function encode(message, writer) {
+        ObjectType.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
             if (message.fields != null && message.fields.length)
                 for (var i = 0; i < message.fields.length; ++i)
-                    $root.hermes.Field.encode(message.fields[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                    $root.hermes.Field.encode(message.fields[i], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -6810,12 +7341,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ObjectType.decode = function decode(reader, length) {
+        ObjectType.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ObjectType();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.name = reader.string();
@@ -6824,11 +7361,11 @@ $root.hermes = (function() {
                 case 2: {
                         if (!(message.fields && message.fields.length))
                             message.fields = [];
-                        message.fields.push($root.hermes.Field.decode(reader, reader.uint32()));
+                        message.fields.push($root.hermes.Field.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -6859,17 +7396,21 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        ObjectType.verify = function verify(message) {
+        ObjectType.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.fields != null && message.hasOwnProperty("fields")) {
+            if (message.fields != null && Object.hasOwnProperty.call(message, "fields")) {
                 if (!Array.isArray(message.fields))
                     return "fields: array expected";
                 for (var i = 0; i < message.fields.length; ++i) {
-                    var error = $root.hermes.Field.verify(message.fields[i]);
+                    var error = $root.hermes.Field.verify(message.fields[i], long + 1);
                     if (error)
                         return "fields." + error;
                 }
@@ -6885,9 +7426,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.ObjectType} ObjectType
          */
-        ObjectType.fromObject = function fromObject(object) {
+        ObjectType.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.ObjectType)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.ObjectType: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.ObjectType();
             if (object.name != null)
                 message.name = String(object.name);
@@ -6896,9 +7443,9 @@ $root.hermes = (function() {
                     throw TypeError(".hermes.ObjectType.fields: array expected");
                 message.fields = [];
                 for (var i = 0; i < object.fields.length; ++i) {
-                    if (typeof object.fields[i] !== "object")
+                    if (!$util.isObject(object.fields[i]))
                         throw TypeError(".hermes.ObjectType.fields: object expected");
-                    message.fields[i] = $root.hermes.Field.fromObject(object.fields[i]);
+                    message.fields[i] = $root.hermes.Field.fromObject(object.fields[i], long + 1);
                 }
             }
             return message;
@@ -6913,20 +7460,24 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        ObjectType.toObject = function toObject(message, options) {
+        ObjectType.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object.fields = [];
             if (options.defaults)
                 object.name = "";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
             if (message.fields && message.fields.length) {
                 object.fields = [];
                 for (var j = 0; j < message.fields.length; ++j)
-                    object.fields[j] = $root.hermes.Field.toObject(message.fields[j], options);
+                    object.fields[j] = $root.hermes.Field.toObject(message.fields[j], options, q + 1);
             }
             return object;
         };
@@ -6981,7 +7532,7 @@ $root.hermes = (function() {
         function ReferenceType(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -7022,9 +7573,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ReferenceType.encode = function encode(message, writer) {
+        ReferenceType.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
             if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
@@ -7056,12 +7611,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ReferenceType.decode = function decode(reader, length) {
+        ReferenceType.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ReferenceType();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.name = reader.string();
@@ -7072,7 +7633,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -7103,13 +7664,17 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        ReferenceType.verify = function verify(message) {
+        ReferenceType.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.kind != null && message.hasOwnProperty("kind"))
+            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 switch (message.kind) {
                 default:
                     return "kind: enum value expected";
@@ -7131,9 +7696,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.ReferenceType} ReferenceType
          */
-        ReferenceType.fromObject = function fromObject(object) {
+        ReferenceType.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.ReferenceType)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.ReferenceType: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.ReferenceType();
             if (object.name != null)
                 message.name = String(object.name);
@@ -7177,17 +7748,21 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        ReferenceType.toObject = function toObject(message, options) {
+        ReferenceType.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.name = "";
                 object.kind = options.enums === String ? "REF_ENUM" : 0;
             }
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.kind != null && message.hasOwnProperty("kind"))
+            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 object.kind = options.enums === String ? $root.hermes.ReferenceKind[message.kind] === undefined ? message.kind : $root.hermes.ReferenceKind[message.kind] : message.kind;
             return object;
         };
@@ -7241,7 +7816,7 @@ $root.hermes = (function() {
         function VoidType(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -7274,9 +7849,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        VoidType.encode = function encode(message, writer) {
+        VoidType.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.size != null && Object.hasOwnProperty.call(message, "size"))
                 writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.size);
             return writer;
@@ -7306,19 +7885,25 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        VoidType.decode = function decode(reader, length) {
+        VoidType.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.VoidType();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.size = reader.uint32();
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -7349,10 +7934,14 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        VoidType.verify = function verify(message) {
+        VoidType.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.size != null && message.hasOwnProperty("size"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
                 if (!$util.isInteger(message.size))
                     return "size: integer expected";
             return null;
@@ -7366,9 +7955,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.VoidType} VoidType
          */
-        VoidType.fromObject = function fromObject(object) {
+        VoidType.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.VoidType)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.VoidType: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.VoidType();
             if (object.size != null)
                 message.size = object.size >>> 0;
@@ -7384,13 +7979,17 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        VoidType.toObject = function toObject(message, options) {
+        VoidType.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults)
                 object.size = 0;
-            if (message.size != null && message.hasOwnProperty("size"))
+            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
                 object.size = message.size;
             return object;
         };
@@ -7455,7 +8054,7 @@ $root.hermes = (function() {
         function Type(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -7590,31 +8189,35 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        Type.encode = function encode(message, writer) {
+        Type.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.ref != null && Object.hasOwnProperty.call(message, "ref"))
-                $root.hermes.ReferenceType.encode(message.ref, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.hermes.ReferenceType.encode(message.ref, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.bool != null && Object.hasOwnProperty.call(message, "bool"))
-                $root.hermes.BooleanType.encode(message.bool, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.hermes.BooleanType.encode(message.bool, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             if (message.int != null && Object.hasOwnProperty.call(message, "int"))
-                $root.hermes.IntType.encode(message.int, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                $root.hermes.IntType.encode(message.int, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
             if (message.float != null && Object.hasOwnProperty.call(message, "float"))
-                $root.hermes.FloatType.encode(message.float, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                $root.hermes.FloatType.encode(message.float, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
             if (message.string != null && Object.hasOwnProperty.call(message, "string"))
-                $root.hermes.StringType.encode(message.string, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                $root.hermes.StringType.encode(message.string, writer.uint32(/* id 5, wireType 2 =*/42).fork(), q + 1).ldelim();
             if (message["enum"] != null && Object.hasOwnProperty.call(message, "enum"))
-                $root.hermes.EnumType.encode(message["enum"], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                $root.hermes.EnumType.encode(message["enum"], writer.uint32(/* id 6, wireType 2 =*/50).fork(), q + 1).ldelim();
             if (message.bitmask != null && Object.hasOwnProperty.call(message, "bitmask"))
-                $root.hermes.EnumType.encode(message.bitmask, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
+                $root.hermes.EnumType.encode(message.bitmask, writer.uint32(/* id 7, wireType 2 =*/58).fork(), q + 1).ldelim();
             if (message.object != null && Object.hasOwnProperty.call(message, "object"))
-                $root.hermes.ObjectType.encode(message.object, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
+                $root.hermes.ObjectType.encode(message.object, writer.uint32(/* id 8, wireType 2 =*/66).fork(), q + 1).ldelim();
             if (message.array != null && Object.hasOwnProperty.call(message, "array"))
-                $root.hermes.ArrayType.encode(message.array, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
+                $root.hermes.ArrayType.encode(message.array, writer.uint32(/* id 9, wireType 2 =*/74).fork(), q + 1).ldelim();
             if (message.bytes != null && Object.hasOwnProperty.call(message, "bytes"))
-                $root.hermes.BytesType.encode(message.bytes, writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
+                $root.hermes.BytesType.encode(message.bytes, writer.uint32(/* id 10, wireType 2 =*/82).fork(), q + 1).ldelim();
             if (message["void"] != null && Object.hasOwnProperty.call(message, "void"))
-                $root.hermes.VoidType.encode(message["void"], writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
+                $root.hermes.VoidType.encode(message["void"], writer.uint32(/* id 11, wireType 2 =*/90).fork(), q + 1).ldelim();
             if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 writer.uint32(/* id 12, wireType 2 =*/98).string(message.metadata);
             return writer;
@@ -7644,55 +8247,61 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        Type.decode = function decode(reader, length) {
+        Type.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Type();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.ref = $root.hermes.ReferenceType.decode(reader, reader.uint32());
+                        message.ref = $root.hermes.ReferenceType.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
-                        message.bool = $root.hermes.BooleanType.decode(reader, reader.uint32());
+                        message.bool = $root.hermes.BooleanType.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 3: {
-                        message.int = $root.hermes.IntType.decode(reader, reader.uint32());
+                        message.int = $root.hermes.IntType.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 4: {
-                        message.float = $root.hermes.FloatType.decode(reader, reader.uint32());
+                        message.float = $root.hermes.FloatType.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 5: {
-                        message.string = $root.hermes.StringType.decode(reader, reader.uint32());
+                        message.string = $root.hermes.StringType.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 6: {
-                        message["enum"] = $root.hermes.EnumType.decode(reader, reader.uint32());
+                        message["enum"] = $root.hermes.EnumType.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 7: {
-                        message.bitmask = $root.hermes.EnumType.decode(reader, reader.uint32());
+                        message.bitmask = $root.hermes.EnumType.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 8: {
-                        message.object = $root.hermes.ObjectType.decode(reader, reader.uint32());
+                        message.object = $root.hermes.ObjectType.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 9: {
-                        message.array = $root.hermes.ArrayType.decode(reader, reader.uint32());
+                        message.array = $root.hermes.ArrayType.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 10: {
-                        message.bytes = $root.hermes.BytesType.decode(reader, reader.uint32());
+                        message.bytes = $root.hermes.BytesType.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 11: {
-                        message["void"] = $root.hermes.VoidType.decode(reader, reader.uint32());
+                        message["void"] = $root.hermes.VoidType.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 12: {
@@ -7700,7 +8309,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -7731,119 +8340,123 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        Type.verify = function verify(message) {
+        Type.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
             var properties = {};
-            if (message.ref != null && message.hasOwnProperty("ref")) {
+            if (message.ref != null && Object.hasOwnProperty.call(message, "ref")) {
                 properties.value = 1;
                 {
-                    var error = $root.hermes.ReferenceType.verify(message.ref);
+                    var error = $root.hermes.ReferenceType.verify(message.ref, long + 1);
                     if (error)
                         return "ref." + error;
                 }
             }
-            if (message.bool != null && message.hasOwnProperty("bool")) {
+            if (message.bool != null && Object.hasOwnProperty.call(message, "bool")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.BooleanType.verify(message.bool);
+                    var error = $root.hermes.BooleanType.verify(message.bool, long + 1);
                     if (error)
                         return "bool." + error;
                 }
             }
-            if (message.int != null && message.hasOwnProperty("int")) {
+            if (message.int != null && Object.hasOwnProperty.call(message, "int")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.IntType.verify(message.int);
+                    var error = $root.hermes.IntType.verify(message.int, long + 1);
                     if (error)
                         return "int." + error;
                 }
             }
-            if (message.float != null && message.hasOwnProperty("float")) {
+            if (message.float != null && Object.hasOwnProperty.call(message, "float")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.FloatType.verify(message.float);
+                    var error = $root.hermes.FloatType.verify(message.float, long + 1);
                     if (error)
                         return "float." + error;
                 }
             }
-            if (message.string != null && message.hasOwnProperty("string")) {
+            if (message.string != null && Object.hasOwnProperty.call(message, "string")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.StringType.verify(message.string);
+                    var error = $root.hermes.StringType.verify(message.string, long + 1);
                     if (error)
                         return "string." + error;
                 }
             }
-            if (message["enum"] != null && message.hasOwnProperty("enum")) {
+            if (message["enum"] != null && Object.hasOwnProperty.call(message, "enum")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.EnumType.verify(message["enum"]);
+                    var error = $root.hermes.EnumType.verify(message["enum"], long + 1);
                     if (error)
                         return "enum." + error;
                 }
             }
-            if (message.bitmask != null && message.hasOwnProperty("bitmask")) {
+            if (message.bitmask != null && Object.hasOwnProperty.call(message, "bitmask")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.EnumType.verify(message.bitmask);
+                    var error = $root.hermes.EnumType.verify(message.bitmask, long + 1);
                     if (error)
                         return "bitmask." + error;
                 }
             }
-            if (message.object != null && message.hasOwnProperty("object")) {
+            if (message.object != null && Object.hasOwnProperty.call(message, "object")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.ObjectType.verify(message.object);
+                    var error = $root.hermes.ObjectType.verify(message.object, long + 1);
                     if (error)
                         return "object." + error;
                 }
             }
-            if (message.array != null && message.hasOwnProperty("array")) {
+            if (message.array != null && Object.hasOwnProperty.call(message, "array")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.ArrayType.verify(message.array);
+                    var error = $root.hermes.ArrayType.verify(message.array, long + 1);
                     if (error)
                         return "array." + error;
                 }
             }
-            if (message.bytes != null && message.hasOwnProperty("bytes")) {
+            if (message.bytes != null && Object.hasOwnProperty.call(message, "bytes")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.BytesType.verify(message.bytes);
+                    var error = $root.hermes.BytesType.verify(message.bytes, long + 1);
                     if (error)
                         return "bytes." + error;
                 }
             }
-            if (message["void"] != null && message.hasOwnProperty("void")) {
+            if (message["void"] != null && Object.hasOwnProperty.call(message, "void")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.VoidType.verify(message["void"]);
+                    var error = $root.hermes.VoidType.verify(message["void"], long + 1);
                     if (error)
                         return "void." + error;
                 }
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 if (!$util.isString(message.metadata))
                     return "metadata: string expected";
             return null;
@@ -7857,64 +8470,70 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.Type} Type
          */
-        Type.fromObject = function fromObject(object) {
+        Type.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.Type)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Type: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.Type();
             if (object.ref != null) {
-                if (typeof object.ref !== "object")
+                if (!$util.isObject(object.ref))
                     throw TypeError(".hermes.Type.ref: object expected");
-                message.ref = $root.hermes.ReferenceType.fromObject(object.ref);
+                message.ref = $root.hermes.ReferenceType.fromObject(object.ref, long + 1);
             }
             if (object.bool != null) {
-                if (typeof object.bool !== "object")
+                if (!$util.isObject(object.bool))
                     throw TypeError(".hermes.Type.bool: object expected");
-                message.bool = $root.hermes.BooleanType.fromObject(object.bool);
+                message.bool = $root.hermes.BooleanType.fromObject(object.bool, long + 1);
             }
             if (object.int != null) {
-                if (typeof object.int !== "object")
+                if (!$util.isObject(object.int))
                     throw TypeError(".hermes.Type.int: object expected");
-                message.int = $root.hermes.IntType.fromObject(object.int);
+                message.int = $root.hermes.IntType.fromObject(object.int, long + 1);
             }
             if (object.float != null) {
-                if (typeof object.float !== "object")
+                if (!$util.isObject(object.float))
                     throw TypeError(".hermes.Type.float: object expected");
-                message.float = $root.hermes.FloatType.fromObject(object.float);
+                message.float = $root.hermes.FloatType.fromObject(object.float, long + 1);
             }
             if (object.string != null) {
-                if (typeof object.string !== "object")
+                if (!$util.isObject(object.string))
                     throw TypeError(".hermes.Type.string: object expected");
-                message.string = $root.hermes.StringType.fromObject(object.string);
+                message.string = $root.hermes.StringType.fromObject(object.string, long + 1);
             }
             if (object["enum"] != null) {
-                if (typeof object["enum"] !== "object")
+                if (!$util.isObject(object["enum"]))
                     throw TypeError(".hermes.Type.enum: object expected");
-                message["enum"] = $root.hermes.EnumType.fromObject(object["enum"]);
+                message["enum"] = $root.hermes.EnumType.fromObject(object["enum"], long + 1);
             }
             if (object.bitmask != null) {
-                if (typeof object.bitmask !== "object")
+                if (!$util.isObject(object.bitmask))
                     throw TypeError(".hermes.Type.bitmask: object expected");
-                message.bitmask = $root.hermes.EnumType.fromObject(object.bitmask);
+                message.bitmask = $root.hermes.EnumType.fromObject(object.bitmask, long + 1);
             }
             if (object.object != null) {
-                if (typeof object.object !== "object")
+                if (!$util.isObject(object.object))
                     throw TypeError(".hermes.Type.object: object expected");
-                message.object = $root.hermes.ObjectType.fromObject(object.object);
+                message.object = $root.hermes.ObjectType.fromObject(object.object, long + 1);
             }
             if (object.array != null) {
-                if (typeof object.array !== "object")
+                if (!$util.isObject(object.array))
                     throw TypeError(".hermes.Type.array: object expected");
-                message.array = $root.hermes.ArrayType.fromObject(object.array);
+                message.array = $root.hermes.ArrayType.fromObject(object.array, long + 1);
             }
             if (object.bytes != null) {
-                if (typeof object.bytes !== "object")
+                if (!$util.isObject(object.bytes))
                     throw TypeError(".hermes.Type.bytes: object expected");
-                message.bytes = $root.hermes.BytesType.fromObject(object.bytes);
+                message.bytes = $root.hermes.BytesType.fromObject(object.bytes, long + 1);
             }
             if (object["void"] != null) {
-                if (typeof object["void"] !== "object")
+                if (!$util.isObject(object["void"]))
                     throw TypeError(".hermes.Type.void: object expected");
-                message["void"] = $root.hermes.VoidType.fromObject(object["void"]);
+                message["void"] = $root.hermes.VoidType.fromObject(object["void"], long + 1);
             }
             if (object.metadata != null)
                 message.metadata = String(object.metadata);
@@ -7930,68 +8549,72 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        Type.toObject = function toObject(message, options) {
+        Type.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults)
                 object.metadata = "";
-            if (message.ref != null && message.hasOwnProperty("ref")) {
-                object.ref = $root.hermes.ReferenceType.toObject(message.ref, options);
+            if (message.ref != null && Object.hasOwnProperty.call(message, "ref")) {
+                object.ref = $root.hermes.ReferenceType.toObject(message.ref, options, q + 1);
                 if (options.oneofs)
                     object.value = "ref";
             }
-            if (message.bool != null && message.hasOwnProperty("bool")) {
-                object.bool = $root.hermes.BooleanType.toObject(message.bool, options);
+            if (message.bool != null && Object.hasOwnProperty.call(message, "bool")) {
+                object.bool = $root.hermes.BooleanType.toObject(message.bool, options, q + 1);
                 if (options.oneofs)
                     object.value = "bool";
             }
-            if (message.int != null && message.hasOwnProperty("int")) {
-                object.int = $root.hermes.IntType.toObject(message.int, options);
+            if (message.int != null && Object.hasOwnProperty.call(message, "int")) {
+                object.int = $root.hermes.IntType.toObject(message.int, options, q + 1);
                 if (options.oneofs)
                     object.value = "int";
             }
-            if (message.float != null && message.hasOwnProperty("float")) {
-                object.float = $root.hermes.FloatType.toObject(message.float, options);
+            if (message.float != null && Object.hasOwnProperty.call(message, "float")) {
+                object.float = $root.hermes.FloatType.toObject(message.float, options, q + 1);
                 if (options.oneofs)
                     object.value = "float";
             }
-            if (message.string != null && message.hasOwnProperty("string")) {
-                object.string = $root.hermes.StringType.toObject(message.string, options);
+            if (message.string != null && Object.hasOwnProperty.call(message, "string")) {
+                object.string = $root.hermes.StringType.toObject(message.string, options, q + 1);
                 if (options.oneofs)
                     object.value = "string";
             }
-            if (message["enum"] != null && message.hasOwnProperty("enum")) {
-                object["enum"] = $root.hermes.EnumType.toObject(message["enum"], options);
+            if (message["enum"] != null && Object.hasOwnProperty.call(message, "enum")) {
+                object["enum"] = $root.hermes.EnumType.toObject(message["enum"], options, q + 1);
                 if (options.oneofs)
                     object.value = "enum";
             }
-            if (message.bitmask != null && message.hasOwnProperty("bitmask")) {
-                object.bitmask = $root.hermes.EnumType.toObject(message.bitmask, options);
+            if (message.bitmask != null && Object.hasOwnProperty.call(message, "bitmask")) {
+                object.bitmask = $root.hermes.EnumType.toObject(message.bitmask, options, q + 1);
                 if (options.oneofs)
                     object.value = "bitmask";
             }
-            if (message.object != null && message.hasOwnProperty("object")) {
-                object.object = $root.hermes.ObjectType.toObject(message.object, options);
+            if (message.object != null && Object.hasOwnProperty.call(message, "object")) {
+                object.object = $root.hermes.ObjectType.toObject(message.object, options, q + 1);
                 if (options.oneofs)
                     object.value = "object";
             }
-            if (message.array != null && message.hasOwnProperty("array")) {
-                object.array = $root.hermes.ArrayType.toObject(message.array, options);
+            if (message.array != null && Object.hasOwnProperty.call(message, "array")) {
+                object.array = $root.hermes.ArrayType.toObject(message.array, options, q + 1);
                 if (options.oneofs)
                     object.value = "array";
             }
-            if (message.bytes != null && message.hasOwnProperty("bytes")) {
-                object.bytes = $root.hermes.BytesType.toObject(message.bytes, options);
+            if (message.bytes != null && Object.hasOwnProperty.call(message, "bytes")) {
+                object.bytes = $root.hermes.BytesType.toObject(message.bytes, options, q + 1);
                 if (options.oneofs)
                     object.value = "bytes";
             }
-            if (message["void"] != null && message.hasOwnProperty("void")) {
-                object["void"] = $root.hermes.VoidType.toObject(message["void"], options);
+            if (message["void"] != null && Object.hasOwnProperty.call(message, "void")) {
+                object["void"] = $root.hermes.VoidType.toObject(message["void"], options, q + 1);
                 if (options.oneofs)
                     object.value = "void";
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 object.metadata = message.metadata;
             return object;
         };
@@ -8046,7 +8669,7 @@ $root.hermes = (function() {
             this.o = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -8079,13 +8702,17 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ObjectValue.encode = function encode(message, writer) {
+        ObjectValue.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.o != null && Object.hasOwnProperty.call(message, "o"))
                 for (var keys = Object.keys(message.o), i = 0; i < keys.length; ++i) {
                     writer.uint32(/* id 1, wireType 2 =*/10).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.Value.encode(message.o[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                    $root.hermes.Value.encode(message.o[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
                 }
             return writer;
         };
@@ -8114,12 +8741,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ObjectValue.decode = function decode(reader, length) {
+        ObjectValue.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ObjectValue(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         if (message.o === $util.emptyObject)
@@ -8134,18 +8767,20 @@ $root.hermes = (function() {
                                 key = reader.string();
                                 break;
                             case 2:
-                                value = $root.hermes.Value.decode(reader, reader.uint32());
+                                value = $root.hermes.Value.decode(reader, reader.uint32(), undefined, long + 1);
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.o, key);
                         message.o[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -8176,15 +8811,19 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        ObjectValue.verify = function verify(message) {
+        ObjectValue.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.o != null && message.hasOwnProperty("o")) {
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.o != null && Object.hasOwnProperty.call(message, "o")) {
                 if (!$util.isObject(message.o))
                     return "o: object expected";
                 var key = Object.keys(message.o);
                 for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.Value.verify(message.o[key[i]]);
+                    var error = $root.hermes.Value.verify(message.o[key[i]], long + 1);
                     if (error)
                         return "o." + error;
                 }
@@ -8200,18 +8839,26 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.ObjectValue} ObjectValue
          */
-        ObjectValue.fromObject = function fromObject(object) {
+        ObjectValue.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.ObjectValue)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.ObjectValue: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.ObjectValue();
             if (object.o) {
-                if (typeof object.o !== "object")
+                if (!$util.isObject(object.o))
                     throw TypeError(".hermes.ObjectValue.o: object expected");
                 message.o = {};
                 for (var keys = Object.keys(object.o), i = 0; i < keys.length; ++i) {
-                    if (typeof object.o[keys[i]] !== "object")
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.o, keys[i]);
+                    if (!$util.isObject(object.o[keys[i]]))
                         throw TypeError(".hermes.ObjectValue.o: object expected");
-                    message.o[keys[i]] = $root.hermes.Value.fromObject(object.o[keys[i]]);
+                    message.o[keys[i]] = $root.hermes.Value.fromObject(object.o[keys[i]], long + 1);
                 }
             }
             return message;
@@ -8226,17 +8873,24 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        ObjectValue.toObject = function toObject(message, options) {
+        ObjectValue.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.objects || options.defaults)
                 object.o = {};
             var keys2;
             if (message.o && (keys2 = Object.keys(message.o)).length) {
                 object.o = {};
-                for (var j = 0; j < keys2.length; ++j)
-                    object.o[keys2[j]] = $root.hermes.Value.toObject(message.o[keys2[j]], options);
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.o, keys2[j]);
+                    object.o[keys2[j]] = $root.hermes.Value.toObject(message.o[keys2[j]], options, q + 1);
+                }
             }
             return object;
         };
@@ -8291,7 +8945,7 @@ $root.hermes = (function() {
             this.value = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -8324,12 +8978,16 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ArrayValue.encode = function encode(message, writer) {
+        ArrayValue.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.value != null && message.value.length)
                 for (var i = 0; i < message.value.length; ++i)
-                    $root.hermes.Value.encode(message.value[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    $root.hermes.Value.encode(message.value[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -8357,21 +9015,27 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ArrayValue.decode = function decode(reader, length) {
+        ArrayValue.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ArrayValue();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         if (!(message.value && message.value.length))
                             message.value = [];
-                        message.value.push($root.hermes.Value.decode(reader, reader.uint32()));
+                        message.value.push($root.hermes.Value.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -8402,14 +9066,18 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        ArrayValue.verify = function verify(message) {
+        ArrayValue.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.value != null && message.hasOwnProperty("value")) {
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.value != null && Object.hasOwnProperty.call(message, "value")) {
                 if (!Array.isArray(message.value))
                     return "value: array expected";
                 for (var i = 0; i < message.value.length; ++i) {
-                    var error = $root.hermes.Value.verify(message.value[i]);
+                    var error = $root.hermes.Value.verify(message.value[i], long + 1);
                     if (error)
                         return "value." + error;
                 }
@@ -8425,18 +9093,24 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.ArrayValue} ArrayValue
          */
-        ArrayValue.fromObject = function fromObject(object) {
+        ArrayValue.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.ArrayValue)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.ArrayValue: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.ArrayValue();
             if (object.value) {
                 if (!Array.isArray(object.value))
                     throw TypeError(".hermes.ArrayValue.value: array expected");
                 message.value = [];
                 for (var i = 0; i < object.value.length; ++i) {
-                    if (typeof object.value[i] !== "object")
+                    if (!$util.isObject(object.value[i]))
                         throw TypeError(".hermes.ArrayValue.value: object expected");
-                    message.value[i] = $root.hermes.Value.fromObject(object.value[i]);
+                    message.value[i] = $root.hermes.Value.fromObject(object.value[i], long + 1);
                 }
             }
             return message;
@@ -8451,16 +9125,20 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        ArrayValue.toObject = function toObject(message, options) {
+        ArrayValue.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object.value = [];
             if (message.value && message.value.length) {
                 object.value = [];
                 for (var j = 0; j < message.value.length; ++j)
-                    object.value[j] = $root.hermes.Value.toObject(message.value[j], options);
+                    object.value[j] = $root.hermes.Value.toObject(message.value[j], options, q + 1);
             }
             return object;
         };
@@ -8516,7 +9194,7 @@ $root.hermes = (function() {
         function BytesValue(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -8565,9 +9243,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        BytesValue.encode = function encode(message, writer) {
+        BytesValue.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.kind);
             if (message.bigEndian != null && Object.hasOwnProperty.call(message, "bigEndian"))
@@ -8601,12 +9283,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        BytesValue.decode = function decode(reader, length) {
+        BytesValue.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.BytesValue();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.kind = reader.int32();
@@ -8621,7 +9309,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -8652,10 +9340,14 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        BytesValue.verify = function verify(message) {
+        BytesValue.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.kind != null && message.hasOwnProperty("kind"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 switch (message.kind) {
                 default:
                     return "kind: enum value expected";
@@ -8671,10 +9363,10 @@ $root.hermes = (function() {
                 case 9:
                     break;
                 }
-            if (message.bigEndian != null && message.hasOwnProperty("bigEndian"))
+            if (message.bigEndian != null && Object.hasOwnProperty.call(message, "bigEndian"))
                 if (typeof message.bigEndian !== "boolean")
                     return "bigEndian: boolean expected";
-            if (message.value != null && message.hasOwnProperty("value"))
+            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
                 if (!(message.value && typeof message.value.length === "number" || $util.isString(message.value)))
                     return "value: buffer expected";
             return null;
@@ -8688,9 +9380,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.BytesValue} BytesValue
          */
-        BytesValue.fromObject = function fromObject(object) {
+        BytesValue.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.BytesValue)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.BytesValue: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.BytesValue();
             switch (object.kind) {
             default:
@@ -8759,9 +9457,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        BytesValue.toObject = function toObject(message, options) {
+        BytesValue.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.kind = options.enums === String ? "NUMBER_U8" : 0;
@@ -8774,11 +9476,11 @@ $root.hermes = (function() {
                         object.value = $util.newBuffer(object.value);
                 }
             }
-            if (message.kind != null && message.hasOwnProperty("kind"))
+            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 object.kind = options.enums === String ? $root.hermes.NumberKind[message.kind] === undefined ? message.kind : $root.hermes.NumberKind[message.kind] : message.kind;
-            if (message.bigEndian != null && message.hasOwnProperty("bigEndian"))
+            if (message.bigEndian != null && Object.hasOwnProperty.call(message, "bigEndian"))
                 object.bigEndian = message.bigEndian;
-            if (message.value != null && message.hasOwnProperty("value"))
+            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
                 object.value = options.bytes === String ? $util.base64.encode(message.value, 0, message.value.length) : options.bytes === Array ? Array.prototype.slice.call(message.value) : message.value;
             return object;
         };
@@ -8833,7 +9535,7 @@ $root.hermes = (function() {
         function EnumValue(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -8874,9 +9576,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        EnumValue.encode = function encode(message, writer) {
+        EnumValue.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.raw != null && Object.hasOwnProperty.call(message, "raw"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int64(message.raw);
             if (message.formatted != null && Object.hasOwnProperty.call(message, "formatted"))
@@ -8908,12 +9614,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        EnumValue.decode = function decode(reader, length) {
+        EnumValue.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.EnumValue();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.raw = reader.int64();
@@ -8924,7 +9636,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -8955,13 +9667,17 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        EnumValue.verify = function verify(message) {
+        EnumValue.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.raw != null && message.hasOwnProperty("raw"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.raw != null && Object.hasOwnProperty.call(message, "raw"))
                 if (!$util.isInteger(message.raw) && !(message.raw && $util.isInteger(message.raw.low) && $util.isInteger(message.raw.high)))
                     return "raw: integer|Long expected";
-            if (message.formatted != null && message.hasOwnProperty("formatted"))
+            if (message.formatted != null && Object.hasOwnProperty.call(message, "formatted"))
                 if (!$util.isString(message.formatted))
                     return "formatted: string expected";
             return null;
@@ -8975,13 +9691,19 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.EnumValue} EnumValue
          */
-        EnumValue.fromObject = function fromObject(object) {
+        EnumValue.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.EnumValue)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.EnumValue: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.EnumValue();
             if (object.raw != null)
                 if ($util.Long)
-                    (message.raw = $util.Long.fromValue(object.raw)).unsigned = false;
+                    message.raw = $util.Long.fromValue(object.raw, false);
                 else if (typeof object.raw === "string")
                     message.raw = parseInt(object.raw, 10);
                 else if (typeof object.raw === "number")
@@ -9002,24 +9724,30 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        EnumValue.toObject = function toObject(message, options) {
+        EnumValue.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, false);
-                    object.raw = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                    object.raw = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
                 } else
-                    object.raw = options.longs === String ? "0" : 0;
+                    object.raw = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
                 object.formatted = "";
             }
-            if (message.raw != null && message.hasOwnProperty("raw"))
-                if (typeof message.raw === "number")
+            if (message.raw != null && Object.hasOwnProperty.call(message, "raw"))
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.raw = typeof message.raw === "number" ? BigInt(message.raw) : $util.Long.fromBits(message.raw.low >>> 0, message.raw.high >>> 0, false).toBigInt();
+                else if (typeof message.raw === "number")
                     object.raw = options.longs === String ? String(message.raw) : message.raw;
                 else
                     object.raw = options.longs === String ? $util.Long.prototype.toString.call(message.raw) : options.longs === Number ? new $util.LongBits(message.raw.low >>> 0, message.raw.high >>> 0).toNumber() : message.raw;
-            if (message.formatted != null && message.hasOwnProperty("formatted"))
+            if (message.formatted != null && Object.hasOwnProperty.call(message, "formatted"))
                 object.formatted = message.formatted;
             return object;
         };
@@ -9081,7 +9809,7 @@ $root.hermes = (function() {
         function Value(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -9192,9 +9920,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        Value.encode = function encode(message, writer) {
+        Value.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.i != null && Object.hasOwnProperty.call(message, "i"))
                 writer.uint32(/* id 1, wireType 0 =*/8).sint64(message.i);
             if (message.u != null && Object.hasOwnProperty.call(message, "u"))
@@ -9206,13 +9938,13 @@ $root.hermes = (function() {
             if (message.s != null && Object.hasOwnProperty.call(message, "s"))
                 writer.uint32(/* id 5, wireType 2 =*/42).string(message.s);
             if (message.e != null && Object.hasOwnProperty.call(message, "e"))
-                $root.hermes.EnumValue.encode(message.e, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                $root.hermes.EnumValue.encode(message.e, writer.uint32(/* id 6, wireType 2 =*/50).fork(), q + 1).ldelim();
             if (message.o != null && Object.hasOwnProperty.call(message, "o"))
-                $root.hermes.ObjectValue.encode(message.o, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
+                $root.hermes.ObjectValue.encode(message.o, writer.uint32(/* id 7, wireType 2 =*/58).fork(), q + 1).ldelim();
             if (message.a != null && Object.hasOwnProperty.call(message, "a"))
-                $root.hermes.ArrayValue.encode(message.a, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
+                $root.hermes.ArrayValue.encode(message.a, writer.uint32(/* id 8, wireType 2 =*/66).fork(), q + 1).ldelim();
             if (message.r != null && Object.hasOwnProperty.call(message, "r"))
-                $root.hermes.BytesValue.encode(message.r, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
+                $root.hermes.BytesValue.encode(message.r, writer.uint32(/* id 9, wireType 2 =*/74).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -9240,12 +9972,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        Value.decode = function decode(reader, length) {
+        Value.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Value();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.i = reader.sint64();
@@ -9268,23 +10006,23 @@ $root.hermes = (function() {
                         break;
                     }
                 case 6: {
-                        message.e = $root.hermes.EnumValue.decode(reader, reader.uint32());
+                        message.e = $root.hermes.EnumValue.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 7: {
-                        message.o = $root.hermes.ObjectValue.decode(reader, reader.uint32());
+                        message.o = $root.hermes.ObjectValue.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 8: {
-                        message.a = $root.hermes.ArrayValue.decode(reader, reader.uint32());
+                        message.a = $root.hermes.ArrayValue.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 9: {
-                        message.r = $root.hermes.BytesValue.decode(reader, reader.uint32());
+                        message.r = $root.hermes.BytesValue.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -9315,79 +10053,83 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        Value.verify = function verify(message) {
+        Value.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
             var properties = {};
-            if (message.i != null && message.hasOwnProperty("i")) {
+            if (message.i != null && Object.hasOwnProperty.call(message, "i")) {
                 properties.value = 1;
                 if (!$util.isInteger(message.i) && !(message.i && $util.isInteger(message.i.low) && $util.isInteger(message.i.high)))
                     return "i: integer|Long expected";
             }
-            if (message.u != null && message.hasOwnProperty("u")) {
+            if (message.u != null && Object.hasOwnProperty.call(message, "u")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 if (!$util.isInteger(message.u) && !(message.u && $util.isInteger(message.u.low) && $util.isInteger(message.u.high)))
                     return "u: integer|Long expected";
             }
-            if (message.f != null && message.hasOwnProperty("f")) {
+            if (message.f != null && Object.hasOwnProperty.call(message, "f")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 if (typeof message.f !== "number")
                     return "f: number expected";
             }
-            if (message.b != null && message.hasOwnProperty("b")) {
+            if (message.b != null && Object.hasOwnProperty.call(message, "b")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 if (typeof message.b !== "boolean")
                     return "b: boolean expected";
             }
-            if (message.s != null && message.hasOwnProperty("s")) {
+            if (message.s != null && Object.hasOwnProperty.call(message, "s")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 if (!$util.isString(message.s))
                     return "s: string expected";
             }
-            if (message.e != null && message.hasOwnProperty("e")) {
+            if (message.e != null && Object.hasOwnProperty.call(message, "e")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.EnumValue.verify(message.e);
+                    var error = $root.hermes.EnumValue.verify(message.e, long + 1);
                     if (error)
                         return "e." + error;
                 }
             }
-            if (message.o != null && message.hasOwnProperty("o")) {
+            if (message.o != null && Object.hasOwnProperty.call(message, "o")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.ObjectValue.verify(message.o);
+                    var error = $root.hermes.ObjectValue.verify(message.o, long + 1);
                     if (error)
                         return "o." + error;
                 }
             }
-            if (message.a != null && message.hasOwnProperty("a")) {
+            if (message.a != null && Object.hasOwnProperty.call(message, "a")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.ArrayValue.verify(message.a);
+                    var error = $root.hermes.ArrayValue.verify(message.a, long + 1);
                     if (error)
                         return "a." + error;
                 }
             }
-            if (message.r != null && message.hasOwnProperty("r")) {
+            if (message.r != null && Object.hasOwnProperty.call(message, "r")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.BytesValue.verify(message.r);
+                    var error = $root.hermes.BytesValue.verify(message.r, long + 1);
                     if (error)
                         return "r." + error;
                 }
@@ -9403,13 +10145,19 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.Value} Value
          */
-        Value.fromObject = function fromObject(object) {
+        Value.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.Value)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Value: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.Value();
             if (object.i != null)
                 if ($util.Long)
-                    (message.i = $util.Long.fromValue(object.i)).unsigned = false;
+                    message.i = $util.Long.fromValue(object.i, false);
                 else if (typeof object.i === "string")
                     message.i = parseInt(object.i, 10);
                 else if (typeof object.i === "number")
@@ -9418,7 +10166,7 @@ $root.hermes = (function() {
                     message.i = new $util.LongBits(object.i.low >>> 0, object.i.high >>> 0).toNumber();
             if (object.u != null)
                 if ($util.Long)
-                    (message.u = $util.Long.fromValue(object.u)).unsigned = true;
+                    message.u = $util.Long.fromValue(object.u, true);
                 else if (typeof object.u === "string")
                     message.u = parseInt(object.u, 10);
                 else if (typeof object.u === "number")
@@ -9432,24 +10180,24 @@ $root.hermes = (function() {
             if (object.s != null)
                 message.s = String(object.s);
             if (object.e != null) {
-                if (typeof object.e !== "object")
+                if (!$util.isObject(object.e))
                     throw TypeError(".hermes.Value.e: object expected");
-                message.e = $root.hermes.EnumValue.fromObject(object.e);
+                message.e = $root.hermes.EnumValue.fromObject(object.e, long + 1);
             }
             if (object.o != null) {
-                if (typeof object.o !== "object")
+                if (!$util.isObject(object.o))
                     throw TypeError(".hermes.Value.o: object expected");
-                message.o = $root.hermes.ObjectValue.fromObject(object.o);
+                message.o = $root.hermes.ObjectValue.fromObject(object.o, long + 1);
             }
             if (object.a != null) {
-                if (typeof object.a !== "object")
+                if (!$util.isObject(object.a))
                     throw TypeError(".hermes.Value.a: object expected");
-                message.a = $root.hermes.ArrayValue.fromObject(object.a);
+                message.a = $root.hermes.ArrayValue.fromObject(object.a, long + 1);
             }
             if (object.r != null) {
-                if (typeof object.r !== "object")
+                if (!$util.isObject(object.r))
                     throw TypeError(".hermes.Value.r: object expected");
-                message.r = $root.hermes.BytesValue.fromObject(object.r);
+                message.r = $root.hermes.BytesValue.fromObject(object.r, long + 1);
             }
             return message;
         };
@@ -9463,58 +10211,66 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        Value.toObject = function toObject(message, options) {
+        Value.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
-            if (message.i != null && message.hasOwnProperty("i")) {
-                if (typeof message.i === "number")
+            if (message.i != null && Object.hasOwnProperty.call(message, "i")) {
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.i = typeof message.i === "number" ? BigInt(message.i) : $util.Long.fromBits(message.i.low >>> 0, message.i.high >>> 0, false).toBigInt();
+                else if (typeof message.i === "number")
                     object.i = options.longs === String ? String(message.i) : message.i;
                 else
                     object.i = options.longs === String ? $util.Long.prototype.toString.call(message.i) : options.longs === Number ? new $util.LongBits(message.i.low >>> 0, message.i.high >>> 0).toNumber() : message.i;
                 if (options.oneofs)
                     object.value = "i";
             }
-            if (message.u != null && message.hasOwnProperty("u")) {
-                if (typeof message.u === "number")
+            if (message.u != null && Object.hasOwnProperty.call(message, "u")) {
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.u = typeof message.u === "number" ? BigInt(message.u) : $util.Long.fromBits(message.u.low >>> 0, message.u.high >>> 0, true).toBigInt();
+                else if (typeof message.u === "number")
                     object.u = options.longs === String ? String(message.u) : message.u;
                 else
                     object.u = options.longs === String ? $util.Long.prototype.toString.call(message.u) : options.longs === Number ? new $util.LongBits(message.u.low >>> 0, message.u.high >>> 0).toNumber(true) : message.u;
                 if (options.oneofs)
                     object.value = "u";
             }
-            if (message.f != null && message.hasOwnProperty("f")) {
+            if (message.f != null && Object.hasOwnProperty.call(message, "f")) {
                 object.f = options.json && !isFinite(message.f) ? String(message.f) : message.f;
                 if (options.oneofs)
                     object.value = "f";
             }
-            if (message.b != null && message.hasOwnProperty("b")) {
+            if (message.b != null && Object.hasOwnProperty.call(message, "b")) {
                 object.b = message.b;
                 if (options.oneofs)
                     object.value = "b";
             }
-            if (message.s != null && message.hasOwnProperty("s")) {
+            if (message.s != null && Object.hasOwnProperty.call(message, "s")) {
                 object.s = message.s;
                 if (options.oneofs)
                     object.value = "s";
             }
-            if (message.e != null && message.hasOwnProperty("e")) {
-                object.e = $root.hermes.EnumValue.toObject(message.e, options);
+            if (message.e != null && Object.hasOwnProperty.call(message, "e")) {
+                object.e = $root.hermes.EnumValue.toObject(message.e, options, q + 1);
                 if (options.oneofs)
                     object.value = "e";
             }
-            if (message.o != null && message.hasOwnProperty("o")) {
-                object.o = $root.hermes.ObjectValue.toObject(message.o, options);
+            if (message.o != null && Object.hasOwnProperty.call(message, "o")) {
+                object.o = $root.hermes.ObjectValue.toObject(message.o, options, q + 1);
                 if (options.oneofs)
                     object.value = "o";
             }
-            if (message.a != null && message.hasOwnProperty("a")) {
-                object.a = $root.hermes.ArrayValue.toObject(message.a, options);
+            if (message.a != null && Object.hasOwnProperty.call(message, "a")) {
+                object.a = $root.hermes.ArrayValue.toObject(message.a, options, q + 1);
                 if (options.oneofs)
                     object.value = "a";
             }
-            if (message.r != null && message.hasOwnProperty("r")) {
-                object.r = $root.hermes.BytesValue.toObject(message.r, options);
+            if (message.r != null && Object.hasOwnProperty.call(message, "r")) {
+                object.r = $root.hermes.BytesValue.toObject(message.r, options, q + 1);
                 if (options.oneofs)
                     object.value = "r";
             }
@@ -9575,7 +10331,7 @@ $root.hermes = (function() {
         function ParameterDef(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -9641,9 +10397,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ParameterDef.encode = function encode(message, writer) {
+        ParameterDef.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
             if (message.component != null && Object.hasOwnProperty.call(message, "component"))
@@ -9651,7 +10411,7 @@ $root.hermes = (function() {
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 3, wireType 2 =*/26).string(message.name);
             if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                $root.hermes.Type.encode(message.type, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                $root.hermes.Type.encode(message.type, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
             if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 writer.uint32(/* id 5, wireType 2 =*/42).string(message.metadata);
             return writer;
@@ -9681,12 +10441,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ParameterDef.decode = function decode(reader, length) {
+        ParameterDef.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ParameterDef();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.id = reader.int32();
@@ -9701,7 +10467,7 @@ $root.hermes = (function() {
                         break;
                     }
                 case 4: {
-                        message.type = $root.hermes.Type.decode(reader, reader.uint32());
+                        message.type = $root.hermes.Type.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 5: {
@@ -9709,7 +10475,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -9740,24 +10506,28 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        ParameterDef.verify = function verify(message) {
+        ParameterDef.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 if (!$util.isInteger(message.id))
                     return "id: integer expected";
-            if (message.component != null && message.hasOwnProperty("component"))
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 if (!$util.isString(message.component))
                     return "component: string expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.type != null && message.hasOwnProperty("type")) {
-                var error = $root.hermes.Type.verify(message.type);
+            if (message.type != null && Object.hasOwnProperty.call(message, "type")) {
+                var error = $root.hermes.Type.verify(message.type, long + 1);
                 if (error)
                     return "type." + error;
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 if (!$util.isString(message.metadata))
                     return "metadata: string expected";
             return null;
@@ -9771,9 +10541,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.ParameterDef} ParameterDef
          */
-        ParameterDef.fromObject = function fromObject(object) {
+        ParameterDef.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.ParameterDef)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.ParameterDef: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.ParameterDef();
             if (object.id != null)
                 message.id = object.id | 0;
@@ -9782,9 +10558,9 @@ $root.hermes = (function() {
             if (object.name != null)
                 message.name = String(object.name);
             if (object.type != null) {
-                if (typeof object.type !== "object")
+                if (!$util.isObject(object.type))
                     throw TypeError(".hermes.ParameterDef.type: object expected");
-                message.type = $root.hermes.Type.fromObject(object.type);
+                message.type = $root.hermes.Type.fromObject(object.type, long + 1);
             }
             if (object.metadata != null)
                 message.metadata = String(object.metadata);
@@ -9800,9 +10576,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        ParameterDef.toObject = function toObject(message, options) {
+        ParameterDef.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.id = 0;
@@ -9811,15 +10591,15 @@ $root.hermes = (function() {
                 object.type = null;
                 object.metadata = "";
             }
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 object.id = message.id;
-            if (message.component != null && message.hasOwnProperty("component"))
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 object.component = message.component;
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.type != null && message.hasOwnProperty("type"))
-                object.type = $root.hermes.Type.toObject(message.type, options);
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                object.type = $root.hermes.Type.toObject(message.type, options, q + 1);
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 object.metadata = message.metadata;
             return object;
         };
@@ -9882,7 +10662,7 @@ $root.hermes = (function() {
             this["arguments"] = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -9951,9 +10731,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        CommandDef.encode = function encode(message, writer) {
+        CommandDef.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.opcode != null && Object.hasOwnProperty.call(message, "opcode"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.opcode);
             if (message.mnemonic != null && Object.hasOwnProperty.call(message, "mnemonic"))
@@ -9962,7 +10746,7 @@ $root.hermes = (function() {
                 writer.uint32(/* id 3, wireType 2 =*/26).string(message.component);
             if (message["arguments"] != null && message["arguments"].length)
                 for (var i = 0; i < message["arguments"].length; ++i)
-                    $root.hermes.Field.encode(message["arguments"][i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                    $root.hermes.Field.encode(message["arguments"][i], writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
             if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 writer.uint32(/* id 5, wireType 2 =*/42).string(message.metadata);
             return writer;
@@ -9992,12 +10776,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        CommandDef.decode = function decode(reader, length) {
+        CommandDef.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.CommandDef();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.opcode = reader.int32();
@@ -10014,7 +10804,7 @@ $root.hermes = (function() {
                 case 4: {
                         if (!(message["arguments"] && message["arguments"].length))
                             message["arguments"] = [];
-                        message["arguments"].push($root.hermes.Field.decode(reader, reader.uint32()));
+                        message["arguments"].push($root.hermes.Field.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 case 5: {
@@ -10022,7 +10812,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -10053,28 +10843,32 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        CommandDef.verify = function verify(message) {
+        CommandDef.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.opcode != null && message.hasOwnProperty("opcode"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.opcode != null && Object.hasOwnProperty.call(message, "opcode"))
                 if (!$util.isInteger(message.opcode))
                     return "opcode: integer expected";
-            if (message.mnemonic != null && message.hasOwnProperty("mnemonic"))
+            if (message.mnemonic != null && Object.hasOwnProperty.call(message, "mnemonic"))
                 if (!$util.isString(message.mnemonic))
                     return "mnemonic: string expected";
-            if (message.component != null && message.hasOwnProperty("component"))
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 if (!$util.isString(message.component))
                     return "component: string expected";
-            if (message["arguments"] != null && message.hasOwnProperty("arguments")) {
+            if (message["arguments"] != null && Object.hasOwnProperty.call(message, "arguments")) {
                 if (!Array.isArray(message["arguments"]))
                     return "arguments: array expected";
                 for (var i = 0; i < message["arguments"].length; ++i) {
-                    var error = $root.hermes.Field.verify(message["arguments"][i]);
+                    var error = $root.hermes.Field.verify(message["arguments"][i], long + 1);
                     if (error)
                         return "arguments." + error;
                 }
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 if (!$util.isString(message.metadata))
                     return "metadata: string expected";
             return null;
@@ -10088,9 +10882,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.CommandDef} CommandDef
          */
-        CommandDef.fromObject = function fromObject(object) {
+        CommandDef.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.CommandDef)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.CommandDef: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.CommandDef();
             if (object.opcode != null)
                 message.opcode = object.opcode | 0;
@@ -10103,9 +10903,9 @@ $root.hermes = (function() {
                     throw TypeError(".hermes.CommandDef.arguments: array expected");
                 message["arguments"] = [];
                 for (var i = 0; i < object["arguments"].length; ++i) {
-                    if (typeof object["arguments"][i] !== "object")
+                    if (!$util.isObject(object["arguments"][i]))
                         throw TypeError(".hermes.CommandDef.arguments: object expected");
-                    message["arguments"][i] = $root.hermes.Field.fromObject(object["arguments"][i]);
+                    message["arguments"][i] = $root.hermes.Field.fromObject(object["arguments"][i], long + 1);
                 }
             }
             if (object.metadata != null)
@@ -10122,9 +10922,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        CommandDef.toObject = function toObject(message, options) {
+        CommandDef.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object["arguments"] = [];
@@ -10134,18 +10938,18 @@ $root.hermes = (function() {
                 object.component = "";
                 object.metadata = "";
             }
-            if (message.opcode != null && message.hasOwnProperty("opcode"))
+            if (message.opcode != null && Object.hasOwnProperty.call(message, "opcode"))
                 object.opcode = message.opcode;
-            if (message.mnemonic != null && message.hasOwnProperty("mnemonic"))
+            if (message.mnemonic != null && Object.hasOwnProperty.call(message, "mnemonic"))
                 object.mnemonic = message.mnemonic;
-            if (message.component != null && message.hasOwnProperty("component"))
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 object.component = message.component;
             if (message["arguments"] && message["arguments"].length) {
                 object["arguments"] = [];
                 for (var j = 0; j < message["arguments"].length; ++j)
-                    object["arguments"][j] = $root.hermes.Field.toObject(message["arguments"][j], options);
+                    object["arguments"][j] = $root.hermes.Field.toObject(message["arguments"][j], options, q + 1);
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 object.metadata = message.metadata;
             return object;
         };
@@ -10259,7 +11063,7 @@ $root.hermes = (function() {
         function FormatSpecifier(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -10290,7 +11094,12 @@ $root.hermes = (function() {
         // OneOf field names bound to virtual getters and setters
         var $oneOfFields;
 
-        // Virtual OneOf for proto3 optional field
+        /**
+         * FormatSpecifier _precision.
+         * @member {"precision"|undefined} _precision
+         * @memberof hermes.FormatSpecifier
+         * @instance
+         */
         Object.defineProperty(FormatSpecifier.prototype, "_precision", {
             get: $util.oneOfGetter($oneOfFields = ["precision"]),
             set: $util.oneOfSetter($oneOfFields)
@@ -10317,9 +11126,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FormatSpecifier.encode = function encode(message, writer) {
+        FormatSpecifier.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.type != null && Object.hasOwnProperty.call(message, "type"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.type);
             if (message.precision != null && Object.hasOwnProperty.call(message, "precision"))
@@ -10353,12 +11166,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FormatSpecifier.decode = function decode(reader, length) {
+        FormatSpecifier.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FormatSpecifier();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.type = reader.int32();
@@ -10373,7 +11192,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -10404,11 +11223,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FormatSpecifier.verify = function verify(message) {
+        FormatSpecifier.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
             var properties = {};
-            if (message.type != null && message.hasOwnProperty("type"))
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
                 switch (message.type) {
                 default:
                     return "type: enum value expected";
@@ -10426,12 +11249,12 @@ $root.hermes = (function() {
                 case 11:
                     break;
                 }
-            if (message.precision != null && message.hasOwnProperty("precision")) {
+            if (message.precision != null && Object.hasOwnProperty.call(message, "precision")) {
                 properties._precision = 1;
                 if (!$util.isInteger(message.precision))
                     return "precision: integer expected";
             }
-            if (message.argumentIndex != null && message.hasOwnProperty("argumentIndex"))
+            if (message.argumentIndex != null && Object.hasOwnProperty.call(message, "argumentIndex"))
                 if (!$util.isInteger(message.argumentIndex))
                     return "argumentIndex: integer expected";
             return null;
@@ -10445,9 +11268,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FormatSpecifier} FormatSpecifier
          */
-        FormatSpecifier.fromObject = function fromObject(object) {
+        FormatSpecifier.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FormatSpecifier)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FormatSpecifier: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FormatSpecifier();
             switch (object.type) {
             default:
@@ -10521,22 +11350,26 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FormatSpecifier.toObject = function toObject(message, options) {
+        FormatSpecifier.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.type = options.enums === String ? "FMT_DEFAULT" : 0;
                 object.argumentIndex = 0;
             }
-            if (message.type != null && message.hasOwnProperty("type"))
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
                 object.type = options.enums === String ? $root.hermes.FormatSpecifierType[message.type] === undefined ? message.type : $root.hermes.FormatSpecifierType[message.type] : message.type;
-            if (message.precision != null && message.hasOwnProperty("precision")) {
+            if (message.precision != null && Object.hasOwnProperty.call(message, "precision")) {
                 object.precision = message.precision;
                 if (options.oneofs)
                     object._precision = "precision";
             }
-            if (message.argumentIndex != null && message.hasOwnProperty("argumentIndex"))
+            if (message.argumentIndex != null && Object.hasOwnProperty.call(message, "argumentIndex"))
                 object.argumentIndex = message.argumentIndex;
             return object;
         };
@@ -10591,7 +11424,7 @@ $root.hermes = (function() {
         function FormatFragment(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -10646,13 +11479,17 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FormatFragment.encode = function encode(message, writer) {
+        FormatFragment.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.text != null && Object.hasOwnProperty.call(message, "text"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.text);
             if (message.specifier != null && Object.hasOwnProperty.call(message, "specifier"))
-                $root.hermes.FormatSpecifier.encode(message.specifier, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.hermes.FormatSpecifier.encode(message.specifier, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -10680,23 +11517,29 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FormatFragment.decode = function decode(reader, length) {
+        FormatFragment.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FormatFragment();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.text = reader.string();
                         break;
                     }
                 case 2: {
-                        message.specifier = $root.hermes.FormatSpecifier.decode(reader, reader.uint32());
+                        message.specifier = $root.hermes.FormatSpecifier.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -10727,21 +11570,25 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FormatFragment.verify = function verify(message) {
+        FormatFragment.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
             var properties = {};
-            if (message.text != null && message.hasOwnProperty("text")) {
+            if (message.text != null && Object.hasOwnProperty.call(message, "text")) {
                 properties.fragment = 1;
                 if (!$util.isString(message.text))
                     return "text: string expected";
             }
-            if (message.specifier != null && message.hasOwnProperty("specifier")) {
+            if (message.specifier != null && Object.hasOwnProperty.call(message, "specifier")) {
                 if (properties.fragment === 1)
                     return "fragment: multiple values";
                 properties.fragment = 1;
                 {
-                    var error = $root.hermes.FormatSpecifier.verify(message.specifier);
+                    var error = $root.hermes.FormatSpecifier.verify(message.specifier, long + 1);
                     if (error)
                         return "specifier." + error;
                 }
@@ -10757,16 +11604,22 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FormatFragment} FormatFragment
          */
-        FormatFragment.fromObject = function fromObject(object) {
+        FormatFragment.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FormatFragment)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FormatFragment: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FormatFragment();
             if (object.text != null)
                 message.text = String(object.text);
             if (object.specifier != null) {
-                if (typeof object.specifier !== "object")
+                if (!$util.isObject(object.specifier))
                     throw TypeError(".hermes.FormatFragment.specifier: object expected");
-                message.specifier = $root.hermes.FormatSpecifier.fromObject(object.specifier);
+                message.specifier = $root.hermes.FormatSpecifier.fromObject(object.specifier, long + 1);
             }
             return message;
         };
@@ -10780,17 +11633,21 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FormatFragment.toObject = function toObject(message, options) {
+        FormatFragment.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
-            if (message.text != null && message.hasOwnProperty("text")) {
+            if (message.text != null && Object.hasOwnProperty.call(message, "text")) {
                 object.text = message.text;
                 if (options.oneofs)
                     object.fragment = "text";
             }
-            if (message.specifier != null && message.hasOwnProperty("specifier")) {
-                object.specifier = $root.hermes.FormatSpecifier.toObject(message.specifier, options);
+            if (message.specifier != null && Object.hasOwnProperty.call(message, "specifier")) {
+                object.specifier = $root.hermes.FormatSpecifier.toObject(message.specifier, options, q + 1);
                 if (options.oneofs)
                     object.fragment = "specifier";
             }
@@ -10848,7 +11705,7 @@ $root.hermes = (function() {
             this.fragments = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -10889,12 +11746,16 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FormatString.encode = function encode(message, writer) {
+        FormatString.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.fragments != null && message.fragments.length)
                 for (var i = 0; i < message.fragments.length; ++i)
-                    $root.hermes.FormatFragment.encode(message.fragments[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    $root.hermes.FormatFragment.encode(message.fragments[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.original != null && Object.hasOwnProperty.call(message, "original"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.original);
             return writer;
@@ -10924,17 +11785,23 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FormatString.decode = function decode(reader, length) {
+        FormatString.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FormatString();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         if (!(message.fragments && message.fragments.length))
                             message.fragments = [];
-                        message.fragments.push($root.hermes.FormatFragment.decode(reader, reader.uint32()));
+                        message.fragments.push($root.hermes.FormatFragment.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 case 2: {
@@ -10942,7 +11809,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -10973,19 +11840,23 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FormatString.verify = function verify(message) {
+        FormatString.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.fragments != null && message.hasOwnProperty("fragments")) {
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.fragments != null && Object.hasOwnProperty.call(message, "fragments")) {
                 if (!Array.isArray(message.fragments))
                     return "fragments: array expected";
                 for (var i = 0; i < message.fragments.length; ++i) {
-                    var error = $root.hermes.FormatFragment.verify(message.fragments[i]);
+                    var error = $root.hermes.FormatFragment.verify(message.fragments[i], long + 1);
                     if (error)
                         return "fragments." + error;
                 }
             }
-            if (message.original != null && message.hasOwnProperty("original"))
+            if (message.original != null && Object.hasOwnProperty.call(message, "original"))
                 if (!$util.isString(message.original))
                     return "original: string expected";
             return null;
@@ -10999,18 +11870,24 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FormatString} FormatString
          */
-        FormatString.fromObject = function fromObject(object) {
+        FormatString.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FormatString)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FormatString: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FormatString();
             if (object.fragments) {
                 if (!Array.isArray(object.fragments))
                     throw TypeError(".hermes.FormatString.fragments: array expected");
                 message.fragments = [];
                 for (var i = 0; i < object.fragments.length; ++i) {
-                    if (typeof object.fragments[i] !== "object")
+                    if (!$util.isObject(object.fragments[i]))
                         throw TypeError(".hermes.FormatString.fragments: object expected");
-                    message.fragments[i] = $root.hermes.FormatFragment.fromObject(object.fragments[i]);
+                    message.fragments[i] = $root.hermes.FormatFragment.fromObject(object.fragments[i], long + 1);
                 }
             }
             if (object.original != null)
@@ -11027,9 +11904,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FormatString.toObject = function toObject(message, options) {
+        FormatString.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object.fragments = [];
@@ -11038,9 +11919,9 @@ $root.hermes = (function() {
             if (message.fragments && message.fragments.length) {
                 object.fragments = [];
                 for (var j = 0; j < message.fragments.length; ++j)
-                    object.fragments[j] = $root.hermes.FormatFragment.toObject(message.fragments[j], options);
+                    object.fragments[j] = $root.hermes.FormatFragment.toObject(message.fragments[j], options, q + 1);
             }
-            if (message.original != null && message.hasOwnProperty("original"))
+            if (message.original != null && Object.hasOwnProperty.call(message, "original"))
                 object.original = message.original;
             return object;
         };
@@ -11106,7 +11987,7 @@ $root.hermes = (function() {
             this["arguments"] = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -11199,9 +12080,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        EventDef.encode = function encode(message, writer) {
+        EventDef.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
             if (message.component != null && Object.hasOwnProperty.call(message, "component"))
@@ -11214,11 +12099,11 @@ $root.hermes = (function() {
                 writer.uint32(/* id 5, wireType 2 =*/42).string(message.formatString);
             if (message["arguments"] != null && message["arguments"].length)
                 for (var i = 0; i < message["arguments"].length; ++i)
-                    $root.hermes.Field.encode(message["arguments"][i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                    $root.hermes.Field.encode(message["arguments"][i], writer.uint32(/* id 6, wireType 2 =*/50).fork(), q + 1).ldelim();
             if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 writer.uint32(/* id 7, wireType 2 =*/58).string(message.metadata);
             if (message.format != null && Object.hasOwnProperty.call(message, "format"))
-                $root.hermes.FormatString.encode(message.format, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
+                $root.hermes.FormatString.encode(message.format, writer.uint32(/* id 8, wireType 2 =*/66).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -11246,12 +12131,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        EventDef.decode = function decode(reader, length) {
+        EventDef.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.EventDef();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.id = reader.int32();
@@ -11276,7 +12167,7 @@ $root.hermes = (function() {
                 case 6: {
                         if (!(message["arguments"] && message["arguments"].length))
                             message["arguments"] = [];
-                        message["arguments"].push($root.hermes.Field.decode(reader, reader.uint32()));
+                        message["arguments"].push($root.hermes.Field.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 case 7: {
@@ -11284,11 +12175,11 @@ $root.hermes = (function() {
                         break;
                     }
                 case 8: {
-                        message.format = $root.hermes.FormatString.decode(reader, reader.uint32());
+                        message.format = $root.hermes.FormatString.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -11319,19 +12210,23 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        EventDef.verify = function verify(message) {
+        EventDef.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 if (!$util.isInteger(message.id))
                     return "id: integer expected";
-            if (message.component != null && message.hasOwnProperty("component"))
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 if (!$util.isString(message.component))
                     return "component: string expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.severity != null && message.hasOwnProperty("severity"))
+            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
                 switch (message.severity) {
                 default:
                     return "severity: enum value expected";
@@ -11344,23 +12239,23 @@ $root.hermes = (function() {
                 case 6:
                     break;
                 }
-            if (message.formatString != null && message.hasOwnProperty("formatString"))
+            if (message.formatString != null && Object.hasOwnProperty.call(message, "formatString"))
                 if (!$util.isString(message.formatString))
                     return "formatString: string expected";
-            if (message["arguments"] != null && message.hasOwnProperty("arguments")) {
+            if (message["arguments"] != null && Object.hasOwnProperty.call(message, "arguments")) {
                 if (!Array.isArray(message["arguments"]))
                     return "arguments: array expected";
                 for (var i = 0; i < message["arguments"].length; ++i) {
-                    var error = $root.hermes.Field.verify(message["arguments"][i]);
+                    var error = $root.hermes.Field.verify(message["arguments"][i], long + 1);
                     if (error)
                         return "arguments." + error;
                 }
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 if (!$util.isString(message.metadata))
                     return "metadata: string expected";
-            if (message.format != null && message.hasOwnProperty("format")) {
-                var error = $root.hermes.FormatString.verify(message.format);
+            if (message.format != null && Object.hasOwnProperty.call(message, "format")) {
+                var error = $root.hermes.FormatString.verify(message.format, long + 1);
                 if (error)
                     return "format." + error;
             }
@@ -11375,9 +12270,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.EventDef} EventDef
          */
-        EventDef.fromObject = function fromObject(object) {
+        EventDef.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.EventDef)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.EventDef: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.EventDef();
             if (object.id != null)
                 message.id = object.id | 0;
@@ -11428,17 +12329,17 @@ $root.hermes = (function() {
                     throw TypeError(".hermes.EventDef.arguments: array expected");
                 message["arguments"] = [];
                 for (var i = 0; i < object["arguments"].length; ++i) {
-                    if (typeof object["arguments"][i] !== "object")
+                    if (!$util.isObject(object["arguments"][i]))
                         throw TypeError(".hermes.EventDef.arguments: object expected");
-                    message["arguments"][i] = $root.hermes.Field.fromObject(object["arguments"][i]);
+                    message["arguments"][i] = $root.hermes.Field.fromObject(object["arguments"][i], long + 1);
                 }
             }
             if (object.metadata != null)
                 message.metadata = String(object.metadata);
             if (object.format != null) {
-                if (typeof object.format !== "object")
+                if (!$util.isObject(object.format))
                     throw TypeError(".hermes.EventDef.format: object expected");
-                message.format = $root.hermes.FormatString.fromObject(object.format);
+                message.format = $root.hermes.FormatString.fromObject(object.format, long + 1);
             }
             return message;
         };
@@ -11452,9 +12353,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        EventDef.toObject = function toObject(message, options) {
+        EventDef.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object["arguments"] = [];
@@ -11467,25 +12372,25 @@ $root.hermes = (function() {
                 object.metadata = "";
                 object.format = null;
             }
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 object.id = message.id;
-            if (message.component != null && message.hasOwnProperty("component"))
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 object.component = message.component;
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.severity != null && message.hasOwnProperty("severity"))
+            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
                 object.severity = options.enums === String ? $root.hermes.EvrSeverity[message.severity] === undefined ? message.severity : $root.hermes.EvrSeverity[message.severity] : message.severity;
-            if (message.formatString != null && message.hasOwnProperty("formatString"))
+            if (message.formatString != null && Object.hasOwnProperty.call(message, "formatString"))
                 object.formatString = message.formatString;
             if (message["arguments"] && message["arguments"].length) {
                 object["arguments"] = [];
                 for (var j = 0; j < message["arguments"].length; ++j)
-                    object["arguments"][j] = $root.hermes.Field.toObject(message["arguments"][j], options);
+                    object["arguments"][j] = $root.hermes.Field.toObject(message["arguments"][j], options, q + 1);
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 object.metadata = message.metadata;
-            if (message.format != null && message.hasOwnProperty("format"))
-                object.format = $root.hermes.FormatString.toObject(message.format, options);
+            if (message.format != null && Object.hasOwnProperty.call(message, "format"))
+                object.format = $root.hermes.FormatString.toObject(message.format, options, q + 1);
             return object;
         };
 
@@ -11544,7 +12449,7 @@ $root.hermes = (function() {
             this["arguments"] = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -11617,9 +12522,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        EventRef.encode = function encode(message, writer) {
+        EventRef.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
@@ -11660,12 +12569,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        EventRef.decode = function decode(reader, length) {
+        EventRef.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.EventRef();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.id = reader.int32();
@@ -11694,7 +12609,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -11725,19 +12640,23 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        EventRef.verify = function verify(message) {
+        EventRef.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 if (!$util.isInteger(message.id))
                     return "id: integer expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.component != null && message.hasOwnProperty("component"))
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 if (!$util.isString(message.component))
                     return "component: string expected";
-            if (message.severity != null && message.hasOwnProperty("severity"))
+            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
                 switch (message.severity) {
                 default:
                     return "severity: enum value expected";
@@ -11750,14 +12669,14 @@ $root.hermes = (function() {
                 case 6:
                     break;
                 }
-            if (message["arguments"] != null && message.hasOwnProperty("arguments")) {
+            if (message["arguments"] != null && Object.hasOwnProperty.call(message, "arguments")) {
                 if (!Array.isArray(message["arguments"]))
                     return "arguments: array expected";
                 for (var i = 0; i < message["arguments"].length; ++i)
                     if (!$util.isString(message["arguments"][i]))
                         return "arguments: string[] expected";
             }
-            if (message.dictionary != null && message.hasOwnProperty("dictionary"))
+            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
                 if (!$util.isString(message.dictionary))
                     return "dictionary: string expected";
             return null;
@@ -11771,9 +12690,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.EventRef} EventRef
          */
-        EventRef.fromObject = function fromObject(object) {
+        EventRef.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.EventRef)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.EventRef: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.EventRef();
             if (object.id != null)
                 message.id = object.id | 0;
@@ -11838,9 +12763,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        EventRef.toObject = function toObject(message, options) {
+        EventRef.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object["arguments"] = [];
@@ -11851,20 +12780,20 @@ $root.hermes = (function() {
                 object.severity = options.enums === String ? "EVR_DIAGNOSTIC" : 0;
                 object.dictionary = "";
             }
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 object.id = message.id;
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.component != null && message.hasOwnProperty("component"))
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 object.component = message.component;
-            if (message.severity != null && message.hasOwnProperty("severity"))
+            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
                 object.severity = options.enums === String ? $root.hermes.EvrSeverity[message.severity] === undefined ? message.severity : $root.hermes.EvrSeverity[message.severity] : message.severity;
             if (message["arguments"] && message["arguments"].length) {
                 object["arguments"] = [];
                 for (var j = 0; j < message["arguments"].length; ++j)
                     object["arguments"][j] = message["arguments"][j];
             }
-            if (message.dictionary != null && message.hasOwnProperty("dictionary"))
+            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
                 object.dictionary = message.dictionary;
             return object;
         };
@@ -11922,7 +12851,7 @@ $root.hermes = (function() {
         function TelemetryDef(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -11987,9 +12916,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        TelemetryDef.encode = function encode(message, writer) {
+        TelemetryDef.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
@@ -11997,7 +12930,7 @@ $root.hermes = (function() {
             if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 writer.uint32(/* id 3, wireType 2 =*/26).string(message.component);
             if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                $root.hermes.Type.encode(message.type, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                $root.hermes.Type.encode(message.type, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
             if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 writer.uint32(/* id 6, wireType 2 =*/50).string(message.metadata);
             return writer;
@@ -12027,12 +12960,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        TelemetryDef.decode = function decode(reader, length) {
+        TelemetryDef.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.TelemetryDef();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.id = reader.int32();
@@ -12047,7 +12986,7 @@ $root.hermes = (function() {
                         break;
                     }
                 case 4: {
-                        message.type = $root.hermes.Type.decode(reader, reader.uint32());
+                        message.type = $root.hermes.Type.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 6: {
@@ -12055,7 +12994,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -12086,24 +13025,28 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        TelemetryDef.verify = function verify(message) {
+        TelemetryDef.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 if (!$util.isInteger(message.id))
                     return "id: integer expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.component != null && message.hasOwnProperty("component"))
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 if (!$util.isString(message.component))
                     return "component: string expected";
-            if (message.type != null && message.hasOwnProperty("type")) {
-                var error = $root.hermes.Type.verify(message.type);
+            if (message.type != null && Object.hasOwnProperty.call(message, "type")) {
+                var error = $root.hermes.Type.verify(message.type, long + 1);
                 if (error)
                     return "type." + error;
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 if (!$util.isString(message.metadata))
                     return "metadata: string expected";
             return null;
@@ -12117,9 +13060,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.TelemetryDef} TelemetryDef
          */
-        TelemetryDef.fromObject = function fromObject(object) {
+        TelemetryDef.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.TelemetryDef)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.TelemetryDef: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.TelemetryDef();
             if (object.id != null)
                 message.id = object.id | 0;
@@ -12128,9 +13077,9 @@ $root.hermes = (function() {
             if (object.component != null)
                 message.component = String(object.component);
             if (object.type != null) {
-                if (typeof object.type !== "object")
+                if (!$util.isObject(object.type))
                     throw TypeError(".hermes.TelemetryDef.type: object expected");
-                message.type = $root.hermes.Type.fromObject(object.type);
+                message.type = $root.hermes.Type.fromObject(object.type, long + 1);
             }
             if (object.metadata != null)
                 message.metadata = String(object.metadata);
@@ -12146,9 +13095,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        TelemetryDef.toObject = function toObject(message, options) {
+        TelemetryDef.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.id = 0;
@@ -12157,15 +13110,15 @@ $root.hermes = (function() {
                 object.type = null;
                 object.metadata = "";
             }
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 object.id = message.id;
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.component != null && message.hasOwnProperty("component"))
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 object.component = message.component;
-            if (message.type != null && message.hasOwnProperty("type"))
-                object.type = $root.hermes.Type.toObject(message.type, options);
-            if (message.metadata != null && message.hasOwnProperty("metadata"))
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                object.type = $root.hermes.Type.toObject(message.type, options, q + 1);
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 object.metadata = message.metadata;
             return object;
         };
@@ -12222,7 +13175,7 @@ $root.hermes = (function() {
         function TelemetryRef(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -12279,9 +13232,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        TelemetryRef.encode = function encode(message, writer) {
+        TelemetryRef.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
@@ -12317,12 +13274,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        TelemetryRef.decode = function decode(reader, length) {
+        TelemetryRef.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.TelemetryRef();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.id = reader.int32();
@@ -12341,7 +13304,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -12372,19 +13335,23 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        TelemetryRef.verify = function verify(message) {
+        TelemetryRef.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 if (!$util.isInteger(message.id))
                     return "id: integer expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.component != null && message.hasOwnProperty("component"))
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 if (!$util.isString(message.component))
                     return "component: string expected";
-            if (message.dictionary != null && message.hasOwnProperty("dictionary"))
+            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
                 if (!$util.isString(message.dictionary))
                     return "dictionary: string expected";
             return null;
@@ -12398,9 +13365,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.TelemetryRef} TelemetryRef
          */
-        TelemetryRef.fromObject = function fromObject(object) {
+        TelemetryRef.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.TelemetryRef)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.TelemetryRef: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.TelemetryRef();
             if (object.id != null)
                 message.id = object.id | 0;
@@ -12422,9 +13395,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        TelemetryRef.toObject = function toObject(message, options) {
+        TelemetryRef.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.id = 0;
@@ -12432,13 +13409,13 @@ $root.hermes = (function() {
                 object.component = "";
                 object.dictionary = "";
             }
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 object.id = message.id;
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.component != null && message.hasOwnProperty("component"))
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
                 object.component = message.component;
-            if (message.dictionary != null && message.hasOwnProperty("dictionary"))
+            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
                 object.dictionary = message.dictionary;
             return object;
         };
@@ -12498,7 +13475,7 @@ $root.hermes = (function() {
         function DictionaryHead(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -12551,9 +13528,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        DictionaryHead.encode = function encode(message, writer) {
+        DictionaryHead.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.type != null && Object.hasOwnProperty.call(message, "type"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.type);
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
@@ -12587,12 +13568,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        DictionaryHead.decode = function decode(reader, length) {
+        DictionaryHead.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DictionaryHead();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.type = reader.string();
@@ -12607,7 +13594,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -12638,16 +13625,20 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        DictionaryHead.verify = function verify(message) {
+        DictionaryHead.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.type != null && message.hasOwnProperty("type"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
                 if (!$util.isString(message.type))
                     return "type: string expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.version != null && message.hasOwnProperty("version"))
+            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
                 if (!$util.isString(message.version))
                     return "version: string expected";
             return null;
@@ -12661,9 +13652,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.DictionaryHead} DictionaryHead
          */
-        DictionaryHead.fromObject = function fromObject(object) {
+        DictionaryHead.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.DictionaryHead)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.DictionaryHead: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.DictionaryHead();
             if (object.type != null)
                 message.type = String(object.type);
@@ -12683,20 +13680,24 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        DictionaryHead.toObject = function toObject(message, options) {
+        DictionaryHead.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.type = "";
                 object.name = "";
                 object.version = "";
             }
-            if (message.type != null && message.hasOwnProperty("type"))
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
                 object.type = message.type;
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.version != null && message.hasOwnProperty("version"))
+            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
                 object.version = message.version;
             return object;
         };
@@ -12759,7 +13760,7 @@ $root.hermes = (function() {
             this.types = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -12824,33 +13825,37 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        DictionaryNamespace.encode = function encode(message, writer) {
+        DictionaryNamespace.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.commands != null && Object.hasOwnProperty.call(message, "commands"))
                 for (var keys = Object.keys(message.commands), i = 0; i < keys.length; ++i) {
                     writer.uint32(/* id 1, wireType 2 =*/10).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.CommandDef.encode(message.commands[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                    $root.hermes.CommandDef.encode(message.commands[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
                 }
             if (message.events != null && Object.hasOwnProperty.call(message, "events"))
                 for (var keys = Object.keys(message.events), i = 0; i < keys.length; ++i) {
                     writer.uint32(/* id 2, wireType 2 =*/18).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.EventDef.encode(message.events[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                    $root.hermes.EventDef.encode(message.events[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
                 }
             if (message.telemetry != null && Object.hasOwnProperty.call(message, "telemetry"))
                 for (var keys = Object.keys(message.telemetry), i = 0; i < keys.length; ++i) {
                     writer.uint32(/* id 3, wireType 2 =*/26).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.TelemetryDef.encode(message.telemetry[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                    $root.hermes.TelemetryDef.encode(message.telemetry[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
                 }
             if (message.parameters != null && Object.hasOwnProperty.call(message, "parameters"))
                 for (var keys = Object.keys(message.parameters), i = 0; i < keys.length; ++i) {
                     writer.uint32(/* id 4, wireType 2 =*/34).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.ParameterDef.encode(message.parameters[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                    $root.hermes.ParameterDef.encode(message.parameters[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
                 }
             if (message.types != null && Object.hasOwnProperty.call(message, "types"))
                 for (var keys = Object.keys(message.types), i = 0; i < keys.length; ++i) {
                     writer.uint32(/* id 5, wireType 2 =*/42).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.Type.encode(message.types[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                    $root.hermes.Type.encode(message.types[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
                 }
             return writer;
         };
@@ -12879,12 +13884,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        DictionaryNamespace.decode = function decode(reader, length) {
+        DictionaryNamespace.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DictionaryNamespace(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         if (message.commands === $util.emptyObject)
@@ -12899,13 +13910,15 @@ $root.hermes = (function() {
                                 key = reader.string();
                                 break;
                             case 2:
-                                value = $root.hermes.CommandDef.decode(reader, reader.uint32());
+                                value = $root.hermes.CommandDef.decode(reader, reader.uint32(), undefined, long + 1);
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.commands, key);
                         message.commands[key] = value;
                         break;
                     }
@@ -12922,13 +13935,15 @@ $root.hermes = (function() {
                                 key = reader.string();
                                 break;
                             case 2:
-                                value = $root.hermes.EventDef.decode(reader, reader.uint32());
+                                value = $root.hermes.EventDef.decode(reader, reader.uint32(), undefined, long + 1);
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.events, key);
                         message.events[key] = value;
                         break;
                     }
@@ -12945,13 +13960,15 @@ $root.hermes = (function() {
                                 key = reader.string();
                                 break;
                             case 2:
-                                value = $root.hermes.TelemetryDef.decode(reader, reader.uint32());
+                                value = $root.hermes.TelemetryDef.decode(reader, reader.uint32(), undefined, long + 1);
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.telemetry, key);
                         message.telemetry[key] = value;
                         break;
                     }
@@ -12968,13 +13985,15 @@ $root.hermes = (function() {
                                 key = reader.string();
                                 break;
                             case 2:
-                                value = $root.hermes.ParameterDef.decode(reader, reader.uint32());
+                                value = $root.hermes.ParameterDef.decode(reader, reader.uint32(), undefined, long + 1);
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.parameters, key);
                         message.parameters[key] = value;
                         break;
                     }
@@ -12991,18 +14010,20 @@ $root.hermes = (function() {
                                 key = reader.string();
                                 break;
                             case 2:
-                                value = $root.hermes.Type.decode(reader, reader.uint32());
+                                value = $root.hermes.Type.decode(reader, reader.uint32(), undefined, long + 1);
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.types, key);
                         message.types[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -13033,55 +14054,59 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        DictionaryNamespace.verify = function verify(message) {
+        DictionaryNamespace.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.commands != null && message.hasOwnProperty("commands")) {
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.commands != null && Object.hasOwnProperty.call(message, "commands")) {
                 if (!$util.isObject(message.commands))
                     return "commands: object expected";
                 var key = Object.keys(message.commands);
                 for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.CommandDef.verify(message.commands[key[i]]);
+                    var error = $root.hermes.CommandDef.verify(message.commands[key[i]], long + 1);
                     if (error)
                         return "commands." + error;
                 }
             }
-            if (message.events != null && message.hasOwnProperty("events")) {
+            if (message.events != null && Object.hasOwnProperty.call(message, "events")) {
                 if (!$util.isObject(message.events))
                     return "events: object expected";
                 var key = Object.keys(message.events);
                 for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.EventDef.verify(message.events[key[i]]);
+                    var error = $root.hermes.EventDef.verify(message.events[key[i]], long + 1);
                     if (error)
                         return "events." + error;
                 }
             }
-            if (message.telemetry != null && message.hasOwnProperty("telemetry")) {
+            if (message.telemetry != null && Object.hasOwnProperty.call(message, "telemetry")) {
                 if (!$util.isObject(message.telemetry))
                     return "telemetry: object expected";
                 var key = Object.keys(message.telemetry);
                 for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.TelemetryDef.verify(message.telemetry[key[i]]);
+                    var error = $root.hermes.TelemetryDef.verify(message.telemetry[key[i]], long + 1);
                     if (error)
                         return "telemetry." + error;
                 }
             }
-            if (message.parameters != null && message.hasOwnProperty("parameters")) {
+            if (message.parameters != null && Object.hasOwnProperty.call(message, "parameters")) {
                 if (!$util.isObject(message.parameters))
                     return "parameters: object expected";
                 var key = Object.keys(message.parameters);
                 for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.ParameterDef.verify(message.parameters[key[i]]);
+                    var error = $root.hermes.ParameterDef.verify(message.parameters[key[i]], long + 1);
                     if (error)
                         return "parameters." + error;
                 }
             }
-            if (message.types != null && message.hasOwnProperty("types")) {
+            if (message.types != null && Object.hasOwnProperty.call(message, "types")) {
                 if (!$util.isObject(message.types))
                     return "types: object expected";
                 var key = Object.keys(message.types);
                 for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.Type.verify(message.types[key[i]]);
+                    var error = $root.hermes.Type.verify(message.types[key[i]], long + 1);
                     if (error)
                         return "types." + error;
                 }
@@ -13097,58 +14122,74 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.DictionaryNamespace} DictionaryNamespace
          */
-        DictionaryNamespace.fromObject = function fromObject(object) {
+        DictionaryNamespace.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.DictionaryNamespace)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.DictionaryNamespace: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.DictionaryNamespace();
             if (object.commands) {
-                if (typeof object.commands !== "object")
+                if (!$util.isObject(object.commands))
                     throw TypeError(".hermes.DictionaryNamespace.commands: object expected");
                 message.commands = {};
                 for (var keys = Object.keys(object.commands), i = 0; i < keys.length; ++i) {
-                    if (typeof object.commands[keys[i]] !== "object")
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.commands, keys[i]);
+                    if (!$util.isObject(object.commands[keys[i]]))
                         throw TypeError(".hermes.DictionaryNamespace.commands: object expected");
-                    message.commands[keys[i]] = $root.hermes.CommandDef.fromObject(object.commands[keys[i]]);
+                    message.commands[keys[i]] = $root.hermes.CommandDef.fromObject(object.commands[keys[i]], long + 1);
                 }
             }
             if (object.events) {
-                if (typeof object.events !== "object")
+                if (!$util.isObject(object.events))
                     throw TypeError(".hermes.DictionaryNamespace.events: object expected");
                 message.events = {};
                 for (var keys = Object.keys(object.events), i = 0; i < keys.length; ++i) {
-                    if (typeof object.events[keys[i]] !== "object")
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.events, keys[i]);
+                    if (!$util.isObject(object.events[keys[i]]))
                         throw TypeError(".hermes.DictionaryNamespace.events: object expected");
-                    message.events[keys[i]] = $root.hermes.EventDef.fromObject(object.events[keys[i]]);
+                    message.events[keys[i]] = $root.hermes.EventDef.fromObject(object.events[keys[i]], long + 1);
                 }
             }
             if (object.telemetry) {
-                if (typeof object.telemetry !== "object")
+                if (!$util.isObject(object.telemetry))
                     throw TypeError(".hermes.DictionaryNamespace.telemetry: object expected");
                 message.telemetry = {};
                 for (var keys = Object.keys(object.telemetry), i = 0; i < keys.length; ++i) {
-                    if (typeof object.telemetry[keys[i]] !== "object")
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.telemetry, keys[i]);
+                    if (!$util.isObject(object.telemetry[keys[i]]))
                         throw TypeError(".hermes.DictionaryNamespace.telemetry: object expected");
-                    message.telemetry[keys[i]] = $root.hermes.TelemetryDef.fromObject(object.telemetry[keys[i]]);
+                    message.telemetry[keys[i]] = $root.hermes.TelemetryDef.fromObject(object.telemetry[keys[i]], long + 1);
                 }
             }
             if (object.parameters) {
-                if (typeof object.parameters !== "object")
+                if (!$util.isObject(object.parameters))
                     throw TypeError(".hermes.DictionaryNamespace.parameters: object expected");
                 message.parameters = {};
                 for (var keys = Object.keys(object.parameters), i = 0; i < keys.length; ++i) {
-                    if (typeof object.parameters[keys[i]] !== "object")
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.parameters, keys[i]);
+                    if (!$util.isObject(object.parameters[keys[i]]))
                         throw TypeError(".hermes.DictionaryNamespace.parameters: object expected");
-                    message.parameters[keys[i]] = $root.hermes.ParameterDef.fromObject(object.parameters[keys[i]]);
+                    message.parameters[keys[i]] = $root.hermes.ParameterDef.fromObject(object.parameters[keys[i]], long + 1);
                 }
             }
             if (object.types) {
-                if (typeof object.types !== "object")
+                if (!$util.isObject(object.types))
                     throw TypeError(".hermes.DictionaryNamespace.types: object expected");
                 message.types = {};
                 for (var keys = Object.keys(object.types), i = 0; i < keys.length; ++i) {
-                    if (typeof object.types[keys[i]] !== "object")
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.types, keys[i]);
+                    if (!$util.isObject(object.types[keys[i]]))
                         throw TypeError(".hermes.DictionaryNamespace.types: object expected");
-                    message.types[keys[i]] = $root.hermes.Type.fromObject(object.types[keys[i]]);
+                    message.types[keys[i]] = $root.hermes.Type.fromObject(object.types[keys[i]], long + 1);
                 }
             }
             return message;
@@ -13163,9 +14204,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        DictionaryNamespace.toObject = function toObject(message, options) {
+        DictionaryNamespace.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.objects || options.defaults) {
                 object.commands = {};
@@ -13177,28 +14222,43 @@ $root.hermes = (function() {
             var keys2;
             if (message.commands && (keys2 = Object.keys(message.commands)).length) {
                 object.commands = {};
-                for (var j = 0; j < keys2.length; ++j)
-                    object.commands[keys2[j]] = $root.hermes.CommandDef.toObject(message.commands[keys2[j]], options);
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.commands, keys2[j]);
+                    object.commands[keys2[j]] = $root.hermes.CommandDef.toObject(message.commands[keys2[j]], options, q + 1);
+                }
             }
             if (message.events && (keys2 = Object.keys(message.events)).length) {
                 object.events = {};
-                for (var j = 0; j < keys2.length; ++j)
-                    object.events[keys2[j]] = $root.hermes.EventDef.toObject(message.events[keys2[j]], options);
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.events, keys2[j]);
+                    object.events[keys2[j]] = $root.hermes.EventDef.toObject(message.events[keys2[j]], options, q + 1);
+                }
             }
             if (message.telemetry && (keys2 = Object.keys(message.telemetry)).length) {
                 object.telemetry = {};
-                for (var j = 0; j < keys2.length; ++j)
-                    object.telemetry[keys2[j]] = $root.hermes.TelemetryDef.toObject(message.telemetry[keys2[j]], options);
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.telemetry, keys2[j]);
+                    object.telemetry[keys2[j]] = $root.hermes.TelemetryDef.toObject(message.telemetry[keys2[j]], options, q + 1);
+                }
             }
             if (message.parameters && (keys2 = Object.keys(message.parameters)).length) {
                 object.parameters = {};
-                for (var j = 0; j < keys2.length; ++j)
-                    object.parameters[keys2[j]] = $root.hermes.ParameterDef.toObject(message.parameters[keys2[j]], options);
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.parameters, keys2[j]);
+                    object.parameters[keys2[j]] = $root.hermes.ParameterDef.toObject(message.parameters[keys2[j]], options, q + 1);
+                }
             }
             if (message.types && (keys2 = Object.keys(message.types)).length) {
                 object.types = {};
-                for (var j = 0; j < keys2.length; ++j)
-                    object.types[keys2[j]] = $root.hermes.Type.toObject(message.types[keys2[j]], options);
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.types, keys2[j]);
+                    object.types[keys2[j]] = $root.hermes.Type.toObject(message.types[keys2[j]], options, q + 1);
+                }
             }
             return object;
         };
@@ -13257,7 +14317,7 @@ $root.hermes = (function() {
             this.metadata = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -13314,15 +14374,19 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        Dictionary.encode = function encode(message, writer) {
+        Dictionary.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.head != null && Object.hasOwnProperty.call(message, "head"))
-                $root.hermes.DictionaryHead.encode(message.head, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.hermes.DictionaryHead.encode(message.head, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.content != null && Object.hasOwnProperty.call(message, "content"))
                 for (var keys = Object.keys(message.content), i = 0; i < keys.length; ++i) {
                     writer.uint32(/* id 2, wireType 2 =*/18).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.DictionaryNamespace.encode(message.content[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                    $root.hermes.DictionaryNamespace.encode(message.content[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
                 }
             if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
@@ -13356,15 +14420,21 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        Dictionary.decode = function decode(reader, length) {
+        Dictionary.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Dictionary(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.head = $root.hermes.DictionaryHead.decode(reader, reader.uint32());
+                        message.head = $root.hermes.DictionaryHead.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
@@ -13380,13 +14450,15 @@ $root.hermes = (function() {
                                 key = reader.string();
                                 break;
                             case 2:
-                                value = $root.hermes.DictionaryNamespace.decode(reader, reader.uint32());
+                                value = $root.hermes.DictionaryNamespace.decode(reader, reader.uint32(), undefined, long + 1);
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.content, key);
                         message.content[key] = value;
                         break;
                     }
@@ -13406,10 +14478,12 @@ $root.hermes = (function() {
                                 value = reader.string();
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.metadata, key);
                         message.metadata[key] = value;
                         break;
                     }
@@ -13418,7 +14492,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -13449,25 +14523,29 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        Dictionary.verify = function verify(message) {
+        Dictionary.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.head != null && message.hasOwnProperty("head")) {
-                var error = $root.hermes.DictionaryHead.verify(message.head);
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.head != null && Object.hasOwnProperty.call(message, "head")) {
+                var error = $root.hermes.DictionaryHead.verify(message.head, long + 1);
                 if (error)
                     return "head." + error;
             }
-            if (message.content != null && message.hasOwnProperty("content")) {
+            if (message.content != null && Object.hasOwnProperty.call(message, "content")) {
                 if (!$util.isObject(message.content))
                     return "content: object expected";
                 var key = Object.keys(message.content);
                 for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.DictionaryNamespace.verify(message.content[key[i]]);
+                    var error = $root.hermes.DictionaryNamespace.verify(message.content[key[i]], long + 1);
                     if (error)
                         return "content." + error;
                 }
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata")) {
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
                 if (!$util.isObject(message.metadata))
                     return "metadata: object expected";
                 var key = Object.keys(message.metadata);
@@ -13475,7 +14553,7 @@ $root.hermes = (function() {
                     if (!$util.isString(message.metadata[key[i]]))
                         return "metadata: string{k:string} expected";
             }
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 if (!$util.isString(message.id))
                     return "id: string expected";
             return null;
@@ -13489,31 +14567,42 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.Dictionary} Dictionary
          */
-        Dictionary.fromObject = function fromObject(object) {
+        Dictionary.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.Dictionary)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Dictionary: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.Dictionary();
             if (object.head != null) {
-                if (typeof object.head !== "object")
+                if (!$util.isObject(object.head))
                     throw TypeError(".hermes.Dictionary.head: object expected");
-                message.head = $root.hermes.DictionaryHead.fromObject(object.head);
+                message.head = $root.hermes.DictionaryHead.fromObject(object.head, long + 1);
             }
             if (object.content) {
-                if (typeof object.content !== "object")
+                if (!$util.isObject(object.content))
                     throw TypeError(".hermes.Dictionary.content: object expected");
                 message.content = {};
                 for (var keys = Object.keys(object.content), i = 0; i < keys.length; ++i) {
-                    if (typeof object.content[keys[i]] !== "object")
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.content, keys[i]);
+                    if (!$util.isObject(object.content[keys[i]]))
                         throw TypeError(".hermes.Dictionary.content: object expected");
-                    message.content[keys[i]] = $root.hermes.DictionaryNamespace.fromObject(object.content[keys[i]]);
+                    message.content[keys[i]] = $root.hermes.DictionaryNamespace.fromObject(object.content[keys[i]], long + 1);
                 }
             }
             if (object.metadata) {
-                if (typeof object.metadata !== "object")
+                if (!$util.isObject(object.metadata))
                     throw TypeError(".hermes.Dictionary.metadata: object expected");
                 message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i)
+                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.metadata, keys[i]);
                     message.metadata[keys[i]] = String(object.metadata[keys[i]]);
+                }
             }
             if (object.id != null)
                 message.id = String(object.id);
@@ -13529,9 +14618,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        Dictionary.toObject = function toObject(message, options) {
+        Dictionary.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.objects || options.defaults) {
                 object.content = {};
@@ -13541,20 +14634,26 @@ $root.hermes = (function() {
                 object.head = null;
                 object.id = "";
             }
-            if (message.head != null && message.hasOwnProperty("head"))
-                object.head = $root.hermes.DictionaryHead.toObject(message.head, options);
+            if (message.head != null && Object.hasOwnProperty.call(message, "head"))
+                object.head = $root.hermes.DictionaryHead.toObject(message.head, options, q + 1);
             var keys2;
             if (message.content && (keys2 = Object.keys(message.content)).length) {
                 object.content = {};
-                for (var j = 0; j < keys2.length; ++j)
-                    object.content[keys2[j]] = $root.hermes.DictionaryNamespace.toObject(message.content[keys2[j]], options);
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.content, keys2[j]);
+                    object.content[keys2[j]] = $root.hermes.DictionaryNamespace.toObject(message.content[keys2[j]], options, q + 1);
+                }
             }
             if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
                 object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j)
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.metadata, keys2[j]);
                     object.metadata[keys2[j]] = message.metadata[keys2[j]];
+                }
             }
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 object.id = message.id;
             return object;
         };
@@ -13609,7 +14708,7 @@ $root.hermes = (function() {
         function Time(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -13650,11 +14749,15 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        Time.encode = function encode(message, writer) {
+        Time.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.unix != null && Object.hasOwnProperty.call(message, "unix"))
-                $root.google.protobuf.Timestamp.encode(message.unix, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.google.protobuf.Timestamp.encode(message.unix, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.sclk != null && Object.hasOwnProperty.call(message, "sclk"))
                 writer.uint32(/* id 2, wireType 1 =*/17).double(message.sclk);
             return writer;
@@ -13684,15 +14787,21 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        Time.decode = function decode(reader, length) {
+        Time.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Time();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.unix = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                        message.unix = $root.google.protobuf.Timestamp.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
@@ -13700,7 +14809,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -13731,15 +14840,19 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        Time.verify = function verify(message) {
+        Time.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.unix != null && message.hasOwnProperty("unix")) {
-                var error = $root.google.protobuf.Timestamp.verify(message.unix);
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.unix != null && Object.hasOwnProperty.call(message, "unix")) {
+                var error = $root.google.protobuf.Timestamp.verify(message.unix, long + 1);
                 if (error)
                     return "unix." + error;
             }
-            if (message.sclk != null && message.hasOwnProperty("sclk"))
+            if (message.sclk != null && Object.hasOwnProperty.call(message, "sclk"))
                 if (typeof message.sclk !== "number")
                     return "sclk: number expected";
             return null;
@@ -13753,14 +14866,20 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.Time} Time
          */
-        Time.fromObject = function fromObject(object) {
+        Time.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.Time)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Time: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.Time();
             if (object.unix != null) {
-                if (typeof object.unix !== "object")
+                if (!$util.isObject(object.unix))
                     throw TypeError(".hermes.Time.unix: object expected");
-                message.unix = $root.google.protobuf.Timestamp.fromObject(object.unix);
+                message.unix = $root.google.protobuf.Timestamp.fromObject(object.unix, long + 1);
             }
             if (object.sclk != null)
                 message.sclk = Number(object.sclk);
@@ -13776,17 +14895,21 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        Time.toObject = function toObject(message, options) {
+        Time.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.unix = null;
                 object.sclk = 0;
             }
-            if (message.unix != null && message.hasOwnProperty("unix"))
-                object.unix = $root.google.protobuf.Timestamp.toObject(message.unix, options);
-            if (message.sclk != null && message.hasOwnProperty("sclk"))
+            if (message.unix != null && Object.hasOwnProperty.call(message, "unix"))
+                object.unix = $root.google.protobuf.Timestamp.toObject(message.unix, options, q + 1);
+            if (message.sclk != null && Object.hasOwnProperty.call(message, "sclk"))
                 object.sclk = options.json && !isFinite(message.sclk) ? String(message.sclk) : message.sclk;
             return object;
         };
@@ -13844,7 +14967,7 @@ $root.hermes = (function() {
             this.metadata = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -13901,9 +15024,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FileHeader.encode = function encode(message, writer) {
+        FileHeader.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.sourcePath);
             if (message.destinationPath != null && Object.hasOwnProperty.call(message, "destinationPath"))
@@ -13940,12 +15067,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FileHeader.decode = function decode(reader, length) {
+        FileHeader.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FileHeader(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.sourcePath = reader.string();
@@ -13975,15 +15108,17 @@ $root.hermes = (function() {
                                 value = reader.string();
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.metadata, key);
                         message.metadata[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -14014,19 +15149,23 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FileHeader.verify = function verify(message) {
+        FileHeader.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.sourcePath != null && message.hasOwnProperty("sourcePath"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
                 if (!$util.isString(message.sourcePath))
                     return "sourcePath: string expected";
-            if (message.destinationPath != null && message.hasOwnProperty("destinationPath"))
+            if (message.destinationPath != null && Object.hasOwnProperty.call(message, "destinationPath"))
                 if (!$util.isString(message.destinationPath))
                     return "destinationPath: string expected";
-            if (message.size != null && message.hasOwnProperty("size"))
+            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
                 if (!$util.isInteger(message.size) && !(message.size && $util.isInteger(message.size.low) && $util.isInteger(message.size.high)))
                     return "size: integer|Long expected";
-            if (message.metadata != null && message.hasOwnProperty("metadata")) {
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
                 if (!$util.isObject(message.metadata))
                     return "metadata: object expected";
                 var key = Object.keys(message.metadata);
@@ -14045,9 +15184,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FileHeader} FileHeader
          */
-        FileHeader.fromObject = function fromObject(object) {
+        FileHeader.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FileHeader)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FileHeader: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FileHeader();
             if (object.sourcePath != null)
                 message.sourcePath = String(object.sourcePath);
@@ -14055,7 +15200,7 @@ $root.hermes = (function() {
                 message.destinationPath = String(object.destinationPath);
             if (object.size != null)
                 if ($util.Long)
-                    (message.size = $util.Long.fromValue(object.size)).unsigned = true;
+                    message.size = $util.Long.fromValue(object.size, true);
                 else if (typeof object.size === "string")
                     message.size = parseInt(object.size, 10);
                 else if (typeof object.size === "number")
@@ -14063,11 +15208,14 @@ $root.hermes = (function() {
                 else if (typeof object.size === "object")
                     message.size = new $util.LongBits(object.size.low >>> 0, object.size.high >>> 0).toNumber(true);
             if (object.metadata) {
-                if (typeof object.metadata !== "object")
+                if (!$util.isObject(object.metadata))
                     throw TypeError(".hermes.FileHeader.metadata: object expected");
                 message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i)
+                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.metadata, keys[i]);
                     message.metadata[keys[i]] = String(object.metadata[keys[i]]);
+                }
             }
             return message;
         };
@@ -14081,9 +15229,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FileHeader.toObject = function toObject(message, options) {
+        FileHeader.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.objects || options.defaults)
                 object.metadata = {};
@@ -14092,24 +15244,29 @@ $root.hermes = (function() {
                 object.destinationPath = "";
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, true);
-                    object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                    object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
                 } else
-                    object.size = options.longs === String ? "0" : 0;
+                    object.size = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
             }
-            if (message.sourcePath != null && message.hasOwnProperty("sourcePath"))
+            if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
                 object.sourcePath = message.sourcePath;
-            if (message.destinationPath != null && message.hasOwnProperty("destinationPath"))
+            if (message.destinationPath != null && Object.hasOwnProperty.call(message, "destinationPath"))
                 object.destinationPath = message.destinationPath;
-            if (message.size != null && message.hasOwnProperty("size"))
-                if (typeof message.size === "number")
+            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.size = typeof message.size === "number" ? BigInt(message.size) : $util.Long.fromBits(message.size.low >>> 0, message.size.high >>> 0, true).toBigInt();
+                else if (typeof message.size === "number")
                     object.size = options.longs === String ? String(message.size) : message.size;
                 else
                     object.size = options.longs === String ? $util.Long.prototype.toString.call(message.size) : options.longs === Number ? new $util.LongBits(message.size.low >>> 0, message.size.high >>> 0).toNumber(true) : message.size;
             var keys2;
             if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
                 object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j)
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.metadata, keys2[j]);
                     object.metadata[keys2[j]] = message.metadata[keys2[j]];
+                }
             }
             return object;
         };
@@ -14164,7 +15321,7 @@ $root.hermes = (function() {
         function UplinkFileChunk(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -14219,11 +15376,15 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        UplinkFileChunk.encode = function encode(message, writer) {
+        UplinkFileChunk.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.header != null && Object.hasOwnProperty.call(message, "header"))
-                $root.hermes.FileHeader.encode(message.header, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.hermes.FileHeader.encode(message.header, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.data != null && Object.hasOwnProperty.call(message, "data"))
                 writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.data);
             return writer;
@@ -14253,15 +15414,21 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        UplinkFileChunk.decode = function decode(reader, length) {
+        UplinkFileChunk.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.UplinkFileChunk();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.header = $root.hermes.FileHeader.decode(reader, reader.uint32());
+                        message.header = $root.hermes.FileHeader.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
@@ -14269,7 +15436,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -14300,19 +15467,23 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        UplinkFileChunk.verify = function verify(message) {
+        UplinkFileChunk.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
             var properties = {};
-            if (message.header != null && message.hasOwnProperty("header")) {
+            if (message.header != null && Object.hasOwnProperty.call(message, "header")) {
                 properties.value = 1;
                 {
-                    var error = $root.hermes.FileHeader.verify(message.header);
+                    var error = $root.hermes.FileHeader.verify(message.header, long + 1);
                     if (error)
                         return "header." + error;
                 }
             }
-            if (message.data != null && message.hasOwnProperty("data")) {
+            if (message.data != null && Object.hasOwnProperty.call(message, "data")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
@@ -14330,14 +15501,20 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.UplinkFileChunk} UplinkFileChunk
          */
-        UplinkFileChunk.fromObject = function fromObject(object) {
+        UplinkFileChunk.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.UplinkFileChunk)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.UplinkFileChunk: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.UplinkFileChunk();
             if (object.header != null) {
-                if (typeof object.header !== "object")
+                if (!$util.isObject(object.header))
                     throw TypeError(".hermes.UplinkFileChunk.header: object expected");
-                message.header = $root.hermes.FileHeader.fromObject(object.header);
+                message.header = $root.hermes.FileHeader.fromObject(object.header, long + 1);
             }
             if (object.data != null)
                 if (typeof object.data === "string")
@@ -14356,16 +15533,20 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        UplinkFileChunk.toObject = function toObject(message, options) {
+        UplinkFileChunk.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
-            if (message.header != null && message.hasOwnProperty("header")) {
-                object.header = $root.hermes.FileHeader.toObject(message.header, options);
+            if (message.header != null && Object.hasOwnProperty.call(message, "header")) {
+                object.header = $root.hermes.FileHeader.toObject(message.header, options, q + 1);
                 if (options.oneofs)
                     object.value = "header";
             }
-            if (message.data != null && message.hasOwnProperty("data")) {
+            if (message.data != null && Object.hasOwnProperty.call(message, "data")) {
                 object.data = options.bytes === String ? $util.base64.encode(message.data, 0, message.data.length) : options.bytes === Array ? Array.prototype.slice.call(message.data) : message.data;
                 if (options.oneofs)
                     object.value = "data";
@@ -14425,7 +15606,7 @@ $root.hermes = (function() {
             this.md = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -14474,9 +15655,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        DownlinkFileData.encode = function encode(message, writer) {
+        DownlinkFileData.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.offset != null && Object.hasOwnProperty.call(message, "offset"))
                 writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.offset);
             if (message.data != null && Object.hasOwnProperty.call(message, "data"))
@@ -14511,12 +15696,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        DownlinkFileData.decode = function decode(reader, length) {
+        DownlinkFileData.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DownlinkFileData(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.offset = reader.uint64();
@@ -14542,15 +15733,17 @@ $root.hermes = (function() {
                                 value = reader.string();
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.md, key);
                         message.md[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -14581,16 +15774,20 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        DownlinkFileData.verify = function verify(message) {
+        DownlinkFileData.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.offset != null && message.hasOwnProperty("offset"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.offset != null && Object.hasOwnProperty.call(message, "offset"))
                 if (!$util.isInteger(message.offset) && !(message.offset && $util.isInteger(message.offset.low) && $util.isInteger(message.offset.high)))
                     return "offset: integer|Long expected";
-            if (message.data != null && message.hasOwnProperty("data"))
+            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
                 if (!(message.data && typeof message.data.length === "number" || $util.isString(message.data)))
                     return "data: buffer expected";
-            if (message.md != null && message.hasOwnProperty("md")) {
+            if (message.md != null && Object.hasOwnProperty.call(message, "md")) {
                 if (!$util.isObject(message.md))
                     return "md: object expected";
                 var key = Object.keys(message.md);
@@ -14609,13 +15806,19 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.DownlinkFileData} DownlinkFileData
          */
-        DownlinkFileData.fromObject = function fromObject(object) {
+        DownlinkFileData.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.DownlinkFileData)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.DownlinkFileData: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.DownlinkFileData();
             if (object.offset != null)
                 if ($util.Long)
-                    (message.offset = $util.Long.fromValue(object.offset)).unsigned = true;
+                    message.offset = $util.Long.fromValue(object.offset, true);
                 else if (typeof object.offset === "string")
                     message.offset = parseInt(object.offset, 10);
                 else if (typeof object.offset === "number")
@@ -14628,11 +15831,14 @@ $root.hermes = (function() {
                 else if (object.data.length >= 0)
                     message.data = object.data;
             if (object.md) {
-                if (typeof object.md !== "object")
+                if (!$util.isObject(object.md))
                     throw TypeError(".hermes.DownlinkFileData.md: object expected");
                 message.md = {};
-                for (var keys = Object.keys(object.md), i = 0; i < keys.length; ++i)
+                for (var keys = Object.keys(object.md), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.md, keys[i]);
                     message.md[keys[i]] = String(object.md[keys[i]]);
+                }
             }
             return message;
         };
@@ -14646,18 +15852,22 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        DownlinkFileData.toObject = function toObject(message, options) {
+        DownlinkFileData.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.objects || options.defaults)
                 object.md = {};
             if (options.defaults) {
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, true);
-                    object.offset = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                    object.offset = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
                 } else
-                    object.offset = options.longs === String ? "0" : 0;
+                    object.offset = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
                 if (options.bytes === String)
                     object.data = "";
                 else {
@@ -14666,18 +15876,23 @@ $root.hermes = (function() {
                         object.data = $util.newBuffer(object.data);
                 }
             }
-            if (message.offset != null && message.hasOwnProperty("offset"))
-                if (typeof message.offset === "number")
+            if (message.offset != null && Object.hasOwnProperty.call(message, "offset"))
+                if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                    object.offset = typeof message.offset === "number" ? BigInt(message.offset) : $util.Long.fromBits(message.offset.low >>> 0, message.offset.high >>> 0, true).toBigInt();
+                else if (typeof message.offset === "number")
                     object.offset = options.longs === String ? String(message.offset) : message.offset;
                 else
                     object.offset = options.longs === String ? $util.Long.prototype.toString.call(message.offset) : options.longs === Number ? new $util.LongBits(message.offset.low >>> 0, message.offset.high >>> 0).toNumber(true) : message.offset;
-            if (message.data != null && message.hasOwnProperty("data"))
+            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
                 object.data = options.bytes === String ? $util.base64.encode(message.data, 0, message.data.length) : options.bytes === Array ? Array.prototype.slice.call(message.data) : message.data;
             var keys2;
             if (message.md && (keys2 = Object.keys(message.md)).length) {
                 object.md = {};
-                for (var j = 0; j < keys2.length; ++j)
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.md, keys2[j]);
                     object.md[keys2[j]] = message.md[keys2[j]];
+                }
             }
             return object;
         };
@@ -14732,7 +15947,7 @@ $root.hermes = (function() {
         function DownlinkFileMetadata(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -14773,9 +15988,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        DownlinkFileMetadata.encode = function encode(message, writer) {
+        DownlinkFileMetadata.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.key != null && Object.hasOwnProperty.call(message, "key"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.key);
             if (message.data != null && Object.hasOwnProperty.call(message, "data"))
@@ -14807,12 +16026,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        DownlinkFileMetadata.decode = function decode(reader, length) {
+        DownlinkFileMetadata.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DownlinkFileMetadata();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.key = reader.string();
@@ -14823,7 +16048,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -14854,13 +16079,17 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        DownlinkFileMetadata.verify = function verify(message) {
+        DownlinkFileMetadata.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.key != null && message.hasOwnProperty("key"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.key != null && Object.hasOwnProperty.call(message, "key"))
                 if (!$util.isString(message.key))
                     return "key: string expected";
-            if (message.data != null && message.hasOwnProperty("data"))
+            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
                 if (!(message.data && typeof message.data.length === "number" || $util.isString(message.data)))
                     return "data: buffer expected";
             return null;
@@ -14874,9 +16103,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.DownlinkFileMetadata} DownlinkFileMetadata
          */
-        DownlinkFileMetadata.fromObject = function fromObject(object) {
+        DownlinkFileMetadata.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.DownlinkFileMetadata)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.DownlinkFileMetadata: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.DownlinkFileMetadata();
             if (object.key != null)
                 message.key = String(object.key);
@@ -14897,9 +16132,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        DownlinkFileMetadata.toObject = function toObject(message, options) {
+        DownlinkFileMetadata.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.key = "";
@@ -14911,9 +16150,9 @@ $root.hermes = (function() {
                         object.data = $util.newBuffer(object.data);
                 }
             }
-            if (message.key != null && message.hasOwnProperty("key"))
+            if (message.key != null && Object.hasOwnProperty.call(message, "key"))
                 object.key = message.key;
-            if (message.data != null && message.hasOwnProperty("data"))
+            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
                 object.data = options.bytes === String ? $util.base64.encode(message.data, 0, message.data.length) : options.bytes === Array ? Array.prototype.slice.call(message.data) : message.data;
             return object;
         };
@@ -14966,7 +16205,7 @@ $root.hermes = (function() {
         function DownlinkFileValidation(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -14991,9 +16230,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        DownlinkFileValidation.encode = function encode(message, writer) {
+        DownlinkFileValidation.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             return writer;
         };
 
@@ -15021,15 +16264,21 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        DownlinkFileValidation.decode = function decode(reader, length) {
+        DownlinkFileValidation.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DownlinkFileValidation();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -15060,9 +16309,13 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        DownlinkFileValidation.verify = function verify(message) {
+        DownlinkFileValidation.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
             return null;
         };
 
@@ -15074,7 +16327,7 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.DownlinkFileValidation} DownlinkFileValidation
          */
-        DownlinkFileValidation.fromObject = function fromObject(object) {
+        DownlinkFileValidation.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.DownlinkFileValidation)
                 return object;
             return new $root.hermes.DownlinkFileValidation();
@@ -15145,7 +16398,7 @@ $root.hermes = (function() {
         function DownlinkFileChunk(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -15216,17 +16469,21 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        DownlinkFileChunk.encode = function encode(message, writer) {
+        DownlinkFileChunk.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.header != null && Object.hasOwnProperty.call(message, "header"))
-                $root.hermes.FileHeader.encode(message.header, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.hermes.FileHeader.encode(message.header, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                $root.hermes.DownlinkFileData.encode(message.data, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.hermes.DownlinkFileData.encode(message.data, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                $root.hermes.DownlinkFileMetadata.encode(message.metadata, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                $root.hermes.DownlinkFileMetadata.encode(message.metadata, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
             if (message.validation != null && Object.hasOwnProperty.call(message, "validation"))
-                $root.hermes.DownlinkFileValidation.encode(message.validation, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                $root.hermes.DownlinkFileValidation.encode(message.validation, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -15254,31 +16511,37 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        DownlinkFileChunk.decode = function decode(reader, length) {
+        DownlinkFileChunk.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DownlinkFileChunk();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.header = $root.hermes.FileHeader.decode(reader, reader.uint32());
+                        message.header = $root.hermes.FileHeader.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
-                        message.data = $root.hermes.DownlinkFileData.decode(reader, reader.uint32());
+                        message.data = $root.hermes.DownlinkFileData.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 3: {
-                        message.metadata = $root.hermes.DownlinkFileMetadata.decode(reader, reader.uint32());
+                        message.metadata = $root.hermes.DownlinkFileMetadata.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 4: {
-                        message.validation = $root.hermes.DownlinkFileValidation.decode(reader, reader.uint32());
+                        message.validation = $root.hermes.DownlinkFileValidation.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -15309,44 +16572,48 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        DownlinkFileChunk.verify = function verify(message) {
+        DownlinkFileChunk.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
             var properties = {};
-            if (message.header != null && message.hasOwnProperty("header")) {
+            if (message.header != null && Object.hasOwnProperty.call(message, "header")) {
                 properties.value = 1;
                 {
-                    var error = $root.hermes.FileHeader.verify(message.header);
+                    var error = $root.hermes.FileHeader.verify(message.header, long + 1);
                     if (error)
                         return "header." + error;
                 }
             }
-            if (message.data != null && message.hasOwnProperty("data")) {
+            if (message.data != null && Object.hasOwnProperty.call(message, "data")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.DownlinkFileData.verify(message.data);
+                    var error = $root.hermes.DownlinkFileData.verify(message.data, long + 1);
                     if (error)
                         return "data." + error;
                 }
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata")) {
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.DownlinkFileMetadata.verify(message.metadata);
+                    var error = $root.hermes.DownlinkFileMetadata.verify(message.metadata, long + 1);
                     if (error)
                         return "metadata." + error;
                 }
             }
-            if (message.validation != null && message.hasOwnProperty("validation")) {
+            if (message.validation != null && Object.hasOwnProperty.call(message, "validation")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.DownlinkFileValidation.verify(message.validation);
+                    var error = $root.hermes.DownlinkFileValidation.verify(message.validation, long + 1);
                     if (error)
                         return "validation." + error;
                 }
@@ -15362,29 +16629,35 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.DownlinkFileChunk} DownlinkFileChunk
          */
-        DownlinkFileChunk.fromObject = function fromObject(object) {
+        DownlinkFileChunk.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.DownlinkFileChunk)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.DownlinkFileChunk: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.DownlinkFileChunk();
             if (object.header != null) {
-                if (typeof object.header !== "object")
+                if (!$util.isObject(object.header))
                     throw TypeError(".hermes.DownlinkFileChunk.header: object expected");
-                message.header = $root.hermes.FileHeader.fromObject(object.header);
+                message.header = $root.hermes.FileHeader.fromObject(object.header, long + 1);
             }
             if (object.data != null) {
-                if (typeof object.data !== "object")
+                if (!$util.isObject(object.data))
                     throw TypeError(".hermes.DownlinkFileChunk.data: object expected");
-                message.data = $root.hermes.DownlinkFileData.fromObject(object.data);
+                message.data = $root.hermes.DownlinkFileData.fromObject(object.data, long + 1);
             }
             if (object.metadata != null) {
-                if (typeof object.metadata !== "object")
+                if (!$util.isObject(object.metadata))
                     throw TypeError(".hermes.DownlinkFileChunk.metadata: object expected");
-                message.metadata = $root.hermes.DownlinkFileMetadata.fromObject(object.metadata);
+                message.metadata = $root.hermes.DownlinkFileMetadata.fromObject(object.metadata, long + 1);
             }
             if (object.validation != null) {
-                if (typeof object.validation !== "object")
+                if (!$util.isObject(object.validation))
                     throw TypeError(".hermes.DownlinkFileChunk.validation: object expected");
-                message.validation = $root.hermes.DownlinkFileValidation.fromObject(object.validation);
+                message.validation = $root.hermes.DownlinkFileValidation.fromObject(object.validation, long + 1);
             }
             return message;
         };
@@ -15398,27 +16671,31 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        DownlinkFileChunk.toObject = function toObject(message, options) {
+        DownlinkFileChunk.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
-            if (message.header != null && message.hasOwnProperty("header")) {
-                object.header = $root.hermes.FileHeader.toObject(message.header, options);
+            if (message.header != null && Object.hasOwnProperty.call(message, "header")) {
+                object.header = $root.hermes.FileHeader.toObject(message.header, options, q + 1);
                 if (options.oneofs)
                     object.value = "header";
             }
-            if (message.data != null && message.hasOwnProperty("data")) {
-                object.data = $root.hermes.DownlinkFileData.toObject(message.data, options);
+            if (message.data != null && Object.hasOwnProperty.call(message, "data")) {
+                object.data = $root.hermes.DownlinkFileData.toObject(message.data, options, q + 1);
                 if (options.oneofs)
                     object.value = "data";
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata")) {
-                object.metadata = $root.hermes.DownlinkFileMetadata.toObject(message.metadata, options);
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
+                object.metadata = $root.hermes.DownlinkFileMetadata.toObject(message.metadata, options, q + 1);
                 if (options.oneofs)
                     object.value = "metadata";
             }
-            if (message.validation != null && message.hasOwnProperty("validation")) {
-                object.validation = $root.hermes.DownlinkFileValidation.toObject(message.validation, options);
+            if (message.validation != null && Object.hasOwnProperty.call(message, "validation")) {
+                object.validation = $root.hermes.DownlinkFileValidation.toObject(message.validation, options, q + 1);
                 if (options.oneofs)
                     object.value = "validation";
             }
@@ -15503,7 +16780,7 @@ $root.hermes = (function() {
             this.capabilities = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -15576,9 +16853,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        Fsw.encode = function encode(message, writer) {
+        Fsw.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
             if (message.type != null && Object.hasOwnProperty.call(message, "type"))
@@ -15623,12 +16904,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        Fsw.decode = function decode(reader, length) {
+        Fsw.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Fsw();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.id = reader.string();
@@ -15664,7 +16951,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -15695,26 +16982,30 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        Fsw.verify = function verify(message) {
+        Fsw.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 if (!$util.isString(message.id))
                     return "id: string expected";
-            if (message.type != null && message.hasOwnProperty("type"))
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
                 if (!$util.isString(message.type))
                     return "type: string expected";
-            if (message.profileId != null && message.hasOwnProperty("profileId"))
+            if (message.profileId != null && Object.hasOwnProperty.call(message, "profileId"))
                 if (!$util.isString(message.profileId))
                     return "profileId: string expected";
-            if (message.forwards != null && message.hasOwnProperty("forwards")) {
+            if (message.forwards != null && Object.hasOwnProperty.call(message, "forwards")) {
                 if (!Array.isArray(message.forwards))
                     return "forwards: array expected";
                 for (var i = 0; i < message.forwards.length; ++i)
                     if (!$util.isString(message.forwards[i]))
                         return "forwards: string[] expected";
             }
-            if (message.capabilities != null && message.hasOwnProperty("capabilities")) {
+            if (message.capabilities != null && Object.hasOwnProperty.call(message, "capabilities")) {
                 if (!Array.isArray(message.capabilities))
                     return "capabilities: array expected";
                 for (var i = 0; i < message.capabilities.length; ++i)
@@ -15730,7 +17021,7 @@ $root.hermes = (function() {
                         break;
                     }
             }
-            if (message.dictionary != null && message.hasOwnProperty("dictionary"))
+            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
                 if (!$util.isString(message.dictionary))
                     return "dictionary: string expected";
             return null;
@@ -15744,9 +17035,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.Fsw} Fsw
          */
-        Fsw.fromObject = function fromObject(object) {
+        Fsw.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.Fsw)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Fsw: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.Fsw();
             if (object.id != null)
                 message.id = String(object.id);
@@ -15812,9 +17109,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        Fsw.toObject = function toObject(message, options) {
+        Fsw.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults) {
                 object.forwards = [];
@@ -15826,11 +17127,11 @@ $root.hermes = (function() {
                 object.profileId = "";
                 object.dictionary = "";
             }
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 object.id = message.id;
-            if (message.type != null && message.hasOwnProperty("type"))
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
                 object.type = message.type;
-            if (message.profileId != null && message.hasOwnProperty("profileId"))
+            if (message.profileId != null && Object.hasOwnProperty.call(message, "profileId"))
                 object.profileId = message.profileId;
             if (message.forwards && message.forwards.length) {
                 object.forwards = [];
@@ -15842,7 +17143,7 @@ $root.hermes = (function() {
                 for (var j = 0; j < message.capabilities.length; ++j)
                     object.capabilities[j] = options.enums === String ? $root.hermes.FswCapability[message.capabilities[j]] === undefined ? message.capabilities[j] : $root.hermes.FswCapability[message.capabilities[j]] : message.capabilities[j];
             }
-            if (message.dictionary != null && message.hasOwnProperty("dictionary"))
+            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
                 object.dictionary = message.dictionary;
             return object;
         };
@@ -15897,7 +17198,7 @@ $root.hermes = (function() {
         function CommandOptions(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -15931,9 +17232,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        CommandOptions.encode = function encode(message, writer) {
+        CommandOptions.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.noWait != null && Object.hasOwnProperty.call(message, "noWait"))
                 writer.uint32(/* id 1, wireType 0 =*/8).bool(message.noWait);
             return writer;
@@ -15963,19 +17268,25 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        CommandOptions.decode = function decode(reader, length) {
+        CommandOptions.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.CommandOptions();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.noWait = reader.bool();
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -16006,10 +17317,14 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        CommandOptions.verify = function verify(message) {
+        CommandOptions.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.noWait != null && message.hasOwnProperty("noWait"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.noWait != null && Object.hasOwnProperty.call(message, "noWait"))
                 if (typeof message.noWait !== "boolean")
                     return "noWait: boolean expected";
             return null;
@@ -16023,9 +17338,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.CommandOptions} CommandOptions
          */
-        CommandOptions.fromObject = function fromObject(object) {
+        CommandOptions.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.CommandOptions)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.CommandOptions: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.CommandOptions();
             if (object.noWait != null)
                 message.noWait = Boolean(object.noWait);
@@ -16041,13 +17362,17 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        CommandOptions.toObject = function toObject(message, options) {
+        CommandOptions.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults)
                 object.noWait = false;
-            if (message.noWait != null && message.hasOwnProperty("noWait"))
+            if (message.noWait != null && Object.hasOwnProperty.call(message, "noWait"))
                 object.noWait = message.noWait;
             return object;
         };
@@ -16106,7 +17431,7 @@ $root.hermes = (function() {
             this.metadata = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -16163,16 +17488,20 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        CommandValue.encode = function encode(message, writer) {
+        CommandValue.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.def != null && Object.hasOwnProperty.call(message, "def"))
-                $root.hermes.CommandDef.encode(message.def, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.hermes.CommandDef.encode(message.def, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.args != null && message.args.length)
                 for (var i = 0; i < message.args.length; ++i)
-                    $root.hermes.Value.encode(message.args[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                    $root.hermes.Value.encode(message.args[i], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             if (message.options != null && Object.hasOwnProperty.call(message, "options"))
-                $root.hermes.CommandOptions.encode(message.options, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                $root.hermes.CommandOptions.encode(message.options, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
             if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
                     writer.uint32(/* id 4, wireType 2 =*/34).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.metadata[keys[i]]).ldelim();
@@ -16203,25 +17532,31 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        CommandValue.decode = function decode(reader, length) {
+        CommandValue.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.CommandValue(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.def = $root.hermes.CommandDef.decode(reader, reader.uint32());
+                        message.def = $root.hermes.CommandDef.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
                         if (!(message.args && message.args.length))
                             message.args = [];
-                        message.args.push($root.hermes.Value.decode(reader, reader.uint32()));
+                        message.args.push($root.hermes.Value.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 case 3: {
-                        message.options = $root.hermes.CommandOptions.decode(reader, reader.uint32());
+                        message.options = $root.hermes.CommandOptions.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 4: {
@@ -16240,15 +17575,17 @@ $root.hermes = (function() {
                                 value = reader.string();
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.metadata, key);
                         message.metadata[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -16279,29 +17616,33 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        CommandValue.verify = function verify(message) {
+        CommandValue.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.def != null && message.hasOwnProperty("def")) {
-                var error = $root.hermes.CommandDef.verify(message.def);
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.def != null && Object.hasOwnProperty.call(message, "def")) {
+                var error = $root.hermes.CommandDef.verify(message.def, long + 1);
                 if (error)
                     return "def." + error;
             }
-            if (message.args != null && message.hasOwnProperty("args")) {
+            if (message.args != null && Object.hasOwnProperty.call(message, "args")) {
                 if (!Array.isArray(message.args))
                     return "args: array expected";
                 for (var i = 0; i < message.args.length; ++i) {
-                    var error = $root.hermes.Value.verify(message.args[i]);
+                    var error = $root.hermes.Value.verify(message.args[i], long + 1);
                     if (error)
                         return "args." + error;
                 }
             }
-            if (message.options != null && message.hasOwnProperty("options")) {
-                var error = $root.hermes.CommandOptions.verify(message.options);
+            if (message.options != null && Object.hasOwnProperty.call(message, "options")) {
+                var error = $root.hermes.CommandOptions.verify(message.options, long + 1);
                 if (error)
                     return "options." + error;
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata")) {
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
                 if (!$util.isObject(message.metadata))
                     return "metadata: object expected";
                 var key = Object.keys(message.metadata);
@@ -16320,36 +17661,45 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.CommandValue} CommandValue
          */
-        CommandValue.fromObject = function fromObject(object) {
+        CommandValue.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.CommandValue)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.CommandValue: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.CommandValue();
             if (object.def != null) {
-                if (typeof object.def !== "object")
+                if (!$util.isObject(object.def))
                     throw TypeError(".hermes.CommandValue.def: object expected");
-                message.def = $root.hermes.CommandDef.fromObject(object.def);
+                message.def = $root.hermes.CommandDef.fromObject(object.def, long + 1);
             }
             if (object.args) {
                 if (!Array.isArray(object.args))
                     throw TypeError(".hermes.CommandValue.args: array expected");
                 message.args = [];
                 for (var i = 0; i < object.args.length; ++i) {
-                    if (typeof object.args[i] !== "object")
+                    if (!$util.isObject(object.args[i]))
                         throw TypeError(".hermes.CommandValue.args: object expected");
-                    message.args[i] = $root.hermes.Value.fromObject(object.args[i]);
+                    message.args[i] = $root.hermes.Value.fromObject(object.args[i], long + 1);
                 }
             }
             if (object.options != null) {
-                if (typeof object.options !== "object")
+                if (!$util.isObject(object.options))
                     throw TypeError(".hermes.CommandValue.options: object expected");
-                message.options = $root.hermes.CommandOptions.fromObject(object.options);
+                message.options = $root.hermes.CommandOptions.fromObject(object.options, long + 1);
             }
             if (object.metadata) {
-                if (typeof object.metadata !== "object")
+                if (!$util.isObject(object.metadata))
                     throw TypeError(".hermes.CommandValue.metadata: object expected");
                 message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i)
+                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.metadata, keys[i]);
                     message.metadata[keys[i]] = String(object.metadata[keys[i]]);
+                }
             }
             return message;
         };
@@ -16363,9 +17713,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        CommandValue.toObject = function toObject(message, options) {
+        CommandValue.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object.args = [];
@@ -16375,20 +17729,23 @@ $root.hermes = (function() {
                 object.def = null;
                 object.options = null;
             }
-            if (message.def != null && message.hasOwnProperty("def"))
-                object.def = $root.hermes.CommandDef.toObject(message.def, options);
+            if (message.def != null && Object.hasOwnProperty.call(message, "def"))
+                object.def = $root.hermes.CommandDef.toObject(message.def, options, q + 1);
             if (message.args && message.args.length) {
                 object.args = [];
                 for (var j = 0; j < message.args.length; ++j)
-                    object.args[j] = $root.hermes.Value.toObject(message.args[j], options);
+                    object.args[j] = $root.hermes.Value.toObject(message.args[j], options, q + 1);
             }
-            if (message.options != null && message.hasOwnProperty("options"))
-                object.options = $root.hermes.CommandOptions.toObject(message.options, options);
+            if (message.options != null && Object.hasOwnProperty.call(message, "options"))
+                object.options = $root.hermes.CommandOptions.toObject(message.options, options, q + 1);
             var keys2;
             if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
                 object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j)
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.metadata, keys2[j]);
                     object.metadata[keys2[j]] = message.metadata[keys2[j]];
+                }
             }
             return object;
         };
@@ -16447,7 +17804,7 @@ $root.hermes = (function() {
             this.metadata = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -16496,13 +17853,17 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        RawCommandValue.encode = function encode(message, writer) {
+        RawCommandValue.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.command != null && Object.hasOwnProperty.call(message, "command"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.command);
             if (message.options != null && Object.hasOwnProperty.call(message, "options"))
-                $root.hermes.CommandOptions.encode(message.options, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                $root.hermes.CommandOptions.encode(message.options, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
             if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
                 for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
                     writer.uint32(/* id 4, wireType 2 =*/34).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.metadata[keys[i]]).ldelim();
@@ -16533,19 +17894,25 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        RawCommandValue.decode = function decode(reader, length) {
+        RawCommandValue.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.RawCommandValue(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 2: {
                         message.command = reader.string();
                         break;
                     }
                 case 3: {
-                        message.options = $root.hermes.CommandOptions.decode(reader, reader.uint32());
+                        message.options = $root.hermes.CommandOptions.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 4: {
@@ -16564,15 +17931,17 @@ $root.hermes = (function() {
                                 value = reader.string();
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.metadata, key);
                         message.metadata[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -16603,18 +17972,22 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        RawCommandValue.verify = function verify(message) {
+        RawCommandValue.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.command != null && message.hasOwnProperty("command"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.command != null && Object.hasOwnProperty.call(message, "command"))
                 if (!$util.isString(message.command))
                     return "command: string expected";
-            if (message.options != null && message.hasOwnProperty("options")) {
-                var error = $root.hermes.CommandOptions.verify(message.options);
+            if (message.options != null && Object.hasOwnProperty.call(message, "options")) {
+                var error = $root.hermes.CommandOptions.verify(message.options, long + 1);
                 if (error)
                     return "options." + error;
             }
-            if (message.metadata != null && message.hasOwnProperty("metadata")) {
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
                 if (!$util.isObject(message.metadata))
                     return "metadata: object expected";
                 var key = Object.keys(message.metadata);
@@ -16633,23 +18006,32 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.RawCommandValue} RawCommandValue
          */
-        RawCommandValue.fromObject = function fromObject(object) {
+        RawCommandValue.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.RawCommandValue)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.RawCommandValue: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.RawCommandValue();
             if (object.command != null)
                 message.command = String(object.command);
             if (object.options != null) {
-                if (typeof object.options !== "object")
+                if (!$util.isObject(object.options))
                     throw TypeError(".hermes.RawCommandValue.options: object expected");
-                message.options = $root.hermes.CommandOptions.fromObject(object.options);
+                message.options = $root.hermes.CommandOptions.fromObject(object.options, long + 1);
             }
             if (object.metadata) {
-                if (typeof object.metadata !== "object")
+                if (!$util.isObject(object.metadata))
                     throw TypeError(".hermes.RawCommandValue.metadata: object expected");
                 message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i)
+                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.metadata, keys[i]);
                     message.metadata[keys[i]] = String(object.metadata[keys[i]]);
+                }
             }
             return message;
         };
@@ -16663,9 +18045,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        RawCommandValue.toObject = function toObject(message, options) {
+        RawCommandValue.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.objects || options.defaults)
                 object.metadata = {};
@@ -16673,15 +18059,18 @@ $root.hermes = (function() {
                 object.command = "";
                 object.options = null;
             }
-            if (message.command != null && message.hasOwnProperty("command"))
+            if (message.command != null && Object.hasOwnProperty.call(message, "command"))
                 object.command = message.command;
-            if (message.options != null && message.hasOwnProperty("options"))
-                object.options = $root.hermes.CommandOptions.toObject(message.options, options);
+            if (message.options != null && Object.hasOwnProperty.call(message, "options"))
+                object.options = $root.hermes.CommandOptions.toObject(message.options, options, q + 1);
             var keys2;
             if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
                 object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j)
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.metadata, keys2[j]);
                     object.metadata[keys2[j]] = message.metadata[keys2[j]];
+                }
             }
             return object;
         };
@@ -16739,7 +18128,7 @@ $root.hermes = (function() {
             this.metadata = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -16788,12 +18177,16 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        CommandSequence.encode = function encode(message, writer) {
+        CommandSequence.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.commands != null && message.commands.length)
                 for (var i = 0; i < message.commands.length; ++i)
-                    $root.hermes.CommandValue.encode(message.commands[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    $root.hermes.CommandValue.encode(message.commands[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.languageName != null && Object.hasOwnProperty.call(message, "languageName"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.languageName);
             if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
@@ -16826,17 +18219,23 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        CommandSequence.decode = function decode(reader, length) {
+        CommandSequence.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.CommandSequence(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         if (!(message.commands && message.commands.length))
                             message.commands = [];
-                        message.commands.push($root.hermes.CommandValue.decode(reader, reader.uint32()));
+                        message.commands.push($root.hermes.CommandValue.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 case 2: {
@@ -16859,15 +18258,17 @@ $root.hermes = (function() {
                                 value = reader.string();
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.metadata, key);
                         message.metadata[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -16898,22 +18299,26 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        CommandSequence.verify = function verify(message) {
+        CommandSequence.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.commands != null && message.hasOwnProperty("commands")) {
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.commands != null && Object.hasOwnProperty.call(message, "commands")) {
                 if (!Array.isArray(message.commands))
                     return "commands: array expected";
                 for (var i = 0; i < message.commands.length; ++i) {
-                    var error = $root.hermes.CommandValue.verify(message.commands[i]);
+                    var error = $root.hermes.CommandValue.verify(message.commands[i], long + 1);
                     if (error)
                         return "commands." + error;
                 }
             }
-            if (message.languageName != null && message.hasOwnProperty("languageName"))
+            if (message.languageName != null && Object.hasOwnProperty.call(message, "languageName"))
                 if (!$util.isString(message.languageName))
                     return "languageName: string expected";
-            if (message.metadata != null && message.hasOwnProperty("metadata")) {
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
                 if (!$util.isObject(message.metadata))
                     return "metadata: object expected";
                 var key = Object.keys(message.metadata);
@@ -16932,28 +18337,37 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.CommandSequence} CommandSequence
          */
-        CommandSequence.fromObject = function fromObject(object) {
+        CommandSequence.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.CommandSequence)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.CommandSequence: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.CommandSequence();
             if (object.commands) {
                 if (!Array.isArray(object.commands))
                     throw TypeError(".hermes.CommandSequence.commands: array expected");
                 message.commands = [];
                 for (var i = 0; i < object.commands.length; ++i) {
-                    if (typeof object.commands[i] !== "object")
+                    if (!$util.isObject(object.commands[i]))
                         throw TypeError(".hermes.CommandSequence.commands: object expected");
-                    message.commands[i] = $root.hermes.CommandValue.fromObject(object.commands[i]);
+                    message.commands[i] = $root.hermes.CommandValue.fromObject(object.commands[i], long + 1);
                 }
             }
             if (object.languageName != null)
                 message.languageName = String(object.languageName);
             if (object.metadata) {
-                if (typeof object.metadata !== "object")
+                if (!$util.isObject(object.metadata))
                     throw TypeError(".hermes.CommandSequence.metadata: object expected");
                 message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i)
+                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.metadata, keys[i]);
                     message.metadata[keys[i]] = String(object.metadata[keys[i]]);
+                }
             }
             return message;
         };
@@ -16967,9 +18381,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        CommandSequence.toObject = function toObject(message, options) {
+        CommandSequence.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object.commands = [];
@@ -16980,15 +18398,18 @@ $root.hermes = (function() {
             if (message.commands && message.commands.length) {
                 object.commands = [];
                 for (var j = 0; j < message.commands.length; ++j)
-                    object.commands[j] = $root.hermes.CommandValue.toObject(message.commands[j], options);
+                    object.commands[j] = $root.hermes.CommandValue.toObject(message.commands[j], options, q + 1);
             }
-            if (message.languageName != null && message.hasOwnProperty("languageName"))
+            if (message.languageName != null && Object.hasOwnProperty.call(message, "languageName"))
                 object.languageName = message.languageName;
             var keys2;
             if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
                 object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j)
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.metadata, keys2[j]);
                     object.metadata[keys2[j]] = message.metadata[keys2[j]];
+                }
             }
             return object;
         };
@@ -17046,7 +18467,7 @@ $root.hermes = (function() {
             this.metadata = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -17103,9 +18524,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        RawCommandSequence.encode = function encode(message, writer) {
+        RawCommandSequence.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.sequence != null && Object.hasOwnProperty.call(message, "sequence"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.sequence);
             if (message.languageName != null && Object.hasOwnProperty.call(message, "languageName"))
@@ -17142,12 +18567,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        RawCommandSequence.decode = function decode(reader, length) {
+        RawCommandSequence.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.RawCommandSequence(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.sequence = reader.string();
@@ -17173,10 +18604,12 @@ $root.hermes = (function() {
                                 value = reader.string();
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.metadata, key);
                         message.metadata[key] = value;
                         break;
                     }
@@ -17185,7 +18618,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -17216,16 +18649,20 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        RawCommandSequence.verify = function verify(message) {
+        RawCommandSequence.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.sequence != null && message.hasOwnProperty("sequence"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.sequence != null && Object.hasOwnProperty.call(message, "sequence"))
                 if (!$util.isString(message.sequence))
                     return "sequence: string expected";
-            if (message.languageName != null && message.hasOwnProperty("languageName"))
+            if (message.languageName != null && Object.hasOwnProperty.call(message, "languageName"))
                 if (!$util.isString(message.languageName))
                     return "languageName: string expected";
-            if (message.metadata != null && message.hasOwnProperty("metadata")) {
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
                 if (!$util.isObject(message.metadata))
                     return "metadata: object expected";
                 var key = Object.keys(message.metadata);
@@ -17233,7 +18670,7 @@ $root.hermes = (function() {
                     if (!$util.isString(message.metadata[key[i]]))
                         return "metadata: string{k:string} expected";
             }
-            if (message.lineCommentPrefix != null && message.hasOwnProperty("lineCommentPrefix"))
+            if (message.lineCommentPrefix != null && Object.hasOwnProperty.call(message, "lineCommentPrefix"))
                 if (!$util.isString(message.lineCommentPrefix))
                     return "lineCommentPrefix: string expected";
             return null;
@@ -17247,20 +18684,29 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.RawCommandSequence} RawCommandSequence
          */
-        RawCommandSequence.fromObject = function fromObject(object) {
+        RawCommandSequence.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.RawCommandSequence)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.RawCommandSequence: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.RawCommandSequence();
             if (object.sequence != null)
                 message.sequence = String(object.sequence);
             if (object.languageName != null)
                 message.languageName = String(object.languageName);
             if (object.metadata) {
-                if (typeof object.metadata !== "object")
+                if (!$util.isObject(object.metadata))
                     throw TypeError(".hermes.RawCommandSequence.metadata: object expected");
                 message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i)
+                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.metadata, keys[i]);
                     message.metadata[keys[i]] = String(object.metadata[keys[i]]);
+                }
             }
             if (object.lineCommentPrefix != null)
                 message.lineCommentPrefix = String(object.lineCommentPrefix);
@@ -17276,9 +18722,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        RawCommandSequence.toObject = function toObject(message, options) {
+        RawCommandSequence.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.objects || options.defaults)
                 object.metadata = {};
@@ -17287,17 +18737,20 @@ $root.hermes = (function() {
                 object.languageName = "";
                 object.lineCommentPrefix = "";
             }
-            if (message.sequence != null && message.hasOwnProperty("sequence"))
+            if (message.sequence != null && Object.hasOwnProperty.call(message, "sequence"))
                 object.sequence = message.sequence;
-            if (message.languageName != null && message.hasOwnProperty("languageName"))
+            if (message.languageName != null && Object.hasOwnProperty.call(message, "languageName"))
                 object.languageName = message.languageName;
             var keys2;
             if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
                 object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j)
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.metadata, keys2[j]);
                     object.metadata[keys2[j]] = message.metadata[keys2[j]];
+                }
             }
-            if (message.lineCommentPrefix != null && message.hasOwnProperty("lineCommentPrefix"))
+            if (message.lineCommentPrefix != null && Object.hasOwnProperty.call(message, "lineCommentPrefix"))
                 object.lineCommentPrefix = message.lineCommentPrefix;
             return object;
         };
@@ -17353,7 +18806,7 @@ $root.hermes = (function() {
         function RequestValue(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -17394,9 +18847,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        RequestValue.encode = function encode(message, writer) {
+        RequestValue.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.kind);
             if (message.data != null && Object.hasOwnProperty.call(message, "data"))
@@ -17428,12 +18885,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        RequestValue.decode = function decode(reader, length) {
+        RequestValue.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.RequestValue();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.kind = reader.string();
@@ -17444,7 +18907,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -17475,13 +18938,17 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        RequestValue.verify = function verify(message) {
+        RequestValue.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.kind != null && message.hasOwnProperty("kind"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 if (!$util.isString(message.kind))
                     return "kind: string expected";
-            if (message.data != null && message.hasOwnProperty("data"))
+            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
                 if (!(message.data && typeof message.data.length === "number" || $util.isString(message.data)))
                     return "data: buffer expected";
             return null;
@@ -17495,9 +18962,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.RequestValue} RequestValue
          */
-        RequestValue.fromObject = function fromObject(object) {
+        RequestValue.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.RequestValue)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.RequestValue: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.RequestValue();
             if (object.kind != null)
                 message.kind = String(object.kind);
@@ -17518,9 +18991,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        RequestValue.toObject = function toObject(message, options) {
+        RequestValue.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.kind = "";
@@ -17532,9 +19009,9 @@ $root.hermes = (function() {
                         object.data = $util.newBuffer(object.data);
                 }
             }
-            if (message.kind != null && message.hasOwnProperty("kind"))
+            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
                 object.kind = message.kind;
-            if (message.data != null && message.hasOwnProperty("data"))
+            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
                 object.data = options.bytes === String ? $util.base64.encode(message.data, 0, message.data.length) : options.bytes === Array ? Array.prototype.slice.call(message.data) : message.data;
             return object;
         };
@@ -17588,7 +19065,7 @@ $root.hermes = (function() {
         function RequestReply(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -17621,9 +19098,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        RequestReply.encode = function encode(message, writer) {
+        RequestReply.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.data != null && Object.hasOwnProperty.call(message, "data"))
                 writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.data);
             return writer;
@@ -17653,19 +19134,25 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        RequestReply.decode = function decode(reader, length) {
+        RequestReply.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.RequestReply();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.data = reader.bytes();
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -17696,10 +19183,14 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        RequestReply.verify = function verify(message) {
+        RequestReply.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.data != null && message.hasOwnProperty("data"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
                 if (!(message.data && typeof message.data.length === "number" || $util.isString(message.data)))
                     return "data: buffer expected";
             return null;
@@ -17713,9 +19204,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.RequestReply} RequestReply
          */
-        RequestReply.fromObject = function fromObject(object) {
+        RequestReply.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.RequestReply)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.RequestReply: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.RequestReply();
             if (object.data != null)
                 if (typeof object.data === "string")
@@ -17734,9 +19231,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        RequestReply.toObject = function toObject(message, options) {
+        RequestReply.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults)
                 if (options.bytes === String)
@@ -17746,7 +19247,7 @@ $root.hermes = (function() {
                     if (options.bytes !== Array)
                         object.data = $util.newBuffer(object.data);
                 }
-            if (message.data != null && message.hasOwnProperty("data"))
+            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
                 object.data = options.bytes === String ? $util.base64.encode(message.data, 0, message.data.length) : options.bytes === Array ? Array.prototype.slice.call(message.data) : message.data;
             return object;
         };
@@ -17800,7 +19301,7 @@ $root.hermes = (function() {
         function Id(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -17833,9 +19334,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        Id.encode = function encode(message, writer) {
+        Id.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
             return writer;
@@ -17865,19 +19370,25 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        Id.decode = function decode(reader, length) {
+        Id.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Id();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.id = reader.string();
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -17908,10 +19419,14 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        Id.verify = function verify(message) {
+        Id.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 if (!$util.isString(message.id))
                     return "id: string expected";
             return null;
@@ -17925,9 +19440,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.Id} Id
          */
-        Id.fromObject = function fromObject(object) {
+        Id.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.Id)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Id: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.Id();
             if (object.id != null)
                 message.id = String(object.id);
@@ -17943,13 +19464,17 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        Id.toObject = function toObject(message, options) {
+        Id.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults)
                 object.id = "";
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 object.id = message.id;
             return object;
         };
@@ -18004,7 +19529,7 @@ $root.hermes = (function() {
             this.all = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -18037,12 +19562,16 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FswList.encode = function encode(message, writer) {
+        FswList.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.all != null && message.all.length)
                 for (var i = 0; i < message.all.length; ++i)
-                    $root.hermes.Fsw.encode(message.all[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    $root.hermes.Fsw.encode(message.all[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -18070,21 +19599,27 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FswList.decode = function decode(reader, length) {
+        FswList.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FswList();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         if (!(message.all && message.all.length))
                             message.all = [];
-                        message.all.push($root.hermes.Fsw.decode(reader, reader.uint32()));
+                        message.all.push($root.hermes.Fsw.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -18115,14 +19650,18 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FswList.verify = function verify(message) {
+        FswList.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.all != null && message.hasOwnProperty("all")) {
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.all != null && Object.hasOwnProperty.call(message, "all")) {
                 if (!Array.isArray(message.all))
                     return "all: array expected";
                 for (var i = 0; i < message.all.length; ++i) {
-                    var error = $root.hermes.Fsw.verify(message.all[i]);
+                    var error = $root.hermes.Fsw.verify(message.all[i], long + 1);
                     if (error)
                         return "all." + error;
                 }
@@ -18138,18 +19677,24 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FswList} FswList
          */
-        FswList.fromObject = function fromObject(object) {
+        FswList.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FswList)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FswList: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FswList();
             if (object.all) {
                 if (!Array.isArray(object.all))
                     throw TypeError(".hermes.FswList.all: array expected");
                 message.all = [];
                 for (var i = 0; i < object.all.length; ++i) {
-                    if (typeof object.all[i] !== "object")
+                    if (!$util.isObject(object.all[i]))
                         throw TypeError(".hermes.FswList.all: object expected");
-                    message.all[i] = $root.hermes.Fsw.fromObject(object.all[i]);
+                    message.all[i] = $root.hermes.Fsw.fromObject(object.all[i], long + 1);
                 }
             }
             return message;
@@ -18164,16 +19709,20 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FswList.toObject = function toObject(message, options) {
+        FswList.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object.all = [];
             if (message.all && message.all.length) {
                 object.all = [];
                 for (var j = 0; j < message.all.length; ++j)
-                    object.all[j] = $root.hermes.Fsw.toObject(message.all[j], options);
+                    object.all[j] = $root.hermes.Fsw.toObject(message.all[j], options, q + 1);
             }
             return object;
         };
@@ -18227,7 +19776,7 @@ $root.hermes = (function() {
         function Reply(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -18260,9 +19809,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        Reply.encode = function encode(message, writer) {
+        Reply.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.success != null && Object.hasOwnProperty.call(message, "success"))
                 writer.uint32(/* id 1, wireType 0 =*/8).bool(message.success);
             return writer;
@@ -18292,19 +19845,25 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        Reply.decode = function decode(reader, length) {
+        Reply.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Reply();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.success = reader.bool();
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -18335,10 +19894,14 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        Reply.verify = function verify(message) {
+        Reply.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.success != null && message.hasOwnProperty("success"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.success != null && Object.hasOwnProperty.call(message, "success"))
                 if (typeof message.success !== "boolean")
                     return "success: boolean expected";
             return null;
@@ -18352,9 +19915,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.Reply} Reply
          */
-        Reply.fromObject = function fromObject(object) {
+        Reply.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.Reply)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Reply: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.Reply();
             if (object.success != null)
                 message.success = Boolean(object.success);
@@ -18370,13 +19939,17 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        Reply.toObject = function toObject(message, options) {
+        Reply.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults)
                 object.success = false;
-            if (message.success != null && message.hasOwnProperty("success"))
+            if (message.success != null && Object.hasOwnProperty.call(message, "success"))
                 object.success = message.success;
             return object;
         };
@@ -18431,7 +20004,7 @@ $root.hermes = (function() {
         function SequenceReply(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -18472,9 +20045,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        SequenceReply.encode = function encode(message, writer) {
+        SequenceReply.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.success != null && Object.hasOwnProperty.call(message, "success"))
                 writer.uint32(/* id 1, wireType 0 =*/8).bool(message.success);
             if (message.commandIndex != null && Object.hasOwnProperty.call(message, "commandIndex"))
@@ -18506,12 +20083,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        SequenceReply.decode = function decode(reader, length) {
+        SequenceReply.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.SequenceReply();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.success = reader.bool();
@@ -18522,7 +20105,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -18553,13 +20136,17 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        SequenceReply.verify = function verify(message) {
+        SequenceReply.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.success != null && message.hasOwnProperty("success"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.success != null && Object.hasOwnProperty.call(message, "success"))
                 if (typeof message.success !== "boolean")
                     return "success: boolean expected";
-            if (message.commandIndex != null && message.hasOwnProperty("commandIndex"))
+            if (message.commandIndex != null && Object.hasOwnProperty.call(message, "commandIndex"))
                 if (!$util.isInteger(message.commandIndex))
                     return "commandIndex: integer expected";
             return null;
@@ -18573,9 +20160,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.SequenceReply} SequenceReply
          */
-        SequenceReply.fromObject = function fromObject(object) {
+        SequenceReply.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.SequenceReply)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.SequenceReply: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.SequenceReply();
             if (object.success != null)
                 message.success = Boolean(object.success);
@@ -18593,17 +20186,21 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        SequenceReply.toObject = function toObject(message, options) {
+        SequenceReply.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.success = false;
                 object.commandIndex = 0;
             }
-            if (message.success != null && message.hasOwnProperty("success"))
+            if (message.success != null && Object.hasOwnProperty.call(message, "success"))
                 object.success = message.success;
-            if (message.commandIndex != null && message.hasOwnProperty("commandIndex"))
+            if (message.commandIndex != null && Object.hasOwnProperty.call(message, "commandIndex"))
                 object.commandIndex = message.commandIndex;
             return object;
         };
@@ -18659,7 +20256,7 @@ $root.hermes = (function() {
         function StatefulProfile(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -18708,11 +20305,15 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        StatefulProfile.encode = function encode(message, writer) {
+        StatefulProfile.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.value != null && Object.hasOwnProperty.call(message, "value"))
-                $root.hermes.Profile.encode(message.value, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.hermes.Profile.encode(message.value, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.state != null && Object.hasOwnProperty.call(message, "state"))
                 writer.uint32(/* id 2, wireType 0 =*/16).int32(message.state);
             if (message.runtimeOnly != null && Object.hasOwnProperty.call(message, "runtimeOnly"))
@@ -18744,15 +20345,21 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        StatefulProfile.decode = function decode(reader, length) {
+        StatefulProfile.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.StatefulProfile();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.value = $root.hermes.Profile.decode(reader, reader.uint32());
+                        message.value = $root.hermes.Profile.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
@@ -18764,7 +20371,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -18795,15 +20402,19 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        StatefulProfile.verify = function verify(message) {
+        StatefulProfile.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.value != null && message.hasOwnProperty("value")) {
-                var error = $root.hermes.Profile.verify(message.value);
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.value != null && Object.hasOwnProperty.call(message, "value")) {
+                var error = $root.hermes.Profile.verify(message.value, long + 1);
                 if (error)
                     return "value." + error;
             }
-            if (message.state != null && message.hasOwnProperty("state"))
+            if (message.state != null && Object.hasOwnProperty.call(message, "state"))
                 switch (message.state) {
                 default:
                     return "state: enum value expected";
@@ -18813,7 +20424,7 @@ $root.hermes = (function() {
                 case 3:
                     break;
                 }
-            if (message.runtimeOnly != null && message.hasOwnProperty("runtimeOnly"))
+            if (message.runtimeOnly != null && Object.hasOwnProperty.call(message, "runtimeOnly"))
                 if (typeof message.runtimeOnly !== "boolean")
                     return "runtimeOnly: boolean expected";
             return null;
@@ -18827,14 +20438,20 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.StatefulProfile} StatefulProfile
          */
-        StatefulProfile.fromObject = function fromObject(object) {
+        StatefulProfile.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.StatefulProfile)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.StatefulProfile: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.StatefulProfile();
             if (object.value != null) {
-                if (typeof object.value !== "object")
+                if (!$util.isObject(object.value))
                     throw TypeError(".hermes.StatefulProfile.value: object expected");
-                message.value = $root.hermes.Profile.fromObject(object.value);
+                message.value = $root.hermes.Profile.fromObject(object.value, long + 1);
             }
             switch (object.state) {
             default:
@@ -18874,20 +20491,24 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        StatefulProfile.toObject = function toObject(message, options) {
+        StatefulProfile.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.value = null;
                 object.state = options.enums === String ? "PROFILE_IDLE" : 0;
                 object.runtimeOnly = false;
             }
-            if (message.value != null && message.hasOwnProperty("value"))
-                object.value = $root.hermes.Profile.toObject(message.value, options);
-            if (message.state != null && message.hasOwnProperty("state"))
+            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
+                object.value = $root.hermes.Profile.toObject(message.value, options, q + 1);
+            if (message.state != null && Object.hasOwnProperty.call(message, "state"))
                 object.state = options.enums === String ? $root.hermes.ProfileState[message.state] === undefined ? message.state : $root.hermes.ProfileState[message.state] : message.state;
-            if (message.runtimeOnly != null && message.hasOwnProperty("runtimeOnly"))
+            if (message.runtimeOnly != null && Object.hasOwnProperty.call(message, "runtimeOnly"))
                 object.runtimeOnly = message.runtimeOnly;
             return object;
         };
@@ -18942,7 +20563,7 @@ $root.hermes = (function() {
             this.all = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -18975,13 +20596,17 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ProfileList.encode = function encode(message, writer) {
+        ProfileList.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.all != null && Object.hasOwnProperty.call(message, "all"))
                 for (var keys = Object.keys(message.all), i = 0; i < keys.length; ++i) {
                     writer.uint32(/* id 1, wireType 2 =*/10).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.StatefulProfile.encode(message.all[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                    $root.hermes.StatefulProfile.encode(message.all[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
                 }
             return writer;
         };
@@ -19010,12 +20635,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ProfileList.decode = function decode(reader, length) {
+        ProfileList.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ProfileList(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         if (message.all === $util.emptyObject)
@@ -19030,18 +20661,20 @@ $root.hermes = (function() {
                                 key = reader.string();
                                 break;
                             case 2:
-                                value = $root.hermes.StatefulProfile.decode(reader, reader.uint32());
+                                value = $root.hermes.StatefulProfile.decode(reader, reader.uint32(), undefined, long + 1);
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.all, key);
                         message.all[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -19072,15 +20705,19 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        ProfileList.verify = function verify(message) {
+        ProfileList.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.all != null && message.hasOwnProperty("all")) {
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.all != null && Object.hasOwnProperty.call(message, "all")) {
                 if (!$util.isObject(message.all))
                     return "all: object expected";
                 var key = Object.keys(message.all);
                 for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.StatefulProfile.verify(message.all[key[i]]);
+                    var error = $root.hermes.StatefulProfile.verify(message.all[key[i]], long + 1);
                     if (error)
                         return "all." + error;
                 }
@@ -19096,18 +20733,26 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.ProfileList} ProfileList
          */
-        ProfileList.fromObject = function fromObject(object) {
+        ProfileList.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.ProfileList)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.ProfileList: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.ProfileList();
             if (object.all) {
-                if (typeof object.all !== "object")
+                if (!$util.isObject(object.all))
                     throw TypeError(".hermes.ProfileList.all: object expected");
                 message.all = {};
                 for (var keys = Object.keys(object.all), i = 0; i < keys.length; ++i) {
-                    if (typeof object.all[keys[i]] !== "object")
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.all, keys[i]);
+                    if (!$util.isObject(object.all[keys[i]]))
                         throw TypeError(".hermes.ProfileList.all: object expected");
-                    message.all[keys[i]] = $root.hermes.StatefulProfile.fromObject(object.all[keys[i]]);
+                    message.all[keys[i]] = $root.hermes.StatefulProfile.fromObject(object.all[keys[i]], long + 1);
                 }
             }
             return message;
@@ -19122,17 +20767,24 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        ProfileList.toObject = function toObject(message, options) {
+        ProfileList.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.objects || options.defaults)
                 object.all = {};
             var keys2;
             if (message.all && (keys2 = Object.keys(message.all)).length) {
                 object.all = {};
-                for (var j = 0; j < keys2.length; ++j)
-                    object.all[keys2[j]] = $root.hermes.StatefulProfile.toObject(message.all[keys2[j]], options);
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.all, keys2[j]);
+                    object.all[keys2[j]] = $root.hermes.StatefulProfile.toObject(message.all[keys2[j]], options, q + 1);
+                }
             }
             return object;
         };
@@ -19187,7 +20839,7 @@ $root.hermes = (function() {
             this.all = [];
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -19220,12 +20872,16 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ProfileProviderList.encode = function encode(message, writer) {
+        ProfileProviderList.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.all != null && message.all.length)
                 for (var i = 0; i < message.all.length; ++i)
-                    $root.hermes.ProfileProvider.encode(message.all[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    $root.hermes.ProfileProvider.encode(message.all[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -19253,21 +20909,27 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ProfileProviderList.decode = function decode(reader, length) {
+        ProfileProviderList.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ProfileProviderList();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         if (!(message.all && message.all.length))
                             message.all = [];
-                        message.all.push($root.hermes.ProfileProvider.decode(reader, reader.uint32()));
+                        message.all.push($root.hermes.ProfileProvider.decode(reader, reader.uint32(), undefined, long + 1));
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -19298,14 +20960,18 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        ProfileProviderList.verify = function verify(message) {
+        ProfileProviderList.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.all != null && message.hasOwnProperty("all")) {
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.all != null && Object.hasOwnProperty.call(message, "all")) {
                 if (!Array.isArray(message.all))
                     return "all: array expected";
                 for (var i = 0; i < message.all.length; ++i) {
-                    var error = $root.hermes.ProfileProvider.verify(message.all[i]);
+                    var error = $root.hermes.ProfileProvider.verify(message.all[i], long + 1);
                     if (error)
                         return "all." + error;
                 }
@@ -19321,18 +20987,24 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.ProfileProviderList} ProfileProviderList
          */
-        ProfileProviderList.fromObject = function fromObject(object) {
+        ProfileProviderList.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.ProfileProviderList)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.ProfileProviderList: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.ProfileProviderList();
             if (object.all) {
                 if (!Array.isArray(object.all))
                     throw TypeError(".hermes.ProfileProviderList.all: array expected");
                 message.all = [];
                 for (var i = 0; i < object.all.length; ++i) {
-                    if (typeof object.all[i] !== "object")
+                    if (!$util.isObject(object.all[i]))
                         throw TypeError(".hermes.ProfileProviderList.all: object expected");
-                    message.all[i] = $root.hermes.ProfileProvider.fromObject(object.all[i]);
+                    message.all[i] = $root.hermes.ProfileProvider.fromObject(object.all[i], long + 1);
                 }
             }
             return message;
@@ -19347,16 +21019,20 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        ProfileProviderList.toObject = function toObject(message, options) {
+        ProfileProviderList.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.arrays || options.defaults)
                 object.all = [];
             if (message.all && message.all.length) {
                 object.all = [];
                 for (var j = 0; j < message.all.length; ++j)
-                    object.all[j] = $root.hermes.ProfileProvider.toObject(message.all[j], options);
+                    object.all[j] = $root.hermes.ProfileProvider.toObject(message.all[j], options, q + 1);
             }
             return object;
         };
@@ -19411,7 +21087,7 @@ $root.hermes = (function() {
         function ProfileUpdate(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -19452,9 +21128,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ProfileUpdate.encode = function encode(message, writer) {
+        ProfileUpdate.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
             if (message.settings != null && Object.hasOwnProperty.call(message, "settings"))
@@ -19486,12 +21166,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ProfileUpdate.decode = function decode(reader, length) {
+        ProfileUpdate.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ProfileUpdate();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.id = reader.string();
@@ -19502,7 +21188,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -19533,13 +21219,17 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        ProfileUpdate.verify = function verify(message) {
+        ProfileUpdate.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 if (!$util.isString(message.id))
                     return "id: string expected";
-            if (message.settings != null && message.hasOwnProperty("settings"))
+            if (message.settings != null && Object.hasOwnProperty.call(message, "settings"))
                 if (!$util.isString(message.settings))
                     return "settings: string expected";
             return null;
@@ -19553,9 +21243,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.ProfileUpdate} ProfileUpdate
          */
-        ProfileUpdate.fromObject = function fromObject(object) {
+        ProfileUpdate.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.ProfileUpdate)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.ProfileUpdate: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.ProfileUpdate();
             if (object.id != null)
                 message.id = String(object.id);
@@ -19573,17 +21269,21 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        ProfileUpdate.toObject = function toObject(message, options) {
+        ProfileUpdate.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.id = "";
                 object.settings = "";
             }
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 object.id = message.id;
-            if (message.settings != null && message.hasOwnProperty("settings"))
+            if (message.settings != null && Object.hasOwnProperty.call(message, "settings"))
                 object.settings = message.settings;
             return object;
         };
@@ -19638,7 +21338,7 @@ $root.hermes = (function() {
             this.all = {};
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -19671,13 +21371,17 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        DictionaryList.encode = function encode(message, writer) {
+        DictionaryList.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.all != null && Object.hasOwnProperty.call(message, "all"))
                 for (var keys = Object.keys(message.all), i = 0; i < keys.length; ++i) {
                     writer.uint32(/* id 1, wireType 2 =*/10).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.DictionaryHead.encode(message.all[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim().ldelim();
+                    $root.hermes.DictionaryHead.encode(message.all[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
                 }
             return writer;
         };
@@ -19706,12 +21410,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        DictionaryList.decode = function decode(reader, length) {
+        DictionaryList.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DictionaryList(), key, value;
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         if (message.all === $util.emptyObject)
@@ -19726,18 +21436,20 @@ $root.hermes = (function() {
                                 key = reader.string();
                                 break;
                             case 2:
-                                value = $root.hermes.DictionaryHead.decode(reader, reader.uint32());
+                                value = $root.hermes.DictionaryHead.decode(reader, reader.uint32(), undefined, long + 1);
                                 break;
                             default:
-                                reader.skipType(tag2 & 7);
+                                reader.skipType(tag2 & 7, long);
                                 break;
                             }
                         }
+                        if (key === "__proto__")
+                            $util.makeProp(message.all, key);
                         message.all[key] = value;
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -19768,15 +21480,19 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        DictionaryList.verify = function verify(message) {
+        DictionaryList.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.all != null && message.hasOwnProperty("all")) {
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.all != null && Object.hasOwnProperty.call(message, "all")) {
                 if (!$util.isObject(message.all))
                     return "all: object expected";
                 var key = Object.keys(message.all);
                 for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.DictionaryHead.verify(message.all[key[i]]);
+                    var error = $root.hermes.DictionaryHead.verify(message.all[key[i]], long + 1);
                     if (error)
                         return "all." + error;
                 }
@@ -19792,18 +21508,26 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.DictionaryList} DictionaryList
          */
-        DictionaryList.fromObject = function fromObject(object) {
+        DictionaryList.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.DictionaryList)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.DictionaryList: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.DictionaryList();
             if (object.all) {
-                if (typeof object.all !== "object")
+                if (!$util.isObject(object.all))
                     throw TypeError(".hermes.DictionaryList.all: object expected");
                 message.all = {};
                 for (var keys = Object.keys(object.all), i = 0; i < keys.length; ++i) {
-                    if (typeof object.all[keys[i]] !== "object")
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.all, keys[i]);
+                    if (!$util.isObject(object.all[keys[i]]))
                         throw TypeError(".hermes.DictionaryList.all: object expected");
-                    message.all[keys[i]] = $root.hermes.DictionaryHead.fromObject(object.all[keys[i]]);
+                    message.all[keys[i]] = $root.hermes.DictionaryHead.fromObject(object.all[keys[i]], long + 1);
                 }
             }
             return message;
@@ -19818,17 +21542,24 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        DictionaryList.toObject = function toObject(message, options) {
+        DictionaryList.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.objects || options.defaults)
                 object.all = {};
             var keys2;
             if (message.all && (keys2 = Object.keys(message.all)).length) {
                 object.all = {};
-                for (var j = 0; j < keys2.length; ++j)
-                    object.all[keys2[j]] = $root.hermes.DictionaryHead.toObject(message.all[keys2[j]], options);
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.all, keys2[j]);
+                    object.all[keys2[j]] = $root.hermes.DictionaryHead.toObject(message.all[keys2[j]], options, q + 1);
+                }
             }
             return object;
         };
@@ -19890,7 +21621,7 @@ $root.hermes = (function() {
         function Uplink(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -20001,27 +21732,31 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        Uplink.encode = function encode(message, writer) {
+        Uplink.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
             if (message.cmd != null && Object.hasOwnProperty.call(message, "cmd"))
-                $root.hermes.CommandValue.encode(message.cmd, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.hermes.CommandValue.encode(message.cmd, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             if (message.parseCmd != null && Object.hasOwnProperty.call(message, "parseCmd"))
-                $root.hermes.RawCommandValue.encode(message.parseCmd, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                $root.hermes.RawCommandValue.encode(message.parseCmd, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
             if (message.seq != null && Object.hasOwnProperty.call(message, "seq"))
-                $root.hermes.CommandSequence.encode(message.seq, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                $root.hermes.CommandSequence.encode(message.seq, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
             if (message.parseSeq != null && Object.hasOwnProperty.call(message, "parseSeq"))
-                $root.hermes.RawCommandSequence.encode(message.parseSeq, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                $root.hermes.RawCommandSequence.encode(message.parseSeq, writer.uint32(/* id 5, wireType 2 =*/42).fork(), q + 1).ldelim();
             if (message.file != null && Object.hasOwnProperty.call(message, "file"))
-                $root.hermes.UplinkFileChunk.encode(message.file, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                $root.hermes.UplinkFileChunk.encode(message.file, writer.uint32(/* id 6, wireType 2 =*/50).fork(), q + 1).ldelim();
             if (message.request != null && Object.hasOwnProperty.call(message, "request"))
-                $root.hermes.RequestValue.encode(message.request, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
+                $root.hermes.RequestValue.encode(message.request, writer.uint32(/* id 7, wireType 2 =*/58).fork(), q + 1).ldelim();
             if (message.cancel != null && Object.hasOwnProperty.call(message, "cancel"))
-                $root.google.protobuf.Empty.encode(message.cancel, writer.uint32(/* id 99, wireType 2 =*/794).fork()).ldelim();
+                $root.google.protobuf.Empty.encode(message.cancel, writer.uint32(/* id 99, wireType 2 =*/794).fork(), q + 1).ldelim();
             if (message.final != null && Object.hasOwnProperty.call(message, "final"))
-                $root.google.protobuf.Empty.encode(message.final, writer.uint32(/* id 100, wireType 2 =*/802).fork()).ldelim();
+                $root.google.protobuf.Empty.encode(message.final, writer.uint32(/* id 100, wireType 2 =*/802).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -20049,51 +21784,57 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        Uplink.decode = function decode(reader, length) {
+        Uplink.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Uplink();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.id = reader.string();
                         break;
                     }
                 case 2: {
-                        message.cmd = $root.hermes.CommandValue.decode(reader, reader.uint32());
+                        message.cmd = $root.hermes.CommandValue.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 3: {
-                        message.parseCmd = $root.hermes.RawCommandValue.decode(reader, reader.uint32());
+                        message.parseCmd = $root.hermes.RawCommandValue.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 4: {
-                        message.seq = $root.hermes.CommandSequence.decode(reader, reader.uint32());
+                        message.seq = $root.hermes.CommandSequence.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 5: {
-                        message.parseSeq = $root.hermes.RawCommandSequence.decode(reader, reader.uint32());
+                        message.parseSeq = $root.hermes.RawCommandSequence.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 6: {
-                        message.file = $root.hermes.UplinkFileChunk.decode(reader, reader.uint32());
+                        message.file = $root.hermes.UplinkFileChunk.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 7: {
-                        message.request = $root.hermes.RequestValue.decode(reader, reader.uint32());
+                        message.request = $root.hermes.RequestValue.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 99: {
-                        message.cancel = $root.google.protobuf.Empty.decode(reader, reader.uint32());
+                        message.cancel = $root.google.protobuf.Empty.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 100: {
-                        message.final = $root.google.protobuf.Empty.decode(reader, reader.uint32());
+                        message.final = $root.google.protobuf.Empty.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -20124,87 +21865,91 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        Uplink.verify = function verify(message) {
+        Uplink.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
             var properties = {};
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 if (!$util.isString(message.id))
                     return "id: string expected";
-            if (message.cmd != null && message.hasOwnProperty("cmd")) {
+            if (message.cmd != null && Object.hasOwnProperty.call(message, "cmd")) {
                 properties.value = 1;
                 {
-                    var error = $root.hermes.CommandValue.verify(message.cmd);
+                    var error = $root.hermes.CommandValue.verify(message.cmd, long + 1);
                     if (error)
                         return "cmd." + error;
                 }
             }
-            if (message.parseCmd != null && message.hasOwnProperty("parseCmd")) {
+            if (message.parseCmd != null && Object.hasOwnProperty.call(message, "parseCmd")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.RawCommandValue.verify(message.parseCmd);
+                    var error = $root.hermes.RawCommandValue.verify(message.parseCmd, long + 1);
                     if (error)
                         return "parseCmd." + error;
                 }
             }
-            if (message.seq != null && message.hasOwnProperty("seq")) {
+            if (message.seq != null && Object.hasOwnProperty.call(message, "seq")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.CommandSequence.verify(message.seq);
+                    var error = $root.hermes.CommandSequence.verify(message.seq, long + 1);
                     if (error)
                         return "seq." + error;
                 }
             }
-            if (message.parseSeq != null && message.hasOwnProperty("parseSeq")) {
+            if (message.parseSeq != null && Object.hasOwnProperty.call(message, "parseSeq")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.RawCommandSequence.verify(message.parseSeq);
+                    var error = $root.hermes.RawCommandSequence.verify(message.parseSeq, long + 1);
                     if (error)
                         return "parseSeq." + error;
                 }
             }
-            if (message.file != null && message.hasOwnProperty("file")) {
+            if (message.file != null && Object.hasOwnProperty.call(message, "file")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.UplinkFileChunk.verify(message.file);
+                    var error = $root.hermes.UplinkFileChunk.verify(message.file, long + 1);
                     if (error)
                         return "file." + error;
                 }
             }
-            if (message.request != null && message.hasOwnProperty("request")) {
+            if (message.request != null && Object.hasOwnProperty.call(message, "request")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.RequestValue.verify(message.request);
+                    var error = $root.hermes.RequestValue.verify(message.request, long + 1);
                     if (error)
                         return "request." + error;
                 }
             }
-            if (message.cancel != null && message.hasOwnProperty("cancel")) {
+            if (message.cancel != null && Object.hasOwnProperty.call(message, "cancel")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.google.protobuf.Empty.verify(message.cancel);
+                    var error = $root.google.protobuf.Empty.verify(message.cancel, long + 1);
                     if (error)
                         return "cancel." + error;
                 }
             }
-            if (message.final != null && message.hasOwnProperty("final")) {
+            if (message.final != null && Object.hasOwnProperty.call(message, "final")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.google.protobuf.Empty.verify(message.final);
+                    var error = $root.google.protobuf.Empty.verify(message.final, long + 1);
                     if (error)
                         return "final." + error;
                 }
@@ -20220,51 +21965,57 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.Uplink} Uplink
          */
-        Uplink.fromObject = function fromObject(object) {
+        Uplink.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.Uplink)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Uplink: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.Uplink();
             if (object.id != null)
                 message.id = String(object.id);
             if (object.cmd != null) {
-                if (typeof object.cmd !== "object")
+                if (!$util.isObject(object.cmd))
                     throw TypeError(".hermes.Uplink.cmd: object expected");
-                message.cmd = $root.hermes.CommandValue.fromObject(object.cmd);
+                message.cmd = $root.hermes.CommandValue.fromObject(object.cmd, long + 1);
             }
             if (object.parseCmd != null) {
-                if (typeof object.parseCmd !== "object")
+                if (!$util.isObject(object.parseCmd))
                     throw TypeError(".hermes.Uplink.parseCmd: object expected");
-                message.parseCmd = $root.hermes.RawCommandValue.fromObject(object.parseCmd);
+                message.parseCmd = $root.hermes.RawCommandValue.fromObject(object.parseCmd, long + 1);
             }
             if (object.seq != null) {
-                if (typeof object.seq !== "object")
+                if (!$util.isObject(object.seq))
                     throw TypeError(".hermes.Uplink.seq: object expected");
-                message.seq = $root.hermes.CommandSequence.fromObject(object.seq);
+                message.seq = $root.hermes.CommandSequence.fromObject(object.seq, long + 1);
             }
             if (object.parseSeq != null) {
-                if (typeof object.parseSeq !== "object")
+                if (!$util.isObject(object.parseSeq))
                     throw TypeError(".hermes.Uplink.parseSeq: object expected");
-                message.parseSeq = $root.hermes.RawCommandSequence.fromObject(object.parseSeq);
+                message.parseSeq = $root.hermes.RawCommandSequence.fromObject(object.parseSeq, long + 1);
             }
             if (object.file != null) {
-                if (typeof object.file !== "object")
+                if (!$util.isObject(object.file))
                     throw TypeError(".hermes.Uplink.file: object expected");
-                message.file = $root.hermes.UplinkFileChunk.fromObject(object.file);
+                message.file = $root.hermes.UplinkFileChunk.fromObject(object.file, long + 1);
             }
             if (object.request != null) {
-                if (typeof object.request !== "object")
+                if (!$util.isObject(object.request))
                     throw TypeError(".hermes.Uplink.request: object expected");
-                message.request = $root.hermes.RequestValue.fromObject(object.request);
+                message.request = $root.hermes.RequestValue.fromObject(object.request, long + 1);
             }
             if (object.cancel != null) {
-                if (typeof object.cancel !== "object")
+                if (!$util.isObject(object.cancel))
                     throw TypeError(".hermes.Uplink.cancel: object expected");
-                message.cancel = $root.google.protobuf.Empty.fromObject(object.cancel);
+                message.cancel = $root.google.protobuf.Empty.fromObject(object.cancel, long + 1);
             }
             if (object.final != null) {
-                if (typeof object.final !== "object")
+                if (!$util.isObject(object.final))
                     throw TypeError(".hermes.Uplink.final: object expected");
-                message.final = $root.google.protobuf.Empty.fromObject(object.final);
+                message.final = $root.google.protobuf.Empty.fromObject(object.final, long + 1);
             }
             return message;
         };
@@ -20278,51 +22029,55 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        Uplink.toObject = function toObject(message, options) {
+        Uplink.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults)
                 object.id = "";
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 object.id = message.id;
-            if (message.cmd != null && message.hasOwnProperty("cmd")) {
-                object.cmd = $root.hermes.CommandValue.toObject(message.cmd, options);
+            if (message.cmd != null && Object.hasOwnProperty.call(message, "cmd")) {
+                object.cmd = $root.hermes.CommandValue.toObject(message.cmd, options, q + 1);
                 if (options.oneofs)
                     object.value = "cmd";
             }
-            if (message.parseCmd != null && message.hasOwnProperty("parseCmd")) {
-                object.parseCmd = $root.hermes.RawCommandValue.toObject(message.parseCmd, options);
+            if (message.parseCmd != null && Object.hasOwnProperty.call(message, "parseCmd")) {
+                object.parseCmd = $root.hermes.RawCommandValue.toObject(message.parseCmd, options, q + 1);
                 if (options.oneofs)
                     object.value = "parseCmd";
             }
-            if (message.seq != null && message.hasOwnProperty("seq")) {
-                object.seq = $root.hermes.CommandSequence.toObject(message.seq, options);
+            if (message.seq != null && Object.hasOwnProperty.call(message, "seq")) {
+                object.seq = $root.hermes.CommandSequence.toObject(message.seq, options, q + 1);
                 if (options.oneofs)
                     object.value = "seq";
             }
-            if (message.parseSeq != null && message.hasOwnProperty("parseSeq")) {
-                object.parseSeq = $root.hermes.RawCommandSequence.toObject(message.parseSeq, options);
+            if (message.parseSeq != null && Object.hasOwnProperty.call(message, "parseSeq")) {
+                object.parseSeq = $root.hermes.RawCommandSequence.toObject(message.parseSeq, options, q + 1);
                 if (options.oneofs)
                     object.value = "parseSeq";
             }
-            if (message.file != null && message.hasOwnProperty("file")) {
-                object.file = $root.hermes.UplinkFileChunk.toObject(message.file, options);
+            if (message.file != null && Object.hasOwnProperty.call(message, "file")) {
+                object.file = $root.hermes.UplinkFileChunk.toObject(message.file, options, q + 1);
                 if (options.oneofs)
                     object.value = "file";
             }
-            if (message.request != null && message.hasOwnProperty("request")) {
-                object.request = $root.hermes.RequestValue.toObject(message.request, options);
+            if (message.request != null && Object.hasOwnProperty.call(message, "request")) {
+                object.request = $root.hermes.RequestValue.toObject(message.request, options, q + 1);
                 if (options.oneofs)
                     object.value = "request";
             }
-            if (message.cancel != null && message.hasOwnProperty("cancel")) {
-                object.cancel = $root.google.protobuf.Empty.toObject(message.cancel, options);
+            if (message.cancel != null && Object.hasOwnProperty.call(message, "cancel")) {
+                object.cancel = $root.google.protobuf.Empty.toObject(message.cancel, options, q + 1);
                 if (options.oneofs)
                     object.value = "cancel";
             }
-            if (message.final != null && message.hasOwnProperty("final")) {
-                object.final = $root.google.protobuf.Empty.toObject(message.final, options);
+            if (message.final != null && Object.hasOwnProperty.call(message, "final")) {
+                object.final = $root.google.protobuf.Empty.toObject(message.final, options, q + 1);
                 if (options.oneofs)
                     object.value = "final";
             }
@@ -20380,7 +22135,7 @@ $root.hermes = (function() {
         function UplinkReply(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -20443,9 +22198,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        UplinkReply.encode = function encode(message, writer) {
+        UplinkReply.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
             if (message.reply != null && Object.hasOwnProperty.call(message, "reply"))
@@ -20479,12 +22238,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        UplinkReply.decode = function decode(reader, length) {
+        UplinkReply.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.UplinkReply();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.id = reader.string();
@@ -20499,7 +22264,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -20530,19 +22295,23 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        UplinkReply.verify = function verify(message) {
+        UplinkReply.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
             var properties = {};
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 if (!$util.isString(message.id))
                     return "id: string expected";
-            if (message.reply != null && message.hasOwnProperty("reply")) {
+            if (message.reply != null && Object.hasOwnProperty.call(message, "reply")) {
                 properties.status = 1;
                 if (!(message.reply && typeof message.reply.length === "number" || $util.isString(message.reply)))
                     return "reply: buffer expected";
             }
-            if (message.error != null && message.hasOwnProperty("error")) {
+            if (message.error != null && Object.hasOwnProperty.call(message, "error")) {
                 if (properties.status === 1)
                     return "status: multiple values";
                 properties.status = 1;
@@ -20560,9 +22329,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.UplinkReply} UplinkReply
          */
-        UplinkReply.fromObject = function fromObject(object) {
+        UplinkReply.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.UplinkReply)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.UplinkReply: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.UplinkReply();
             if (object.id != null)
                 message.id = String(object.id);
@@ -20585,20 +22360,24 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        UplinkReply.toObject = function toObject(message, options) {
+        UplinkReply.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults)
                 object.id = "";
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 object.id = message.id;
-            if (message.reply != null && message.hasOwnProperty("reply")) {
+            if (message.reply != null && Object.hasOwnProperty.call(message, "reply")) {
                 object.reply = options.bytes === String ? $util.base64.encode(message.reply, 0, message.reply.length) : options.bytes === Array ? Array.prototype.slice.call(message.reply) : message.reply;
                 if (options.oneofs)
                     object.status = "reply";
             }
-            if (message.error != null && message.hasOwnProperty("error")) {
+            if (message.error != null && Object.hasOwnProperty.call(message, "error")) {
                 object.error = message.error;
                 if (options.oneofs)
                     object.status = "error";
@@ -20656,7 +22435,7 @@ $root.hermes = (function() {
         function FswInitialPacket(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -20697,11 +22476,15 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FswInitialPacket.encode = function encode(message, writer) {
+        FswInitialPacket.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.info != null && Object.hasOwnProperty.call(message, "info"))
-                $root.hermes.Fsw.encode(message.info, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.hermes.Fsw.encode(message.info, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.profile != null && Object.hasOwnProperty.call(message, "profile"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.profile);
             return writer;
@@ -20731,15 +22514,21 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FswInitialPacket.decode = function decode(reader, length) {
+        FswInitialPacket.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FswInitialPacket();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.info = $root.hermes.Fsw.decode(reader, reader.uint32());
+                        message.info = $root.hermes.Fsw.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
@@ -20747,7 +22536,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -20778,15 +22567,19 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FswInitialPacket.verify = function verify(message) {
+        FswInitialPacket.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.info != null && message.hasOwnProperty("info")) {
-                var error = $root.hermes.Fsw.verify(message.info);
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.info != null && Object.hasOwnProperty.call(message, "info")) {
+                var error = $root.hermes.Fsw.verify(message.info, long + 1);
                 if (error)
                     return "info." + error;
             }
-            if (message.profile != null && message.hasOwnProperty("profile"))
+            if (message.profile != null && Object.hasOwnProperty.call(message, "profile"))
                 if (!$util.isString(message.profile))
                     return "profile: string expected";
             return null;
@@ -20800,14 +22593,20 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FswInitialPacket} FswInitialPacket
          */
-        FswInitialPacket.fromObject = function fromObject(object) {
+        FswInitialPacket.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FswInitialPacket)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FswInitialPacket: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FswInitialPacket();
             if (object.info != null) {
-                if (typeof object.info !== "object")
+                if (!$util.isObject(object.info))
                     throw TypeError(".hermes.FswInitialPacket.info: object expected");
-                message.info = $root.hermes.Fsw.fromObject(object.info);
+                message.info = $root.hermes.Fsw.fromObject(object.info, long + 1);
             }
             if (object.profile != null)
                 message.profile = String(object.profile);
@@ -20823,17 +22622,21 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FswInitialPacket.toObject = function toObject(message, options) {
+        FswInitialPacket.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.info = null;
                 object.profile = "";
             }
-            if (message.info != null && message.hasOwnProperty("info"))
-                object.info = $root.hermes.Fsw.toObject(message.info, options);
-            if (message.profile != null && message.hasOwnProperty("profile"))
+            if (message.info != null && Object.hasOwnProperty.call(message, "info"))
+                object.info = $root.hermes.Fsw.toObject(message.info, options, q + 1);
+            if (message.profile != null && Object.hasOwnProperty.call(message, "profile"))
                 object.profile = message.profile;
             return object;
         };
@@ -20888,7 +22691,7 @@ $root.hermes = (function() {
         function FswConnectionPacket(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -20943,13 +22746,17 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        FswConnectionPacket.encode = function encode(message, writer) {
+        FswConnectionPacket.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.info != null && Object.hasOwnProperty.call(message, "info"))
-                $root.hermes.FswInitialPacket.encode(message.info, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                $root.hermes.FswInitialPacket.encode(message.info, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
             if (message.reply != null && Object.hasOwnProperty.call(message, "reply"))
-                $root.hermes.UplinkReply.encode(message.reply, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                $root.hermes.UplinkReply.encode(message.reply, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
             return writer;
         };
 
@@ -20977,23 +22784,29 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        FswConnectionPacket.decode = function decode(reader, length) {
+        FswConnectionPacket.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FswConnectionPacket();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
-                        message.info = $root.hermes.FswInitialPacket.decode(reader, reader.uint32());
+                        message.info = $root.hermes.FswInitialPacket.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 case 2: {
-                        message.reply = $root.hermes.UplinkReply.decode(reader, reader.uint32());
+                        message.reply = $root.hermes.UplinkReply.decode(reader, reader.uint32(), undefined, long + 1);
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -21024,24 +22837,28 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        FswConnectionPacket.verify = function verify(message) {
+        FswConnectionPacket.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
             var properties = {};
-            if (message.info != null && message.hasOwnProperty("info")) {
+            if (message.info != null && Object.hasOwnProperty.call(message, "info")) {
                 properties.value = 1;
                 {
-                    var error = $root.hermes.FswInitialPacket.verify(message.info);
+                    var error = $root.hermes.FswInitialPacket.verify(message.info, long + 1);
                     if (error)
                         return "info." + error;
                 }
             }
-            if (message.reply != null && message.hasOwnProperty("reply")) {
+            if (message.reply != null && Object.hasOwnProperty.call(message, "reply")) {
                 if (properties.value === 1)
                     return "value: multiple values";
                 properties.value = 1;
                 {
-                    var error = $root.hermes.UplinkReply.verify(message.reply);
+                    var error = $root.hermes.UplinkReply.verify(message.reply, long + 1);
                     if (error)
                         return "reply." + error;
                 }
@@ -21057,19 +22874,25 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.FswConnectionPacket} FswConnectionPacket
          */
-        FswConnectionPacket.fromObject = function fromObject(object) {
+        FswConnectionPacket.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.FswConnectionPacket)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FswConnectionPacket: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.FswConnectionPacket();
             if (object.info != null) {
-                if (typeof object.info !== "object")
+                if (!$util.isObject(object.info))
                     throw TypeError(".hermes.FswConnectionPacket.info: object expected");
-                message.info = $root.hermes.FswInitialPacket.fromObject(object.info);
+                message.info = $root.hermes.FswInitialPacket.fromObject(object.info, long + 1);
             }
             if (object.reply != null) {
-                if (typeof object.reply !== "object")
+                if (!$util.isObject(object.reply))
                     throw TypeError(".hermes.FswConnectionPacket.reply: object expected");
-                message.reply = $root.hermes.UplinkReply.fromObject(object.reply);
+                message.reply = $root.hermes.UplinkReply.fromObject(object.reply, long + 1);
             }
             return message;
         };
@@ -21083,17 +22906,21 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        FswConnectionPacket.toObject = function toObject(message, options) {
+        FswConnectionPacket.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
-            if (message.info != null && message.hasOwnProperty("info")) {
-                object.info = $root.hermes.FswInitialPacket.toObject(message.info, options);
+            if (message.info != null && Object.hasOwnProperty.call(message, "info")) {
+                object.info = $root.hermes.FswInitialPacket.toObject(message.info, options, q + 1);
                 if (options.oneofs)
                     object.value = "info";
             }
-            if (message.reply != null && message.hasOwnProperty("reply")) {
-                object.reply = $root.hermes.UplinkReply.toObject(message.reply, options);
+            if (message.reply != null && Object.hasOwnProperty.call(message, "reply")) {
+                object.reply = $root.hermes.UplinkReply.toObject(message.reply, options, q + 1);
                 if (options.oneofs)
                     object.value = "reply";
             }
@@ -21151,7 +22978,7 @@ $root.hermes = (function() {
         function ProfileProvider(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -21200,9 +23027,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        ProfileProvider.encode = function encode(message, writer) {
+        ProfileProvider.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
             if (message.schema != null && Object.hasOwnProperty.call(message, "schema"))
@@ -21236,12 +23067,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        ProfileProvider.decode = function decode(reader, length) {
+        ProfileProvider.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ProfileProvider();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.name = reader.string();
@@ -21256,7 +23093,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -21287,16 +23124,20 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        ProfileProvider.verify = function verify(message) {
+        ProfileProvider.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.schema != null && message.hasOwnProperty("schema"))
+            if (message.schema != null && Object.hasOwnProperty.call(message, "schema"))
                 if (!$util.isString(message.schema))
                     return "schema: string expected";
-            if (message.uiSchema != null && message.hasOwnProperty("uiSchema"))
+            if (message.uiSchema != null && Object.hasOwnProperty.call(message, "uiSchema"))
                 if (!$util.isString(message.uiSchema))
                     return "uiSchema: string expected";
             return null;
@@ -21310,9 +23151,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.ProfileProvider} ProfileProvider
          */
-        ProfileProvider.fromObject = function fromObject(object) {
+        ProfileProvider.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.ProfileProvider)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.ProfileProvider: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.ProfileProvider();
             if (object.name != null)
                 message.name = String(object.name);
@@ -21332,20 +23179,24 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        ProfileProvider.toObject = function toObject(message, options) {
+        ProfileProvider.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.name = "";
                 object.schema = "";
                 object.uiSchema = "";
             }
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.schema != null && message.hasOwnProperty("schema"))
+            if (message.schema != null && Object.hasOwnProperty.call(message, "schema"))
                 object.schema = message.schema;
-            if (message.uiSchema != null && message.hasOwnProperty("uiSchema"))
+            if (message.uiSchema != null && Object.hasOwnProperty.call(message, "uiSchema"))
                 object.uiSchema = message.uiSchema;
             return object;
         };
@@ -21402,7 +23253,7 @@ $root.hermes = (function() {
         function Profile(properties) {
             if (properties)
                 for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
 
@@ -21459,9 +23310,13 @@ $root.hermes = (function() {
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
-        Profile.encode = function encode(message, writer) {
+        Profile.encode = function encode(message, writer, q) {
             if (!writer)
                 writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
             if (message.provider != null && Object.hasOwnProperty.call(message, "provider"))
@@ -21497,12 +23352,18 @@ $root.hermes = (function() {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        Profile.decode = function decode(reader, length) {
+        Profile.decode = function decode(reader, length, error, long) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Profile();
             while (reader.pos < end) {
                 var tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.name = reader.string();
@@ -21521,7 +23382,7 @@ $root.hermes = (function() {
                         break;
                     }
                 default:
-                    reader.skipType(tag & 7);
+                    reader.skipType(tag & 7, long);
                     break;
                 }
             }
@@ -21552,19 +23413,23 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
          */
-        Profile.verify = function verify(message) {
+        Profile.verify = function verify(message, long) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
-            if (message.provider != null && message.hasOwnProperty("provider"))
+            if (message.provider != null && Object.hasOwnProperty.call(message, "provider"))
                 if (!$util.isString(message.provider))
                     return "provider: string expected";
-            if (message.settings != null && message.hasOwnProperty("settings"))
+            if (message.settings != null && Object.hasOwnProperty.call(message, "settings"))
                 if (!$util.isString(message.settings))
                     return "settings: string expected";
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 if (!$util.isString(message.id))
                     return "id: string expected";
             return null;
@@ -21578,9 +23443,15 @@ $root.hermes = (function() {
          * @param {Object.<string,*>} object Plain object
          * @returns {hermes.Profile} Profile
          */
-        Profile.fromObject = function fromObject(object) {
+        Profile.fromObject = function fromObject(object, long) {
             if (object instanceof $root.hermes.Profile)
                 return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Profile: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.Profile();
             if (object.name != null)
                 message.name = String(object.name);
@@ -21602,9 +23473,13 @@ $root.hermes = (function() {
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
-        Profile.toObject = function toObject(message, options) {
+        Profile.toObject = function toObject(message, options, q) {
             if (!options)
                 options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
                 object.name = "";
@@ -21612,13 +23487,13 @@ $root.hermes = (function() {
                 object.settings = "";
                 object.id = "";
             }
-            if (message.name != null && message.hasOwnProperty("name"))
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
-            if (message.provider != null && message.hasOwnProperty("provider"))
+            if (message.provider != null && Object.hasOwnProperty.call(message, "provider"))
                 object.provider = message.provider;
-            if (message.settings != null && message.hasOwnProperty("settings"))
+            if (message.settings != null && Object.hasOwnProperty.call(message, "settings"))
                 object.settings = message.settings;
-            if (message.id != null && message.hasOwnProperty("id"))
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                 object.id = message.id;
             return object;
         };
@@ -21712,7 +23587,7 @@ $root.google = (function() {
             function Timestamp(properties) {
                 if (properties)
                     for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
+                        if (properties[keys[i]] != null && keys[i] !== "__proto__")
                             this[keys[i]] = properties[keys[i]];
             }
 
@@ -21753,9 +23628,13 @@ $root.google = (function() {
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Timestamp.encode = function encode(message, writer) {
+            Timestamp.encode = function encode(message, writer, q) {
                 if (!writer)
                     writer = $Writer.create();
+                if (q === undefined)
+                    q = 0;
+                if (q > $util.recursionLimit)
+                    throw Error("max depth exceeded");
                 if (message.seconds != null && Object.hasOwnProperty.call(message, "seconds"))
                     writer.uint32(/* id 1, wireType 0 =*/8).int64(message.seconds);
                 if (message.nanos != null && Object.hasOwnProperty.call(message, "nanos"))
@@ -21787,12 +23666,18 @@ $root.google = (function() {
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Timestamp.decode = function decode(reader, length) {
+            Timestamp.decode = function decode(reader, length, error, long) {
                 if (!(reader instanceof $Reader))
                     reader = $Reader.create(reader);
+                if (long === undefined)
+                    long = 0;
+                if (long > $Reader.recursionLimit)
+                    throw Error("maximum nesting depth exceeded");
                 var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.protobuf.Timestamp();
                 while (reader.pos < end) {
                     var tag = reader.uint32();
+                    if (tag === error)
+                        break;
                     switch (tag >>> 3) {
                     case 1: {
                             message.seconds = reader.int64();
@@ -21803,7 +23688,7 @@ $root.google = (function() {
                             break;
                         }
                     default:
-                        reader.skipType(tag & 7);
+                        reader.skipType(tag & 7, long);
                         break;
                     }
                 }
@@ -21834,13 +23719,17 @@ $root.google = (function() {
              * @param {Object.<string,*>} message Plain object to verify
              * @returns {string|null} `null` if valid, otherwise the reason why it is not
              */
-            Timestamp.verify = function verify(message) {
+            Timestamp.verify = function verify(message, long) {
                 if (typeof message !== "object" || message === null)
                     return "object expected";
-                if (message.seconds != null && message.hasOwnProperty("seconds"))
+                if (long === undefined)
+                    long = 0;
+                if (long > $util.recursionLimit)
+                    return "maximum nesting depth exceeded";
+                if (message.seconds != null && Object.hasOwnProperty.call(message, "seconds"))
                     if (!$util.isInteger(message.seconds) && !(message.seconds && $util.isInteger(message.seconds.low) && $util.isInteger(message.seconds.high)))
                         return "seconds: integer|Long expected";
-                if (message.nanos != null && message.hasOwnProperty("nanos"))
+                if (message.nanos != null && Object.hasOwnProperty.call(message, "nanos"))
                     if (!$util.isInteger(message.nanos))
                         return "nanos: integer expected";
                 return null;
@@ -21854,13 +23743,19 @@ $root.google = (function() {
              * @param {Object.<string,*>} object Plain object
              * @returns {google.protobuf.Timestamp} Timestamp
              */
-            Timestamp.fromObject = function fromObject(object) {
+            Timestamp.fromObject = function fromObject(object, long) {
                 if (object instanceof $root.google.protobuf.Timestamp)
                     return object;
+                if (!$util.isObject(object))
+                    throw TypeError(".google.protobuf.Timestamp: object expected");
+                if (long === undefined)
+                    long = 0;
+                if (long > $util.recursionLimit)
+                    throw Error("maximum nesting depth exceeded");
                 var message = new $root.google.protobuf.Timestamp();
                 if (object.seconds != null)
                     if ($util.Long)
-                        (message.seconds = $util.Long.fromValue(object.seconds)).unsigned = false;
+                        message.seconds = $util.Long.fromValue(object.seconds, false);
                     else if (typeof object.seconds === "string")
                         message.seconds = parseInt(object.seconds, 10);
                     else if (typeof object.seconds === "number")
@@ -21881,24 +23776,30 @@ $root.google = (function() {
              * @param {$protobuf.IConversionOptions} [options] Conversion options
              * @returns {Object.<string,*>} Plain object
              */
-            Timestamp.toObject = function toObject(message, options) {
+            Timestamp.toObject = function toObject(message, options, q) {
                 if (!options)
                     options = {};
+                if (q === undefined)
+                    q = 0;
+                if (q > $util.recursionLimit)
+                    throw Error("max depth exceeded");
                 var object = {};
                 if (options.defaults) {
                     if ($util.Long) {
                         var long = new $util.Long(0, 0, false);
-                        object.seconds = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                        object.seconds = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
                     } else
-                        object.seconds = options.longs === String ? "0" : 0;
+                        object.seconds = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
                     object.nanos = 0;
                 }
-                if (message.seconds != null && message.hasOwnProperty("seconds"))
-                    if (typeof message.seconds === "number")
+                if (message.seconds != null && Object.hasOwnProperty.call(message, "seconds"))
+                    if (typeof BigInt !== "undefined" && options.longs === BigInt)
+                        object.seconds = typeof message.seconds === "number" ? BigInt(message.seconds) : $util.Long.fromBits(message.seconds.low >>> 0, message.seconds.high >>> 0, false).toBigInt();
+                    else if (typeof message.seconds === "number")
                         object.seconds = options.longs === String ? String(message.seconds) : message.seconds;
                     else
                         object.seconds = options.longs === String ? $util.Long.prototype.toString.call(message.seconds) : options.longs === Number ? new $util.LongBits(message.seconds.low >>> 0, message.seconds.high >>> 0).toNumber() : message.seconds;
-                if (message.nanos != null && message.hasOwnProperty("nanos"))
+                if (message.nanos != null && Object.hasOwnProperty.call(message, "nanos"))
                     object.nanos = message.nanos;
                 return object;
             };
@@ -21951,7 +23852,7 @@ $root.google = (function() {
             function Empty(properties) {
                 if (properties)
                     for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
+                        if (properties[keys[i]] != null && keys[i] !== "__proto__")
                             this[keys[i]] = properties[keys[i]];
             }
 
@@ -21976,9 +23877,13 @@ $root.google = (function() {
              * @param {$protobuf.Writer} [writer] Writer to encode to
              * @returns {$protobuf.Writer} Writer
              */
-            Empty.encode = function encode(message, writer) {
+            Empty.encode = function encode(message, writer, q) {
                 if (!writer)
                     writer = $Writer.create();
+                if (q === undefined)
+                    q = 0;
+                if (q > $util.recursionLimit)
+                    throw Error("max depth exceeded");
                 return writer;
             };
 
@@ -22006,15 +23911,21 @@ $root.google = (function() {
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Empty.decode = function decode(reader, length) {
+            Empty.decode = function decode(reader, length, error, long) {
                 if (!(reader instanceof $Reader))
                     reader = $Reader.create(reader);
+                if (long === undefined)
+                    long = 0;
+                if (long > $Reader.recursionLimit)
+                    throw Error("maximum nesting depth exceeded");
                 var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.protobuf.Empty();
                 while (reader.pos < end) {
                     var tag = reader.uint32();
+                    if (tag === error)
+                        break;
                     switch (tag >>> 3) {
                     default:
-                        reader.skipType(tag & 7);
+                        reader.skipType(tag & 7, long);
                         break;
                     }
                 }
@@ -22045,9 +23956,13 @@ $root.google = (function() {
              * @param {Object.<string,*>} message Plain object to verify
              * @returns {string|null} `null` if valid, otherwise the reason why it is not
              */
-            Empty.verify = function verify(message) {
+            Empty.verify = function verify(message, long) {
                 if (typeof message !== "object" || message === null)
                     return "object expected";
+                if (long === undefined)
+                    long = 0;
+                if (long > $util.recursionLimit)
+                    return "maximum nesting depth exceeded";
                 return null;
             };
 
@@ -22059,7 +23974,7 @@ $root.google = (function() {
              * @param {Object.<string,*>} object Plain object
              * @returns {google.protobuf.Empty} Empty
              */
-            Empty.fromObject = function fromObject(object) {
+            Empty.fromObject = function fromObject(object, long) {
                 if (object instanceof $root.google.protobuf.Empty)
                     return object;
                 return new $root.google.protobuf.Empty();
