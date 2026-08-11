@@ -27,7 +27,7 @@ var File_hermes_proto protoreflect.FileDescriptor
 const file_hermes_proto_rawDesc = "" +
 	"\n" +
 	"\fhermes.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x10dictionary.proto\x1a\n" +
-	"file.proto\x1a\tfsw.proto\x1a\tbus.proto\x1a\rprofile.proto\x1a\tmsg.proto2\xbd\x0e\n" +
+	"file.proto\x1a\tfsw.proto\x1a\tbus.proto\x1a\rprofile.proto\x1a\tmsg.proto2\xbf\x0f\n" +
 	"\x03Api\x12:\n" +
 	"\bSequence\x12\x17.hermes.CommandSequence\x1a\x15.hermes.SequenceReply\x12@\n" +
 	"\vRawSequence\x12\x1a.hermes.RawCommandSequence\x1a\x15.hermes.SequenceReply\x12.\n" +
@@ -65,8 +65,10 @@ const file_hermes_proto_rawDesc = "" +
 	".hermes.Id\x1a\x16.google.protobuf.Empty\x12?\n" +
 	"\rAllDictionary\x12\x16.google.protobuf.Empty\x1a\x16.hermes.DictionaryList\x12G\n" +
 	"\x13SubscribeDictionary\x12\x16.google.protobuf.Empty\x1a\x16.hermes.DictionaryList0\x01\x125\n" +
-	"\bSubEvent\x12\x11.hermes.BusFilter\x1a\x14.hermes.SourcedEvent0\x01\x12=\n" +
-	"\fSubTelemetry\x12\x11.hermes.BusFilter\x1a\x18.hermes.SourcedTelemetry0\x01\x12<\n" +
+	"\bSubEvent\x12\x11.hermes.BusFilter\x1a\x14.hermes.SourcedEvent0\x01\x12;\n" +
+	"\tEmitEvent\x12\x14.hermes.SourcedEvent\x1a\x16.google.protobuf.Empty(\x01\x12=\n" +
+	"\fSubTelemetry\x12\x11.hermes.BusFilter\x1a\x18.hermes.SourcedTelemetry0\x01\x12C\n" +
+	"\rEmitTelemetry\x12\x18.hermes.SourcedTelemetry\x1a\x16.google.protobuf.Empty(\x01\x12<\n" +
 	"\x0fSubFileDownlink\x12\x11.hermes.BusFilter\x1a\x14.hermes.FileDownlink0\x01\x128\n" +
 	"\rSubFileUplink\x12\x11.hermes.BusFilter\x1a\x12.hermes.FileUplink0\x01\x12F\n" +
 	"\x0fSubFileTransfer\x12\x16.google.protobuf.Empty\x1a\x19.hermes.FileTransferState0\x012\x80\x02\n" +
@@ -90,10 +92,10 @@ var file_hermes_proto_goTypes = []any{
 	(*pb.Profile)(nil),             // 9: hermes.Profile
 	(*pb.Dictionary)(nil),          // 10: hermes.Dictionary
 	(*pb.BusFilter)(nil),           // 11: hermes.BusFilter
-	(*pb.FswConnectionPacket)(nil), // 12: hermes.FswConnectionPacket
-	(*pb.DownlinkFileChunk)(nil),   // 13: hermes.DownlinkFileChunk
-	(*pb.SourcedEvent)(nil),        // 14: hermes.SourcedEvent
-	(*pb.SourcedTelemetry)(nil),    // 15: hermes.SourcedTelemetry
+	(*pb.SourcedEvent)(nil),        // 12: hermes.SourcedEvent
+	(*pb.SourcedTelemetry)(nil),    // 13: hermes.SourcedTelemetry
+	(*pb.FswConnectionPacket)(nil), // 14: hermes.FswConnectionPacket
+	(*pb.DownlinkFileChunk)(nil),   // 15: hermes.DownlinkFileChunk
 	(*pb.SequenceReply)(nil),       // 16: hermes.SequenceReply
 	(*pb.Reply)(nil),               // 17: hermes.Reply
 	(*pb.RequestReply)(nil),        // 18: hermes.RequestReply
@@ -135,51 +137,55 @@ var file_hermes_proto_depIdxs = []int32{
 	7,  // 24: Api.AllDictionary:input_type -> google.protobuf.Empty
 	7,  // 25: Api.SubscribeDictionary:input_type -> google.protobuf.Empty
 	11, // 26: Api.SubEvent:input_type -> hermes.BusFilter
-	11, // 27: Api.SubTelemetry:input_type -> hermes.BusFilter
-	11, // 28: Api.SubFileDownlink:input_type -> hermes.BusFilter
-	11, // 29: Api.SubFileUplink:input_type -> hermes.BusFilter
-	7,  // 30: Api.SubFileTransfer:input_type -> google.protobuf.Empty
-	12, // 31: Provider.Connection:input_type -> hermes.FswConnectionPacket
-	13, // 32: Provider.File:input_type -> hermes.DownlinkFileChunk
-	14, // 33: Provider.Event:input_type -> hermes.SourcedEvent
-	15, // 34: Provider.Telemetry:input_type -> hermes.SourcedTelemetry
-	16, // 35: Api.Sequence:output_type -> hermes.SequenceReply
-	16, // 36: Api.RawSequence:output_type -> hermes.SequenceReply
-	17, // 37: Api.Command:output_type -> hermes.Reply
-	18, // 38: Api.Request:output_type -> hermes.RequestReply
-	17, // 39: Api.RawCommand:output_type -> hermes.Reply
-	17, // 40: Api.Uplink:output_type -> hermes.Reply
-	19, // 41: Api.GetFsw:output_type -> hermes.Fsw
-	20, // 42: Api.AllFsw:output_type -> hermes.FswList
-	20, // 43: Api.SubscribeFsw:output_type -> hermes.FswList
-	7,  // 44: Api.StartProfile:output_type -> google.protobuf.Empty
-	7,  // 45: Api.StopProfile:output_type -> google.protobuf.Empty
-	7,  // 46: Api.UpdateProfile:output_type -> google.protobuf.Empty
-	6,  // 47: Api.AddProfile:output_type -> hermes.Id
-	7,  // 48: Api.RemoveProfile:output_type -> google.protobuf.Empty
-	21, // 49: Api.AllProfiles:output_type -> hermes.ProfileList
-	22, // 50: Api.AllProviders:output_type -> hermes.ProfileProviderList
-	23, // 51: Api.GetFileTransferState:output_type -> hermes.FileTransferState
-	7,  // 52: Api.ClearDownlinkTransferState:output_type -> google.protobuf.Empty
-	7,  // 53: Api.ClearUplinkTransferState:output_type -> google.protobuf.Empty
-	22, // 54: Api.SubscribeProviders:output_type -> hermes.ProfileProviderList
-	21, // 55: Api.SubscribeProfiles:output_type -> hermes.ProfileList
-	10, // 56: Api.GetDictionary:output_type -> hermes.Dictionary
-	6,  // 57: Api.AddDictionary:output_type -> hermes.Id
-	7,  // 58: Api.RemoveDictionary:output_type -> google.protobuf.Empty
-	24, // 59: Api.AllDictionary:output_type -> hermes.DictionaryList
-	24, // 60: Api.SubscribeDictionary:output_type -> hermes.DictionaryList
-	14, // 61: Api.SubEvent:output_type -> hermes.SourcedEvent
-	15, // 62: Api.SubTelemetry:output_type -> hermes.SourcedTelemetry
-	25, // 63: Api.SubFileDownlink:output_type -> hermes.FileDownlink
-	26, // 64: Api.SubFileUplink:output_type -> hermes.FileUplink
-	23, // 65: Api.SubFileTransfer:output_type -> hermes.FileTransferState
-	27, // 66: Provider.Connection:output_type -> hermes.Uplink
-	7,  // 67: Provider.File:output_type -> google.protobuf.Empty
-	7,  // 68: Provider.Event:output_type -> google.protobuf.Empty
-	7,  // 69: Provider.Telemetry:output_type -> google.protobuf.Empty
-	35, // [35:70] is the sub-list for method output_type
-	0,  // [0:35] is the sub-list for method input_type
+	12, // 27: Api.EmitEvent:input_type -> hermes.SourcedEvent
+	11, // 28: Api.SubTelemetry:input_type -> hermes.BusFilter
+	13, // 29: Api.EmitTelemetry:input_type -> hermes.SourcedTelemetry
+	11, // 30: Api.SubFileDownlink:input_type -> hermes.BusFilter
+	11, // 31: Api.SubFileUplink:input_type -> hermes.BusFilter
+	7,  // 32: Api.SubFileTransfer:input_type -> google.protobuf.Empty
+	14, // 33: Provider.Connection:input_type -> hermes.FswConnectionPacket
+	15, // 34: Provider.File:input_type -> hermes.DownlinkFileChunk
+	12, // 35: Provider.Event:input_type -> hermes.SourcedEvent
+	13, // 36: Provider.Telemetry:input_type -> hermes.SourcedTelemetry
+	16, // 37: Api.Sequence:output_type -> hermes.SequenceReply
+	16, // 38: Api.RawSequence:output_type -> hermes.SequenceReply
+	17, // 39: Api.Command:output_type -> hermes.Reply
+	18, // 40: Api.Request:output_type -> hermes.RequestReply
+	17, // 41: Api.RawCommand:output_type -> hermes.Reply
+	17, // 42: Api.Uplink:output_type -> hermes.Reply
+	19, // 43: Api.GetFsw:output_type -> hermes.Fsw
+	20, // 44: Api.AllFsw:output_type -> hermes.FswList
+	20, // 45: Api.SubscribeFsw:output_type -> hermes.FswList
+	7,  // 46: Api.StartProfile:output_type -> google.protobuf.Empty
+	7,  // 47: Api.StopProfile:output_type -> google.protobuf.Empty
+	7,  // 48: Api.UpdateProfile:output_type -> google.protobuf.Empty
+	6,  // 49: Api.AddProfile:output_type -> hermes.Id
+	7,  // 50: Api.RemoveProfile:output_type -> google.protobuf.Empty
+	21, // 51: Api.AllProfiles:output_type -> hermes.ProfileList
+	22, // 52: Api.AllProviders:output_type -> hermes.ProfileProviderList
+	23, // 53: Api.GetFileTransferState:output_type -> hermes.FileTransferState
+	7,  // 54: Api.ClearDownlinkTransferState:output_type -> google.protobuf.Empty
+	7,  // 55: Api.ClearUplinkTransferState:output_type -> google.protobuf.Empty
+	22, // 56: Api.SubscribeProviders:output_type -> hermes.ProfileProviderList
+	21, // 57: Api.SubscribeProfiles:output_type -> hermes.ProfileList
+	10, // 58: Api.GetDictionary:output_type -> hermes.Dictionary
+	6,  // 59: Api.AddDictionary:output_type -> hermes.Id
+	7,  // 60: Api.RemoveDictionary:output_type -> google.protobuf.Empty
+	24, // 61: Api.AllDictionary:output_type -> hermes.DictionaryList
+	24, // 62: Api.SubscribeDictionary:output_type -> hermes.DictionaryList
+	12, // 63: Api.SubEvent:output_type -> hermes.SourcedEvent
+	7,  // 64: Api.EmitEvent:output_type -> google.protobuf.Empty
+	13, // 65: Api.SubTelemetry:output_type -> hermes.SourcedTelemetry
+	7,  // 66: Api.EmitTelemetry:output_type -> google.protobuf.Empty
+	25, // 67: Api.SubFileDownlink:output_type -> hermes.FileDownlink
+	26, // 68: Api.SubFileUplink:output_type -> hermes.FileUplink
+	23, // 69: Api.SubFileTransfer:output_type -> hermes.FileTransferState
+	27, // 70: Provider.Connection:output_type -> hermes.Uplink
+	7,  // 71: Provider.File:output_type -> google.protobuf.Empty
+	7,  // 72: Provider.Event:output_type -> google.protobuf.Empty
+	7,  // 73: Provider.Telemetry:output_type -> google.protobuf.Empty
+	37, // [37:74] is the sub-list for method output_type
+	0,  // [0:37] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name

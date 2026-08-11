@@ -3822,6 +3822,9 @@ export namespace hermes {
         /** FormatSpecifier argumentIndex. */
         public argumentIndex: number;
 
+        /** FormatSpecifier _precision. */
+        public _precision?: "precision";
+
         /**
          * Creates a new FormatSpecifier instance using the specified properties.
          * @param [properties] Properties to set

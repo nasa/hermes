@@ -79,7 +79,7 @@ test('"Save & test" should be successful when configuration is valid', async ({
     await page.getByRole('textbox', { name: 'User' }).fill(ds.jsonData.user ?? '');
     await page.locator('#config-editor-password').fill(ds.secureJsonData?.password ?? '');
     await page.getByRole('textbox', { name: 'Database' }).fill(ds.jsonData.database ?? '');
-    await page.getByRole('textbox', { name: 'Hermes' }).fill(ds.jsonData.hermes ?? '');
+    await page.getByRole('textbox', { name: 'Hermes' }).fill(ds.jsonData.hermesUrl ?? '');
     await expect(configPage.saveAndTest()).not.toBeOK();
     await expect(configPage).toHaveAlert('error', { hasText: 'Status of connection to Hermes is unknown, no dictionaries are loaded or registered yet.' });
   } finally {
@@ -94,7 +94,7 @@ test('"Save & test" should fail when configuration is invalid', async ({
 }) => {
   const ds = await readProvisionedDataSource<MyDataSourceOptions, MySecureJsonData>({ fileName: 'datasources.yml' });
   const configPage = await createDataSourceConfigPage({ type: ds.type });
-  await page.getByRole('textbox', { name: 'Hermes' }).fill(ds.jsonData.hermes ?? '');
+  await page.getByRole('textbox', { name: 'Hermes' }).fill(ds.jsonData.hermesUrl ?? '');
   await expect(configPage.saveAndTest()).not.toBeOK();
   await expect(configPage).toHaveAlert('error', { hasText: 'unable to initialize hermes client' });
 });

@@ -1,6 +1,5 @@
 {
   "options": {
-    "syntax": "proto3",
     "go_package": "github.com/nasa/hermes/pkg/pb"
   },
   "nested": {
@@ -120,10 +119,20 @@
           "responseType": "hermes.SourcedEvent",
           "responseStream": true
         },
+        "EmitEvent": {
+          "requestType": "hermes.SourcedEvent",
+          "requestStream": true,
+          "responseType": "google.protobuf.Empty"
+        },
         "SubTelemetry": {
           "requestType": "hermes.BusFilter",
           "responseType": "hermes.SourcedTelemetry",
           "responseStream": true
+        },
+        "EmitTelemetry": {
+          "requestType": "hermes.SourcedTelemetry",
+          "requestStream": true,
+          "responseType": "google.protobuf.Empty"
         },
         "SubFileDownlink": {
           "requestType": "hermes.BusFilter",
