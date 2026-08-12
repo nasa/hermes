@@ -29,6 +29,9 @@ This guide will walk you through:
 
 By the end of this guide, you'll have Hermes connected to your F Prime deployment and ready to send commands and receive telemetry.
 
+<p align="center">
+<img src="../assets/communication.png" alt="drawing" width="300"/>
+</p>
 ## Starting the Hermes Backend
 
 The Hermes VSCode extension starts in **offline mode** by default. This
