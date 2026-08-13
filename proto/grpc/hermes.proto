@@ -162,8 +162,14 @@ service Api {
   // Subscribe to the event message bus
   rpc SubEvent(hermes.BusFilter) returns (stream hermes.SourcedEvent);
 
+  // Emit to the event message bus
+  rpc EmitEvent(stream hermes.SourcedEvent) returns (google.protobuf.Empty);
+
   // Subscribe to the telemetry message bus
   rpc SubTelemetry(hermes.BusFilter) returns (stream hermes.SourcedTelemetry);
+
+  // Emit to the telemetry message bus
+  rpc EmitTelemetry(stream hermes.SourcedTelemetry) returns (google.protobuf.Empty);
 
   // Subscribe to the file downlink message bus
   rpc SubFileDownlink(hermes.BusFilter) returns (stream hermes.FileDownlink);
