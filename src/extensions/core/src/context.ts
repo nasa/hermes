@@ -42,6 +42,7 @@ export class VscodeHermes implements CoreApi {
 
     dictionaryProviders = new Map<string, DictionaryProvider>();
     private autoDictionariesByProvider = new Map<string, Set<string>>();
+    private reloadChainByProvider = new Map<string, Promise<void>>();
     private dictionaryProvidersChanged = new vscode.EventEmitter<void>();
 
     onDictionaryProvidersChanged = this.dictionaryProvidersChanged.event;
@@ -212,11 +213,30 @@ export class VscodeHermes implements CoreApi {
         };
     }
 
-    /**
-     * Load external dictionaries from a provider
-     * Removes old dictionaries and loads new ones
-     */
-    private async loadExternalDictionaries(
+    // Serialize reloads per provider so bursts of file-change events can't interleave
+    private loadExternalDictionaries(
+        providerId: string,
+        provider: DictionaryProvider
+    ): Promise<void> {
+        const previous = this.reloadChainByProvider.get(providerId) ?? Promise.resolve();
+        const next = previous
+            .catch(() => { /* isolate failures from later reloads */ })
+            .then(() => this.reloadExternalDictionaries(providerId, provider));
+
+        this.reloadChainByProvider.set(providerId, next);
+
+        // Clean up the chain entry once it settles and no newer reload has been queued.
+        next.finally(() => {
+            if (this.reloadChainByProvider.get(providerId) === next) {
+                this.reloadChainByProvider.delete(providerId);
+            }
+        });
+
+        return next;
+    }
+
+    // Reload a provider's dictionaries: add/update in place first, then remove only ids no longer present (no missing-id window).
+    private async reloadExternalDictionaries(
         providerId: string,
         provider: DictionaryProvider
     ): Promise<void> {
@@ -228,52 +248,60 @@ export class VscodeHermes implements CoreApi {
         }
 
         try {
-            // Remove old auto-discovered dictionaries from this provider
-            const oldDictIds = this.autoDictionariesByProvider.get(providerId);
-            if (oldDictIds && oldDictIds.size > 0) {
-                this.log.info(`Removing ${oldDictIds.size} old auto-discovered dictionaries from provider ${providerId}`);
-                for (const dictId of oldDictIds) {
+            this.log.info(`Calling provideExternalDictionaries for provider ${providerId}`);
+            const dictionaries = await provider.provideExternalDictionaries();
+            const oldDictIds = this.autoDictionariesByProvider.get(providerId) ?? new Set<string>();
+            const newDictIds = new Set<string>();
+
+            if (dictionaries) {
+                this.log.info(`Provider ${providerId} returned ${dictionaries.length} dictionaries`);
+
+                for (const dict of dictionaries) {
+                    // Require that auto-discovered dictionaries provide an ID
+                    if (!dict.id) {
+                        this.log.error(
+                            `Auto-discovered dictionary from provider ${providerId} missing required 'id' field. ` +
+                            `Dictionary name: ${dict.name}. Skipping.`
+                        );
+                        continue;
+                    }
+
+                    if (newDictIds.has(dict.id)) {
+                        this.log.warn(
+                            `Duplicate auto-discovered dictionary id '${dict.id}' from provider ${providerId}. ` +
+                            `Ignoring later duplicate.`
+                        );
+                        continue;
+                    }
+
                     try {
-                        await this.api.removeDictionary(dictId);
-                        this.log.info(`Removed old auto-discovered dictionary: ${dictId}`);
+                        // addDictionary adds/updates the dictionary as needed
+                        this.log.info(`Adding dictionary ${dict.id} from provider ${providerId}`);
+                        await this.api.addDictionary(dict.toProto());
+                        newDictIds.add(dict.id);
                     } catch (err) {
-                        this.log.warn(`Failed to remove old dictionary ${dictId}: ${err}`);
+                        this.log.error(`Failed to load auto-discovered dictionary ${dict.id}: ${err}`);
+                        // Keep tracking an id we failed to refresh if it existed to keep compatible with existing profiles
+                        if (oldDictIds.has(dict.id)) {
+                            newDictIds.add(dict.id);
+                        }
                     }
                 }
             } else {
-                this.log.info(`No old dictionaries to remove for provider ${providerId}`);
-            }
-
-            // Load new dictionaries
-            this.log.info(`Calling provideExternalDictionaries for provider ${providerId}`);
-            const dictionaries = await provider.provideExternalDictionaries();
-            const newDictIds = new Set<string>();
-
-            if (!dictionaries) {
-                // Provider returned null/undefined, clear tracking
                 this.log.info(`Provider ${providerId} returned no dictionaries`);
-                this.autoDictionariesByProvider.set(providerId, newDictIds);
-                return;
             }
 
-            this.log.info(`Provider ${providerId} returned ${dictionaries.length} dictionaries`);
-
-            for (const dict of dictionaries) {
-                // Require that auto-discovered dictionaries provide an ID
-                if (!dict.id) {
-                    this.log.error(
-                        `Auto-discovered dictionary from provider ${providerId} missing required 'id' field. ` +
-                        `Dictionary name: ${dict.name}. Skipping.`
-                    );
+            // Remove only the dictionaries that are no longer discovered.
+            for (const dictId of oldDictIds) {
+                if (newDictIds.has(dictId)) {
                     continue;
                 }
 
                 try {
-                    this.log.info(`Adding dictionary ${dict.id} from provider ${providerId}`);
-                    await this.api.addDictionary(dict.toProto());
-                    newDictIds.add(dict.id);
+                    await this.api.removeDictionary(dictId);
+                    this.log.info(`Removed stale auto-discovered dictionary: ${dictId}`);
                 } catch (err) {
-                    this.log.error(`Failed to load auto-discovered dictionary ${dict.id}: ${err}`);
+                    this.log.warn(`Failed to remove stale dictionary ${dictId}: ${err}`);
                 }
             }
 
