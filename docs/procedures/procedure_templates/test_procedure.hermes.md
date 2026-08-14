@@ -87,14 +87,22 @@ Label 1: Retro JPL Logo
 <!-- hermes: {"type":"cellEnd","value":null} -->
 <!-- hermes: {"type":"cell","value":{"language":"fprime","kind":2,"metadata":null}} -->
 ```fprime
-
-```
-<!-- hermes: {"type":"cellEnd","value":null} -->
-<!-- hermes: {"type":"cell","value":{"language":"fprime","kind":2,"metadata":null}} -->
-```fprime
 R00:00:00 CdhCore.cmdDisp.CMD_NO_OP
 ```
 <!-- hermes: {"type":"cellEnd","value":null} -->
+<!-- hermes: {"type":"outputStart","value":null} -->
+<!-- hermes: {"type":"outputItem","value":{"mime":"hermes.notebook/evr"}} -->
+<details><summary>Execution Outputs</summary>
+
+|Source|Sclk|Time|Severity|Component|Name|Message|
+|---|---|---|---|---|---|---|
+|fprime|1786665957.962138|1786665957962.137939|COMMAND|CdhCore.cmdDisp|OpCodeDispatched|Opcode CdhCore.cmdDisp.CMD_NO_OP dispatched to port 1|
+|fprime|1786665957.962272|1786665957962.271973|ACTIVITY_HI|CdhCore.cmdDisp|NoOpReceived|Received a NO-OP command|
+|fprime|1786665957.962346|1786665957962.345947|COMMAND|CdhCore.cmdDisp|OpCodeCompleted|Opcode CdhCore.cmdDisp.CMD_NO_OP completed|
+</details>
+
+<!-- hermes: {"type":"outputItemEnd","value":null} -->
+<!-- hermes: {"type":"outputEnd","value":null} -->
 <!-- hermes: {"type":"cell","value":{"language":"fprime","kind":2,"metadata":null}} -->
 ```fprime
 R00:00:00 CdhCore.cmdDisp.CMD_NO_OP_STRING "Example Text to Print to the Terminal"

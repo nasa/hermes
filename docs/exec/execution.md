@@ -7,8 +7,28 @@ icon: fontawesome/solid/play
 Add a flow diagram of the process expected for the procedure usage
 
 ---
-## Quickstart Execution
+## Dry-Run Execution - FPrime on Windows (WSL)
 If any of these steps seems confusing and needs more detail, check out the sections further on
+### Start Hermes in a Powershell Terminal
+
+* Open a Windoes File Explorer and navigate to this location
+  
+  * C:\Users\<your_user_name>\.vscode\extensions\jet-propulsion-laboratory.hermes-X.X.X-win32-x64\out\backend.exe
+
+  * The version X.X.X of FPrime needs to be updated to what was downloaded during the Quickstart installation phase
+  
+  * The "your_user_name" needs to be updated
+
+* rename the file "backend" to "backend.exe"
+
+* In VS Code, open a Powershell terminal and send
+
+  * C:\Users\<your_user_name>\.vscode\extensions\jet-propulsion-laboratory.hermes-X.X.X-win32-x64\out\backend.exe
+
+* Hermes backend is now running!
+
+
+### Connect VS Code to Hermes 
 
 <div style="display: flex; gap: 20px;">
   <div style="flex: 1;">
@@ -17,7 +37,7 @@ If any of these steps seems confusing and needs more detail, check out the secti
         <li>Click the button at the bottom left corner of VS Code for Hermes</li>
         <li>Switch from Hermes:Offline to Hermes: Remote</li>
         <li>Select the remote host to connect to (should default to the correct location)</li>
-        <li>Click the left panel icon for Hermes</li>
+        <li>Click the left panel icon for Hermes (rover icon)</li>
         <li>Create a profile if one doesn't exist yet</li>
         <li>Update/verify the Connection Name, IP Address, and Websocket</li>
         <li>Click the Play button to connect</li>
@@ -44,10 +64,6 @@ If any of these steps seems confusing and needs more detail, check out the secti
 
 ## Create/Update a Profile
 
-* Assumption: FPrime Backend is running
-
-    * If a local FPrime needs to be started, follow the Quick Start instructions
-
 <div style="display: flex; gap: 20px;">
   <div style="flex: 1;">
     <h3>Remote Host Connection</h3>
@@ -63,7 +79,7 @@ If any of these steps seems confusing and needs more detail, check out the secti
     </tr>
     <tr>
       <td style="border: 1px solid #ccc; padding: 8px;"><b>Address</b></td>
-      <td style="border: 1px solid #ccc; padding: 8px;"><code>0.0.0.0/8000</code></td>
+      <td style="border: 1px solid #ccc; padding: 8px;"><code>0.0.0.0:8000</code></td>
     </tr>
     <tr>
       <td style="border: 1px solid #ccc; padding: 8px;"><b>Dictionary</b></td>
@@ -81,7 +97,7 @@ If any of these steps seems confusing and needs more detail, check out the secti
     <h3></h3>
     <p align="center">
         <img    src="../assets/create_fprime_profile.png" 
-                alt="Hermes Offline to Remote"
+                alt="Hermes Connection Profile"
                 style="max-width: 100%; height: auto; cursor: pointer;"
                 onclick="openLightbox(this)"/>
     </p>
@@ -89,6 +105,48 @@ If any of these steps seems confusing and needs more detail, check out the secti
 </div>
 
 ---
+## Connect Hermes and FPrime
+
+<div style="display: flex; gap: 20px;">
+  <div style="flex: 1;">
+    <h3></h3>
+    <ul>
+        <li>Click the check button</li>
+        <li>Click the Play button</li>
+        <li>Switch to a .hermes.md and start sending your commands!</li>
+    </ul>
+  </div>
+  <div style="flex: 1;">
+    <h3></h3>
+    <p align="center">
+        <img    src="../assets/connect_hermes_fprime.png" 
+                    alt="Hermes Connecting to FPrime"
+                    style="max-width: 100%; height: auto; cursor: pointer;"
+                    onclick="openLightbox(this)"/>
+    </p>
+  </div>
+</div>
+<div style="display: flex; gap: 20px;">
+  <div style="flex: 1;">
+    <h3></h3>
+    <ul>
+        <li>The indicator of successfully sent commands will show a green check in the code block and return EVRs/EHAs in the output under the code block.</li>
+    </ul>
+  </div>
+  <div style="flex: 1;">
+    <h3></h3>
+    <p align="center">
+        <img    src="../assets/fprime_procedure_dryrun.png" 
+                    alt="FPrime Procedure Dryrun"
+                    style="max-width: 100%; height: auto; cursor: pointer;"
+                    onclick="openLightbox(this)"/>
+    </p>
+  </div>
+</div>
+---
+
+
+
 
 !!! question "FAQs"
 
