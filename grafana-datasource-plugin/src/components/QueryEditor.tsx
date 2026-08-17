@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { css } from '@emotion/css';
 import { ConfirmModal, RadioButtonGroup } from '@grafana/ui';
 import { dateTime, QueryEditorProps, SelectableValue } from '@grafana/data';
+import { getTemplateSrv } from '@grafana/runtime';
 import { DataSource } from '../datasource';
-import { MyDataSourceOptions, MyQuery, withDefaults } from '../types';
+import { MyDataSourceOptions, MyQuery, ResolvedQuery, withDefaults } from '../types';
 import { BuilderEditor } from './BuilderEditor';
 import { SqlEditor } from './SqlEditor';
-import { buildQuery } from '../query';
+import { buildQuery, resolveChannels } from '../query';
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
@@ -21,7 +22,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
   const [builderQueryType, setBuilderQueryType] = useState<string>(query.queryType ?? 'telemetry');
   const [generatedSql, setGeneratedSql] = useState<string | undefined>(undefined);
 
-  const onEditorModeChange = (mode: string) => {
+  const onEditorModeChange = async (mode: string) => {
     if (mode === 'builder' && editorMode === 'code') {
       const userEdited = query.rawSql?.trim() && query.rawSql !== generatedSql;
       if (userEdited) {
@@ -40,9 +41,16 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
     if (mode === 'code') {
       try {
         const filled = withDefaults(query);
+        const templateSrv = getTemplateSrv();
+        const needsChannels = (filled.channels ?? []).some((c) => c.raw !== undefined);
+        const known = needsChannels ? await datasource.getChannels().catch(() => []) : [];
+        const resolved: ResolvedQuery = {
+          ...filled,
+          channels: resolveChannels(filled.channels ?? [], (value) => templateSrv.replace(value), known),
+        };
         const from = range?.from ?? dateTime();
         const to = range?.to ?? dateTime();
-        const sql = buildQuery(filled, { range: { from, to, raw: { from, to } } } as any);
+        const sql = buildQuery(resolved, { range: { from, to, raw: { from, to } } } as any);
         setGeneratedSql(sql);
         onChange({ ...query, rawSql: sql, queryType: 'raw' });
       } catch (e) {
