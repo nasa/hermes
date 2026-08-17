@@ -22,7 +22,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
   const [builderQueryType, setBuilderQueryType] = useState<string>(query.queryType ?? 'telemetry');
   const [generatedSql, setGeneratedSql] = useState<string | undefined>(undefined);
 
-  const onEditorModeChange = (mode: string) => {
+  const onEditorModeChange = async (mode: string) => {
     if (mode === 'builder' && editorMode === 'code') {
       const userEdited = query.rawSql?.trim() && query.rawSql !== generatedSql;
       if (userEdited) {
@@ -42,9 +42,11 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
       try {
         const filled = withDefaults(query);
         const templateSrv = getTemplateSrv();
+        const needsChannels = (filled.channels ?? []).some((c) => c.raw !== undefined);
+        const known = needsChannels ? await datasource.getChannels().catch(() => []) : [];
         const resolved: ResolvedQuery = {
           ...filled,
-          channels: resolveChannels(filled.channels ?? [], (value) => templateSrv.replace(value), []),
+          channels: resolveChannels(filled.channels ?? [], (value) => templateSrv.replace(value), known),
         };
         const from = range?.from ?? dateTime();
         const to = range?.to ?? dateTime();
