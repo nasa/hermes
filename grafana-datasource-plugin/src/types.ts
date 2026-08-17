@@ -8,7 +8,16 @@ export type Aggregation = 'avg' | 'min' | 'max' | 'count' | 'first' | 'last' | '
 export interface ChannelRef {
   component: string;
   name: string;
+  raw?: never;
 }
+
+export interface ChannelExpression {
+  raw: string;
+  component?: never;
+  name?: never;
+}  // Raw is included for template variable queries as they may not yet be matchable
+
+export type ChannelQuery = ChannelRef | ChannelExpression;
 
 export interface KeyRef {
   component: string;
@@ -18,7 +27,7 @@ export interface KeyRef {
 
 export interface MyQuery extends DataQuery {
   queryType: QueryType;
-  channels: ChannelRef[];
+  channels: ChannelQuery[];
   sources: string[];
   keys: KeyRef[];
   timeField?: TimeField;
@@ -27,6 +36,8 @@ export interface MyQuery extends DataQuery {
   aggregation: Aggregation;
   rawSql?: string;
 }
+
+export type ResolvedQuery = Omit<MyQuery, 'channels'> & { channels: ChannelRef[] };
 
 export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], timeField: 'ert', aggregation: 'avg' };
 
