@@ -2,7 +2,7 @@ import { DataQueryRequest, DataSourceInstanceSettings, CoreApp, ScopedVars } fro
 import { DataSourceWithBackend, getTemplateSrv } from '@grafana/runtime';
 import { from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, ChannelRef, KeyRef, withDefaults } from './types';
+import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, ChannelQuery, ChannelRef, KeyRef, ResolvedQuery, withDefaults } from './types';
 import { buildQuery, resolveChannels } from 'query';
 
 export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptions> {
@@ -29,14 +29,11 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     return known$.pipe(
       switchMap((known) => {
         request.targets.forEach((target) => {
-          const filled = withDefaults(target);
-          Object.assign(target, filled);
-
-          const withVars = this.resolveTargetVariables(target, request.scopedVars, known);
-          Object.assign(target, withVars);
+          const resolved = this.resolveTargetVariables(withDefaults(target), request.scopedVars, known);
+          Object.assign(target, resolved);
 
           if (!target.rawSql) {
-            target.rawSql = buildQuery(target, request);
+            target.rawSql = buildQuery(resolved, request);
           }
         });
 
@@ -58,7 +55,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     return DEFAULT_QUERY;
   }
 
-  private resolveTargetVariables(query: MyQuery, scopedVars: ScopedVars, known: ChannelRef[] = []) {
+  private resolveTargetVariables(query: MyQuery, scopedVars: ScopedVars, known: ChannelRef[] = []): ResolvedQuery {
     const templateSrv = getTemplateSrv();
     const replace = (value: string) => templateSrv.replace(value, scopedVars);
     return {
@@ -94,7 +91,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     return this.getResource('telemetry/sources');
   }
 
-  async getKeys(channels: ChannelRef[]): Promise<KeyRef[]> {
+  async getKeys(channels: ChannelQuery[]): Promise<KeyRef[]> {
     const templateSrv = getTemplateSrv();
     const known = channels.some((c) => c.raw !== undefined) ? await this.getKnownChannels() : [];
     const expanded = resolveChannels(channels, (value) => templateSrv.replace(value), known);

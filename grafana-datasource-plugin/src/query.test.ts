@@ -1,7 +1,7 @@
 import { buildTelemetryQuery, resolveChannels } from './query';
-import { ChannelRef, MyQuery } from './types';
+import { ChannelRef, MyQuery, ResolvedQuery } from './types';
 
-function baseQuery(overrides: Partial<MyQuery>): MyQuery {
+function baseQuery(overrides: Partial<ResolvedQuery>): ResolvedQuery {
   return {
     refId: 'A',
     queryType: 'telemetry',
@@ -11,7 +11,7 @@ function baseQuery(overrides: Partial<MyQuery>): MyQuery {
     timeField: 'ert',
     aggregation: 'avg',
     ...overrides,
-  } as MyQuery;
+  } as ResolvedQuery;
 }
 
 const FROM = '2024-01-01T00:00:00.000Z';
@@ -225,26 +225,26 @@ describe('resolveChannels', () => {
   });
 
   it('resolves a single variable that expands to a full channel', () => {
-    expect(resolveChannels([{ component: '', name: '', raw: '$full' }], replace, known)).toEqual([
+    expect(resolveChannels([{ raw: '$full' }], replace, known)).toEqual([
       { component: 'CDH', name: 'Temperature' },
     ]);
   });
 
   it('resolves a $component.$channel combination', () => {
     expect(
-      resolveChannels([{ component: '', name: '', raw: '$component.$channel' }], replace, known)
+      resolveChannels([{ raw: '$component.$channel' }], replace, known)
     ).toEqual([{ component: 'CDH', name: 'Temperature' }]);
   });
 
   it('splits at the boundary defined by the channel list, not by dots', () => {
     // $dotted expands to "A.B.C.D"; the correct split is component "A.B" / name "C.D".
-    expect(resolveChannels([{ component: '', name: '', raw: '$dotted' }], replace, known)).toEqual([
+    expect(resolveChannels([{ raw: '$dotted' }], replace, known)).toEqual([
       { component: 'A.B', name: 'C.D' },
     ]);
   });
 
   it('keeps an unmatched raw channel as a well-formed (empty-result) ref', () => {
-    expect(resolveChannels([{ component: '', name: '', raw: '$component.Missing' }], replace, known)).toEqual([
+    expect(resolveChannels([{ raw: '$component.Missing' }], replace, known)).toEqual([
       { component: 'CDH.Missing', name: '' },
     ]);
   });

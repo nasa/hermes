@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { css } from '@emotion/css';
 import { ConfirmModal, RadioButtonGroup } from '@grafana/ui';
 import { dateTime, QueryEditorProps, SelectableValue } from '@grafana/data';
+import { getTemplateSrv } from '@grafana/runtime';
 import { DataSource } from '../datasource';
-import { MyDataSourceOptions, MyQuery, withDefaults } from '../types';
+import { MyDataSourceOptions, MyQuery, ResolvedQuery, withDefaults } from '../types';
 import { BuilderEditor } from './BuilderEditor';
 import { SqlEditor } from './SqlEditor';
-import { buildQuery } from '../query';
+import { buildQuery, resolveChannels } from '../query';
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
@@ -40,9 +41,14 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
     if (mode === 'code') {
       try {
         const filled = withDefaults(query);
+        const templateSrv = getTemplateSrv();
+        const resolved: ResolvedQuery = {
+          ...filled,
+          channels: resolveChannels(filled.channels ?? [], (value) => templateSrv.replace(value), []),
+        };
         const from = range?.from ?? dateTime();
         const to = range?.to ?? dateTime();
-        const sql = buildQuery(filled, { range: { from, to, raw: { from, to } } } as any);
+        const sql = buildQuery(resolved, { range: { from, to, raw: { from, to } } } as any);
         setGeneratedSql(sql);
         onChange({ ...query, rawSql: sql, queryType: 'raw' });
       } catch (e) {

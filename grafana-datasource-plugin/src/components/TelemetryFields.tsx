@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Combobox, ComboboxOption, InlineField, MultiCombobox } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataSource } from '../datasource';
-import { Aggregation, ChannelRef, KeyRef, MyQuery } from '../types';
+import { Aggregation, ChannelQuery, ChannelRef, KeyRef, MyQuery } from '../types';
 
 interface TelemetryFieldsProps {
   query: MyQuery;
@@ -74,7 +74,7 @@ function toChannelOptions(entries: ChannelRef[]): Array<ComboboxOption<string>> 
   }));
 }
 
-function channelLabel(ch: ChannelRef): string {
+function channelLabel(ch: ChannelQuery): string {
   if (ch.raw !== undefined) {
     return ch.raw;
   }
@@ -82,11 +82,11 @@ function channelLabel(ch: ChannelRef): string {
   return ch.name ? `${ch.component}.${ch.name}` : ch.component;
 }
 
-function channelValue(ch: ChannelRef): string {
+function channelValue(ch: ChannelQuery): string {
   return ch.raw !== undefined ? ch.raw : channelToKey(ch);
 }
 
-function channelValuesOrOptions(channels: ChannelRef[]): Array<ComboboxOption<string>> {
+function channelValuesOrOptions(channels: ChannelQuery[]): Array<ComboboxOption<string>> {
   return channels.map(ch => ({
     label: channelLabel(ch),
     value: channelValue(ch),
@@ -153,7 +153,7 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource }: Tel
 
   const onChannelChange = (options: Array<ComboboxOption<string>>) => {
     const channels = options
-      .map(({ value, label }): ChannelRef | null => {
+      .map(({ value, label }): ChannelQuery | null => {
         const valueStr = typeof value === 'string' ? value : String(value ?? '');
 
         // Known-channel options encode a { component, name } object as JSON.
@@ -174,9 +174,9 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource }: Tel
           return null;
         }
 
-        return { component: '', name: '', raw };
+        return { raw };
       })
-      .filter((ch): ch is ChannelRef => ch !== null);
+      .filter((ch): ch is ChannelQuery => ch !== null);
 
     const updated: MyQuery = { ...query, channels, keys: [], sources: [] };
     onChange(updated);
