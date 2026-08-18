@@ -87,7 +87,7 @@ export function hostBinary(): string | undefined {
 }
 
 export function hostBind(): { bindType?: string, bind?: string } {
-    return getSetting(names.host.bind, { bindType: undefined, bind: undefined })
+    return getSetting(names.host.bind, { bindType: undefined, bind: undefined });
 }
 
 export function hostArgs(): string[] {
