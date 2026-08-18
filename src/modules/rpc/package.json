@@ -27,6 +27,6 @@
     "gitHead": "ae5d9bc28a728716fe9a9f81930c9ad8be87f55e",
     "devDependencies": {
         "@types/json-schema": "^7.0.15",
-        "typescript-json-schema": "^0.63.0"
+        "typescript-json-schema": "^0.68.0"
     }
 }

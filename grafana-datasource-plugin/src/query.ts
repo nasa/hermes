@@ -1,7 +1,27 @@
-import { MyQuery } from "types";
+import { ChannelQuery, ChannelRef, ResolvedQuery } from "types";
 import { DataQueryRequest } from "@grafana/data";
 
-export function buildQuery(q: MyQuery, options: DataQueryRequest): string {
+
+// Resolve channel references to concrete { component, name } pairs.
+export function resolveChannels(
+    channels: ChannelQuery[],
+    replace: (value: string) => string,
+    known: ChannelRef[]
+): ChannelRef[] {
+    return channels.map((ch) => {
+        if (ch.raw === undefined) {
+            return { component: replace(ch.component), name: replace(ch.name) };
+        }
+        const expanded = replace(ch.raw);
+        const match = known.find((k) => `${k.component}.${k.name}` === expanded);
+        if (match) {
+            return { component: match.component, name: match.name };
+        }
+        return { component: expanded, name: '' };
+    });
+}
+
+export function buildQuery(q: ResolvedQuery, options: DataQueryRequest): string {
     const { from, to } = buildQueryOptions(q, options);
     switch (q.queryType) {
         case "events":
@@ -13,7 +33,7 @@ export function buildQuery(q: MyQuery, options: DataQueryRequest): string {
     }
 }
 
-export function buildQueryOptions(q: MyQuery, options: DataQueryRequest): { from: string; to: string } {
+export function buildQueryOptions(q: ResolvedQuery, options: DataQueryRequest): { from: string; to: string } {
     let from = options.range.from.toISOString();
     let to = options.range.to.toISOString();
     if (q.timeOverrideFrom) {
@@ -26,7 +46,7 @@ export function buildQueryOptions(q: MyQuery, options: DataQueryRequest): { from
     return { from, to }
 }
 
-export function buildEventsQuery(q: MyQuery, from: string, to: string): string {
+export function buildEventsQuery(q: ResolvedQuery, from: string, to: string): string {
     return format(
 `SELECT
 	e.%s,
@@ -46,7 +66,7 @@ ORDER BY e.%s ASC;`,
         q.timeField, escDate(from), q.timeField, escDate(to), q.timeField);
 }
 
-export function buildTelemetryQuery(q: MyQuery, from: string, to: string): string {
+export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string): string {
     if (!q.channels || q.channels.length === 0) {
         throw new Error("No telemetry channels specified for query");
     }
@@ -95,6 +115,7 @@ export function buildTelemetryQuery(q: MyQuery, from: string, to: string): strin
     switch (q.aggregation) {
         case "raw":
         case "deriv":
+        case "latest":
             [aggInt, aggFloat, aggBool, aggStr, aggBytes] = wrap(plain);
             groupByExpr = "";
             break;
