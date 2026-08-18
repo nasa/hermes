@@ -115,6 +115,7 @@ export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string):
     switch (q.aggregation) {
         case "raw":
         case "deriv":
+        case "latest":
             [aggInt, aggFloat, aggBool, aggStr, aggBytes] = wrap(plain);
             groupByExpr = "";
             break;
