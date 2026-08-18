@@ -5,6 +5,15 @@ import { DataSource } from '../datasource';
 import { ChannelRef, DEFAULT_QUERY, MyDataSourceOptions, MyQuery, withDefaults } from '../types';
 import { QueryEditorProps } from '@grafana/data';
 
+jest.mock('@grafana/runtime', () => ({
+  ...jest.requireActual('@grafana/runtime'),
+  getTemplateSrv: () => ({
+    replace: (value: string) => value,
+    getVariables: () => [],
+    containsTemplate: () => false,
+  }),
+}));
+
 beforeAll(() => {
   global.IntersectionObserver = class IntersectionObserver {
     constructor() {}
