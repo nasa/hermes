@@ -14,8 +14,8 @@ export function calculateTooltipPosition(
     windowWidth: number,
     windowHeight: number
 ): { x: number; y: number } {
-    let x = xPos;
-    let y = yPos;
+    let x: number;
+    let y: number;
 
     const overflowRight = Math.max(xPos + xOffset + tooltipWidth - (windowWidth - xOffset), 0);
     const overflowLeft = Math.abs(Math.min(xPos - xOffset - tooltipWidth - xOffset, 0));

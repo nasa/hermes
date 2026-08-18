@@ -187,7 +187,7 @@ export function validateEqualTypes(a: Type, b: Type) {
             try {
                 validateEqualTypes(a.type, b.type);
             } catch (err) {
-                throw new Error(`Element types are not the same: ${err}`);
+                throw new Error(`Element types are not the same: ${err}`, { cause: err });
             }
 
             const sizeStrA = JSON.stringify(a.size);
@@ -222,7 +222,7 @@ export function validateEqualTypes(a: Type, b: Type) {
                 try {
                     validateEqualTypes(fieldA.type, fieldB.type);
                 } catch (err) {
-                    throw new Error(`Field '${fieldA.name}' type mismatch: ${err}`);
+                    throw new Error(`Field '${fieldA.name}' type mismatch: ${err}`, { cause: err });
                 }
             }
             return;

@@ -6,8 +6,14 @@ export enum ScaleOrientation {
 }
 
 export enum ScaleDirection {
+    // uPlot scale `dir` is only ever 1 (normal) or -1 (reversed). These four
+    // names are semantic aliases onto those two physical values depending on
+    // scale orientation: on a horizontal axis Right=1/Left=-1, and on a
+    // (screen-down) vertical axis Up=-1/Down=1. The shared values are therefore
+    // intentional, so the duplicate-value rule is disabled for the aliases.
     Right = 1,
     Left = -1,
+    // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
     Up = -1,
     // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
     Down = 1,

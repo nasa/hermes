@@ -295,7 +295,7 @@ export class Client implements Hermes.Api {
 
     allFsw(token?: vscode.CancellationToken): Promise<Hermes.Fsw[]> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const call = this.client.AllFsw({}, (err, value) => {
                 disp?.dispose();
@@ -308,7 +308,7 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });
@@ -316,7 +316,7 @@ export class Client implements Hermes.Api {
 
     startProfile(id: string, token?: vscode.CancellationToken): Promise<void> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const call = this.client.startProfile({ id }, (err) => {
                 disp?.dispose();
@@ -328,7 +328,7 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });
@@ -336,7 +336,7 @@ export class Client implements Hermes.Api {
 
     stopProfile(id: string, token?: vscode.CancellationToken): Promise<void> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const call = this.client.stopProfile({ id }, (err) => {
                 disp?.dispose();
@@ -348,7 +348,7 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });
@@ -356,7 +356,7 @@ export class Client implements Hermes.Api {
 
     updateProfile(id: string, settings: string, token?: vscode.CancellationToken): Promise<void> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const call = this.client.updateProfile({ id, settings }, (err) => {
                 disp?.dispose();
@@ -368,7 +368,7 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });
@@ -376,7 +376,7 @@ export class Client implements Hermes.Api {
 
     addProfile(profile: Hermes.Profile, token?: vscode.CancellationToken): Promise<string> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const call = this.client.addProfile(profile, (err, value) => {
                 disp?.dispose();
@@ -390,7 +390,7 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });
@@ -398,7 +398,7 @@ export class Client implements Hermes.Api {
 
     removeProfile(id: string, token?: vscode.CancellationToken): Promise<void> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const call = this.client.removeProfile({ id }, (err) => {
                 disp?.dispose();
@@ -410,7 +410,7 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });
@@ -418,7 +418,7 @@ export class Client implements Hermes.Api {
 
     allProfiles(token?: vscode.CancellationToken): Promise<Record<string, Proto.IStatefulProfile>> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const call = this.client.allProfiles({}, (err, values) => {
                 disp?.dispose();
@@ -430,14 +430,14 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });
     }
     allProviders(token?: vscode.CancellationToken): Promise<Proto.IProfileProvider[]> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const call = this.client.allProviders({}, (err, values) => {
                 disp?.dispose();
@@ -449,7 +449,7 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });
@@ -457,7 +457,7 @@ export class Client implements Hermes.Api {
 
     getDictionary(id: string, sections?: readonly string[], token?: vscode.CancellationToken): Promise<Proto.IDictionary> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const md = new grpc.Metadata();
             for (const section of sections ?? []) {
@@ -476,7 +476,7 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });
@@ -484,7 +484,7 @@ export class Client implements Hermes.Api {
 
     addDictionary(dict: Proto.IDictionary, token?: vscode.CancellationToken): Promise<string> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const call = this.client.addDictionary(dict as Dictionary, (err, value) => {
                 disp?.dispose();
@@ -496,7 +496,7 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });
@@ -504,7 +504,7 @@ export class Client implements Hermes.Api {
 
     allDictionaries(token?: vscode.CancellationToken): Promise<Record<string, Proto.IDictionaryHead>> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const call = this.client.allDictionary({}, (err, value) => {
                 disp?.dispose();
@@ -516,7 +516,7 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });
@@ -524,7 +524,7 @@ export class Client implements Hermes.Api {
 
     removeDictionary(id: string, token?: vscode.CancellationToken): Promise<void> {
         return new Promise((resolve, reject) => {
-            let disp: vscode.Disposable | undefined;
+            let disp: vscode.Disposable | undefined = undefined;
 
             const call = this.client.removeDictionary({ id }, (err) => {
                 disp?.dispose();
@@ -536,7 +536,7 @@ export class Client implements Hermes.Api {
                 }
             });
 
-            token?.onCancellationRequested(() => {
+            disp = token?.onCancellationRequested(() => {
                 call.cancel();
             });
         });

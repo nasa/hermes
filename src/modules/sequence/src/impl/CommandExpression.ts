@@ -70,7 +70,7 @@ export class CommandExpression<
                 try {
                     return v.parse();
                 } catch (e) {
-                    throw new Error(`Argument ${v.schema.name}: ${(<Error>e).message}`);
+                    throw new Error(`Argument ${v.schema.name}: ${(<Error>e).message}`, { cause: e });
                 }
             }),
             options: this.options,
