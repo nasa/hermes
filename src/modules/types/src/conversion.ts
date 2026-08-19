@@ -289,7 +289,11 @@ export function valueFromProto(
         ]));
     } else if (filled(proto.r)) {
         const bytes = ctx.value(proto.r, 'value');
-        const swapper = Buffer.from(bytes);
+        // Use a fresh, offset-zero buffer so typed arrays reinterpret packed
+        // bytes instead of converting each Uint8 element independently.
+        const buffer = new ArrayBuffer(bytes.byteLength);
+        const swapper = Buffer.from(buffer);
+        swapper.set(bytes);
         const bigEndian = proto.r.bigEndian ?? false;
         const kind = numberKindFromProto(proto.r.kind ?? Proto.NumberKind.NUMBER_U8);
 
@@ -317,25 +321,25 @@ export function valueFromProto(
 
         switch (kind) {
             case Def.TypeKind.u8:
-                return bytes;
+                return new Uint8Array(buffer);
             case Def.TypeKind.i8:
-                return new Int8Array(bytes);
+                return new Int8Array(buffer);
             case Def.TypeKind.u16:
-                return new Uint16Array(bytes);
+                return new Uint16Array(buffer);
             case Def.TypeKind.i16:
-                return new Int16Array(bytes);
+                return new Int16Array(buffer);
             case Def.TypeKind.u32:
-                return new Uint32Array(bytes);
+                return new Uint32Array(buffer);
             case Def.TypeKind.i32:
-                return new Int32Array(bytes);
+                return new Int32Array(buffer);
             case Def.TypeKind.u64:
-                return new BigUint64Array(bytes as any);
+                return new BigUint64Array(buffer);
             case Def.TypeKind.i64:
-                return new BigInt64Array(bytes as any);
+                return new BigInt64Array(buffer);
             case Def.TypeKind.f32:
-                return new Float32Array(bytes);
+                return new Float32Array(buffer);
             case Def.TypeKind.f64:
-                return new Float64Array(bytes);
+                return new Float64Array(buffer);
         }
     } else if (filled(proto.s)) {
         return proto.s;

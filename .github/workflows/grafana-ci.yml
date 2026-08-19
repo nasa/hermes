@@ -276,7 +276,7 @@ jobs:
           PLUGIN_ID: ${{ needs.build.outputs.plugin-id }}
 
       - name: Publish rolling PR release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.meta.outputs.pr-tag }}
           name: "Grafana plugin (PR #${{ github.event.pull_request.number }})"

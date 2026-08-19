@@ -64,7 +64,7 @@ export class NotebookController implements vscode.Disposable {
             execution.start(Date.now());
             execution.clearOutput();
 
-            let success = true;
+            let success: boolean;
             try {
                 const provider = this.languageManager.get(cell.document.languageId);
                 if (!provider) {
