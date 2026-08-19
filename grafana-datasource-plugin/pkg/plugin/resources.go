@@ -1,9 +1,12 @@
 package plugin
 
 import (
+	"cmp"
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"slices"
+	"sort"
 
 	"github.com/lib/pq"
 )
@@ -28,45 +31,71 @@ func scanStrings(rows *sql.Rows) ([]string, error) {
 }
 
 func (d *Datasource) handleGetTelemetryComponents(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT component FROM telemetryDefs ORDER BY component;")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	components := make(map[string]bool)
+
+	d.hermes.mu.RLock()
+	for _, dict := range d.hermes.dicts {
+		for _, ns := range dict.GetContent() {
+			for _, telemetryDef := range ns.Telemetry {
+				if telemetryDef.GetComponent() != "" {
+					components[telemetryDef.GetComponent()] = true
+				}
+			}
+		}
 	}
-	items, err := scanStrings(rows)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	d.hermes.mu.RUnlock()
+
+	items := make([]string, 0, len(components))
+	for comp := range components {
+		items = append(items, comp)
 	}
+
+	sort.Strings(items)
 	writeJSONResponse(w, items)
+}
+
+type channelKey struct {
+	Component string
+	Name      string
 }
 
 type channelEntry struct {
 	Component string `json:"component"`
 	Name      string `json:"name"`
+	Metadata  string `json:"metadata"`
 }
 
 func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT component, name FROM telemetryDefs ORDER BY component, name;")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	channelMap := make(map[channelKey]channelEntry)
+
+	d.hermes.mu.RLock()
+	for _, dict := range d.hermes.dicts {
+		for _, ns := range dict.GetContent() {
+			for _, telemetryDef := range ns.Telemetry {
+				channelMap[channelKey{
+					Component: telemetryDef.GetComponent(),
+					Name:      telemetryDef.GetName(),
+				}] = channelEntry{
+					Component: telemetryDef.GetComponent(),
+					Name:      telemetryDef.GetName(),
+					Metadata:  telemetryDef.GetMetadata(),
+				}
+			}
+		}
 	}
-	defer func() { _ = rows.Close() }()
+	d.hermes.mu.RUnlock()
 
 	items := []channelEntry{}
-	for rows.Next() {
-		var entry channelEntry
-		if err := rows.Scan(&entry.Component, &entry.Name); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	for _, entry := range channelMap {
 		items = append(items, entry)
 	}
-	if err := rows.Err(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+
+	slices.SortFunc(items, func(a, b channelEntry) int {
+		return cmp.Or(
+			cmp.Compare(a.Component, b.Component),
+			cmp.Compare(a.Name, b.Name),
+		)
+	})
 	writeJSONResponse(w, items)
 }
 

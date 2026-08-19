@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Combobox, ComboboxOption, InlineField, MultiCombobox } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataSource } from '../datasource';
-import { Aggregation, ChannelQuery, ChannelRef, KeyRef, MyQuery } from '../types';
+import { Aggregation, ChannelQuery, ChannelRef, ChannelRefWithMetadata, KeyRef, MyQuery } from '../types';
 
 interface TelemetryFieldsProps {
   query: MyQuery;
@@ -67,10 +67,11 @@ function channelToKey(ch: ChannelRef): string {
   return JSON.stringify(ch);
 }
 
-function toChannelOptions(entries: ChannelRef[]): Array<ComboboxOption<string>> {
+function toChannelOptions(entries: ChannelRefWithMetadata[]): Array<ComboboxOption<string>> {
   return entries.map((e) => ({
     label: `${e.component}.${e.name}`,
-    description: e.component,
+    group: e.component,
+    description: e.metadata.description,
     value: channelToKey(e),
   }));
 }

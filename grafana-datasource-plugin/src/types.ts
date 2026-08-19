@@ -11,6 +11,16 @@ export interface ChannelRef {
   raw?: never;
 }
 
+export interface ChannelRefResponse extends ChannelRef {
+  metadata: string;
+}
+
+export interface ChannelRefWithMetadata extends ChannelRef {
+  metadata: {
+    description?: string;
+  };
+}
+
 export interface ChannelExpression {
   raw: string;
   component?: never;
@@ -57,6 +67,7 @@ export interface MyDataSourceOptions extends DataSourceJsonData {
   host?: string;
   user?: string;
   database?: string;
+  hermesUrl?: string;
 }
 
 /**
