@@ -2,7 +2,7 @@ import React from 'react';
 import { CollapsableSection, Icon, InlineField, Input, Tooltip } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { KeyRef, MyQuery, TransformRef } from '../types';
-import { normalizeTransform, validateTransformInput, VALUE_TOKEN } from '../query';
+import { transformPreview, validateTransformInput, VALUE_TOKEN } from '../query';
 
 interface TransformFieldsProps {
   query: MyQuery;
@@ -112,10 +112,8 @@ export function TransformFields({ query, onChange, onRunQuery, keysByChannel }: 
     >
       {rows.map((row, index) => {
         const raw = valueFor(row);
-        const expanded = expand(raw);
-        const error = validateTransformInput(expanded);
-        const normalized = normalizeTransform(expanded);
-        const isShorthand = normalized !== undefined && !error && normalized !== expanded.trim();
+        const error = validateTransformInput(expand(raw));
+        const preview = transformPreview(raw, expand);
         const inputId = `query-editor-transform-${index}`;
         return (
           <InlineField
@@ -136,9 +134,11 @@ export function TransformFields({ query, onChange, onRunQuery, keysByChannel }: 
               invalid={!!error}
               prefix={<Icon name="calculator-alt" />}
               suffix={
-                isShorthand ? (
-                  <Tooltip content={`= ${normalized}`}>
-                    <Icon name="info-circle" />
+                preview ? (
+                  <Tooltip content={`= ${preview}`}>
+                    <span data-testid={`query-editor-transform-preview-${row.label}`} title={`= ${preview}`}>
+                      <Icon name="info-circle" />
+                    </span>
                   </Tooltip>
                 ) : undefined
               }

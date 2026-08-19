@@ -111,6 +111,18 @@ export function validateTransformInput(raw: string): string | undefined {
     return expr === undefined ? undefined : validateExpression(expr);
 }
 
+export function transformPreview(raw: string, expand: (value: string) => string): string | undefined {
+    const expanded = expand(raw ?? '');
+    if (validateTransformInput(expanded) !== undefined) {
+        return undefined;
+    }
+    const normalized = normalizeTransform(expanded);
+    if (normalized === undefined || normalized === (raw ?? '').trim()) {
+        return undefined;
+    }
+    return normalized;
+}
+
 export function bindValueToken(expr: string, column: string): string {
     return expr.replace(VALUE_TOKEN_PATTERN, `(${column})`);
 }

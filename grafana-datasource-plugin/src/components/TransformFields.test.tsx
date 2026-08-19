@@ -58,6 +58,23 @@ describe('TransformFields — template variable shorthand', () => {
     expect(input).toHaveValue('$num');
     // ...but it is not flagged as invalid (validation runs on the expansion).
     expect(screen.queryByText(/must reference \$__value/)).not.toBeInTheDocument();
+    // ...and the resolved-expression hint reflects the expansion.
+    const hint = screen.getByTestId('query-editor-transform-preview-CDH.Temperature');
+    expect(hint).toHaveAttribute('title', '= $__value * 8');
+  });
+
+  it('shows the resolved-expression hint when a template variable is used in a full expression', () => {
+    vars = { gain: '2' };
+    renderFields({ transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$__value * $gain' }] });
+
+    const hint = screen.getByTestId('query-editor-transform-preview-CDH.Temperature');
+    expect(hint).toHaveAttribute('title', '= $__value * 2');
+  });
+
+  it('shows no resolved-expression hint when the expression has no variables or shorthand', () => {
+    renderFields({ transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$__value * 2' }] });
+
+    expect(screen.queryByTestId('query-editor-transform-preview-CDH.Temperature')).not.toBeInTheDocument();
   });
 
   it('runs the query on blur when a variable resolves to a bare number', () => {

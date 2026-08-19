@@ -4,6 +4,7 @@ import {
   buildTransformCase,
   normalizeTransform,
   resolveChannels,
+  transformPreview,
   validateExpression,
   validateTransformInput,
   VALUE_TOKEN,
@@ -329,6 +330,44 @@ describe('validateTransformInput', () => {
 
   it('rejects free text that is neither a number nor a token expression', () => {
     expect(validateTransformInput('twice')).toMatch(/must reference \$__value/);
+  });
+});
+
+describe('transformPreview', () => {
+  // Substitute $name with vars[name] when defined; otherwise leave in place
+  // (mirrors Grafana templateSrv.replace).
+  const expandWith = (vars: Record<string, string>) => (value: string) =>
+    value.replace(/\$\w+/g, (m) => (m.slice(1) in vars ? vars[m.slice(1)] : m));
+  const noVars = (value: string) => value;
+
+  it('previews the numeric shorthand expansion', () => {
+    expect(transformPreview('2', noVars)).toBe('$__value * 2');
+  });
+
+  it('previews a template variable used in a full expression', () => {
+    expect(transformPreview('$__value * $gain', expandWith({ gain: '2' }))).toBe('$__value * 2');
+  });
+
+  it('previews a template variable that resolves to a bare-number shorthand', () => {
+    expect(transformPreview('$num', expandWith({ num: '8' }))).toBe('$__value * 8');
+  });
+
+  it('returns undefined when the resolved expression matches the input', () => {
+    expect(transformPreview('$__value * 2', noVars)).toBeUndefined();
+  });
+
+  it('returns undefined for blank input', () => {
+    expect(transformPreview('', noVars)).toBeUndefined();
+    expect(transformPreview('   ', noVars)).toBeUndefined();
+  });
+
+  it('returns undefined when the resolved expression is invalid', () => {
+    expect(transformPreview('$bad', expandWith({ bad: 'twice' }))).toBeUndefined();
+    expect(transformPreview('$__value * ', noVars)).toBeUndefined();
+  });
+
+  it('ignores surrounding whitespace when deciding whether to preview', () => {
+    expect(transformPreview('  $__value * 2  ', noVars)).toBeUndefined();
   });
 });
 
