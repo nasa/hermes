@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryEditor } from './QueryEditor';
 import { DataSource } from '../datasource';
 import { ChannelRef, DEFAULT_QUERY, MyDataSourceOptions, MyQuery, withDefaults } from '../types';
@@ -432,6 +432,163 @@ describe('QueryEditor — Multi-select', () => {
 
     // MultiCombobox in jsdom may only render visible pills
     expect(screen.getByText('fsw-1')).toBeInTheDocument();
+  });
+});
+
+describe('QueryEditor — Value transforms', () => {
+  const scalarDs = () =>
+    mockDatasource({
+      getKeys: jest.fn().mockResolvedValue([{ component: 'CDH', channel: 'Temperature', key: 'value' }]),
+    });
+
+  const telemetryQuery = (overrides?: Partial<MyQuery>): MyQuery =>
+    ({
+      refId: 'A',
+      queryType: 'telemetry',
+      channels: [ch('CDH', 'Temperature')],
+      sources: [],
+      keys: [],
+      aggregation: 'avg',
+      ...overrides,
+    }) as MyQuery;
+
+  // The section is collapsed until the query carries a transform, and
+  // CollapsableSection unmounts its children while closed.
+  async function expandSection() {
+    const header = await screen.findByTestId('query-editor-transform-section');
+    await act(async () => {
+      fireEvent.click(header);
+    });
+  }
+
+  it('renders one transform input for a scalar channel', async () => {
+    render(<QueryEditor {...buildProps({ datasource: scalarDs(), query: telemetryQuery() })} />);
+    await expandSection();
+
+    expect(screen.getByTestId('query-editor-transform-CDH.Temperature')).toBeInTheDocument();
+  });
+
+  it('renders one transform input per key for a compound channel', async () => {
+    const ds = mockDatasource({
+      getKeys: jest.fn().mockResolvedValue([
+        { component: 'CDH', channel: 'Temperature', key: 'value.x' },
+        { component: 'CDH', channel: 'Temperature', key: 'value.y' },
+      ]),
+    });
+    const query = telemetryQuery({
+      keys: [
+        { component: 'CDH', channel: 'Temperature', key: 'value.x' },
+        { component: 'CDH', channel: 'Temperature', key: 'value.y' },
+      ],
+    });
+    render(<QueryEditor {...buildProps({ datasource: ds, query })} />);
+    await expandSection();
+
+    expect(screen.getByTestId('query-editor-transform-CDH.Temperature.value.x')).toBeInTheDocument();
+    expect(screen.getByTestId('query-editor-transform-CDH.Temperature.value.y')).toBeInTheDocument();
+    expect(screen.queryByTestId('query-editor-transform-CDH.Temperature')).not.toBeInTheDocument();
+  });
+
+  it('renders no transform section when no channel is selected', async () => {
+    await act(async () => {
+      render(<QueryEditor {...buildProps()} />);
+    });
+
+    expect(screen.queryByTestId('query-editor-transform-section')).not.toBeInTheDocument();
+  });
+
+  it('renders the shared toggles above the Value Transform section', async () => {
+    render(<QueryEditor {...buildProps({ datasource: scalarDs(), query: telemetryQuery() })} />);
+
+    const section = await screen.findByTestId('query-editor-transform-section');
+    const timeFieldToggle = screen.getByRole('radio', { name: /Receive Time/ });
+
+    expect(
+      timeFieldToggle.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('starts expanded when the query already carries a transform', async () => {
+    const query = telemetryQuery({
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2' }],
+    });
+    render(<QueryEditor {...buildProps({ datasource: scalarDs(), query })} />);
+
+    expect(await screen.findByTestId('query-editor-transform-CDH.Temperature')).toBeInTheDocument();
+  });
+
+  it('writes the raw input into query.transforms', async () => {
+    const onChange = jest.fn();
+    render(<QueryEditor {...buildProps({ datasource: scalarDs(), query: telemetryQuery(), onChange })} />);
+    await expandSection();
+
+    const input = screen.getByTestId('query-editor-transform-CDH.Temperature');
+    await act(async () => {
+      fireEvent.change(input, { target: { value: '2' } });
+    });
+
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        transforms: [{ component: 'CDH', channel: 'Temperature', targetKey: undefined, expr: '2' }],
+      })
+    );
+  });
+
+  it('round-trips an expression back into the input', async () => {
+    const query = telemetryQuery({
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$__value - 273.15' }],
+    });
+    render(<QueryEditor {...buildProps({ datasource: scalarDs(), query })} />);
+
+    const input = await screen.findByTestId('query-editor-transform-CDH.Temperature');
+    expect(input).toHaveValue('$__value - 273.15');
+  });
+
+  it('removes the entry when the input is cleared', async () => {
+    const onChange = jest.fn();
+    const query = telemetryQuery({
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2' }],
+    });
+    render(<QueryEditor {...buildProps({ datasource: scalarDs(), query, onChange })} />);
+
+    const input = await screen.findByTestId('query-editor-transform-CDH.Temperature');
+    await act(async () => {
+      fireEvent.change(input, { target: { value: '' } });
+    });
+
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ transforms: [] }));
+  });
+
+  it('shows a validation message and does not run an invalid expression', async () => {
+    const onRunQuery = jest.fn();
+    const query = telemetryQuery({
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: 'twice' }],
+    });
+    render(<QueryEditor {...buildProps({ datasource: scalarDs(), query, onRunQuery })} />);
+
+    const input = await screen.findByTestId('query-editor-transform-CDH.Temperature');
+    expect(screen.getByText(/must reference \$__value/)).toBeInTheDocument();
+
+    onRunQuery.mockClear();
+    await act(async () => {
+      fireEvent.blur(input);
+    });
+    expect(onRunQuery).not.toHaveBeenCalled();
+  });
+
+  it('runs the query on blur when the expression is valid', async () => {
+    const onRunQuery = jest.fn();
+    const query = telemetryQuery({
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2' }],
+    });
+    render(<QueryEditor {...buildProps({ datasource: scalarDs(), query, onRunQuery })} />);
+
+    const input = await screen.findByTestId('query-editor-transform-CDH.Temperature');
+    onRunQuery.mockClear();
+    await act(async () => {
+      fireEvent.blur(input);
+    });
+    expect(onRunQuery).toHaveBeenCalled();
   });
 });
 
