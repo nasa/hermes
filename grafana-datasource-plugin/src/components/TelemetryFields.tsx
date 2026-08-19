@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { Combobox, ComboboxOption, InlineField, MultiCombobox } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataSource } from '../datasource';
 import { Aggregation, ChannelQuery, ChannelRef, KeyRef, MyQuery } from '../types';
+import { TransformFields } from './TransformFields';
 
 interface TelemetryFieldsProps {
   query: MyQuery;
   onChange: (query: MyQuery) => void;
   onRunQuery: () => void;
   datasource: DataSource;
+  sharedOptions?: ReactNode;
 }
 
 const AGGREGATION_OPTIONS: Array<ComboboxOption<Aggregation>> = [
@@ -107,7 +109,7 @@ function isVariableReference(input: string): boolean {
   return refs.every((name) => defined.has(name));
 }
 
-export function TelemetryFields({ query, onChange, onRunQuery, datasource }: TelemetryFieldsProps) {
+export function TelemetryFields({ query, onChange, onRunQuery, datasource, sharedOptions }: TelemetryFieldsProps) {
   const [channelOptions, setChannelOptions] = useState<Array<ComboboxOption<string>>>([]);
   const [sourceOptions, setSourceOptions] = useState<Array<ComboboxOption<string>>>([]);
   const [keysByChannel, setKeysByChannel] = useState<Record<string, KeyRef[]>>({});
@@ -179,7 +181,7 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource }: Tel
       })
       .filter((ch): ch is ChannelQuery => ch !== null);
 
-    const updated: MyQuery = { ...query, channels, keys: [], sources: [] };
+    const updated: MyQuery = { ...query, channels, keys: [], sources: [], transforms: [] };
     onChange(updated);
     if (channels.length) {
       onRunQuery();
@@ -204,7 +206,19 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource }: Tel
     const channels = newKeys.length === 0
       ? (query.channels ?? []).filter((ch) => !(ch.component === chComponent && ch.name === chName))
       : query.channels;
-    const updated: MyQuery = { ...query, channels, keys: [...otherKeys, ...newKeys] };
+
+    const keptKeys = new Set(newKeys.map((k) => k.key));
+    const transforms = (query.transforms ?? []).filter((t) => {
+      if (t.component !== chComponent || t.channel !== chName) {
+        return true;
+      }
+      if (newKeys.length === 0) {
+        return false;
+      }
+      return t.targetKey === undefined || keptKeys.has(t.targetKey);
+    });
+
+    const updated: MyQuery = { ...query, channels, keys: [...otherKeys, ...newKeys], transforms };
     onChange(updated);
     if (updated.channels.length) {
       onRunQuery();
@@ -355,6 +369,13 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource }: Tel
             </InlineField>
           );
         })}
+      {sharedOptions}
+      <TransformFields
+        query={query}
+        onChange={onChange}
+        onRunQuery={onRunQuery}
+        keysByChannel={keysByChannel}
+      />
     </>
   );
 }
