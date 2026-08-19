@@ -76,3 +76,21 @@ CREATE TABLE IF NOT EXISTS telemetry (
 );
 
 SELECT add_dimension('telemetry', by_range('ert', INTERVAL '1 day'), if_not_exists => true);
+
+
+-- Migrations for databases without the `version` column.
+ALTER TABLE eventDefs ADD COLUMN IF NOT EXISTS version TEXT;
+ALTER TABLE telemetryDefs ADD COLUMN IF NOT EXISTS version TEXT;
+
+ALTER TABLE eventDefs DROP CONSTRAINT IF EXISTS eventdefs_component_name_key;
+ALTER TABLE telemetryDefs DROP CONSTRAINT IF EXISTS telemetrydefs_name_component_key;
+
+DO $$ BEGIN
+    ALTER TABLE eventDefs ADD CONSTRAINT eventdefs_version_component_name_key UNIQUE(version, component, name);
+    EXCEPTION WHEN duplicate_table OR duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    ALTER TABLE telemetryDefs ADD CONSTRAINT telemetrydefs_version_name_component_key UNIQUE(version, name, component);
+    EXCEPTION WHEN duplicate_table OR duplicate_object THEN null;
+END $$;
