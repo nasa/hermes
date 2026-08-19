@@ -67,10 +67,6 @@ function channelToKey(ch: ChannelRef): string {
   return JSON.stringify(ch);
 }
 
-function keyToChannel(key: string): ChannelRef {
-  return JSON.parse(key) as ChannelRef;
-}
-
 function toChannelOptions(entries: ChannelRefWithMetadata[]): Array<ComboboxOption<string>> {
   return entries.map((e) => ({
     label: `${e.component}.${e.name}`,
