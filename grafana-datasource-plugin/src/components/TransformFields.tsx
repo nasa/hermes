@@ -1,5 +1,6 @@
 import React from 'react';
 import { CollapsableSection, Icon, InlineField, Input, Tooltip } from '@grafana/ui';
+import { getTemplateSrv } from '@grafana/runtime';
 import { KeyRef, MyQuery, TransformRef } from '../types';
 import { normalizeTransform, validateTransformInput, VALUE_TOKEN } from '../query';
 
@@ -84,6 +85,8 @@ export function TransformFields({ query, onChange, onRunQuery, keysByChannel }: 
 
   const transforms = query.transforms ?? [];
 
+  const expand = (raw: string) => getTemplateSrv().replace(raw);
+
   const valueFor = (row: TransformRow): string =>
     transforms.find((t) => matchesRow(t, row))?.expr ?? '';
 
@@ -96,7 +99,7 @@ export function TransformFields({ query, onChange, onRunQuery, keysByChannel }: 
   };
 
   const runIfValid = (row: TransformRow) => {
-    if (!validateTransformInput(valueFor(row))) {
+    if (!validateTransformInput(expand(valueFor(row)))) {
       onRunQuery();
     }
   };
@@ -109,9 +112,10 @@ export function TransformFields({ query, onChange, onRunQuery, keysByChannel }: 
     >
       {rows.map((row, index) => {
         const raw = valueFor(row);
-        const error = validateTransformInput(raw);
-        const normalized = normalizeTransform(raw);
-        const isShorthand = normalized !== undefined && !error && normalized !== raw.trim();
+        const expanded = expand(raw);
+        const error = validateTransformInput(expanded);
+        const normalized = normalizeTransform(expanded);
+        const isShorthand = normalized !== undefined && !error && normalized !== expanded.trim();
         const inputId = `query-editor-transform-${index}`;
         return (
           <InlineField

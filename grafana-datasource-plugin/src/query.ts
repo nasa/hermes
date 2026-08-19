@@ -1,4 +1,4 @@
-import { ChannelQuery, ChannelRef, ResolvedQuery, TransformRef } from "types";
+import { ChannelQuery, ChannelRef, MyQuery, ResolvedQuery, TransformRef } from "types";
 import { DataQueryRequest } from "@grafana/data";
 
 // token for user transforms
@@ -26,6 +26,30 @@ export function resolveChannels(
         }
         return { component: expanded, name: '' };
     });
+}
+
+// Expand all template variables in a query
+export function resolveQuery(
+    query: MyQuery,
+    replace: (value: string) => string,
+    known: ChannelRef[] = []
+): ResolvedQuery {
+    return {
+        ...query,
+        channels: resolveChannels(query.channels ?? [], replace, known),
+        sources: query.sources?.map(replace) ?? [],
+        keys: query.keys?.map((k) => ({
+            component: replace(k.component),
+            channel: replace(k.channel),
+            key: replace(k.key),
+        })) ?? [],
+        transforms: query.transforms?.map((t) => ({
+            component: replace(t.component),
+            channel: replace(t.channel),
+            targetKey: t.targetKey === undefined ? undefined : replace(t.targetKey),
+            expr: replace(t.expr),
+        })) ?? [],
+    };
 }
 
 // Handle factor shorthand / full expression cases

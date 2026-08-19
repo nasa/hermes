@@ -7,7 +7,7 @@ import { DataSource } from '../datasource';
 import { MyDataSourceOptions, MyQuery, ResolvedQuery, withDefaults } from '../types';
 import { BuilderEditor } from './BuilderEditor';
 import { SqlEditor } from './SqlEditor';
-import { buildQuery, resolveChannels } from '../query';
+import { buildQuery, resolveQuery } from '../query';
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
@@ -44,10 +44,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
         const templateSrv = getTemplateSrv();
         const needsChannels = (filled.channels ?? []).some((c) => c.raw !== undefined);
         const known = needsChannels ? await datasource.getChannels().catch(() => []) : [];
-        const resolved: ResolvedQuery = {
-          ...filled,
-          channels: resolveChannels(filled.channels ?? [], (value) => templateSrv.replace(value), known),
-        };
+        const resolved: ResolvedQuery = resolveQuery(filled, (value) => templateSrv.replace(value), known);
         const from = range?.from ?? dateTime();
         const to = range?.to ?? dateTime();
         const sql = buildQuery(resolved, { range: { from, to, raw: { from, to } } } as any);
