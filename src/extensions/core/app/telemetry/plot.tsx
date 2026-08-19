@@ -473,7 +473,7 @@ function TelemetryPlot() {
                 if (value !== null && value !== undefined) {
                     seriesValues.push({
                         color: palette[seriesIdx],
-                        label: config.label?.toString() ?? "",
+                        label: typeof config.label === "string" ? config.label : "",
                         value: value.toFixed(3),
                     });
                 }

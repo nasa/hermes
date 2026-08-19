@@ -15,7 +15,7 @@ export class EventViewerBase extends WebViewPanelBase {
             evrs = JSON.parse(text);
         }
         catch (error) {
-            throw new Error(`Failed to parse EVR JSON: ${error}`);
+            throw new Error(`Failed to parse EVR JSON: ${error}`, { cause: error });
         }
 
         // Validate the JSON data

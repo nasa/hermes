@@ -89,7 +89,7 @@ export class UplinkLanguageProvider implements NotebookLanguageProvider {
                     metadata,
                 });
             } catch (err) {
-                throw new Error(`Invalid command on line ${lineNo + 1}: ${err}`);
+                throw new Error(`Invalid command on line ${lineNo + 1}: ${err}`, { cause: err });
             }
         }
 
@@ -114,7 +114,7 @@ export class UplinkLanguageProvider implements NotebookLanguageProvider {
                 try {
                     size = (await fsStat(upl.srcPath)).size;
                 } catch (err) {
-                    throw new Error(`failed to stat file '${upl.srcPath}': ${err}`);
+                    throw new Error(`failed to stat file '${upl.srcPath}': ${err}`, { cause: err });
                 }
 
                 try {
@@ -136,7 +136,7 @@ export class UplinkLanguageProvider implements NotebookLanguageProvider {
                         }, token);
                     });
                 } catch (err) {
-                    throw new Error(`failed to uplink '${upl.srcPath}': ${err}`);
+                    throw new Error(`failed to uplink '${upl.srcPath}': ${err}`, { cause: err });
                 }
             }
         }

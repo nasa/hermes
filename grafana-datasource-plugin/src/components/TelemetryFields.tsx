@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Combobox, ComboboxOption, InlineField, MultiCombobox } from '@grafana/ui';
+import { getTemplateSrv } from '@grafana/runtime';
 import { DataSource } from '../datasource';
-import { Aggregation, ChannelRef, ChannelRefWithMetadata, KeyRef, MyQuery } from '../types';
+import { Aggregation, ChannelQuery, ChannelRef, ChannelRefWithMetadata, KeyRef, MyQuery } from '../types';
 
 interface TelemetryFieldsProps {
   query: MyQuery;
@@ -20,6 +21,7 @@ const AGGREGATION_OPTIONS: Array<ComboboxOption<Aggregation>> = [
   { label: 'Sum', value: 'sum' },
   { label: 'Derivative', value: 'deriv' },
   { label: 'Raw (none)', value: 'raw' },
+  { label: 'Latest Value', value: 'latest' },
 ];
 
 function toOptions(values: string[]): Array<ComboboxOption<string>> {
@@ -78,8 +80,36 @@ function toChannelOptions(entries: ChannelRefWithMetadata[]): Array<ComboboxOpti
   }));
 }
 
-function channelValues(channels: ChannelRef[]): string[] {
-  return channels.map(channelToKey);
+function channelLabel(ch: ChannelQuery): string {
+  if (ch.raw !== undefined) {
+    return ch.raw;
+  }
+  // Avoid rendering a stray trailing dot when a channel has no name.
+  return ch.name ? `${ch.component}.${ch.name}` : ch.component;
+}
+
+function channelValue(ch: ChannelQuery): string {
+  return ch.raw !== undefined ? ch.raw : channelToKey(ch);
+}
+
+function channelValuesOrOptions(channels: ChannelQuery[]): Array<ComboboxOption<string>> {
+  return channels.map(ch => ({
+    label: channelLabel(ch),
+    value: channelValue(ch),
+  }));
+}
+
+function referencedVariables(input: string): string[] {
+  return (input.match(/\$\{?\w+\}?/g) ?? []).map((tok) => tok.replace(/[${}]/g, ''));
+}
+
+function isVariableReference(input: string): boolean {
+  const refs = referencedVariables(input);
+  if (refs.length === 0) {
+    return false;
+  }
+  const defined = new Set(getTemplateSrv().getVariables().map((v) => v.name));
+  return refs.every((name) => defined.has(name));
 }
 
 export function TelemetryFields({ query, onChange, onRunQuery, datasource }: TelemetryFieldsProps) {
@@ -91,10 +121,69 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource }: Tel
   const [sourceLoading, setSourceLoading] = useState(false);
   const [keyLoading, setKeyLoading] = useState(false);
 
+  // --- Helpers ---
+
+  const getChannelOptionsWithVariables = async (inputValue: string): Promise<Array<ComboboxOption<string>>> => {
+    const options: Array<ComboboxOption<string>> = [];
+
+    if (isVariableReference(inputValue)) {
+      options.push({ label: inputValue, value: inputValue, description: 'Use template variable' });
+    }
+
+    // Autocomplete hints for the template variable currently being typed.
+    if (inputValue.includes('$')) {
+      const partialMatch = inputValue.match(/\$\w*$/);
+      if (partialMatch) {
+        const partial = partialMatch[0];
+        const prefix = inputValue.slice(0, partialMatch.index);
+        const variableNames = getTemplateSrv().getVariables().map((v) => `$${v.name}`);
+
+        const hints = variableNames
+          .filter((name) => name.toLowerCase().startsWith(partial.toLowerCase()))
+          .map((name) => `${prefix}${name}`)
+          .filter((suggestion) => suggestion !== inputValue)
+          .map((suggestion) => ({ label: suggestion, value: suggestion, infoOption: true, icon: 'code-branch' as const }));
+        options.push(...hints);
+      }
+      return options;
+    }
+
+    const matches = channelOptions.filter(opt =>
+      opt.label?.toLowerCase().includes(inputValue.toLowerCase())
+    );
+    options.push(...matches);
+    return options;
+  };
+
   // --- Handlers ---
 
   const onChannelChange = (options: Array<ComboboxOption<string>>) => {
-    const channels = options.map(({ value }) => keyToChannel(value));
+    const channels = options
+      .map(({ value, label }): ChannelQuery | null => {
+        const valueStr = typeof value === 'string' ? value : String(value ?? '');
+
+        // Known-channel options encode a { component, name } object as JSON.
+        if (valueStr.startsWith('{')) {
+          try {
+            const parsed = JSON.parse(valueStr) as ChannelRef;
+            if (typeof parsed.component === 'string' && typeof parsed.name === 'string') {
+              return { component: parsed.component, name: parsed.name };
+            }
+          } catch {
+            // Treat as raw text
+          }
+        }
+
+        // Custom template variable reference
+        const raw = valueStr || label || '';
+        if (!isVariableReference(raw)) {
+          return null;
+        }
+
+        return { raw };
+      })
+      .filter((ch): ch is ChannelQuery => ch !== null);
+
     const updated: MyQuery = { ...query, channels, keys: [], sources: [] };
     onChange(updated);
     if (channels.length) {
@@ -158,6 +247,16 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource }: Tel
     loadSources();
   }, [datasource]);
 
+  // Update keys when vars change
+  const templateSrv = getTemplateSrv();
+  const resolvedChannelsKey = JSON.stringify(
+    (query.channels ?? []).map((ch) =>
+      ch.raw !== undefined
+        ? templateSrv.replace(ch.raw)
+        : `${templateSrv.replace(ch.component)}\u0000${templateSrv.replace(ch.name)}`
+    )
+  );
+
   useEffect(() => {
     if (!query.channels || !query.channels.length) {
       setTimeout(() => setKeysByChannel({}), 0);
@@ -172,7 +271,7 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource }: Tel
         .finally(() => setKeyLoading(false));
     }
     loadKeys();
-  }, [datasource, query.channels]);
+  }, [datasource, query.channels, resolvedChannelsKey]);
 
   useEffect(() => {
     const currentKeys = query.keys ?? [];
@@ -201,8 +300,8 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource }: Tel
         <MultiCombobox
           id="query-editor-channel"
           data-testid="query-editor-channel"
-          options={channelOptions}
-          value={channelValues(query.channels ?? [])}
+          options={getChannelOptionsWithVariables}
+          value={channelValuesOrOptions(query.channels ?? [])}
           onChange={onChannelChange}
           loading={channelLoading}
           placeholder="Select channel"

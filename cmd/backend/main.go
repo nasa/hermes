@@ -18,6 +18,7 @@ import (
 	hermesotel "github.com/nasa/hermes/pkg/otel"
 	"github.com/nasa/hermes/pkg/pb"
 	"github.com/nasa/hermes/pkg/rpc"
+	"github.com/nasa/hermes/pkg/tcprelay"
 	"github.com/nasa/hermes/pkg/timescaledb"
 	"github.com/nasa/hermes/pkg/util"
 
@@ -83,6 +84,12 @@ func main() {
 	err = hermesotel.Init()
 	if err != nil {
 		logger.Error("failed to initialize otel", "err", err)
+		os.Exit(1)
+	}
+
+	err = tcprelay.Init()
+	if err != nil {
+		logger.Error("failed to initialize tcprelay", "err", err)
 		os.Exit(1)
 	}
 

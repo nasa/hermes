@@ -32,7 +32,6 @@ const UPLOT_AXIS_FONT_SIZE = 12;
 // Tick spacing in CSS pixels
 const Y_TICK_SPACING = 30;
 const X_TICK_SPACING = 50;
-const X_TICK_VALUE_GAP = 18;
 
 export class UPlotAxisBuilder {
     constructor(public props: AxisProps) {}
@@ -129,7 +128,6 @@ export function formatTime(
     const minute = 60 * second;
     const hour = 60 * minute;
     const day = 24 * hour;
-    const month = 30 * day;
 
     let formatStr = 'time';
 
@@ -173,9 +171,9 @@ export function formatTime(
 function calculateSpace(
     self: uPlot,
     axisIdx: number,
-    scaleMin: number,
-    scaleMax: number,
-    plotDim: number
+    _scaleMin: number,
+    _scaleMax: number,
+    _plotDim: number
 ): number {
     const axis = self.axes[axisIdx];
 
