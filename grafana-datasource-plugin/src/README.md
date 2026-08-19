@@ -43,6 +43,31 @@ Select **Telemetry** in the bottom-right toggle. Queries time-series values from
 | **Aggregation** | select                 | Function applied per time bucket: `Average`, `Min`, `Max`, `Count`, `First`, `Last`, `Sum`, `Derivative`, `Raw (none)`.                   |
 | **Source**      | multi-select, optional | FSW source identifier. Leave empty to include all sources.                                                                                |
 | **Keys**        | multi-select, optional | Sub-field paths for compound (object/array) channels. Appears per-channel only when multiple keys exist. Leave empty to include all keys. |
+| **Value Transform** | text, optional     | *(Collapsible)* Rescale or convert values per channel, or per key for compound channels. See below.                                       |
+
+<br>
+
+##### Value Transform
+
+Each selected channel gets its own input. Enter a plain number to multiply by it, or any PostgreSQL expression using `$__value` in place of the stored value.
+
+| Input                       | Result                    |
+| --------------------------- | ------------------------- |
+| *(blank)*                   | No transform              |
+| `2`                         | `$__value * 2`            |
+| `0.001`                     | Milli → base units        |
+| `$__value - 273.15`         | Kelvin → Celsius          |
+| `$__value * 9.0/5.0 + 32`   | Celsius → Fahrenheit      |
+| `ABS($__value)`             | Any PostgreSQL function   |
+| `$__value * $gain`          | Combined with a dashboard variable |
+
+The transform is compiled into the generated SQL and applied before aggregation, so it carries over when you switch to Code mode and stays correct for `Min` / `Max` with negative factors.
+
+Notes:
+
+- Applies to **numeric channels only**. Boolean, string, and byte values are returned unchanged.
+- Use `$__value`, not `$v` — Grafana reserves the `$__` prefix, so the token can never be shadowed by a dashboard variable.
+- `Count` counts the transformed expression, so an expression that changes null-ness (such as `COALESCE($__value, 0)`) will also change the count.
 
 <br>
 
