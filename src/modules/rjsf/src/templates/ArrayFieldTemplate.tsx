@@ -69,7 +69,7 @@ export default function c({
             />
             {items ?
                 (uiOptions.grid && typeof schema.items === "object" && !Array.isArray(schema.items)) ? (
-                    <VSCodeDataGrid gridTemplateColumns={String(uiOptions["gridTemplateColumns"])}>
+                    <VSCodeDataGrid gridTemplateColumns={typeof uiOptions["gridTemplateColumns"] === "string" ? uiOptions["gridTemplateColumns"] : undefined}>
                         <VSCodeDataGridRow row-type="sticky-header">
                             {Object.entries(schema.items.properties ?? {}).map(([name, value], index) => (
                                 <VSCodeDataGridCell key={name} cell-type="columnheader" grid-column={index + 1}>

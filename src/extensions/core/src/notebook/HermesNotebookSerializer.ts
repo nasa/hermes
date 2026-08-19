@@ -132,7 +132,7 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
         try {
             versionTag = parseMeta(file[0]);
         } catch (e) {
-            throw new Error(`Failed to read version from line 1: ${e}`);
+            throw new Error(`Failed to read version from line 1: ${e}`, { cause: e });
         }
 
         let version: number;
@@ -303,7 +303,7 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
                 }
             }
             catch (e) {
-                throw new Error(`Error on line: ${lineNo + 1}: ${e}`);
+                throw new Error(`Error on line: ${lineNo + 1}: ${e}`, { cause: e });
             }
         }
 
@@ -398,7 +398,7 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
                 }
             }
             catch (e) {
-                throw new Error(`Error on line: ${lineNo}: ${e}`);
+                throw new Error(`Error on line: ${lineNo}: ${e}`, { cause: e });
             }
         }
 

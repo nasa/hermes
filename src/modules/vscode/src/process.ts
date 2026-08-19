@@ -105,6 +105,6 @@ export function attachProcessToPsuedoTerminal(
 
         return process;
     } catch (err) {
-        throw new Error(`Failed to spawn process: ${err}`);
+        throw new Error(`Failed to spawn process: ${err}`, { cause: err });
     }
 }

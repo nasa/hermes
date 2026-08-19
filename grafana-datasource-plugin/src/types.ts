@@ -3,11 +3,12 @@ import { DataQuery } from '@grafana/schema';
 
 export type QueryType = 'telemetry' | 'events' | 'raw';
 export type TimeField = 'time' | 'ert';
-export type Aggregation = 'avg' | 'min' | 'max' | 'count' | 'first' | 'last' | 'sum' | 'deriv' | 'raw';
+export type Aggregation = 'avg' | 'min' | 'max' | 'count' | 'first' | 'last' | 'sum' | 'deriv' | 'raw' | 'latest';
 
 export interface ChannelRef {
   component: string;
   name: string;
+  raw?: never;
 }
 
 export interface ChannelRefResponse extends ChannelRef {
@@ -20,6 +21,14 @@ export interface ChannelRefWithMetadata extends ChannelRef {
   };
 }
 
+export interface ChannelExpression {
+  raw: string;
+  component?: never;
+  name?: never;
+}  // Raw is included for template variable queries as they may not yet be matchable
+
+export type ChannelQuery = ChannelRef | ChannelExpression;
+
 export interface KeyRef {
   component: string;
   channel: string;
@@ -28,7 +37,7 @@ export interface KeyRef {
 
 export interface MyQuery extends DataQuery {
   queryType: QueryType;
-  channels: ChannelRef[];
+  channels: ChannelQuery[];
   sources: string[];
   keys: KeyRef[];
   timeField?: TimeField;
@@ -37,6 +46,8 @@ export interface MyQuery extends DataQuery {
   aggregation: Aggregation;
   rawSql?: string;
 }
+
+export type ResolvedQuery = Omit<MyQuery, 'channels'> & { channels: ChannelRef[] };
 
 export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], timeField: 'ert', aggregation: 'avg' };
 

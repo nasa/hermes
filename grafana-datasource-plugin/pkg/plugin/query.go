@@ -225,40 +225,50 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			frames[frameId] = frame
 		}
 
-		// Put this row into the correct data frame
+		// Append the row, or for "latest" overwrite row 0 so only the most
+		// recent value survives (rows arrive ordered by time ascending).
+		appendRow := func(val interface{}) {
+			if qm.Aggregation == "latest" && frame.Fields[0].Len() > 0 {
+				frame.Fields[0].Set(0, t)
+				frame.Fields[1].Set(0, val)
+			} else {
+				frame.AppendRow(t, val)
+			}
+		}
+
 		switch dbValueType {
 		case "int", "uint":
 			var valPtr *float64
 			if vInt.Valid {
 				valPtr = &vInt.Float64
 			}
-			frame.AppendRow(t, valPtr)
+			appendRow(valPtr)
 		case "float":
 			var valPtr *float64
 			if vFloat.Valid {
 				valPtr = &vFloat.Float64
 			}
-			frame.AppendRow(t, valPtr)
+			appendRow(valPtr)
 		case "bool":
 			var valPtr *bool
 			if vBool.Valid {
 				b := vBool.Float64 > 0
 				valPtr = &b
 			}
-			frame.AppendRow(t, valPtr)
+			appendRow(valPtr)
 		case "bytes":
 			var valPtr *string
 			if vBytes != nil {
 				s := hex.EncodeToString(vBytes)
 				valPtr = &s
 			}
-			frame.AppendRow(t, valPtr)
+			appendRow(valPtr)
 		default:
 			var valPtr *string
 			if vStr.Valid {
 				valPtr = &vStr.String
 			}
-			frame.AppendRow(t, valPtr)
+			appendRow(valPtr)
 		}
 	}
 

@@ -99,6 +99,9 @@ func TestFPrimeTCP(t *testing.T) {
 
 	wg.Wait()
 
+	assert.NoError(t, host.Event.Flush(t.Context()))
+	assert.NoError(t, host.Telemetry.Flush(t.Context()))
+
 	// Update reference files
 	// updateFile(t, "testdata/events.json", events)
 	// updateFile(t, "testdata/telemetry.json", telemetry)

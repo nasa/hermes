@@ -178,7 +178,8 @@ export class DictionaryNamespace {
                 validateEqualTypes(oldType, type);
             } catch (err) {
                 throw new Error(
-                    `Attempting to override type '${key}' with non equivalent type: ${err}`
+                    `Attempting to override type '${key}' with non equivalent type: ${err}`,
+                    { cause: err }
                 );
             }
         }
@@ -337,7 +338,7 @@ export class DictionaryNamespace {
                 try {
                     type.verify(resolved);
                 } catch (err) {
-                    throw new Error(`Failed to verify ${type.name}: ${err}`);
+                    throw new Error(`Failed to verify ${type.name}: ${err}`, { cause: err });
                 }
             }
 

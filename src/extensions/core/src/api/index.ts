@@ -282,7 +282,7 @@ export class VscodeApi implements Hermes.Api {
             reconnect?: true;
             buttonCallbacks?: [(e: vscode.QuickInputButton) => any];
         };
-        const quickPick = await vscode.window.createQuickPick<BackendQuickPickItem>();
+        const quickPick = vscode.window.createQuickPick<BackendQuickPickItem>();
         quickPick.canSelectMany = false;
         quickPick.title = 'Hermes Backend Mode';
         quickPick.items = [
@@ -330,7 +330,7 @@ export class VscodeApi implements Hermes.Api {
                     buttonIdx >= 0 && e.item.buttonCallbacks?.[buttonIdx](e.button);
                     resolve(null);
                 })
-            )
+            );
         });
 
         subs.forEach((d) => d.dispose());

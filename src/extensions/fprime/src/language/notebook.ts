@@ -25,7 +25,7 @@ export class FprimeNotebookLanguageProvider extends FswNotebookLanguageProvider 
             } catch (err) {
                 const r = range(expr);
                 if (r) {
-                    throw new Error(`line: ${r.start.line + 1}: ${err}`);
+                    throw new Error(`line: ${r.start.line + 1}: ${err}`, { cause: err });
                 } else {
                     throw err;
                 }
