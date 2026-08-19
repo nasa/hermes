@@ -124,3 +124,122 @@ describe('TransformFields — template variable shorthand', () => {
     );
   });
 });
+
+describe('TransformFields — display name override', () => {
+  // On a fresh query (no transforms) the section is collapsed; expand it so the
+  // per-row inputs mount, mirroring how a user reaches a name-only override.
+  const openSection = () => {
+    act(() => {
+      fireEvent.click(screen.getByTestId('query-editor-transform-section'));
+    });
+  };
+
+  it('shows the row label as the alias placeholder', () => {
+    renderFields();
+    openSection();
+    const alias = screen.getByTestId('query-editor-alias-CDH.Temperature');
+    expect(alias).toHaveAttribute('placeholder', 'CDH.Temperature');
+    expect(alias).toHaveValue('');
+  });
+
+  it('renders an existing name override in the alias field', () => {
+    renderFields({
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
+    });
+    expect(screen.getByTestId('query-editor-alias-CDH.Temperature')).toHaveValue('Reactor Temp');
+  });
+
+  it('stores a name-only override (empty expr) on change', () => {
+    const { onChange } = renderFields();
+    openSection();
+    const alias = screen.getByTestId('query-editor-alias-CDH.Temperature');
+    act(() => {
+      fireEvent.change(alias, { target: { value: 'Reactor Temp' } });
+    });
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        transforms: [
+          { component: 'CDH', channel: 'Temperature', targetKey: undefined, expr: '', name: 'Reactor Temp' },
+        ],
+      })
+    );
+  });
+
+  it('preserves an existing expression when a name is added', () => {
+    const { onChange } = renderFields({
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$__value * 2' }],
+    });
+    const alias = screen.getByTestId('query-editor-alias-CDH.Temperature');
+    act(() => {
+      fireEvent.change(alias, { target: { value: 'Reactor Temp' } });
+    });
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        transforms: [
+          { component: 'CDH', channel: 'Temperature', targetKey: undefined, expr: '$__value * 2', name: 'Reactor Temp' },
+        ],
+      })
+    );
+  });
+
+  it('preserves an existing name when the expression is edited', () => {
+    const { onChange } = renderFields({
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
+    });
+    const expr = screen.getByTestId('query-editor-transform-CDH.Temperature');
+    act(() => {
+      fireEvent.change(expr, { target: { value: '2' } });
+    });
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        transforms: [
+          { component: 'CDH', channel: 'Temperature', targetKey: undefined, expr: '2', name: 'Reactor Temp' },
+        ],
+      })
+    );
+  });
+
+  it('drops the row when both the expression and name are cleared', () => {
+    const { onChange } = renderFields({
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
+    });
+    const alias = screen.getByTestId('query-editor-alias-CDH.Temperature');
+    act(() => {
+      fireEvent.change(alias, { target: { value: '' } });
+    });
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ transforms: [] })
+    );
+  });
+
+  it('keeps the row (drops only the name) when a name is cleared but an expression remains', () => {
+    const { onChange } = renderFields({
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2', name: 'Reactor Temp' }],
+    });
+    const alias = screen.getByTestId('query-editor-alias-CDH.Temperature');
+    act(() => {
+      fireEvent.change(alias, { target: { value: '' } });
+    });
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        transforms: [{ component: 'CDH', channel: 'Temperature', targetKey: undefined, expr: '2' }],
+      })
+    );
+  });
+
+  it('shows the expanded-name hint when the alias uses a template variable', () => {
+    vars = { label: 'Reactor' };
+    renderFields({
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: '$label Temp' }],
+    });
+    const hint = screen.getByTestId('query-editor-alias-preview-CDH.Temperature');
+    expect(hint).toHaveAttribute('title', '= Reactor Temp');
+  });
+
+  it('shows no expanded-name hint for a literal alias', () => {
+    renderFields({
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
+    });
+    expect(screen.queryByTestId('query-editor-alias-preview-CDH.Temperature')).not.toBeInTheDocument();
+  });
+});
