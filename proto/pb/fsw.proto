@@ -52,9 +52,11 @@ message Fsw {
   // If other requests are routed to it, they will be rejected.
   repeated FswCapability capabilities = 7;
 
-  // Optional ID of the dictionary to use when commanding this
+  // ID of the dictionary to use when commanding this
   // This will notify the frontend to swap to this dictionary.
   string dictionary = 8;
+  // Version of the dictionary to use when commanding this
+  string version = 9;
 }
 
 message CommandOptions {

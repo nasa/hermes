@@ -4291,6 +4291,9 @@ export namespace hermes {
 
         /** EventRef dictionary */
         dictionary?: (string|null);
+
+        /** EventRef version */
+        version?: (string|null);
     }
 
     /** Represents an EventRef. */
@@ -4319,6 +4322,9 @@ export namespace hermes {
 
         /** EventRef dictionary. */
         public dictionary: string;
+
+        /** EventRef version. */
+        public version: string;
 
         /**
          * Creates a new EventRef instance using the specified properties.
@@ -4533,6 +4539,9 @@ export namespace hermes {
 
         /** TelemetryRef dictionary */
         dictionary?: (string|null);
+
+        /** TelemetryRef version */
+        version?: (string|null);
     }
 
     /** Represents a TelemetryRef. */
@@ -4555,6 +4564,9 @@ export namespace hermes {
 
         /** TelemetryRef dictionary. */
         public dictionary: string;
+
+        /** TelemetryRef version. */
+        public version: string;
 
         /**
          * Creates a new TelemetryRef instance using the specified properties.
@@ -5766,6 +5778,9 @@ export namespace hermes {
 
         /** Fsw dictionary */
         dictionary?: (string|null);
+
+        /** Fsw version */
+        version?: (string|null);
     }
 
     /** Represents a Fsw. */
@@ -5794,6 +5809,9 @@ export namespace hermes {
 
         /** Fsw dictionary. */
         public dictionary: string;
+
+        /** Fsw version. */
+        public version: string;
 
         /**
          * Creates a new Fsw instance using the specified properties.

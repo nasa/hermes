@@ -9,6 +9,7 @@ export interface EventRef {
   'severity'?: (_hermes_EvrSeverity);
   'arguments'?: (string)[];
   'dictionary'?: (string);
+  'version'?: (string);
 }
 
 export interface EventRef__Output {
@@ -18,4 +19,5 @@ export interface EventRef__Output {
   'severity'?: (_hermes_EvrSeverity__Output);
   'arguments'?: (string)[];
   'dictionary'?: (string);
+  'version'?: (string);
 }

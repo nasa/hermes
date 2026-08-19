@@ -106,9 +106,11 @@ type Fsw struct {
 	// The set of uplink capabilities this FSW connection implements
 	// If other requests are routed to it, they will be rejected.
 	Capabilities []FswCapability `protobuf:"varint,7,rep,packed,name=capabilities,proto3,enum=hermes.FswCapability" json:"capabilities,omitempty"`
-	// Optional ID of the dictionary to use when commanding this
+	// ID of the dictionary to use when commanding this
 	// This will notify the frontend to swap to this dictionary.
-	Dictionary    string `protobuf:"bytes,8,opt,name=dictionary,proto3" json:"dictionary,omitempty"`
+	Dictionary string `protobuf:"bytes,8,opt,name=dictionary,proto3" json:"dictionary,omitempty"`
+	// Version of the dictionary to use when commanding this
+	Version       string `protobuf:"bytes,9,opt,name=version,proto3" json:"version,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -181,6 +183,13 @@ func (x *Fsw) GetCapabilities() []FswCapability {
 func (x *Fsw) GetDictionary() string {
 	if x != nil {
 		return x.Dictionary
+	}
+	return ""
+}
+
+func (x *Fsw) GetVersion() string {
+	if x != nil {
+		return x.Version
 	}
 	return ""
 }
@@ -614,7 +623,7 @@ var File_fsw_proto protoreflect.FileDescriptor
 const file_fsw_proto_rawDesc = "" +
 	"\n" +
 	"\tfsw.proto\x12\x06hermes\x1a\n" +
-	"type.proto\x1a\x10dictionary.proto\"\xcb\x01\n" +
+	"type.proto\x1a\x10dictionary.proto\"\xe5\x01\n" +
 	"\x03Fsw\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x1d\n" +
@@ -624,7 +633,8 @@ const file_fsw_proto_rawDesc = "" +
 	"\fcapabilities\x18\a \x03(\x0e2\x15.hermes.FswCapabilityR\fcapabilities\x12\x1e\n" +
 	"\n" +
 	"dictionary\x18\b \x01(\tR\n" +
-	"dictionaryJ\x04\b\x05\x10\x06J\x04\b\x06\x10\a\")\n" +
+	"dictionary\x12\x18\n" +
+	"\aversion\x18\t \x01(\tR\aversionJ\x04\b\x05\x10\x06J\x04\b\x06\x10\a\")\n" +
 	"\x0eCommandOptions\x12\x17\n" +
 	"\ano_wait\x18\x01 \x01(\bR\x06noWait\"\x86\x02\n" +
 	"\fCommandValue\x12$\n" +

@@ -660,6 +660,7 @@ type EventRef struct {
 	Arguments []string               `protobuf:"bytes,5,rep,name=arguments,proto3" json:"arguments,omitempty"`
 	// (optional) dictionary ID this comes from
 	Dictionary    string `protobuf:"bytes,10,opt,name=dictionary,proto3" json:"dictionary,omitempty"`
+	Version       string `protobuf:"bytes,11,opt,name=version,proto3" json:"version,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -732,6 +733,13 @@ func (x *EventRef) GetArguments() []string {
 func (x *EventRef) GetDictionary() string {
 	if x != nil {
 		return x.Dictionary
+	}
+	return ""
+}
+
+func (x *EventRef) GetVersion() string {
+	if x != nil {
+		return x.Version
 	}
 	return ""
 }
@@ -828,6 +836,7 @@ type TelemetryRef struct {
 	Component string                 `protobuf:"bytes,3,opt,name=component,proto3" json:"component,omitempty"`
 	// (optional) dictionary ID this comes from
 	Dictionary    string `protobuf:"bytes,10,opt,name=dictionary,proto3" json:"dictionary,omitempty"`
+	Version       string `protobuf:"bytes,11,opt,name=version,proto3" json:"version,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -890,6 +899,13 @@ func (x *TelemetryRef) GetDictionary() string {
 	return ""
 }
 
+func (x *TelemetryRef) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
 type DictionaryHead struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// *
@@ -901,7 +917,7 @@ type DictionaryHead struct {
 	Type string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
 	// Name given to dictionary, can be changed by the user
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	// (optional) Dictionary/FSW release version
+	// Dictionary/FSW release version
 	Version       string `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1150,7 +1166,7 @@ const file_dictionary_proto_rawDesc = "" +
 	"\rformat_string\x18\x05 \x01(\tB\x02\x18\x01R\fformatString\x12+\n" +
 	"\targuments\x18\x06 \x03(\v2\r.hermes.FieldR\targuments\x12\x1a\n" +
 	"\bmetadata\x18\a \x01(\tR\bmetadata\x12,\n" +
-	"\x06format\x18\b \x01(\v2\x14.hermes.FormatStringR\x06format\"\xbb\x01\n" +
+	"\x06format\x18\b \x01(\v2\x14.hermes.FormatStringR\x06format\"\xd5\x01\n" +
 	"\bEventRef\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +
@@ -1160,13 +1176,14 @@ const file_dictionary_proto_rawDesc = "" +
 	"\n" +
 	"dictionary\x18\n" +
 	" \x01(\tR\n" +
-	"dictionary\"\x94\x01\n" +
+	"dictionary\x12\x18\n" +
+	"\aversion\x18\v \x01(\tR\aversion\"\x94\x01\n" +
 	"\fTelemetryDef\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +
 	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12 \n" +
 	"\x04type\x18\x04 \x01(\v2\f.hermes.TypeR\x04type\x12\x1a\n" +
-	"\bmetadata\x18\x06 \x01(\tR\bmetadataJ\x04\b\x05\x10\x06\"p\n" +
+	"\bmetadata\x18\x06 \x01(\tR\bmetadataJ\x04\b\x05\x10\x06\"\x8a\x01\n" +
 	"\fTelemetryRef\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +
@@ -1174,7 +1191,8 @@ const file_dictionary_proto_rawDesc = "" +
 	"\n" +
 	"dictionary\x18\n" +
 	" \x01(\tR\n" +
-	"dictionary\"R\n" +
+	"dictionary\x12\x18\n" +
+	"\aversion\x18\v \x01(\tR\aversion\"R\n" +
 	"\x0eDictionaryHead\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +

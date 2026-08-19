@@ -25,20 +25,22 @@ FILE: FswCapability
 REQUEST: FswCapability
 
 class Fsw(_message.Message):
-    __slots__ = ("id", "type", "profile_id", "forwards", "capabilities", "dictionary")
+    __slots__ = ("id", "type", "profile_id", "forwards", "capabilities", "dictionary", "version")
     ID_FIELD_NUMBER: _ClassVar[int]
     TYPE_FIELD_NUMBER: _ClassVar[int]
     PROFILE_ID_FIELD_NUMBER: _ClassVar[int]
     FORWARDS_FIELD_NUMBER: _ClassVar[int]
     CAPABILITIES_FIELD_NUMBER: _ClassVar[int]
     DICTIONARY_FIELD_NUMBER: _ClassVar[int]
+    VERSION_FIELD_NUMBER: _ClassVar[int]
     id: str
     type: str
     profile_id: str
     forwards: _containers.RepeatedScalarFieldContainer[str]
     capabilities: _containers.RepeatedScalarFieldContainer[FswCapability]
     dictionary: str
-    def __init__(self, id: _Optional[str] = ..., type: _Optional[str] = ..., profile_id: _Optional[str] = ..., forwards: _Optional[_Iterable[str]] = ..., capabilities: _Optional[_Iterable[_Union[FswCapability, str]]] = ..., dictionary: _Optional[str] = ...) -> None: ...
+    version: str
+    def __init__(self, id: _Optional[str] = ..., type: _Optional[str] = ..., profile_id: _Optional[str] = ..., forwards: _Optional[_Iterable[str]] = ..., capabilities: _Optional[_Iterable[_Union[FswCapability, str]]] = ..., dictionary: _Optional[str] = ..., version: _Optional[str] = ...) -> None: ...
 
 class CommandOptions(_message.Message):
     __slots__ = ("no_wait",)

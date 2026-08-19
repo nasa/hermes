@@ -582,6 +582,7 @@ func (f *fswClient) Info() host.FswInfo {
 		Forwards:     f.info.GetForwards(),
 		Capabilities: f.info.GetCapabilities(),
 		Dictionary:   f.info.Dictionary,
+		Version:      f.info.Version,
 	}
 }
 

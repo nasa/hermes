@@ -6,6 +6,7 @@ export interface TelemetryRef {
   'name'?: (string);
   'component'?: (string);
   'dictionary'?: (string);
+  'version'?: (string);
 }
 
 export interface TelemetryRef__Output {
@@ -13,4 +14,5 @@ export interface TelemetryRef__Output {
   'name'?: (string);
   'component'?: (string);
   'dictionary'?: (string);
+  'version'?: (string);
 }

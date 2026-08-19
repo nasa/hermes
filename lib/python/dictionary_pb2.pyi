@@ -127,20 +127,22 @@ class EventDef(_message.Message):
     def __init__(self, id: _Optional[int] = ..., component: _Optional[str] = ..., name: _Optional[str] = ..., severity: _Optional[_Union[EvrSeverity, str]] = ..., format_string: _Optional[str] = ..., arguments: _Optional[_Iterable[_Union[_type_pb2.Field, _Mapping]]] = ..., metadata: _Optional[str] = ..., format: _Optional[_Union[FormatString, _Mapping]] = ...) -> None: ...
 
 class EventRef(_message.Message):
-    __slots__ = ("id", "name", "component", "severity", "arguments", "dictionary")
+    __slots__ = ("id", "name", "component", "severity", "arguments", "dictionary", "version")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     COMPONENT_FIELD_NUMBER: _ClassVar[int]
     SEVERITY_FIELD_NUMBER: _ClassVar[int]
     ARGUMENTS_FIELD_NUMBER: _ClassVar[int]
     DICTIONARY_FIELD_NUMBER: _ClassVar[int]
+    VERSION_FIELD_NUMBER: _ClassVar[int]
     id: int
     name: str
     component: str
     severity: EvrSeverity
     arguments: _containers.RepeatedScalarFieldContainer[str]
     dictionary: str
-    def __init__(self, id: _Optional[int] = ..., name: _Optional[str] = ..., component: _Optional[str] = ..., severity: _Optional[_Union[EvrSeverity, str]] = ..., arguments: _Optional[_Iterable[str]] = ..., dictionary: _Optional[str] = ...) -> None: ...
+    version: str
+    def __init__(self, id: _Optional[int] = ..., name: _Optional[str] = ..., component: _Optional[str] = ..., severity: _Optional[_Union[EvrSeverity, str]] = ..., arguments: _Optional[_Iterable[str]] = ..., dictionary: _Optional[str] = ..., version: _Optional[str] = ...) -> None: ...
 
 class TelemetryDef(_message.Message):
     __slots__ = ("id", "name", "component", "type", "metadata")
@@ -157,16 +159,18 @@ class TelemetryDef(_message.Message):
     def __init__(self, id: _Optional[int] = ..., name: _Optional[str] = ..., component: _Optional[str] = ..., type: _Optional[_Union[_type_pb2.Type, _Mapping]] = ..., metadata: _Optional[str] = ...) -> None: ...
 
 class TelemetryRef(_message.Message):
-    __slots__ = ("id", "name", "component", "dictionary")
+    __slots__ = ("id", "name", "component", "dictionary", "version")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     COMPONENT_FIELD_NUMBER: _ClassVar[int]
     DICTIONARY_FIELD_NUMBER: _ClassVar[int]
+    VERSION_FIELD_NUMBER: _ClassVar[int]
     id: int
     name: str
     component: str
     dictionary: str
-    def __init__(self, id: _Optional[int] = ..., name: _Optional[str] = ..., component: _Optional[str] = ..., dictionary: _Optional[str] = ...) -> None: ...
+    version: str
+    def __init__(self, id: _Optional[int] = ..., name: _Optional[str] = ..., component: _Optional[str] = ..., dictionary: _Optional[str] = ..., version: _Optional[str] = ...) -> None: ...
 
 class DictionaryHead(_message.Message):
     __slots__ = ("type", "name", "version")
