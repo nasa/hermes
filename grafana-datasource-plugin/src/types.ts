@@ -25,6 +25,13 @@ export interface KeyRef {
   key: string;
 }
 
+export interface TransformRef {
+  component: string;
+  channel: string;
+  targetKey?: string;  // if undefined, transform applies to the whole channel
+  expr: string;
+}
+
 export interface MyQuery extends DataQuery {
   queryType: QueryType;
   channels: ChannelQuery[];
@@ -34,12 +41,13 @@ export interface MyQuery extends DataQuery {
   timeOverrideFrom?: string;
   timeOverrideTo?: string;
   aggregation: Aggregation;
+  transforms?: TransformRef[];
   rawSql?: string;
 }
 
 export type ResolvedQuery = Omit<MyQuery, 'channels'> & { channels: ChannelRef[] };
 
-export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], timeField: 'ert', aggregation: 'avg' };
+export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], transforms: [], timeField: 'ert', aggregation: 'avg' };
 
 export function withDefaults(query: MyQuery): MyQuery {
   return {

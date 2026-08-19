@@ -67,6 +67,12 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
         channel: replace(k.channel),
         key: replace(k.key),
       })) ?? [],
+      transforms: query.transforms?.map(t => ({
+        component: replace(t.component),
+        channel: replace(t.channel),
+        targetKey: t.targetKey === undefined ? undefined : replace(t.targetKey),
+        expr: replace(t.expr),
+      })) ?? [],
     };
   }
 
