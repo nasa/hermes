@@ -8,7 +8,7 @@
     },
     "sideEffects": false,
     "devDependencies": {
-        "@octokit/core": "6.1.5",
+        "@octokit/core": "7.0.7",
         "@octokit/plugin-enterprise-server": "^19.1.0",
         "@octokit/rest": "^22.0.1",
         "@types/semver": "^7.5.8",
