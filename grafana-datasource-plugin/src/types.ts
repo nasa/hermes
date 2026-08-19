@@ -29,7 +29,8 @@ export interface TransformRef {
   component: string;
   channel: string;
   targetKey?: string;  // if undefined, transform applies to the whole channel
-  expr: string;
+  expr: string;        // value expression; may be '' when only a name override is set
+  name?: string;       // display-name override for the series (literal text)
 }
 
 export interface MyQuery extends DataQuery {
