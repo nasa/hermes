@@ -7,6 +7,8 @@ export const VALUE_TOKEN = '$__value';
 const VALUE_TOKEN_PATTERN = /\$__value/g;
 const NUMERIC_PATTERN = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/;
 const NEAR_MISS_PATTERN = /\$(v|value)\b/;
+const TRAILING_OP_PATTERN = /[-+*/%^<>=~|&]$/;
+const LEADING_OP_PATTERN = /^[*/%^<>=|&]/;
 
 
 // Resolve channel references to concrete { component, name } pairs.
@@ -70,6 +72,13 @@ export function validateExpression(expr: string): string | undefined {
             return `Unknown value token. Did you mean ${VALUE_TOKEN}?`;
         }
         return `Expression must reference ${VALUE_TOKEN} (or be a plain number).`;
+    }
+    const trimmed = expr.trim();
+    if (TRAILING_OP_PATTERN.test(trimmed)) {
+        return 'Expression cannot end with an operator.';
+    }
+    if (LEADING_OP_PATTERN.test(trimmed)) {
+        return 'Expression cannot begin with an operator.';
     }
     if (expr.includes(';')) {
         return 'Expression cannot contain ";".';

@@ -287,6 +287,10 @@ describe('validateExpression', () => {
     expect(validateExpression('$__value * 2')).toBeUndefined();
     expect(validateExpression('ABS($__value) - 1')).toBeUndefined();
     expect(validateExpression("GREATEST($__value, 0)")).toBeUndefined();
+    expect(validateExpression('$__value * -3')).toBeUndefined();
+    expect(validateExpression('-$__value')).toBeUndefined();
+    expect(validateExpression("$__value || 'x'")).toBeUndefined();
+    expect(validateExpression('$__value >= 0')).toBeUndefined();
   });
 
   it('requires the value token', () => {
@@ -305,6 +309,10 @@ describe('validateExpression', () => {
     ['ABS($__value * 2', /Unbalanced parentheses/],
     ['ABS($__value) * 2)', /Unbalanced parentheses/],
     ["$__value || 'abc", /Unbalanced quotes/],
+    ['$__value * ', /cannot end with an operator/],
+    ['$__value +', /cannot end with an operator/],
+    ['* $__value', /cannot begin with an operator/],
+    ['/ $__value', /cannot begin with an operator/],
   ])('rejects %s', (expr, message) => {
     expect(validateExpression(expr)).toMatch(message);
   });
