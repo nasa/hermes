@@ -4,11 +4,11 @@ go 1.26.5
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/grafana/grafana-plugin-sdk-go v0.296.1
+	github.com/grafana/grafana-plugin-sdk-go v0.296.2
 	github.com/lib/pq v1.12.3
 	github.com/nasa/hermes v0.0.0
 	google.golang.org/grpc v1.83.0
-	google.golang.org/protobuf v1.36.11
+	google.golang.org/protobuf v1.36.12
 )
 
 require (
