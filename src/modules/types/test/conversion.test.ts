@@ -1,6 +1,12 @@
 import { describe, expect, test } from '@jest/globals';
 
-import { ConversionContext, valueFromProto } from '../src/conversion';
+import {
+    ConversionContext,
+    typeFromProto,
+    typeToProto,
+    valueFromProto,
+} from '../src/conversion';
+import { TypeKind } from '../src/def';
 import { hermes as Proto } from '../src/proto';
 
 type NumericValue = number | bigint;
@@ -230,4 +236,23 @@ test('rejects an unknown numeric kind', () => {
         kind: 999 as Proto.NumberKind,
         value: Uint8Array.from([0]),
     })).toThrow('value: invalid value');
+});
+
+test.each([
+    { name: 'INT_U8', protoKind: Proto.IntKind.INT_U8, typeKind: TypeKind.u8 },
+    { name: 'INT_I8', protoKind: Proto.IntKind.INT_I8, typeKind: TypeKind.i8 },
+    { name: 'INT_U16', protoKind: Proto.IntKind.INT_U16, typeKind: TypeKind.u16 },
+    { name: 'INT_I16', protoKind: Proto.IntKind.INT_I16, typeKind: TypeKind.i16 },
+    { name: 'INT_U32', protoKind: Proto.IntKind.INT_U32, typeKind: TypeKind.u32 },
+    { name: 'INT_I32', protoKind: Proto.IntKind.INT_I32, typeKind: TypeKind.i32 },
+    { name: 'INT_U64', protoKind: Proto.IntKind.INT_U64, typeKind: TypeKind.u64 },
+    { name: 'INT_I64', protoKind: Proto.IntKind.INT_I64, typeKind: TypeKind.i64 },
+])('$name round-trips', ({ protoKind, typeKind }) => {
+    const type = typeFromProto(
+        { int: { kind: protoKind } },
+        new ConversionContext(['type']),
+    );
+
+    expect(type.kind).toBe(typeKind);
+    expect(typeToProto(type).int?.kind).toBe(protoKind);
 });
