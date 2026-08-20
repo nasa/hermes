@@ -34,6 +34,7 @@ export function BuilderEditor({ query, onChange, onRunQuery, datasource }: Build
       channels: [],
       keys: [],
       sources: [],
+      transforms: [],
     };
     onChange(updated);
     if (value === 'events') {
@@ -56,44 +57,51 @@ export function BuilderEditor({ query, onChange, onRunQuery, datasource }: Build
     onRunQuery();
   };
 
+  const sharedOptions = (
+    <div style={{ marginTop: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <RadioButtonGroup
+        id="query-editor-time-field"
+        options={TIME_FIELD_OPTIONS}
+        value={query.timeField ?? 'ert'}
+        onChange={onTimeFieldChange}
+        size="sm"
+        fullWidth={false}
+      />
+      <RadioButtonGroup
+        id="query-editor-query-type"
+        options={QUERY_TYPE_OPTIONS.filter(opt => opt.value !== 'raw')}
+        value={queryType}
+        onChange={onQueryTypeChange}
+        size="sm"
+        fullWidth={false}
+      />
+    </div>
+  );
+
   return (
     <>
-      {queryType === 'telemetry' && (
+      {queryType === 'telemetry' ? (
         <TelemetryFields
           query={query}
           onChange={onChange}
           onRunQuery={onRunQuery}
           datasource={datasource}
+          sharedOptions={sharedOptions}
         />
+      ) : (
+        <>
+          {queryType === 'events' && (
+            <EventFields
+              query={query}
+              onChange={onChange}
+              onRunQuery={onRunQuery}
+              datasource={datasource}
+            />
+          )}
+          {sharedOptions}
+        </>
       )}
 
-      {queryType === 'events' && (
-        <EventFields
-          query={query}
-          onChange={onChange}
-          onRunQuery={onRunQuery}
-          datasource={datasource}
-        />
-      )}
-
-      <div style={{ marginTop: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <RadioButtonGroup
-          id="query-editor-time-field"
-          options={TIME_FIELD_OPTIONS}
-          value={query.timeField ?? 'ert'}
-          onChange={onTimeFieldChange}
-          size="sm"
-          fullWidth={false}
-        />
-        <RadioButtonGroup
-          id="query-editor-query-type"
-          options={QUERY_TYPE_OPTIONS.filter(opt => opt.value !== 'raw')}
-          value={queryType}
-          onChange={onQueryTypeChange}
-          size="sm"
-          fullWidth={false}
-        />
-      </div>
       <CollapsableSection label="Advanced" isOpen={false}>
         <InlineField label="From Override" labelWidth={16} tooltip="Absolute start time (optional)">
           <DateTimePicker

@@ -3,7 +3,7 @@ import { DataSourceWithBackend, getTemplateSrv } from '@grafana/runtime';
 import { from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, ChannelQuery, ChannelRef, KeyRef, ResolvedQuery, withDefaults } from './types';
-import { buildQuery, resolveChannels } from 'query';
+import { buildQuery, resolveChannels, resolveQuery } from 'query';
 
 export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptions> {
   private knownChannels?: Promise<ChannelRef[]>;
@@ -58,16 +58,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
   private resolveTargetVariables(query: MyQuery, scopedVars: ScopedVars, known: ChannelRef[] = []): ResolvedQuery {
     const templateSrv = getTemplateSrv();
     const replace = (value: string) => templateSrv.replace(value, scopedVars);
-    return {
-      ...query,
-      channels: resolveChannels(query.channels ?? [], replace, known),
-      sources: query.sources?.map(replace) ?? [],
-      keys: query.keys?.map(k => ({
-        component: replace(k.component),
-        channel: replace(k.channel),
-        key: replace(k.key),
-      })) ?? [],
-    };
+    return resolveQuery(query, replace, known);
   }
 
   filterQuery(query: MyQuery): boolean {
