@@ -320,6 +320,7 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
           loading={channelLoading}
           placeholder="Select channel"
           prefixIcon="channel-add"
+          enableAllOption
         />
       </InlineField>
       <InlineField label="Aggregation" labelWidth={16} tooltip="Data aggregation method used when the data interval is smaller than the requested interval. The requested interval can be found in the query options at the top of this query." grow shrink>
