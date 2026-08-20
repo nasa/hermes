@@ -64,7 +64,7 @@ export function integerKindFromProto(kind: Proto.IntKind): Def.IntegerTypeKind {
         case Proto.IntKind.INT_U64:
             return Def.TypeKind.u64;
         case Proto.IntKind.INT_I64:
-            return Def.TypeKind.u64;
+            return Def.TypeKind.i64;
     }
 }
 
