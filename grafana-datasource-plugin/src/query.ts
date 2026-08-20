@@ -50,6 +50,7 @@ export function resolveQuery(
             channel: replace(t.channel),
             targetKey: t.targetKey === undefined ? undefined : replace(t.targetKey),
             expr: replace(t.expr),
+            name: t.name === undefined ? undefined : replace(t.name),
         })) ?? [],
     };
 }
@@ -123,6 +124,17 @@ export function transformPreview(raw: string, expand: (value: string) => string)
     return normalized;
 }
 
+// Preview the template-expanded display name, but only when expansion actually
+// changed the text (i.e. a template variable resolved to something).
+export function namePreview(raw: string, expand: (value: string) => string): string | undefined {
+    const trimmed = (raw ?? '').trim();
+    if (!trimmed) {
+        return undefined;
+    }
+    const expanded = expand(raw).trim();
+    return expanded && expanded !== trimmed ? expanded : undefined;
+}
+
 export function bindValueToken(expr: string, column: string): string {
     return expr.replace(VALUE_TOKEN_PATTERN, `(${column})`);
 }
@@ -154,6 +166,36 @@ export function buildTransformCase(q: ResolvedQuery, column: string): string {
         return `WHEN ${conditions.join(' AND ')} THEN ${bindValueToken(expr, column)}`;
     });
     return `CASE ${branches.join(' ')} ELSE ${column} END`;
+}
+
+// Resolve the display-name override for a series identified by its labels, or
+// undefined when no matching transform carries a (non-empty) name. Matching
+// mirrors applicableTransforms: only transforms on a selected channel apply,
+// and a key-specific override wins over a channel-wide one.
+export function aliasForLabels(
+    q: ResolvedQuery,
+    labels: { component: string; channel: string; key: string }
+): string | undefined {
+    const channels = q.channels ?? [];
+    const onSelectedChannel = channels.some(
+        (ch) => ch.component === labels.component && ch.name === labels.channel
+    );
+    if (!onSelectedChannel) {
+        return undefined;
+    }
+
+    const candidates = (q.transforms ?? []).filter(
+        (t) =>
+            t.component === labels.component &&
+            t.channel === labels.channel &&
+            (t.name ?? '').trim() !== '' &&
+            (t.targetKey === undefined || t.targetKey === labels.key)
+    );
+    // Prefer a key-specific override over a channel-wide one.
+    const match =
+        candidates.find((t) => t.targetKey !== undefined) ??
+        candidates.find((t) => t.targetKey === undefined);
+    return match ? match.name!.trim() : undefined;
 }
 
 export function buildQuery(q: ResolvedQuery, options: DataQueryRequest): string {

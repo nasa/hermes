@@ -1,9 +1,12 @@
 import {
+  aliasForLabels,
   bindValueToken,
   buildTelemetryQuery,
   buildTransformCase,
+  namePreview,
   normalizeTransform,
   resolveChannels,
+  resolveQuery,
   transformPreview,
   validateExpression,
   validateTransformInput,
@@ -527,5 +530,124 @@ describe('value token vs. Grafana template expansion', () => {
   it('routes a variable that resolves to a bare number through the shorthand path', () => {
     const replace = replaceWith({ gain: '0.5' });
     expect(normalizeTransform(replace('$gain'))).toBe('$__value * 0.5');
+  });
+});
+
+describe('aliasForLabels', () => {
+  const labels = (key = 'value') => ({ component: 'CDH', channel: 'Temperature', key });
+
+  it('returns the name for a matching whole-channel transform', () => {
+    const q = baseQuery({
+      channels: [{ component: 'CDH', name: 'Temperature' }],
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
+    });
+    expect(aliasForLabels(q, labels())).toBe('Reactor Temp');
+  });
+
+  it('returns undefined when the channel is not selected', () => {
+    const q = baseQuery({
+      channels: [{ component: 'Other', name: 'Thing' }],
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
+    });
+    expect(aliasForLabels(q, labels())).toBeUndefined();
+  });
+
+  it('returns undefined when no transform carries a name', () => {
+    const q = baseQuery({
+      channels: [{ component: 'CDH', name: 'Temperature' }],
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2' }],
+    });
+    expect(aliasForLabels(q, labels())).toBeUndefined();
+  });
+
+  it('treats a whitespace-only name as no override', () => {
+    const q = baseQuery({
+      channels: [{ component: 'CDH', name: 'Temperature' }],
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: '   ' }],
+    });
+    expect(aliasForLabels(q, labels())).toBeUndefined();
+  });
+
+  it('matches a key-specific override only on the matching key', () => {
+    const q = baseQuery({
+      channels: [{ component: 'CDH', name: 'Temperature' }],
+      transforms: [{ component: 'CDH', channel: 'Temperature', targetKey: 'value.x', expr: '', name: 'X axis' }],
+    });
+    expect(aliasForLabels(q, labels('value.x'))).toBe('X axis');
+    expect(aliasForLabels(q, labels('value.y'))).toBeUndefined();
+  });
+
+  it('prefers a key-specific override over a channel-wide one', () => {
+    const q = baseQuery({
+      channels: [{ component: 'CDH', name: 'Temperature' }],
+      transforms: [
+        { component: 'CDH', channel: 'Temperature', expr: '', name: 'Whole channel' },
+        { component: 'CDH', channel: 'Temperature', targetKey: 'value.x', expr: '', name: 'X axis' },
+      ],
+    });
+    expect(aliasForLabels(q, labels('value.x'))).toBe('X axis');
+    expect(aliasForLabels(q, labels('value.y'))).toBe('Whole channel');
+  });
+
+  it('trims surrounding whitespace from the name', () => {
+    const q = baseQuery({
+      channels: [{ component: 'CDH', name: 'Temperature' }],
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: '  Reactor Temp  ' }],
+    });
+    expect(aliasForLabels(q, labels())).toBe('Reactor Temp');
+  });
+});
+
+describe('namePreview', () => {
+  const replaceWith = (vars: Record<string, string>) => (value: string) =>
+    value.replace(/\$\w+/g, (m) => (m.slice(1) in vars ? vars[m.slice(1)] : m));
+
+  it('shows the expanded name when a template variable resolves', () => {
+    expect(namePreview('$label Temp', replaceWith({ label: 'Reactor' }))).toBe('Reactor Temp');
+  });
+
+  it('returns undefined for a literal name with no variables', () => {
+    expect(namePreview('Reactor Temp', replaceWith({}))).toBeUndefined();
+  });
+
+  it('returns undefined when a variable does not resolve (text unchanged)', () => {
+    expect(namePreview('$missing Temp', replaceWith({}))).toBeUndefined();
+  });
+
+  it('returns undefined for an empty name', () => {
+    expect(namePreview('', replaceWith({ label: 'Reactor' }))).toBeUndefined();
+  });
+});
+
+describe('name-only transforms', () => {
+  const replaceWith = (vars: Record<string, string>) => (value: string) =>
+    value.replace(/\$\w+/g, (m) => (m.slice(1) in vars ? vars[m.slice(1)] : m));
+
+  it('resolveQuery expands template variables in the name', () => {
+    const resolved = resolveQuery(
+      baseQuery({
+        channels: [{ component: 'CDH', name: 'Temperature' }],
+        transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: '$label Temp' }],
+      }) as MyQuery,
+      replaceWith({ label: 'Reactor' })
+    );
+    expect(resolved.transforms?.[0].name).toBe('Reactor Temp');
+  });
+
+  it('emits no CASE/SQL for a name-only transform', () => {
+    const q = baseQuery({
+      channels: [{ component: 'CDH', name: 'Temperature' }],
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
+    });
+    expect(buildTransformCase(q, 't.floating::double precision')).toBe('t.floating::double precision');
+    expect(buildTelemetryQuery(q, FROM, TO)).not.toContain('CASE');
+  });
+
+  it('still emits SQL when both an expression and a name are set', () => {
+    const q = baseQuery({
+      channels: [{ component: 'CDH', name: 'Temperature' }],
+      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2', name: 'Reactor Temp' }],
+    });
+    expect(buildTelemetryQuery(q, FROM, TO)).toContain('THEN (t.floating::double precision) * 2');
   });
 });

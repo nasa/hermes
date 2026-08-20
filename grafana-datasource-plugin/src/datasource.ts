@@ -3,7 +3,7 @@ import { DataSourceWithBackend, getTemplateSrv } from '@grafana/runtime';
 import { from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, ChannelQuery, ChannelRef, KeyRef, ResolvedQuery, withDefaults } from './types';
-import { buildQuery, resolveChannels, resolveQuery } from 'query';
+import { aliasForLabels, buildQuery, resolveChannels, resolveQuery } from 'query';
 
 export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptions> {
   private knownChannels?: Promise<ChannelRef[]>;
@@ -44,6 +44,9 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
           const query = request.targets.find((t) => t.refId === result.refId);
           if (query?.queryType === 'events' && query.sources?.length) {
             result.fields = result.fields.filter((f: { name: string }) => f.name !== 'source');
+          }
+          if (query?.queryType === 'telemetry' && query.transforms?.some((t) => t.name)) {
+            applySeriesAliases(result, query as ResolvedQuery);
           }
         }
         return response;
@@ -95,4 +98,22 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     return this.getResource('events/sources');
   }
 
+}
+
+// Handle value transform overrides to the datasource "auto name"; purposefully loses to panel override
+function applySeriesAliases(frame: { fields: any[] }, query: ResolvedQuery): void {
+  for (const field of frame.fields) {
+    const labels = field.labels as Record<string, string> | undefined;
+    if (!labels) {
+      continue;
+    }
+    const alias = aliasForLabels(query, {
+      component: labels.component,
+      channel: labels.channel,
+      key: labels.key,
+    });
+    if (alias) {
+      field.config = { ...(field.config ?? {}), displayNameFromDS: alias };
+    }
+  }
 }

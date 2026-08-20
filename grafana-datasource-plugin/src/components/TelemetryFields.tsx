@@ -181,7 +181,12 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
       })
       .filter((ch): ch is ChannelQuery => ch !== null);
 
-    const updated: MyQuery = { ...query, channels, keys: [], sources: [], transforms: [] };
+    const stillExists = (component: string, channel: string) =>
+      channels.some((ch) => ch.raw === undefined && ch.component === component && ch.name === channel);
+    const keys = (query.keys ?? []).filter((k) => stillExists(k.component, k.channel));
+    const transforms = (query.transforms ?? []).filter((t) => stillExists(t.component, t.channel));
+
+    const updated: MyQuery = { ...query, channels, keys, transforms };
     onChange(updated);
     if (channels.length) {
       onRunQuery();
