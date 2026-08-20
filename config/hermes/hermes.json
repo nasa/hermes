@@ -1,0 +1,14 @@
+[
+    {
+        "name": "TimescaleDB",
+        "provider": "TimescaleDB",
+        "settings": {
+            "host": "timescaledb:5432",
+            "user": "postgres",
+            "password": "password",
+            "database": "hermes",
+            "events": true,
+            "telemetry": true
+        }
+    }
+]

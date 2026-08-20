@@ -1,4 +1,21 @@
 services:
+  hermes:
+    image: ghcr.io/nasa/hermes:latest
+    command:
+      - --bind-type
+      - tcp
+      - --bind
+      - 0.0.0.0:6880
+      - --root
+      - /etc/hermes
+      - --start
+    ports:
+      - "6880:6880"
+    volumes:
+      - ./config/hermes:/etc/hermes
+    depends_on:
+      timescaledb:
+        condition: service_healthy
   timescaledb:
     image: timescale/timescaledb:latest-pg16
     environment:
@@ -9,6 +26,11 @@ services:
       - 5432:5432/tcp
     volumes:
       - timescale-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   grafana:
     image: grafana/grafana:latest
     restart: unless-stopped
