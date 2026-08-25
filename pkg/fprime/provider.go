@@ -53,8 +53,7 @@ type (
 	clientProvider struct{}
 )
 
-// ConnectGDS runs the F Prime/CCSDS framing pipeline over conn (any io.ReadWriteCloser) and connects the resulting FSW to the session, blocking until the stream closes.
-func ConnectGDS(
+func gdsProvider(
 	ctx context.Context,
 	session host.ConnectSession,
 	conn io.ReadWriteCloser,
@@ -144,7 +143,7 @@ func (s *serverProvider) Start(
 			SingleClient: true,
 		},
 		func(conn io.ReadWriteCloser) error {
-			return ConnectGDS(
+			return gdsProvider(
 				ctx,
 				session,
 				conn,
@@ -189,7 +188,7 @@ func (c *clientProvider) Start(
 			Address: settings.Address,
 		},
 		func(conn io.ReadWriteCloser) {
-			ConnectGDS(
+			gdsProvider(
 				ctx,
 				session,
 				conn,

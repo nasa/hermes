@@ -1,15 +1,17 @@
-// Package socat provides a Profile Provider that bridges an F Prime/CCSDS connection over any socat-supported transport by running `socat <address> STDIO`.
 package socat
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"io"
+	"os/exec"
+	"strings"
 
 	_ "embed"
 
-	"github.com/nasa/hermes/pkg/fprime"
 	"github.com/nasa/hermes/pkg/host"
-	"github.com/nasa/hermes/pkg/infra"
+	"github.com/nasa/hermes/pkg/log"
 )
 
 var (
@@ -19,27 +21,23 @@ var (
 //go:embed schema/socat.json
 var schema string
 
-//go:embed schema/uischema.json
-var uiSchema string
-
-const protocolCcsds = "ccsds"
-
 type Params struct {
 	Name string `json:"name,omitempty"`
 
-	// socat far-side address spec, e.g. "/dev/ttyUSB0,b115200,raw" or "TCP:192.168.1.9:50000".
-	Address string `json:"address"`
+	// The two socat endpoint specs, each passed verbatim as a single argument,
+	// e.g. "/dev/ttyUSB0,raw,b9600" and "tcp-connect:localhost:8000".
+	Address1 string `json:"address1"`
+	Address2 string `json:"address2"`
 
-	Dictionary string `json:"dictionary,omitempty"`
-	Protocol   string `json:"protocol"`
+	// Optional socat global options preceding the endpoints, e.g. "-d -d -T 30".
+	// Whitespace-separated; not shell-parsed.
+	GlobalOptions string `json:"globalOptions,omitempty"`
 }
 
 type socatProvider struct{}
 
 func (s *socatProvider) Default() Params {
-	return Params{
-		Protocol: protocolCcsds,
-	}
+	return Params{}
 }
 
 func (s *socatProvider) Start(
@@ -47,43 +45,58 @@ func (s *socatProvider) Start(
 	settings Params,
 	session host.ConnectSession,
 ) error {
-	dictionary := host.Dictionaries.Get(settings.Dictionary)
-	if dictionary == nil {
-		return fmt.Errorf("dictionary '%s' not found", settings.Dictionary)
-	}
-
-	hostDict, err := host.DictionaryFromProto(dictionary)
+	socatPath, err := exec.LookPath("socat")
 	if err != nil {
-		return fmt.Errorf("failed to load dictionary: %w", err)
+		return fmt.Errorf("socat executable not found on PATH: %w", err)
 	}
 
-	conn, err := spawnSocat(ctx, settings.Address, session.Log())
+	// Global options (whitespace-split) precede the two endpoint args. The
+	// endpoints are passed as single tokens, so their comma-separated options
+	// (raw, b115200, ...) reach socat unmodified and no shell is involved.
+	args := strings.Fields(settings.GlobalOptions)
+	args = append(args, settings.Address1, settings.Address2)
+
+	cmd := exec.CommandContext(ctx, socatPath, args...)
+
+	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open socat stderr: %w", err)
 	}
-	defer conn.Close()
 
-	monitored := infra.MonitoredReadWriter(conn, "socat")
+	logger := session.Log()
+	logger.Info("spawning socat", "args", args)
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("failed to start socat: %w", err)
+	}
+
+	go pipeToLog(stderr, logger)
 
 	session.Started()
 
-	return fprime.ConnectGDS(
-		ctx,
-		session,
-		monitored,
-		settings.Dictionary,
-		hostDict,
-		settings.Name,
-		settings.Protocol,
-	)
+	// Block until socat exits or the context is cancelled (which kills it via
+	// CommandContext). A clean stop is not an error; an unexpected exit is.
+	err = cmd.Wait()
+	if ctx.Err() != nil {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("socat exited: %w", err)
+	}
+	return nil
+}
+
+func pipeToLog(r io.Reader, logger log.Logger) {
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		logger.Warn("socat", "msg", scanner.Text())
+	}
 }
 
 func Init() error {
-	_, err := host.RegisterProfileProviderWithUiSchema(
+	_, err := host.RegisterProfileProvider(
 		"Socat",
 		&socatProvider{},
 		schema,
-		uiSchema,
 	)
 	if err != nil {
 		return err

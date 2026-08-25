@@ -20,9 +20,6 @@ func TestSchemaIsValidJSON(t *testing.T) {
 	if err := json.Unmarshal([]byte(schema), &s); err != nil {
 		t.Fatalf("embedded schema.json is not valid JSON: %v", err)
 	}
-	if err := json.Unmarshal([]byte(uiSchema), &s); err != nil {
-		t.Fatalf("embedded uischema.json is not valid JSON: %v", err)
-	}
 }
 
 func TestSchemaPropertiesMatchParams(t *testing.T) {
@@ -54,9 +51,9 @@ func TestSchemaPropertiesMatchParams(t *testing.T) {
 	}
 }
 
-func TestSchemaRequiredReferencesRealProperties(t *testing.T) {
-	// A required entry that names a non-existent property makes RJSF reject
-	// every profile at form validation.
+func TestSchemaRequiresBothEndpoints(t *testing.T) {
+	// socat needs two addresses; the form must require both so a half-configured
+	// relay can't be started.
 	var s struct {
 		Properties map[string]json.RawMessage `json:"properties"`
 		Required   []string                   `json:"required"`
@@ -65,15 +62,17 @@ func TestSchemaRequiredReferencesRealProperties(t *testing.T) {
 		t.Fatalf("embedded schema.json is not valid JSON: %v", err)
 	}
 
+	req := map[string]bool{}
 	for _, name := range s.Required {
+		req[name] = true
 		if _, ok := s.Properties[name]; !ok {
 			t.Errorf("required lists %q which is not a schema property", name)
 		}
 	}
-}
 
-func TestDefaultProtocolIsCcsds(t *testing.T) {
-	if p := (&socatProvider{}).Default(); p.Protocol != protocolCcsds {
-		t.Errorf("default protocol = %q, want %q", p.Protocol, protocolCcsds)
+	for _, name := range []string{"address1", "address2"} {
+		if !req[name] {
+			t.Errorf("%q should be a required property", name)
+		}
 	}
 }
