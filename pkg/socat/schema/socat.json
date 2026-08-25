@@ -1,6 +1,6 @@
 {
     "type": "object",
-    "description": "Bridge an F Prime/CCSDS connection over any transport by spawning 'socat <address> STDIO'. Supports serial, TLS, UDP, SSH, PTY and more.",
+    "description": "Bridge an F Prime/CCSDS connection over any socat transport (serial, TLS, UDP, SSH, PTY, TCP)",
     "properties": {
         "name": {
             "type": "string",
@@ -9,7 +9,7 @@
         "address": {
             "type": "string",
             "title": "Socat Address",
-            "description": "socat far-side address spec (the near side is always STDIO). Examples: '/dev/ttyUSB0,b115200,raw', 'OPENSSL:fsw:5000,verify=0', 'TCP:192.168.1.9:50000'"
+            "description": "socat far-side address, e.g. 'TCP:localhost:8000' or '/dev/ttyUSB0,b115200,raw'"
         },
         "dictionary": {
             "type": "string",
