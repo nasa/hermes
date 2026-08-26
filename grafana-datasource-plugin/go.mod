@@ -7,7 +7,7 @@ require (
 	github.com/grafana/grafana-plugin-sdk-go v0.296.2
 	github.com/lib/pq v1.12.3
 	github.com/nasa/hermes v0.0.0
-	google.golang.org/grpc v1.83.0
+	google.golang.org/grpc v1.83.1
 	google.golang.org/protobuf v1.36.12
 )
 
