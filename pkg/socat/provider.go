@@ -18,7 +18,7 @@ var (
 	_ host.ProfileProvider[Params] = (*socatProvider)(nil)
 )
 
-//go:embed schema/socat.json
+//go:embed schema.json
 var schema string
 
 type Params struct {
