@@ -26,7 +26,10 @@ const MAX_RAW_ARRAY_SIZE = 16;
 const parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "",
-    isArray: (name: string, jpath: string) => alwaysArray.includes(jpath)
+    isArray: (_name, jPathOrMatcher) => {
+        const jpath = typeof jPathOrMatcher === 'string' ? jPathOrMatcher : jPathOrMatcher.toString();
+        return alwaysArray.includes(jpath);
+    }
 });
 
 const tBoolean: Def.Type = { kind: Def.TypeKind.boolean };
