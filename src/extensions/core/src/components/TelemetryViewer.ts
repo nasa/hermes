@@ -6,6 +6,7 @@ import { Api } from '@gov.nasa.jpl.hermes/api';
 import { WebViewMessenger, WebViewPanelBase } from '@gov.nasa.jpl.hermes/vscode';
 
 import { FrontendTableMessage, BackendTableMessage, FrontendPlotMessage, BackendPlotMessage, TelemetrySeries, TelemetrySeriesData, TableState } from '../../common/telemetry';
+import { cullTelemetrySeriesData } from '../../common/telemetryTimeWindow';
 import { DebounceEmitter } from '../utils/DebounceEmitter';
 
 const MAX_POINTS_PER_CHANNEL = 10000; // ~10 minutes at 10Hz
@@ -351,25 +352,10 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
                 continue;
             }
 
-            // Find the first index within the time window
-            let startIdx = 0;
-            if (cutoffTime > 0) {
-                for (let i = 0; i < data.time.length; i++) {
-                    if (data.time[i] >= cutoffTime) {
-                        startIdx = i;
-                        break;
-                    }
-                }
-            }
-
-            // Slice the arrays from startIdx to end
             fullInfo[channelKey] = series;
-            fullData[channelKey] = {
-                time: data.time.slice(startIdx),
-                sclk: data.sclk.slice(startIdx),
-                valueStr: data.valueStr?.slice(startIdx),
-                valueNum: data.valueNum?.slice(startIdx)
-            };
+            fullData[channelKey] = cutoffTime > 0
+                ? cullTelemetrySeriesData(data, cutoffTime)
+                : data;
         }
 
         messenger.postMessage({
