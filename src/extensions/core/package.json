@@ -561,7 +561,7 @@
         "@rjsf/validator-ajv8": "6.7.1",
         "@tanstack/react-virtual": "^3.14.10",
         "@types/react": "^19.2.18",
-        "@types/react-dom": "^19.2.4",
+        "@types/react-dom": "^19.2.5",
         "@types/tmp": "^0.2.6",
         "@types/vscode-notebook-renderer": "^1.72.3",
         "@vscode-elements/react-elements": "^2.4.0",
