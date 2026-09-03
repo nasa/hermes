@@ -3,6 +3,8 @@ package otel
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"sync"
 	"time"
 
 	_ "embed"
@@ -46,6 +48,133 @@ func (p Params) TelemetryEnabled() bool {
 	return p.Telemetry == nil || *p.Telemetry
 }
 
+type resourceCache struct {
+	mu       sync.Mutex
+	fallback string
+	entries  map[string]*resource.Resource
+}
+
+func newResourceCache(fallback string) *resourceCache {
+	if fallback == "" {
+		fallback = "hermes"
+	}
+
+	return &resourceCache{
+		fallback: fallback,
+		entries:  map[string]*resource.Resource{},
+	}
+}
+
+func (c *resourceCache) resolveServiceName(source string) string {
+	if source == "" {
+		return c.fallback
+	}
+	return source
+}
+
+func (c *resourceCache) get(ctx context.Context, source string) (*resource.Resource, error) {
+	name := c.resolveServiceName(source)
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if res, ok := c.entries[name]; ok {
+		return res, nil
+	}
+
+	res, err := resource.New(ctx,
+		resource.WithAttributes(semconv.ServiceNameKey.String(name)),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create OTEL resource for source %q: %w", name, err)
+	}
+
+	c.entries[name] = res
+	return res, nil
+}
+
+type sharedLogExporter struct {
+	log.Exporter
+}
+
+func (sharedLogExporter) Shutdown(context.Context) error { return nil }
+
+type logTarget struct {
+	provider *log.LoggerProvider
+	handler  slog.Handler
+}
+
+type logRouter struct {
+	mu        sync.Mutex
+	resources *resourceCache
+	exporter  log.Exporter
+	targets   map[string]*logTarget
+}
+
+func newLogRouter(resources *resourceCache, exporter log.Exporter) *logRouter {
+	return &logRouter{
+		resources: resources,
+		exporter:  sharedLogExporter{exporter},
+		targets:   map[string]*logTarget{},
+	}
+}
+
+func (r *logRouter) target(ctx context.Context, source string) (*logTarget, error) {
+	name := r.resources.resolveServiceName(source)
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if target, ok := r.targets[name]; ok {
+		return target, nil
+	}
+
+	res, err := r.resources.get(ctx, source)
+	if err != nil {
+		return nil, err
+	}
+
+	provider := log.NewLoggerProvider(
+		log.WithResource(res),
+		log.WithProcessor(log.NewBatchProcessor(r.exporter)),
+	)
+
+	target := &logTarget{
+		provider: provider,
+		handler: otelslog.NewHandler("hermes",
+			otelslog.WithLoggerProvider(provider),
+		),
+	}
+
+	r.targets[name] = target
+	return target, nil
+}
+
+func (r *logRouter) handle(ctx context.Context, source string, rec slog.Record) error {
+	target, err := r.target(ctx, source)
+	if err != nil {
+		return err
+	}
+
+	return target.handler.Handle(ctx, rec)
+}
+
+func (r *logRouter) shutdown(ctx context.Context) {
+	r.mu.Lock()
+	targets := r.targets
+	r.targets = map[string]*logTarget{}
+	r.mu.Unlock()
+
+	for _, target := range targets {
+		_ = target.provider.Shutdown(ctx)
+	}
+}
+
+type metricChunk struct {
+	source  string
+	metrics []metricdata.Metrics
+}
+
 type otelProvider struct{}
 
 func (o *otelProvider) Default() Params {
@@ -66,12 +195,7 @@ func (o *otelProvider) Start(
 
 	session.Log().Info("connecting to OTEL collector", "endpoint", settings.Endpoint)
 
-	res, err := resource.New(ctx,
-		resource.WithAttributes(semconv.ServiceNameKey.String(settings.ServiceName)),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create OTEL resource: %w", err)
-	}
+	resources := newResourceCache(settings.ServiceName)
 
 	if settings.EventsEnabled() {
 		session.Log().Info("exporting events to OTEL collector")
@@ -87,18 +211,14 @@ func (o *otelProvider) Start(
 		}
 		defer logExporter.Shutdown(context.Background())
 
-		logProvider := log.NewLoggerProvider(
-			log.WithResource(res),
-			log.WithProcessor(log.NewBatchProcessor(logExporter)),
-		)
-		defer logProvider.Shutdown(context.Background())
-
-		handler := otelslog.NewHandler("hermes",
-			otelslog.WithLoggerProvider(logProvider),
-		)
+		router := newLogRouter(resources, logExporter)
+		defer router.shutdown(context.Background())
 
 		host.Event.On(ctx, func(msg *pb.SourcedEvent) {
-			handler.Handle(context.Background(), msg.GetEvent().Record())
+			err := router.handle(context.Background(), msg.GetSource(), msg.GetEvent().Record())
+			if err != nil {
+				session.Log().Error("failed to export event", "source", msg.GetSource(), "err", err)
+			}
 		})
 	} else {
 		session.Log().Info("event logging to OTEL collector is disabled by profile settings")
@@ -118,32 +238,40 @@ func (o *otelProvider) Start(
 		}
 		defer metricExporter.Shutdown(context.Background())
 
-		cache := make(chan []metricdata.Metrics, 64)
+		cache := make(chan metricChunk, 64)
 
 		go func() {
 			ticker := time.NewTicker(1 * time.Second)
 			defer ticker.Stop()
-			var buf []metricdata.Metrics
+			buf := map[string][]metricdata.Metrics{}
 			for {
 				select {
 				case <-ctx.Done():
 					return
 				case chunk := <-cache:
-					buf = append(buf, chunk...)
+					buf[chunk.source] = append(buf[chunk.source], chunk.metrics...)
 				case <-ticker.C:
 					if len(buf) == 0 {
 						continue
 					}
-					exportErr := metricExporter.Export(ctx, &metricdata.ResourceMetrics{
-						Resource: res,
-						ScopeMetrics: []metricdata.ScopeMetrics{{
-							Metrics: buf,
-						}},
-					})
-					if exportErr != nil {
-						session.Log().Error("failed to export telemetry metrics", "err", exportErr)
+					for source, metrics := range buf {
+						res, resErr := resources.get(ctx, source)
+						if resErr != nil {
+							session.Log().Error("failed to resolve telemetry resource", "source", source, "err", resErr)
+							continue
+						}
+
+						exportErr := metricExporter.Export(ctx, &metricdata.ResourceMetrics{
+							Resource: res,
+							ScopeMetrics: []metricdata.ScopeMetrics{{
+								Metrics: metrics,
+							}},
+						})
+						if exportErr != nil {
+							session.Log().Error("failed to export telemetry metrics", "source", source, "err", exportErr)
+						}
 					}
-					buf = nil
+					buf = map[string][]metricdata.Metrics{}
 				}
 			}
 		}()
@@ -151,7 +279,7 @@ func (o *otelProvider) Start(
 		host.Telemetry.On(ctx, func(msg *pb.SourcedTelemetry) {
 			m := msg.GetTelemetry().AsOtelMetric([]metricdata.Metrics{})
 			if len(m) > 0 {
-				cache <- m
+				cache <- metricChunk{source: msg.GetSource(), metrics: m}
 			}
 		})
 	} else {

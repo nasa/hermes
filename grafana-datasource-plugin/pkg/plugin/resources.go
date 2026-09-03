@@ -71,7 +71,7 @@ func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.R
 }
 
 func (d *Datasource) handleGetTelemetrySources(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT source FROM telemetry WHERE time >= NOW() - INTERVAL '24 hours' LIMIT 100;")
+	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT source FROM telemetry ORDER BY source;")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -130,7 +130,7 @@ func (d *Datasource) handleGetTelemetryKeys(w http.ResponseWriter, r *http.Reque
 }
 
 func (d *Datasource) handleGetEventSources(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT source FROM events WHERE time >= NOW() - INTERVAL '24 hours' LIMIT 100;")
+	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT source FROM events ORDER BY source;")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
