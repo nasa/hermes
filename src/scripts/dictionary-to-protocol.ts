@@ -120,7 +120,10 @@ export async function main(argv?: readonly string[]): Promise<number> {
                 ''
             ];
             for (const [name, type] of ns.getTypes()) {
-                type.name = name;
+                // Only object/enum types carry a name used by codegen.
+                if (type.kind === Hermes.Def.TypeKind.object || type.kind === Hermes.Def.TypeKind.enum) {
+                    type.name = name;
+                }
                 addCodegen(type, !littleEndian, code);
             }
 

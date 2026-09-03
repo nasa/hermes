@@ -2,8 +2,10 @@
     "extends": "../../tsconfig.json",
     "compilerOptions": {
         "lib": [
-            "dom",
             "ES2022"
+        ],
+        "types": [
+            "node"
         ]
     }
 }
