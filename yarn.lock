@@ -5438,7 +5438,7 @@ protobufjs-cli@^2.6.1:
     minimist "^1.2.8"
     tmp "^0.2.7"
 
-protobufjs@^7.5.5, protobufjs@^7.6.5:
+protobufjs@^7.5.5:
   version "7.6.5"
   resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-7.6.5.tgz#7b9250cdaf4a06139a9f0fe468a40d7d4febca71"
   integrity sha512-/FPD0nUc9jH6rfFjji9IBqOz4pcSE3CsT1m7Ep6Mdb0LxSUMj8hgl6GomOvZzpNpAqqGaXA0P3VSrZLFzIhQrw==
@@ -5453,6 +5453,13 @@ protobufjs@^7.5.5, protobufjs@^7.6.5:
     "@protobufjs/pool" "^1.1.0"
     "@protobufjs/utf8" "^1.1.1"
     "@types/node" ">=13.7.0"
+    long "^5.3.2"
+
+protobufjs@^8.8.0:
+  version "8.8.0"
+  resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-8.8.0.tgz#7ed071d94b6755f63cc9936ecd82e4deac7cf624"
+  integrity sha512-N3xhQ5yyBx3vQq4gubBfASzYhJGNzeDbjqBpu61g7UVylsN/qyffU96TKWD3GbbLOKF82VGNRNvv1+BFgE31Eg==
+  dependencies:
     long "^5.3.2"
 
 punycode.js@^2.3.1:
