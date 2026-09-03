@@ -1857,10 +1857,10 @@
     lodash-es "^4.17.21"
     react-is "^18.2.0"
 
-"@rjsf/validator-ajv8@6.7.1":
-  version "6.7.1"
-  resolved "https://registry.yarnpkg.com/@rjsf/validator-ajv8/-/validator-ajv8-6.7.1.tgz#e1c94ea415987ab43faecaf1d07a197d97782a8b"
-  integrity sha512-oG9reR8VgUUTxfsO8WybZWTjKs6SLUdhmUCp55SXmJvwVbeKZ+Mz4SI+y+T1Mdpbm1kLZWQPRyF2Md97soWXkw==
+"@rjsf/validator-ajv8@6.8.0":
+  version "6.8.0"
+  resolved "https://registry.yarnpkg.com/@rjsf/validator-ajv8/-/validator-ajv8-6.8.0.tgz#3d22f734a07fd93bc4ed25115d34688961d4a849"
+  integrity sha512-F36I952/miMFZzWSlupwFHbl+j+5bVQ3tR6HtBS+vXV10kY5dT3OwTjbFRo4fQM1KpqrUZC0t3/E5CZRX1o1jA==
   dependencies:
     ajv "^8.20.0"
     ajv-formats "^2.1.1"
