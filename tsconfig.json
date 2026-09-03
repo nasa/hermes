@@ -37,6 +37,7 @@
     "exclude": [
         "**/node_modules/*",
         "**/out/*",
-        "python/*"
+        "python/*",
+        "grafana-datasource-plugin"
     ]
 }
