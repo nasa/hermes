@@ -45,6 +45,9 @@ export class FprimeJsonDictionaryProvider extends FileDictionaryProvider {
 
     private dictionaryWatcher?: vscode.FileSystemWatcher;
 
+    private updateDebounce?: ReturnType<typeof setTimeout>;
+    private static readonly updateDebounceMs = 500;
+
     constructor() {
         super({
             canSelectFiles: true,
@@ -59,28 +62,41 @@ export class FprimeJsonDictionaryProvider extends FileDictionaryProvider {
         return parseFprimeJsonDictionary(textDecoder.decode(content));
     }
 
-    /**
-     * Provide auto-discovered dictionaries from build-artifacts
-     * Returns dictionaries with deterministic IDs based on deployment name
-     */
+    // Provide auto-discovered dictionaries from build-artifacts with deterministic IDs; on same deployment name, newest mtime wins so a stale copy can't shadow a fresh build.
     async provideExternalDictionaries(): Promise<Dictionary[]> {
         const dictUris = await vscode.workspace.findFiles(
             '**/build-artifacts/**/dict/*.json'
         );
 
-        const dictionaries: Dictionary[] = [];
+        const byId = new Map<string, { dict: Dictionary, mtime: number }>();
         for (const uri of dictUris) {
             try {
                 const dict = await this.parse(uri);
                 dict.id = dict.name;
 
-                dictionaries.push(dict);
+                const id = dict.id;
+                if (!id) {
+                    console.error(`Skipping dictionary ${uri.fsPath}: missing name/id`);
+                    continue;
+                }
+
+                let mtime = 0;
+                try {
+                    mtime = (await vscode.workspace.fs.stat(uri)).mtime;
+                } catch {
+                    // treat as oldest so succeeding sibling wins
+                }
+
+                const existing = byId.get(id);
+                if (!existing || mtime >= existing.mtime) {
+                    byId.set(id, { dict, mtime });
+                }
             } catch (err) {
                 console.error(`Failed to load dictionary ${uri.fsPath}:`, err);
             }
         }
 
-        return dictionaries;
+        return Array.from(byId.values(), (v) => v.dict);
     }
 
     /**
@@ -92,10 +108,29 @@ export class FprimeJsonDictionaryProvider extends FileDictionaryProvider {
             '**/build-artifacts/**/dict/*.json'
         );
 
-        this.dictionaryWatcher.onDidCreate(() => this._onExternalDictionariesUpdated.fire());
-        this.dictionaryWatcher.onDidChange(() => this._onExternalDictionariesUpdated.fire());
-        this.dictionaryWatcher.onDidDelete(() => this._onExternalDictionariesUpdated.fire());
+        this.dictionaryWatcher.onDidCreate(() => this.scheduleUpdate());
+        this.dictionaryWatcher.onDidChange(() => this.scheduleUpdate());
+        this.dictionaryWatcher.onDidDelete(() => this.scheduleUpdate());
 
-        return vscode.Disposable.from(this.dictionaryWatcher, this._onExternalDictionariesUpdated);
+        return vscode.Disposable.from(
+            this.dictionaryWatcher,
+            this._onExternalDictionariesUpdated,
+            { dispose: () => this.clearUpdateDebounce() },
+        );
+    }
+
+    private scheduleUpdate(): void {
+        this.clearUpdateDebounce();
+        this.updateDebounce = setTimeout(() => {
+            this.updateDebounce = undefined;
+            this._onExternalDictionariesUpdated.fire();
+        }, FprimeJsonDictionaryProvider.updateDebounceMs);
+    }
+
+    private clearUpdateDebounce(): void {
+        if (this.updateDebounce !== undefined) {
+            clearTimeout(this.updateDebounce);
+            this.updateDebounce = undefined;
+        }
     }
 }
