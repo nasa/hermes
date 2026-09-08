@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from "fs";
 
 import { Api, Fsw } from '@gov.nasa.jpl.hermes/api';
-import { Convert, Proto } from '@gov.nasa.jpl.hermes/types';
+import { Convert, Proto, ProtoGoogle } from '@gov.nasa.jpl.hermes/types';
 import prettyBytes from './prettyBytes';
 import { GeneralEntry, TreeEntry } from './TreeEntry';
 
@@ -35,7 +35,7 @@ class UplinkFileTransferEntry implements TreeEntry {
     }
 }
 
-function timestampToDate(value?: Proto.google.protobuf.ITimestamp | null): Date {
+function timestampToDate(value?: ProtoGoogle.protobuf.ITimestamp | null): Date {
     if (!value) {
         return new Date();
     }
