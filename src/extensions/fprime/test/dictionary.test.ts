@@ -2,11 +2,12 @@ import { expect, test } from '@jest/globals';
 
 import { Def } from '@gov.nasa.jpl.hermes/types';
 import { readFileSync } from 'fs';
+import { join } from 'path';
 import { parseFprimeXmlDictionary } from '../src/dictionary/xml';
 
 test('Parse Dictionary', () => {
     const [dict, topology] = parseFprimeXmlDictionary(
-        readFileSync('./test/fprime/data/dictionary.xml', 'ascii')
+        readFileSync(join(__dirname, 'data', 'dictionary.xml'), 'ascii')
     );
 
     expect(topology).toEqual("SystemReference");
