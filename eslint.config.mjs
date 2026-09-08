@@ -10,6 +10,7 @@ export default [
             "**/out/",
             "**/*.d.ts",
             "**/*.js",
+            "grafana-datasource-plugin/**",
             "src/fallback/**/*.ts",
             "src/internal/**/*.ts",
             "src/modules/rpc/src/proto/**/*.ts"

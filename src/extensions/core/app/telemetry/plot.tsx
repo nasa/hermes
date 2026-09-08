@@ -2,6 +2,7 @@ import React, {
     useCallback,
     useState,
     useEffect,
+    useEffectEvent,
     useRef,
     useMemo,
 } from 'react';
@@ -10,6 +11,7 @@ import uPlot from 'uplot';
 
 import { getMessages, vscode } from '@gov.nasa.jpl.hermes/vscode/browser';
 import type { BackendPlotMessage, FrontendPlotMessage, TelemetrySeries, TelemetrySeriesData } from '../../common/telemetry';
+import { cullTelemetrySeriesData, cullTelemetrySeriesMap } from '../../common/telemetryTimeWindow';
 
 import { UPlotChart, UPlotConfigBuilder, AxisPlacement, type ScaleProps, ScaleDirection, ScaleOrientation, LineInterpolation } from './uplot';
 import { VizLegendTable, VizLegendItem } from './VizLegend';
@@ -95,7 +97,6 @@ function TelemetryPlot() {
     const [plotData, setPlotData] = useState<Record<string, TelemetrySeriesData>>({});
     const [plotDimensions, setPlotDimensions] = useState({ width: 800, height: 400 });
 
-    const [tick, setTick] = useState(0); // Force periodic rerenders
     // const [hoveredSeries, setHoveredSeries] = useState<string | null>(null);
     const [disabledSeries, setDisabledSeries] = useState<Set<string>>(new Set());
 
@@ -128,7 +129,7 @@ function TelemetryPlot() {
     const handleMessages = useCallback((msg: BackendPlotMessage) => {
         switch (msg.type) {
             case 'full': {
-                // Replace all data with new full dataset
+                // Replace plot data with the full time-windowed dataset from the host.
                 setPlotData(msg.data);
                 setPlotInfo(msg.info);
                 break;
@@ -160,24 +161,9 @@ function TelemetryPlot() {
                         };
 
                         // Cull points outside the time window
-                        if (timeWindow !== Infinity) {
-                            const startIdx = combinedData.time.findIndex(t => t >= cutoffTime);
-                            if (startIdx > 0) {
-                                combinedData.time = combinedData.time.slice(startIdx);
-                                combinedData.sclk = combinedData.sclk.slice(startIdx);
-                                if (combinedData.valueStr) {
-                                    combinedData.valueStr = combinedData.valueStr.slice(startIdx);
-                                }
-                                if (combinedData.valueNum) {
-                                    combinedData.valueNum = combinedData.valueNum.slice(startIdx);
-                                }
-                            }
-                        }
-
-                        next[channelKey] = {
-                            ...next[channelKey],
-                            ...combinedData,
-                        };
+                        next[channelKey] = timeWindow === Infinity
+                            ? combinedData
+                            : cullTelemetrySeriesData(combinedData, cutoffTime);
                     }
                     return next;
                 });
@@ -192,7 +178,6 @@ function TelemetryPlot() {
     }, [handleMessages]);
 
     // Build uPlot data (separate from config)
-    // Depends on tick to force rerender even when no new data arrives
     // Must iterate in same order as series in plotConfig
     const data = useMemo<uPlot.AlignedData>(() => {
         // Filter out disabled series, using plotInfo order to match series config
@@ -252,6 +237,12 @@ function TelemetryPlot() {
             u.over.addEventListener('mouseleave', () => {
                 setTooltipVisible(false);
             });
+        });
+
+        builder.addHook('destroy', (u) => {
+            if (uPlotInstanceRef.current === u) {
+                uPlotInstanceRef.current = null;
+            }
         });
 
         builder.addHook('setLegend', (u) => {
@@ -329,19 +320,32 @@ function TelemetryPlot() {
         return builder;
     }, [plotInfo, interpolationMode, disabledSeries, timeWindow]);
 
-    // Periodic rerender to keep time axis relative to wall clock
+    const onClockTick = useEffectEvent(() => {
+        if (timeWindow === Infinity) {
+            return;
+        }
+
+        const now = Date.now();
+        const cutoffTime = now - timeWindow;
+
+        // Advance the uPlot canvas without rerendering the React component.
+        uPlotInstanceRef.current?.setScale('x', {
+            min: cutoffTime,
+            max: now,
+        });
+
+        // Returning the same map when nothing expires lets React skip rerendering.
+        setPlotData(prev => cullTelemetrySeriesMap(prev, cutoffTime));
+    });
+
+    // Keep the finite time window synchronized with the wall clock.
     useEffect(() => {
-        // Update every second to keep the time axis moving
         const interval = setInterval(() => {
-            setTick(t => t + 1);
+            onClockTick();
         }, 100);
 
         return () => clearInterval(interval);
     }, []);
-
-    const realtimeData = useMemo<uPlot.AlignedData>(
-        () => [...data], [data, tick]
-    );
 
     // Handle resize and measure container using ResizeObserver
     useEffect(() => {
@@ -542,7 +546,7 @@ function TelemetryPlot() {
                 ) : (
                     <div className="plot-container">
                         <UPlotChart
-                            data={realtimeData}
+                            data={data}
                             config={plotConfig}
                             width={plotDimensions.width}
                             height={plotDimensions.height}
