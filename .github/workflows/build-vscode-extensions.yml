@@ -105,6 +105,9 @@ jobs:
       - name: Lint
         run: yarn lint
 
+      - name: Run tests
+        run: yarn test
+
       - name: Build TypeScript extensions
         run: yarn build
 
