@@ -1,3 +1,12 @@
 {
-    "extends": "../../../../tsconfig.json"
+    "extends": "../../../../tsconfig.json",
+    "compilerOptions": {
+        // Extension host code runs in Node, not the DOM. Without this, ambient
+        // @types packages hoisted for the webviews (react-dom) get pulled in and
+        // fail against `lib: ["ES2022"]`.
+        "types": [
+            "node",
+            "vscode"
+        ]
+    }
 }

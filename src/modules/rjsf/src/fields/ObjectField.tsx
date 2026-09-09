@@ -8,6 +8,7 @@ import {
     orderProperties,
     FieldProps,
     IdSchema,
+    RJSFSchema,
     TranslatableString,
     ADDITIONAL_PROPERTY_FLAG,
     PROPERTIES_KEY,
@@ -86,7 +87,7 @@ class ObjectField extends DefaultObjectField<
                             key={name}
                             name={name}
                             required={this.isRequired(name)}
-                            schema={get(schema, [PROPERTIES_KEY, name], {})}
+                            schema={get(schema, [PROPERTIES_KEY, name], {}) as RJSFSchema}
                             uiSchema={{
                                 ...fieldUiSchema,
                                 'ui:options': {

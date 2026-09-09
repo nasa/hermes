@@ -10,7 +10,7 @@ import {
     Convert,
 } from '@gov.nasa.jpl.hermes/types';
 
-import { ApiClient } from './proto/hermes/Api';
+import { ApiClient } from './proto/Api';
 import { Dictionary } from './proto/hermes/Dictionary';
 import { RpcFsw } from './fsw';
 import { SourcedEvent__Output } from './proto/hermes/SourcedEvent';

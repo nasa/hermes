@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import { Api } from '@gov.nasa.jpl.hermes/api';
-import { Convert, Proto } from '@gov.nasa.jpl.hermes/types';
+import { Convert, Proto, ProtoGoogle } from '@gov.nasa.jpl.hermes/types';
 import prettyBytes from './prettyBytes';
 import { GeneralEntry, TreeEntry } from './TreeEntry';
 
@@ -63,7 +63,7 @@ function downlinkFileStatusIcon(value?: Proto.FileDownlinkCompletionStatus | nul
     }
 }
 
-function timestampToDate(value?: Proto.google.protobuf.ITimestamp | null): Date {
+function timestampToDate(value?: ProtoGoogle.protobuf.ITimestamp | null): Date {
     if (!value) {
         return new Date();
     }

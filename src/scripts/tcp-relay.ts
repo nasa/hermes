@@ -97,7 +97,7 @@ class SourceImpl implements Source {
     }
 
     listen(socket: net.Socket) {
-        socket.on("data", (data) => {
+        socket.on("data", (data: Buffer) => {
             for (const handler of this.handlers) {
                 handler(data);
             }
@@ -180,7 +180,7 @@ export function createServer(
             closeDisposable.dispose();
         });
 
-        socket.on('data', (data) => {
+        socket.on('data', (data: Buffer) => {
             if (isDuplex) {
                 log.debug(msg(`relaying uplink ${data.byteLength}`));
                 sourceSocket.write(data);
@@ -313,10 +313,10 @@ when written to and the data will be dropped.`
                     sourceClient.destroy(new Error('Connection cancelled'));
                 });
 
+                sourceClient.setKeepAlive(true);
                 sourceClient.connect({
                     host: args.sourceAddress,
                     port: args.sourcePort,
-                    keepAlive: true
                 }, () => {
                     disp.dispose();
                     sourceClient.off('error', reject);

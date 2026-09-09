@@ -3,13 +3,16 @@
 module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
+    roots: ['<rootDir>/src'],
     testPathIgnorePatterns: [
         "/node_modules/",
         "/out/",
+        "/grafana-datasource-plugin/",
     ],
     "coveragePathIgnorePatterns": [
         "/node_modules/",
         "/out/",
+        "/grafana-datasource-plugin/",
         "<rootDir>/fallback/*",
     ],
     transform: {

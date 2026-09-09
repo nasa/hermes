@@ -9,7 +9,7 @@ import {
     Convert
 } from '@gov.nasa.jpl.hermes/types';
 
-import { ApiClient } from './proto/hermes/Api';
+import { ApiClient } from './proto/Api';
 import { CommandDef } from './proto/hermes/CommandDef';
 import { Value } from './proto/hermes/Value';
 import { UplinkFileChunk } from './proto/hermes/UplinkFileChunk';

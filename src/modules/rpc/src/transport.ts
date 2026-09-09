@@ -5,9 +5,9 @@ import * as protoLoader from '@grpc/proto-loader';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
 
-import { ApiClient } from './proto/hermes/Api';
+import { ApiClient } from './proto/Api';
 import hermesDescriptor from './proto/hermes.json';
-import { ProtoGrpcType } from './proto/hermes/hermes';
+import { ProtoGrpcType } from './proto/hermes';
 
 const MAX_MESSAGE_SIZE = 1024 * 1024 * 1024 * 10;
 
