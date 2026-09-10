@@ -42,6 +42,7 @@ func (t *tcpRelayProvider) Default() Params {
 
 // Source manages the connection to the source TCP socket and broadcasts data to all relay clients
 type Source struct {
+	wg       sync.WaitGroup // listener and connection goroutines owned by the profile
 	mu       sync.RWMutex
 	handlers map[int]func([]byte) // the relay clients that this source broadcasts to
 	nextID   int
@@ -104,9 +105,10 @@ func (s *Source) write(data []byte) error {
 
 // Listens for data from the source connection,
 // regardless of whether the source is in server or client mode,
-// and broadcasts it to all relay clients.
+// and broadcasts it to all relay clients. The caller installs conn before
+// launching the reader so source selection follows accept order.
 func (s *Source) listen(ctx context.Context, conn net.Conn) {
-	s.setConnection(conn)
+	defer conn.Close()
 
 	// Close on shutdown to unblock the Read below.
 	stop := context.AfterFunc(ctx, func() { conn.Close() })
@@ -155,12 +157,12 @@ func createRelayServer(
 	}
 	session.Log().Info("relay server listening", "port", port, "mode", mode)
 
-	go func() {
+	source.wg.Go(func() {
 		<-ctx.Done()
 		listener.Close()
-	}()
+	})
 
-	go func() {
+	source.wg.Go(func() {
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
@@ -175,7 +177,7 @@ func createRelayServer(
 
 			handleRelayClient(ctx, conn, source, port, isDuplex, session)
 		}
-	}()
+	})
 
 	return nil
 }
@@ -215,7 +217,7 @@ func handleRelayClient(
 
 	session.Log().Info("relay client connected", "port", port, "addr", addr)
 
-	go func() {
+	source.wg.Go(func() {
 		for {
 			select {
 			case <-clientCtx.Done():
@@ -228,9 +230,11 @@ func handleRelayClient(
 				}
 			}
 		}
-	}()
+	})
 
-	go runRelayClientReadLoop(clientCtx, cancel, conn, source, handlerID, port, isDuplex, session, addr)
+	source.wg.Go(func() {
+		runRelayClientReadLoop(clientCtx, cancel, conn, source, handlerID, port, isDuplex, session, addr)
+	})
 }
 
 // runRelayClientReadLoop reads client uplink until the conn closes.
@@ -245,6 +249,7 @@ func runRelayClientReadLoop(
 	session host.ConnectSession,
 	addr string,
 ) {
+	defer conn.Close()
 	defer cancel()
 	defer source.removeHandler(handlerID)
 	defer session.Log().Info("relay client disconnected", "port", port, "addr", addr)
@@ -283,7 +288,12 @@ func (t *tcpRelayProvider) Start(
 	settings Params,
 	session host.ConnectSession,
 ) error {
+	ctx, cancel := context.WithCancel(ctx)
 	source := newSource(session)
+	defer func() {
+		cancel()
+		source.wg.Wait()
+	}()
 
 	if settings.ServerMode {
 		session.Log().Info(
@@ -296,16 +306,15 @@ func (t *tcpRelayProvider) Start(
 		if err != nil {
 			return fmt.Errorf("failed to start source server: %w", err)
 		}
-		defer listener.Close()
 
 		session.Log().Info("source server listening", "port", settings.SourcePort)
 
-		go func() {
+		source.wg.Go(func() {
 			<-ctx.Done()
 			listener.Close()
-		}()
+		})
 
-		go func() {
+		source.wg.Go(func() {
 			for {
 				conn, err := listener.Accept()
 				if err != nil {
@@ -320,9 +329,11 @@ func (t *tcpRelayProvider) Start(
 
 				addr := conn.RemoteAddr().String()
 				session.Log().Info("source client connected", "addr", addr)
-				go source.listen(ctx, conn)
+				// Install in accept order, before the reader can be delayed by scheduling.
+				source.setConnection(conn)
+				source.wg.Go(func() { source.listen(ctx, conn) })
 			}
-		}()
+		})
 	} else {
 		session.Log().Info(
 			"connecting to source",
@@ -333,14 +344,14 @@ func (t *tcpRelayProvider) Start(
 		)
 
 		addr := net.JoinHostPort(settings.SourceAddress, fmt.Sprintf("%d", settings.SourcePort))
-		conn, err := net.Dial("tcp", addr)
+		conn, err := (&net.Dialer{}).DialContext(ctx, "tcp", addr)
 		if err != nil {
 			return fmt.Errorf("failed to connect to source: %w", err)
 		}
-		defer conn.Close()
 
 		session.Log().Info("source connection established")
-		go source.listen(ctx, conn)
+		source.setConnection(conn)
+		source.wg.Go(func() { source.listen(ctx, conn) })
 	}
 
 	for _, port := range settings.DuplexPorts {
