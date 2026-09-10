@@ -35,10 +35,37 @@ func (m *mockConnectSession) Connect(fsw host.Fsw)    {}
 func (m *mockConnectSession) Disconnect(fsw host.Fsw) {}
 
 func startRelay(t *testing.T, ctx context.Context, sourcePort int, duplexPorts []int, readablePorts []int, serverMode bool) {
+	t.Helper()
 	startRelaySession(t, ctx, &mockConnectSession{}, sourcePort, duplexPorts, readablePorts, serverMode)
 }
 
+type relayStartupSession struct {
+	host.ConnectSession
+	ready chan struct{}
+}
+
+func (s *relayStartupSession) Started() {
+	s.ConnectSession.Started()
+	close(s.ready)
+}
+
 func startRelaySession(t *testing.T, ctx context.Context, session host.ConnectSession, sourcePort int, duplexPorts []int, readablePorts []int, serverMode bool) {
+	t.Helper()
+	ctx, cancel := context.WithCancel(ctx)
+	startup := &relayStartupSession{ConnectSession: session, ready: make(chan struct{})}
+	done := make(chan struct{})
+	var startErr error
+	t.Cleanup(func() {
+		cancel()
+		select {
+		case <-done:
+			if startErr != nil {
+				t.Errorf("Relay failed: %v", startErr)
+			}
+		case <-time.After(testTimeout):
+			t.Error("Relay did not stop after cancellation")
+		}
+	})
 	provider := &tcpRelayProvider{}
 	params := Params{
 		SourceAddress: "localhost",
@@ -49,15 +76,21 @@ func startRelaySession(t *testing.T, ctx context.Context, session host.ConnectSe
 	}
 
 	go func() {
-		err := provider.Start(ctx, params, session)
-		if err != nil && ctx.Err() == nil {
-			t.Errorf("Relay failed: %v", err)
-		}
+		startErr = provider.Start(ctx, params, startup)
+		close(done)
 	}()
+	select {
+	case <-startup.ready:
+	case <-done:
+		t.Fatalf("Relay exited before startup completed: %v", startErr)
+	case <-time.After(testTimeout):
+		t.Fatal("Relay did not finish startup")
+	}
 }
 
 // mockTCPSource simulates a Hermes backend TCP source port
 type mockTCPSource struct {
+	done     chan struct{}
 	listener net.Listener
 	port     int
 	conns    []net.Conn
@@ -72,12 +105,14 @@ func newMockSource(t *testing.T) *mockTCPSource {
 
 	port := listener.Addr().(*net.TCPAddr).Port
 	mock := &mockTCPSource{
+		done:     make(chan struct{}),
 		listener: listener,
 		port:     port,
 		t:        t,
 	}
 
 	go func() {
+		defer close(mock.done)
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
@@ -118,6 +153,7 @@ func (m *mockTCPSource) WaitForConnection(timeout time.Duration) (net.Conn, erro
 
 func (m *mockTCPSource) Close() {
 	m.listener.Close()
+	<-m.done
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, conn := range m.conns {
@@ -126,7 +162,9 @@ func (m *mockTCPSource) Close() {
 }
 
 func getFreePort(t *testing.T) int {
-	listener, err := net.Listen("tcp", "localhost:0")
+	t.Helper()
+	// Match the wildcard address used by the relay listeners.
+	listener, err := net.Listen("tcp", ":0")
 	require.NoError(t, err)
 	port := listener.Addr().(*net.TCPAddr).Port
 	listener.Close()
