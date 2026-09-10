@@ -237,17 +237,32 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
 
   // --- Data loading ---
 
+  const templateSrv = getTemplateSrv();
+  const resolvedSourcesKey = JSON.stringify((query.sources ?? []).map((source) => templateSrv.replace(source)));
+
   useEffect(() => {
+    let active = true;
     const loadChannels = async () => {
+      setChannelOptions([]);
       setChannelLoading(true);
-      datasource
-        .getChannels()
-        .then((entries) => setChannelOptions(toChannelOptions(entries)))
-        .catch(() => setChannelOptions([]))
-        .finally(() => setChannelLoading(false));
+      try {
+        const entries = await datasource.getChannels(JSON.parse(resolvedSourcesKey));
+        if (active) {
+          setChannelOptions(toChannelOptions(entries));
+        }
+      } catch {
+        if (active) {
+          setChannelOptions([]);
+        }
+      } finally {
+        if (active) {
+          setChannelLoading(false);
+        }
+      }
     };
     loadChannels();
-  }, [datasource]);
+    return () => { active = false; };
+  }, [datasource, resolvedSourcesKey]);
 
   useEffect(() => {
     const loadSources = async () => {
@@ -262,7 +277,6 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
   }, [datasource]);
 
   // Update keys when vars change
-  const templateSrv = getTemplateSrv();
   const resolvedChannelsKey = JSON.stringify(
     (query.channels ?? []).map((ch) =>
       ch.raw !== undefined

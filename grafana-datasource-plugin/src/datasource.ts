@@ -77,8 +77,8 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
   }
 
   // Telemetry resources
-  async getChannels(): Promise<ChannelRef[]> {
-    return this.getResource('telemetry/channels');
+  async getChannels(sources: string[] = []): Promise<ChannelRef[]> {
+    return this.getResource('telemetry/channels', { sources });
   }
 
   async getSources(): Promise<string[]> {

@@ -47,7 +47,18 @@ type channelEntry struct {
 }
 
 func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT component, name FROM telemetryDefs ORDER BY component, name;")
+	query := "SELECT component, name FROM telemetryDefs ORDER BY component, name;"
+	var args []any
+	if sources := r.URL.Query()["sources"]; len(sources) > 0 {
+		query = `SELECT d.component, d.name FROM telemetryDefs d
+			WHERE EXISTS (
+				SELECT 1 FROM telemetry t
+				WHERE t.telemetryDefId = d.id AND t.source = ANY($1)
+			)
+			ORDER BY d.component, d.name;`
+		args = append(args, pq.Array(sources))
+	}
+	rows, err := d.db.QueryContext(r.Context(), query, args...)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
