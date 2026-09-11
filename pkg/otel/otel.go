@@ -48,40 +48,22 @@ func (p Params) TelemetryEnabled() bool {
 	return p.Telemetry == nil || *p.Telemetry
 }
 
-type resourceCache struct {
-	mu       sync.Mutex
-	fallback string
-	entries  map[string]*resource.Resource
-}
+// Each source holds a provider goroutine, and source is client-supplied.
+const maxLogSources = 256
 
-func newResourceCache(fallback string) *resourceCache {
-	if fallback == "" {
-		fallback = "hermes"
-	}
-
-	return &resourceCache{
-		fallback: fallback,
-		entries:  map[string]*resource.Resource{},
+// serviceName labels a record with its source, or the profile's name if it has none.
+func serviceName(source, fallback string) string {
+	switch {
+	case source != "":
+		return source
+	case fallback != "":
+		return fallback
+	default:
+		return "hermes"
 	}
 }
 
-func (c *resourceCache) resolveServiceName(source string) string {
-	if source == "" {
-		return c.fallback
-	}
-	return source
-}
-
-func (c *resourceCache) get(ctx context.Context, source string) (*resource.Resource, error) {
-	name := c.resolveServiceName(source)
-
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if res, ok := c.entries[name]; ok {
-		return res, nil
-	}
-
+func newResource(ctx context.Context, name string) (*resource.Resource, error) {
 	res, err := resource.New(ctx,
 		resource.WithAttributes(semconv.ServiceNameKey.String(name)),
 	)
@@ -89,7 +71,6 @@ func (c *resourceCache) get(ctx context.Context, source string) (*resource.Resou
 		return nil, fmt.Errorf("failed to create OTEL resource for source %q: %w", name, err)
 	}
 
-	c.entries[name] = res
 	return res, nil
 }
 
@@ -105,22 +86,34 @@ type logTarget struct {
 }
 
 type logRouter struct {
-	mu        sync.Mutex
-	resources *resourceCache
-	exporter  log.Exporter
-	targets   map[string]*logTarget
+	mu       sync.Mutex
+	fallback string
+	exporter log.Exporter
+	targets  map[string]*logTarget
+	dropped  map[string]struct{} // sources refused once the cap was reached
 }
 
-func newLogRouter(resources *resourceCache, exporter log.Exporter) *logRouter {
+func newLogRouter(fallback string, exporter log.Exporter) *logRouter {
 	return &logRouter{
-		resources: resources,
-		exporter:  sharedLogExporter{exporter},
-		targets:   map[string]*logTarget{},
+		fallback: fallback,
+		exporter: sharedLogExporter{exporter},
+		targets:  map[string]*logTarget{},
+		dropped:  map[string]struct{}{},
 	}
 }
 
+// errSourceLimit is returned once per refused source, not once per record.
+type errSourceLimit struct {
+	name  string
+	limit int
+}
+
+func (e errSourceLimit) Error() string {
+	return fmt.Sprintf("refusing to export source %q: profile is already exporting %d sources", e.name, e.limit)
+}
+
 func (r *logRouter) target(ctx context.Context, source string) (*logTarget, error) {
-	name := r.resources.resolveServiceName(source)
+	name := serviceName(source, r.fallback)
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -129,7 +122,17 @@ func (r *logRouter) target(ctx context.Context, source string) (*logTarget, erro
 		return target, nil
 	}
 
-	res, err := r.resources.get(ctx, source)
+	// Refuse the newcomer rather than evicting a source that is still exporting.
+	if len(r.targets) >= maxLogSources {
+		if _, seen := r.dropped[name]; seen {
+			return nil, nil
+		}
+
+		r.dropped[name] = struct{}{}
+		return nil, errSourceLimit{name: name, limit: maxLogSources}
+	}
+
+	res, err := newResource(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +155,7 @@ func (r *logRouter) target(ctx context.Context, source string) (*logTarget, erro
 
 func (r *logRouter) handle(ctx context.Context, source string, rec slog.Record) error {
 	target, err := r.target(ctx, source)
-	if err != nil {
+	if err != nil || target == nil {
 		return err
 	}
 
@@ -195,8 +198,6 @@ func (o *otelProvider) Start(
 
 	session.Log().Info("connecting to OTEL collector", "endpoint", settings.Endpoint)
 
-	resources := newResourceCache(settings.ServiceName)
-
 	if settings.EventsEnabled() {
 		session.Log().Info("exporting events to OTEL collector")
 
@@ -211,7 +212,7 @@ func (o *otelProvider) Start(
 		}
 		defer logExporter.Shutdown(context.Background())
 
-		router := newLogRouter(resources, logExporter)
+		router := newLogRouter(settings.ServiceName, logExporter)
 		defer router.shutdown(context.Background())
 
 		host.Event.On(ctx, func(msg *pb.SourcedEvent) {
@@ -255,7 +256,7 @@ func (o *otelProvider) Start(
 						continue
 					}
 					for source, metrics := range buf {
-						res, resErr := resources.get(ctx, source)
+						res, resErr := newResource(ctx, serviceName(source, settings.ServiceName))
 						if resErr != nil {
 							session.Log().Error("failed to resolve telemetry resource", "source", source, "err", resErr)
 							continue
