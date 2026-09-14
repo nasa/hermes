@@ -1,6 +1,7 @@
 import React from 'react';
 import { act, render, waitFor } from '@testing-library/react';
 import { MultiCombobox } from '@grafana/ui';
+import { dateTime, TimeRange } from '@grafana/data';
 import { TelemetryFields } from './TelemetryFields';
 import { DataSource } from '../datasource';
 import { ChannelRef, MyQuery } from '../types';
@@ -31,7 +32,7 @@ function deferred() {
   return { promise, resolve, reject };
 }
 
-function setup(sources: string[], getChannels = jest.fn().mockResolvedValue([])) {
+function setup(sources: string[], getChannels = jest.fn().mockResolvedValue([]), range?: TimeRange) {
   const datasource = {
     getChannels,
     getSources: jest.fn().mockResolvedValue([]),
@@ -44,7 +45,7 @@ function setup(sources: string[], getChannels = jest.fn().mockResolvedValue([]))
   const onChange = jest.fn();
   const onRunQuery = jest.fn();
   const view = (nextSources: string[]) => (
-    <TelemetryFields query={{ ...query, sources: nextSources }} datasource={datasource}
+    <TelemetryFields query={{ ...query, sources: nextSources }} datasource={datasource} range={range}
       onChange={onChange} onRunQuery={onRunQuery} />
   );
   const rendered = render(view(sources));
@@ -54,6 +55,22 @@ function setup(sources: string[], getChannels = jest.fn().mockResolvedValue([]))
 beforeEach(() => {
   jest.clearAllMocks();
   sourceVariable = 'FSW-A';
+});
+
+
+it('bounds source-filtered channel lookup to the active panel range', async () => {
+  const range: TimeRange = {
+    from: dateTime('2026-09-14T18:00:00Z'),
+    to: dateTime('2026-09-14T19:00:00Z'),
+    raw: { from: 'now-1h', to: 'now' },
+  };
+  const getChannels = jest.fn().mockResolvedValue([]);
+  setup(['FSW-A'], getChannels, range);
+  await waitFor(() => expect(getChannels).toHaveBeenCalledWith(['FSW-A'], {
+    from: '2026-09-14T18:00:00.000Z',
+    to: '2026-09-14T19:00:00.000Z',
+    timeField: 'ert',
+  }));
 });
 
 it('reloads channels for selected sources and restores all channels when cleared', async () => {

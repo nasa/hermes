@@ -3,7 +3,9 @@ package plugin
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/lib/pq"
 )
@@ -50,13 +52,38 @@ func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.R
 	query := "SELECT component, name FROM telemetryDefs ORDER BY component, name;"
 	var args []any
 	if sources := r.URL.Query()["sources"]; len(sources) > 0 {
-		query = `SELECT d.component, d.name FROM telemetryDefs d
+		fromRaw := r.URL.Query().Get("from")
+		toRaw := r.URL.Query().Get("to")
+		if fromRaw == "" || toRaw == "" {
+			http.Error(w, "source-filtered channel queries require from and to", http.StatusBadRequest)
+			return
+		}
+		from, err := time.Parse(time.RFC3339Nano, fromRaw)
+		if err != nil {
+			http.Error(w, "invalid from time", http.StatusBadRequest)
+			return
+		}
+		to, err := time.Parse(time.RFC3339Nano, toRaw)
+		if err != nil || to.Before(from) {
+			http.Error(w, "invalid to time", http.StatusBadRequest)
+			return
+		}
+		timeField := r.URL.Query().Get("timeField")
+		if timeField == "" {
+			timeField = "ert"
+		}
+		if timeField != "time" && timeField != "ert" {
+			http.Error(w, "invalid time field", http.StatusBadRequest)
+			return
+		}
+		query = fmt.Sprintf(`SELECT d.component, d.name FROM telemetryDefs d
 			WHERE EXISTS (
 				SELECT 1 FROM telemetry t
 				WHERE t.telemetryDefId = d.id AND t.source = ANY($1)
+				  AND t.%s >= $2 AND t.%s <= $3
 			)
-			ORDER BY d.component, d.name;`
-		args = append(args, pq.Array(sources))
+			ORDER BY d.component, d.name;`, timeField, timeField)
+		args = append(args, pq.Array(sources), from, to)
 	}
 	rows, err := d.db.QueryContext(r.Context(), query, args...)
 	if err != nil {
