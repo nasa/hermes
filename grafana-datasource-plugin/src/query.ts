@@ -19,7 +19,11 @@ export function resolveChannels(
 ): ChannelRef[] {
     return channels.map((ch) => {
         if (ch.raw === undefined) {
-            return { component: replace(ch.component), name: replace(ch.name) };
+            return {
+                component: replace(ch.component),
+                name: replace(ch.name),
+                ...(ch.source === undefined ? {} : { source: replace(ch.source) }),
+            };
         }
         const expanded = replace(ch.raw);
         const match = known.find((k) => `${k.component}.${k.name}` === expanded);
@@ -256,10 +260,14 @@ export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string):
         const chKeys = q.keys.filter(
             (k) => k.component === ch.component && k.channel === ch.name
         );
-        if (chKeys.length) {
-            return `(d.component = ${esc(ch.component)} AND d.name = ${esc(ch.name)} AND t.key LIKE ANY(${escArr(chKeys.map(k => k.key + "%"))}))`;
+        const conditions = [`d.component = ${esc(ch.component)}`, `d.name = ${esc(ch.name)}`];
+        if (ch.source !== undefined) {
+            conditions.push(`t.source = ${esc(ch.source)}`);
         }
-        return `(d.component = ${esc(ch.component)} AND d.name = ${esc(ch.name)})`;
+        if (chKeys.length) {
+            conditions.push(`t.key LIKE ANY(${escArr(chKeys.map(k => k.key + "%"))})`);
+        }
+        return `(${conditions.join(' AND ')})`;
     });
     const channelPredicate = channelClauses.join("\n\t\t       OR ");
 
