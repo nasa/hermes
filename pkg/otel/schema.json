@@ -10,9 +10,9 @@
         },
         "serviceName": {
             "type": "string",
-            "title": "Service Name",
+            "title": "Fallback Service Name",
             "default": "hermes",
-            "description": "Identifies this source in the collector"
+            "description": "Records are exported with their originating source as service.name. This value is only used when a record has no source."
         },
         "events": {
             "type": "boolean",
