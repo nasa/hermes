@@ -1,4 +1,5 @@
 import React, { ReactNode, useEffect, useState } from 'react';
+import { TimeRange } from '@grafana/data';
 import { Combobox, ComboboxOption, InlineField, MultiCombobox } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataSource } from '../datasource';
@@ -10,6 +11,7 @@ interface TelemetryFieldsProps {
   onChange: (query: MyQuery) => void;
   onRunQuery: () => void;
   datasource: DataSource;
+  range?: TimeRange;
   sharedOptions?: ReactNode;
 }
 
@@ -109,7 +111,7 @@ function isVariableReference(input: string): boolean {
   return refs.every((name) => defined.has(name));
 }
 
-export function TelemetryFields({ query, onChange, onRunQuery, datasource, sharedOptions }: TelemetryFieldsProps) {
+export function TelemetryFields({ query, onChange, onRunQuery, datasource, range, sharedOptions }: TelemetryFieldsProps) {
   const [channelOptions, setChannelOptions] = useState<Array<ComboboxOption<string>>>([]);
   const [sourceOptions, setSourceOptions] = useState<Array<ComboboxOption<string>>>([]);
   const [keysByChannel, setKeysByChannel] = useState<Record<string, KeyRef[]>>({});
@@ -237,17 +239,38 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
 
   // --- Data loading ---
 
+  const templateSrv = getTemplateSrv();
+  const resolvedSourcesKey = JSON.stringify((query.sources ?? []).map((source) => templateSrv.replace(source)));
+  const channelFrom = query.timeOverrideFrom ?? range?.from.toISOString();
+  const channelTo = query.timeOverrideTo ?? range?.to.toISOString();
+  const channelTimeField = query.timeField ?? 'ert';
+
   useEffect(() => {
+    let active = true;
     const loadChannels = async () => {
+      setChannelOptions([]);
       setChannelLoading(true);
-      datasource
-        .getChannels()
-        .then((entries) => setChannelOptions(toChannelOptions(entries)))
-        .catch(() => setChannelOptions([]))
-        .finally(() => setChannelLoading(false));
+      try {
+        const sources = JSON.parse(resolvedSourcesKey) as string[];
+        const entries = channelFrom && channelTo
+          ? await datasource.getChannels(sources, { from: channelFrom, to: channelTo, timeField: channelTimeField })
+          : await datasource.getChannels(sources);
+        if (active) {
+          setChannelOptions(toChannelOptions(entries));
+        }
+      } catch {
+        if (active) {
+          setChannelOptions([]);
+        }
+      } finally {
+        if (active) {
+          setChannelLoading(false);
+        }
+      }
     };
     loadChannels();
-  }, [datasource]);
+    return () => { active = false; };
+  }, [datasource, resolvedSourcesKey, channelFrom, channelTo, channelTimeField]);
 
   useEffect(() => {
     const loadSources = async () => {
@@ -262,7 +285,6 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
   }, [datasource]);
 
   // Update keys when vars change
-  const templateSrv = getTemplateSrv();
   const resolvedChannelsKey = JSON.stringify(
     (query.channels ?? []).map((ch) =>
       ch.raw !== undefined
