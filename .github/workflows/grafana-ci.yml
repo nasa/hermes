@@ -176,7 +176,7 @@ jobs:
 
       - name: Resolve Grafana E2E versions
         id: resolve-versions
-        uses: grafana/plugin-actions/e2e-version@e2e-version/v3.0.2
+        uses: grafana/plugin-actions/e2e-version@e2e-version/v3.1.0
         with:
           grafana-dependency: ${{ steps.plugin-dep.outputs.grafana-dependency }}
 
