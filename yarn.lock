@@ -1554,10 +1554,10 @@
   resolved "https://registry.yarnpkg.com/@octokit/openapi-webhooks-types/-/openapi-webhooks-types-10.1.1.tgz#8373f90150ca5783771ba79336c71e14b5aa4675"
   integrity sha512-qBfqQVIDQaCFeGCofXieJDwvXcGgDn17+UwZ6WW6lfEvGYGreLFzTiaz9xjet9Us4zDf8iasoW3ixUj/R5lMhA==
 
-"@octokit/plugin-enterprise-server@^19.1.0":
-  version "19.1.0"
-  resolved "https://registry.yarnpkg.com/@octokit/plugin-enterprise-server/-/plugin-enterprise-server-19.1.0.tgz#87bf3e913778b4eb635e22b3e099130806e23d59"
-  integrity sha512-WPytiAXa/Gs1180usX3LQ3bDrHxQ7+JsmSsm8Iu9CTT38WeMXWFLobnsRYeDxI1VCX1jycO7HpV0ThFUklfgNA==
+"@octokit/plugin-enterprise-server@^20.0.0":
+  version "20.0.0"
+  resolved "https://registry.yarnpkg.com/@octokit/plugin-enterprise-server/-/plugin-enterprise-server-20.0.0.tgz#be85460234d8c5ee1a1f9051f7e45267be8c5da5"
+  integrity sha512-vF3hzqJEfnLymNb9SLwA8qVr2gWeMMwl7hssxqleTre4pzFy+867RHFdiRgZZH82w6wL60g8cyMFBiApjZT03g==
   dependencies:
     "@octokit/types" "^14.0.0"
 
