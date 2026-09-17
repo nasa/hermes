@@ -88,19 +88,21 @@ export default function ArrayFieldItemTemplate({
     } else {
         return (
             <div style={{
-                position: "relative"
+                display: "flex",
+                alignItems: "flex-end",
+                gap: "calc(var(--design-unit) * 1px)"
             }}>
+                <div style={{ flexGrow: 1, minWidth: 0 }}>
+                    {children}
+                </div>
                 <div style={{
-                    position: "absolute",
-                    right: "calc(var(--design-unit) * 1.5px)",
-                    top: "calc(var(--design-unit) * 1px)",
-                    zIndex: 1
+                    display: "flex",
+                    flexShrink: 0
                 }}>
                     {hasMoveUp && <MoveUpButton onClick={onMoveUp} registry={registry} uiSchema={uiSchema} />}
                     {hasMoveDown && <MoveDownButton onClick={onMoveDown} registry={registry} uiSchema={uiSchema} />}
                     {hasRemove && <RemoveButton onClick={onDrop} registry={registry} uiSchema={uiSchema} />}
                 </div>
-                {children}
             </div>
         );
     }
