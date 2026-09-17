@@ -159,9 +159,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                     // Show parameter values
                     for param in &data.values {
+                        let name = param
+                            .id
+                            .as_ref()
+                            .map(|id| id.name.as_str())
+                            .unwrap_or("[unresolved numeric id]");
                         tracing::info!(
                             "[PARAM] {} = {:?} @ {}",
-                            param.id.name,
+                            name,
                             param.eng_value,
                             param.generation_time
                         );

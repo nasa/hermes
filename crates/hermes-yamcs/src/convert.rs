@@ -3,6 +3,7 @@ use hermes_pb::*;
 use prost_types::Timestamp;
 use std::collections::HashMap;
 use tonic::Status;
+use tracing::debug;
 
 /// Convert Hermes CommandValue to YAMCS IssueCommandOptions
 pub fn command_value_to_yamcs(
@@ -156,8 +157,17 @@ pub fn yamcs_param_to_hermes(
     param: &yamcs_http::types::monitoring::ParameterValue,
     filter: &BusFilter,
 ) -> Result<Option<SourcedTelemetry>, Status> {
-    // Build full parameter name
-    let param_name = param.id.name.clone();
+    // YAMCS may send only a numeric ID after the initial subscription mapping.
+    let param_name = match &param.id {
+        Some(id) => id.name.clone(),
+        None => {
+            debug!(
+                numeric_id = param.numeric_id,
+                "Skipping parameter value with unresolved numeric_id"
+            );
+            return Ok(None);
+        }
+    };
 
     // Apply name filter
     if !filter.names.is_empty()
@@ -170,18 +180,19 @@ pub fn yamcs_param_to_hermes(
     // Parse generation time
     let time = parse_yamcs_time(&param.generation_time)?;
 
-    // Convert YAMCS value to Hermes value
-    let value = yamcs_value_to_hermes(&param.eng_value)?;
-
-    // Build telemetry reference
-    // let telem_ref = TelemetryRef {
-    //     instance_id: String::new(), // TODO: populate from YAMCS instance
-    //     qualified_name: param_name.clone(),
-    // };
+    let Some(eng_val) = &param.eng_value else {
+        // No value available; skip this parameter
+        debug!(
+            numeric_id = param.numeric_id,
+            "Skipping parameter with no value"
+        );
+        return Ok(None);
+    };
+    let value = yamcs_value_to_hermes(eng_val)?;
 
     let telem_ref = TelemetryRef {
         id: 0,
-        name: "".to_string(),
+        name: param_name,
         component: "".to_string(),
         dictionary: "".to_string(),
     };
@@ -308,5 +319,40 @@ pub fn yamcs_instance_to_fsw(instance: &yamcs_http::types::system::Instance) -> 
         forwards: vec![],
         capabilities,
         dictionary: instance.name.clone(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn yamcs_param_to_hermes_converts_a_resolved_value() {
+        let param: yamcs_http::types::monitoring::ParameterValue = serde_json::from_str(
+            r#"{
+                "numericId": 42,
+                "id": {"name": "/BigData/bigDataComponent/Counter"},
+                "generationTime": "2026-01-01T00:00:00Z",
+                "engValue": {"type": "SINT32", "sint32Value": 7}
+            }"#,
+        )
+        .unwrap();
+
+        let telemetry = yamcs_param_to_hermes(&param, &BusFilter::default())
+            .unwrap()
+            .expect("a resolved parameter should convert");
+
+        let telem_ref = telemetry.telemetry.unwrap().r#ref.unwrap();
+        assert_eq!(telem_ref.name, "/BigData/bigDataComponent/Counter");
+    }
+
+    #[test]
+    fn yamcs_param_to_hermes_ignores_an_unresolved_numeric_id() {
+        let param: yamcs_http::types::monitoring::ParameterValue =
+            serde_json::from_str(r#"{"numericId": 7}"#).unwrap();
+
+        let result = yamcs_param_to_hermes(&param, &BusFilter::default()).unwrap();
+
+        assert!(result.is_none());
     }
 }
