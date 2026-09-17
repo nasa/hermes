@@ -136,6 +136,20 @@ impl Api for YamcsApiService {
         Err(Status::unimplemented("Uplink not implemented"))
     }
 
+    async fn emit_event(
+        &self,
+        _request: Request<tonic::Streaming<SourcedEvent>>,
+    ) -> Result<Response<()>, Status> {
+        Err(Status::unimplemented("EmitEvent not implemented"))
+    }
+
+    async fn emit_telemetry(
+        &self,
+        _request: Request<tonic::Streaming<SourcedTelemetry>>,
+    ) -> Result<Response<()>, Status> {
+        Err(Status::unimplemented("EmitTelemetry not implemented"))
+    }
+
     async fn get_fsw(&self, request: Request<Id>) -> Result<Response<Fsw>, Status> {
         let id = request.into_inner();
 

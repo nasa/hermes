@@ -1,9 +1,6 @@
-mod convert;
-mod service;
-
 use clap::Parser;
 use hermes_server::api_server::ApiServer;
-use service::YamcsApiService;
+use hermes_yamcs::service::YamcsApiService;
 use std::net::SocketAddr;
 use tonic::transport::Server;
 use tracing::{error, info};
