@@ -1293,14 +1293,14 @@
   dependencies:
     "@lit-labs/ssr-dom-shim" "^1.4.0"
 
-"@mcap/core@^2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@mcap/core/-/core-2.2.1.tgz#752b46581353f0883350618804a1ca983b1bd750"
-  integrity sha512-Qj0NSqxmFA6DlwYZqlnYHApcQl6jaVAFcUlYxFJCRKK6dymJAfdw98EIGnzAxLi/xw6rjQ8GFRyVzuoswFn+UA==
+"@mcap/core@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@mcap/core/-/core-2.2.2.tgz#2c304dae4e6f7b8cf002b8bc050696d05c7127ca"
+  integrity sha512-W4NFiyqQlJsNjw8JxAAQ872u0xLWJy0GFC3YFm8bTLbNs+HdDWe8DwBqznr0MGYpWtw+AX8XzHWB5Y9rLEGJJg==
   dependencies:
     "@foxglove/crc" "^0.0.3"
-    heap-js "^2.2.0"
-    tslib "^2.5.0"
+    heap-js "^2.7.1"
+    tslib "^2.8.1"
 
 "@microsoft/fast-element@^1.12.0", "@microsoft/fast-element@^1.13.0":
   version "1.13.0"
@@ -3837,10 +3837,10 @@ hasown@^2.0.0, hasown@^2.0.2:
   dependencies:
     function-bind "^1.1.2"
 
-heap-js@^2.2.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/heap-js/-/heap-js-2.5.0.tgz#487e268b1733b187ca04eccf52f8387be92b46cb"
-  integrity sha512-kUGoI3p7u6B41z/dp33G6OaL7J4DRqRYwVmeIlwLClx7yaaAy7hoDExnuejTKtuDwfcatGmddHDEOjf6EyIxtQ==
+heap-js@^2.7.1:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/heap-js/-/heap-js-2.7.1.tgz#3f152279e42214725cac405257554b000b178cc4"
+  integrity sha512-EQfezRg0NCZGNlhlDR3Evrw1FVL2G3LhU7EgPoxufQKruNBSYA8MiRPHeWbU+36o+Fhel0wMwM+sLEiBAlNLJA==
 
 hookified@^1.15.0, hookified@^1.15.1:
   version "1.15.1"
@@ -6220,12 +6220,7 @@ tslib@^1.13.0:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
 
-tslib@^2.1.0, tslib@^2.5.0, tslib@^2.6.2:
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.7.0.tgz#d9b40c5c40ab59e8738f297df3087bf1a2690c01"
-  integrity sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==
-
-tslib@^2.4.0:
+tslib@^2.1.0, tslib@^2.4.0, tslib@^2.6.2, tslib@^2.8.1:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.8.1.tgz#612efe4ed235d567e8aba5f2a5fab70280ade83f"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
