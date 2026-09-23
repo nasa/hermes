@@ -2152,10 +2152,10 @@
   resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-9.0.8.tgz#7545ba4fc3c003d6c756f651f3bf163d8f0f29ba"
   integrity sha512-jg+97EGIcY9AGHJJRaaPVgetKDsrTgbRjQ5Msgjh/DQKEFl0DtyRr/VCOyD1T2R1MNeWPK/u7JoGhlDZnKBAfA==
 
-"@types/vscode-notebook-renderer@^1.72.3":
-  version "1.72.3"
-  resolved "https://registry.yarnpkg.com/@types/vscode-notebook-renderer/-/vscode-notebook-renderer-1.72.3.tgz#013380d8ddfb9a5dc4b831ff025721afa0fd308b"
-  integrity sha512-MfmEI3A2McbUV2WaijoTgLOAs9chwHN4WmqOedl3jdtlbzJBWIQ9ZFmQdzPa3lYr5j8DJhRg3KB5AIM/BBfg9Q==
+"@types/vscode-notebook-renderer@^1.72.4":
+  version "1.72.4"
+  resolved "https://registry.yarnpkg.com/@types/vscode-notebook-renderer/-/vscode-notebook-renderer-1.72.4.tgz#585439f33139702203704876f6dbaec25997a1b6"
+  integrity sha512-bdKO41c6Dc24pH/O/eM/jqfCwGH4zc76o/g/6Gt1y/eg/bvvqP2/VpbV+Sa5Te2sZekFRcbYnSSFTKo3wcVGUg==
 
 "@types/vscode@^1.99.0":
   version "1.109.0"
