@@ -121,7 +121,7 @@ func (f *Fsw) downlinkLoop() {
 				})
 			}
 		case *TelemPacket:
-			tlmValues, err := data.ToTelemetry(f.dictionary)
+			tlmValues, err := data.ToTelemetry()
 			if err != nil {
 				f.Logger.Error("failed to extract telemetry from packet", "err", err)
 			} else {
