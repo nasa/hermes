@@ -2,7 +2,6 @@
   {
     "event": {
       "ref": {
-        "id": 1281,
         "name": "OpCodeDispatched",
         "component": "cmdDisp",
         "severity": 5,
@@ -40,7 +39,6 @@
   {
     "event": {
       "ref": {
-        "id": 1288,
         "name": "NoOpStringReceived",
         "component": "cmdDisp",
         "severity": 2,
@@ -69,7 +67,6 @@
   {
     "event": {
       "ref": {
-        "id": 1282,
         "name": "OpCodeCompleted",
         "component": "cmdDisp",
         "severity": 5,

@@ -2,7 +2,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -24,7 +23,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -46,7 +44,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -68,7 +65,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -90,7 +86,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -112,7 +107,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -134,7 +128,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -156,7 +149,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -178,7 +170,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -200,7 +191,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -222,7 +212,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -244,7 +233,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -266,7 +254,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -288,7 +275,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -310,7 +296,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -332,7 +317,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -354,7 +338,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -376,7 +359,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 256,
         "name": "BD_Cycles",
         "component": "blockDrv"
       },
@@ -398,7 +380,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 256,
         "name": "BD_Cycles",
         "component": "blockDrv"
       },
@@ -420,7 +401,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -442,7 +422,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -464,7 +443,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -486,7 +464,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -508,7 +485,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -530,7 +506,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -552,7 +527,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -574,7 +548,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -596,7 +569,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -618,7 +590,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -640,7 +611,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -662,7 +632,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -684,7 +653,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -706,7 +674,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -728,7 +695,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -750,7 +716,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -772,7 +737,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -794,7 +758,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -816,7 +779,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -838,7 +800,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -860,7 +821,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -882,7 +842,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -904,7 +863,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -926,7 +884,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -948,7 +905,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -970,7 +926,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -992,7 +947,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -1014,7 +968,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -1036,7 +989,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -1058,7 +1010,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -1080,7 +1031,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -1102,7 +1052,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -1124,7 +1073,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -1146,7 +1094,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -1168,7 +1115,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 256,
         "name": "BD_Cycles",
         "component": "blockDrv"
       },
@@ -1190,7 +1136,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -1212,7 +1157,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -1234,7 +1178,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -1256,7 +1199,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -1278,7 +1220,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -1300,7 +1241,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -1322,7 +1262,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -1344,7 +1283,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -1366,7 +1304,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -1388,7 +1325,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -1410,7 +1346,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -1432,7 +1367,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -1454,7 +1388,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -1476,7 +1409,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -1498,7 +1430,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -1520,7 +1451,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -1542,7 +1472,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -1564,7 +1493,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -1586,7 +1514,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -1608,7 +1535,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -1630,7 +1556,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -1652,7 +1577,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -1674,7 +1598,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -1696,7 +1619,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -1718,7 +1640,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -1740,7 +1661,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -1762,7 +1682,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -1784,7 +1703,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -1806,7 +1724,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -1828,7 +1745,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -1850,7 +1766,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -1872,7 +1787,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -1894,7 +1808,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -1916,7 +1829,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -1938,7 +1850,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 256,
         "name": "BD_Cycles",
         "component": "blockDrv"
       },
@@ -1960,7 +1871,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 1280,
         "name": "CommandsDispatched",
         "component": "cmdDisp"
       },
@@ -1982,7 +1892,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 256,
         "name": "BD_Cycles",
         "component": "blockDrv"
       },
@@ -2004,7 +1913,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -2026,7 +1934,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -2048,7 +1955,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -2070,7 +1976,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -2092,7 +1997,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -2114,7 +2018,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -2136,7 +2039,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -2158,7 +2060,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -2180,7 +2081,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -2202,7 +2102,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -2224,7 +2123,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -2246,7 +2144,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -2268,7 +2165,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -2290,7 +2186,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -2312,7 +2207,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -2334,7 +2228,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -2356,7 +2249,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -2378,7 +2270,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -2400,7 +2291,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -2422,7 +2312,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -2444,7 +2333,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -2466,7 +2354,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -2488,7 +2375,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -2510,7 +2396,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -2532,7 +2417,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -2554,7 +2438,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -2576,7 +2459,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -2598,7 +2480,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -2620,7 +2501,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -2642,7 +2522,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -2664,7 +2543,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -2686,7 +2564,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -2708,7 +2585,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -2730,7 +2606,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -2752,7 +2627,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 256,
         "name": "BD_Cycles",
         "component": "blockDrv"
       },
@@ -2774,7 +2648,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 256,
         "name": "BD_Cycles",
         "component": "blockDrv"
       },
@@ -2796,7 +2669,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -2818,7 +2690,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -2840,7 +2711,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -2862,7 +2732,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -2884,7 +2753,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -2906,7 +2774,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -2928,7 +2795,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -2950,7 +2816,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -2972,7 +2837,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -2994,7 +2858,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -3016,7 +2879,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -3038,7 +2900,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -3060,7 +2921,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -3082,7 +2942,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -3104,7 +2963,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -3126,7 +2984,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -3148,7 +3005,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -3170,7 +3026,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -3192,7 +3047,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -3214,7 +3068,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -3236,7 +3089,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -3258,7 +3110,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -3280,7 +3131,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -3302,7 +3152,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -3324,7 +3173,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -3346,7 +3194,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -3368,7 +3215,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -3390,7 +3236,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -3412,7 +3257,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -3434,7 +3278,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -3456,7 +3299,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -3478,7 +3320,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -3500,7 +3341,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -3522,7 +3362,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -3544,7 +3383,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 256,
         "name": "BD_Cycles",
         "component": "blockDrv"
       },
@@ -3566,7 +3404,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 256,
         "name": "BD_Cycles",
         "component": "blockDrv"
       },
@@ -3588,7 +3425,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -3610,7 +3446,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -3632,7 +3467,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -3654,7 +3488,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -3676,7 +3509,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -3698,7 +3530,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -3720,7 +3551,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -3742,7 +3572,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -3764,7 +3593,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -3786,7 +3614,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -3808,7 +3635,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -3830,7 +3656,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -3852,7 +3677,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -3874,7 +3698,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -3896,7 +3719,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -3918,7 +3740,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -3940,7 +3761,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -3962,7 +3782,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -3984,7 +3803,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -4006,7 +3824,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -4028,7 +3845,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -4050,7 +3866,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -4072,7 +3887,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -4094,7 +3908,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -4116,7 +3929,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -4138,7 +3950,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -4160,7 +3971,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -4182,7 +3992,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -4204,7 +4013,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -4226,7 +4034,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -4248,7 +4055,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -4270,7 +4076,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -4292,7 +4097,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -4314,7 +4118,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -4336,7 +4139,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 256,
         "name": "BD_Cycles",
         "component": "blockDrv"
       },
@@ -4358,7 +4160,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -4380,7 +4181,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -4402,7 +4202,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -4424,7 +4223,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -4446,7 +4244,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -4468,7 +4265,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -4490,7 +4286,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -4512,7 +4307,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -4534,7 +4328,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -4556,7 +4349,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -4578,7 +4370,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -4600,7 +4391,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -4622,7 +4412,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -4644,7 +4433,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -4666,7 +4454,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -4688,7 +4475,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -4710,7 +4496,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -4732,7 +4517,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18949,
         "name": "CPU_00",
         "component": "systemResources"
       },
@@ -4754,7 +4538,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18950,
         "name": "CPU_01",
         "component": "systemResources"
       },
@@ -4776,7 +4559,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18951,
         "name": "CPU_02",
         "component": "systemResources"
       },
@@ -4798,7 +4580,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18952,
         "name": "CPU_03",
         "component": "systemResources"
       },
@@ -4820,7 +4601,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18953,
         "name": "CPU_04",
         "component": "systemResources"
       },
@@ -4842,7 +4622,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18954,
         "name": "CPU_05",
         "component": "systemResources"
       },
@@ -4864,7 +4643,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18955,
         "name": "CPU_06",
         "component": "systemResources"
       },
@@ -4886,7 +4664,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18956,
         "name": "CPU_07",
         "component": "systemResources"
       },
@@ -4908,7 +4685,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18957,
         "name": "CPU_08",
         "component": "systemResources"
       },
@@ -4930,7 +4706,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18958,
         "name": "CPU_09",
         "component": "systemResources"
       },
@@ -4952,7 +4727,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18959,
         "name": "CPU_10",
         "component": "systemResources"
       },
@@ -4974,7 +4748,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18960,
         "name": "CPU_11",
         "component": "systemResources"
       },
@@ -4996,7 +4769,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18948,
         "name": "CPU",
         "component": "systemResources"
       },
@@ -5018,7 +4790,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18944,
         "name": "MEMORY_TOTAL",
         "component": "systemResources"
       },
@@ -5040,7 +4811,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18945,
         "name": "MEMORY_USED",
         "component": "systemResources"
       },
@@ -5062,7 +4832,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18947,
         "name": "NON_VOLATILE_FREE",
         "component": "systemResources"
       },
@@ -5084,7 +4853,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 18946,
         "name": "NON_VOLATILE_TOTAL",
         "component": "systemResources"
       },
@@ -5106,7 +4874,6 @@
   {
     "telemetry": {
       "ref": {
-        "id": 256,
         "name": "BD_Cycles",
         "component": "blockDrv"
       },

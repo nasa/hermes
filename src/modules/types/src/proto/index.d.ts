@@ -4274,9 +4274,6 @@ export namespace hermes {
     /** Properties of an EventRef. */
     interface IEventRef {
 
-        /** EventRef id */
-        id?: (number|null);
-
         /** EventRef name */
         name?: (string|null);
 
@@ -4301,9 +4298,6 @@ export namespace hermes {
          * @param [properties] Properties to set
          */
         constructor(properties?: hermes.IEventRef);
-
-        /** EventRef id. */
-        public id: number;
 
         /** EventRef name. */
         public name: string;
@@ -4522,9 +4516,6 @@ export namespace hermes {
     /** Properties of a TelemetryRef. */
     interface ITelemetryRef {
 
-        /** TelemetryRef id */
-        id?: (number|null);
-
         /** TelemetryRef name */
         name?: (string|null);
 
@@ -4543,9 +4534,6 @@ export namespace hermes {
          * @param [properties] Properties to set
          */
         constructor(properties?: hermes.ITelemetryRef);
-
-        /** TelemetryRef id. */
-        public id: number;
 
         /** TelemetryRef name. */
         public name: string;

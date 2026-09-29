@@ -151,7 +151,11 @@ message EventDef {
 }
 
 message EventRef {
-  int32           id        = 1;
+  // Was the dictionary's raw ID. Removed: providers that build refs from
+  // string names (F Prime packets) leave it unset, so it cannot identify a
+  // ref. Defs are keyed by (component, name) instead.
+  reserved 1;
+
   string          name      = 2;
   string          component = 3;
   EvrSeverity     severity  = 4;
@@ -189,7 +193,11 @@ message TelemetryDef {
 
 // Lightweight reference for passing dictionary items through message busses
 message TelemetryRef {
-  int32  id        = 1;
+  // Was the dictionary's raw ID. Removed: providers that build refs from
+  // string names (F Prime packets) leave it unset, so it cannot identify a
+  // ref. Defs are keyed by (component, name) instead.
+  reserved 1;
+
   string name      = 2;
   string component = 3;
 

@@ -25,7 +25,6 @@ func BenchmarkTimescaleInserts(b *testing.B) {
 	testTelemetry := &pb.SourcedTelemetry{
 		Telemetry: &pb.Telemetry{
 			Ref: &pb.TelemetryRef{
-				Id:        4242,
 				Name:      "john",
 				Component: "doe",
 			},

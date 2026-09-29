@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
@@ -29,6 +30,13 @@ func ExtraColumnFromString(str string) (*ExtraColumn, error) {
 type Tx interface {
 	Insert(table string, values map[string]any)
 	Commit() error
+
+	// ResolveTelemetryDef and ResolveEventDef look up a def's surrogate id,
+	// inserting the def if it is new. These run eagerly against the open
+	// transaction: rows queued via Insert are not written until Commit, but a
+	// telemetry row needs its def id at queue time.
+	ResolveTelemetryDef(ctx context.Context, component, name string) (int64, error)
+	ResolveEventDef(ctx context.Context, component, name string, severity any, args string) (int64, error)
 }
 
 type Recorder interface {

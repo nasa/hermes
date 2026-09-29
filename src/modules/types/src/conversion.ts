@@ -479,7 +479,6 @@ export function eventRefFromProto(
     proto: Proto.IEventRef,
 ): Def.EventRef {
     return {
-        id: proto.id ?? 0,
         component: proto.component ?? "",
         name: proto.name ?? "",
         severity: evrSeverityFromProto(proto.severity ?? Proto.EvrSeverity.EVR_DIAGNOSTIC),
@@ -517,7 +516,6 @@ export function telemetryRefFromProto(
     proto: Proto.ITelemetryRef,
 ): Def.TelemetryRef {
     return {
-        id: proto.id ?? 0,
         component: proto.component ?? "",
         name: proto.name ?? "",
     };

@@ -10,6 +10,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/nasa/hermes/pkg/host"
 	"github.com/nasa/hermes/pkg/pb"
+	"github.com/nasa/hermes/pkg/sqldefs"
 )
 
 var (
@@ -80,16 +81,22 @@ func (t *timescaleDbProvider) Start(
 
 	defer db.Close()
 
-	if _, err := db.ExecContext(ctx, schemaSql); err != nil {
-		return fmt.Errorf("failed to execute schema: %w", err)
+	// Creates the schema on a fresh database and brings an existing one
+	// forward, so restarting the profile is all an operator needs to do after
+	// a Hermes upgrade.
+	if err := Migrate(ctx, db, session.Log()); err != nil {
+		return fmt.Errorf("failed to migrate schema: %w", err)
 	}
+
+	// Shared by both listeners so the def id memo is warmed once.
+	defs := sqldefs.New(sqldefs.Postgres)
 
 	session.Started()
 
 	if settings.EventsEnabled() {
 		session.Log().Info("creating event bus listener to push to timescaledb")
 		host.Event.On(ctx, func(msg *pb.SourcedEvent) {
-			if err := InsertEvent(ctx, db, msg); err != nil {
+			if err := InsertEvent(ctx, db, defs, msg); err != nil {
 				session.Log().Error("failed to insert event to timescaledb", "err", err)
 			}
 		})
@@ -100,7 +107,7 @@ func (t *timescaleDbProvider) Start(
 	if settings.TelemetryEnabled() {
 		session.Log().Info("creating telemetry bus listener to push to timescaledb")
 		host.Telemetry.On(ctx, func(msg *pb.SourcedTelemetry) {
-			if err := InsertTelemetry(ctx, db, msg); err != nil {
+			if err := InsertTelemetry(ctx, db, defs, msg); err != nil {
 				session.Log().Error("failed to insert telemetry to timescaledb", "err", err)
 			}
 		})

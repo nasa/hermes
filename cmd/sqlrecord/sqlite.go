@@ -7,6 +7,7 @@ import (
 
 	"github.com/nasa/hermes/pkg/log"
 	"github.com/nasa/hermes/pkg/pb"
+	"github.com/nasa/hermes/pkg/sqldefs"
 
 	"database/sql"
 
@@ -71,12 +72,16 @@ var SQLITE_TEMPLATES SQLTemplates = SQLTemplates{
 	PlaceholderFormatter: func(n uint64) string {
 		return "?"
 	},
+	Queries: sqldefs.SQLite,
 }
 
 type SQLiteRecorder struct {
 	log         log.Logger
 	db          *sql.DB
 	extraColumn *ExtraColumn
+
+	// Per-recorder, because def ids are assigned by this database.
+	defs *sqldefs.Cache
 }
 
 func NewSQLiteRecorder(dbFile string, extraColumn *ExtraColumn) (*SQLiteRecorder, error) {
@@ -88,6 +93,7 @@ func NewSQLiteRecorder(dbFile string, extraColumn *ExtraColumn) (*SQLiteRecorder
 	return &SQLiteRecorder{
 		log:         log.GetLogger(context.TODO()).With("db", "sqlite"),
 		db:          db,
+		defs:        sqldefs.New(SQLITE_TEMPLATES.Queries),
 		extraColumn: extraColumn,
 	}, nil
 }
@@ -114,7 +120,7 @@ func (r *SQLiteRecorder) Initialize() error {
 }
 
 func (r *SQLiteRecorder) StartTransaction() (Tx, error) {
-	return NewSQLTx(r.db, SQLITE_TEMPLATES)
+	return NewSQLTx(r.db, SQLITE_TEMPLATES, r.defs)
 }
 
 func (r *SQLiteRecorder) InsertEvent(tx Tx, srcEvent *pb.SourcedEvent) error {

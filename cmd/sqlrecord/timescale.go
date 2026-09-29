@@ -8,6 +8,7 @@ import (
 
 	"github.com/nasa/hermes/pkg/log"
 	"github.com/nasa/hermes/pkg/pb"
+	"github.com/nasa/hermes/pkg/sqldefs"
 
 	"database/sql"
 
@@ -97,12 +98,16 @@ var PG_TEMPLATES SQLTemplates = SQLTemplates{
 	PlaceholderFormatter: func(n uint64) string {
 		return "$" + strconv.FormatUint(n, 10)
 	},
+	Queries: sqldefs.Postgres,
 }
 
 type PGRecorder struct {
 	log         log.Logger
 	db          *sql.DB
 	extraColumn *ExtraColumn
+
+	// Per-recorder, because def ids are assigned by this database.
+	defs *sqldefs.Cache
 }
 
 func NewPGRecorder(dbFile string, extraColumn *ExtraColumn) (*PGRecorder, error) {
@@ -114,6 +119,7 @@ func NewPGRecorder(dbFile string, extraColumn *ExtraColumn) (*PGRecorder, error)
 	return &PGRecorder{
 		log:         log.GetLogger(context.TODO()).With("db", "postgresql"),
 		db:          db,
+		defs:        sqldefs.New(PG_TEMPLATES.Queries),
 		extraColumn: extraColumn,
 	}, nil
 }
@@ -127,7 +133,7 @@ func (r *PGRecorder) Initialize() error {
 }
 
 func (r *PGRecorder) StartTransaction() (Tx, error) {
-	return NewSQLTx(r.db, PG_TEMPLATES)
+	return NewSQLTx(r.db, PG_TEMPLATES, r.defs)
 }
 
 func (r *PGRecorder) InsertEvent(tx Tx, srcEvent *pb.SourcedEvent) error {

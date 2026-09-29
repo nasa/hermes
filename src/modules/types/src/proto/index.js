@@ -12429,7 +12429,6 @@ $root.hermes = (function() {
          * Properties of an EventRef.
          * @memberof hermes
          * @interface IEventRef
-         * @property {number|null} [id] EventRef id
          * @property {string|null} [name] EventRef name
          * @property {string|null} [component] EventRef component
          * @property {hermes.EvrSeverity|null} [severity] EventRef severity
@@ -12452,14 +12451,6 @@ $root.hermes = (function() {
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
-
-        /**
-         * EventRef id.
-         * @member {number} id
-         * @memberof hermes.EventRef
-         * @instance
-         */
-        EventRef.prototype.id = 0;
 
         /**
          * EventRef name.
@@ -12529,8 +12520,6 @@ $root.hermes = (function() {
                 q = 0;
             if (q > $util.recursionLimit)
                 throw Error("max depth exceeded");
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.name);
             if (message.component != null && Object.hasOwnProperty.call(message, "component"))
@@ -12582,10 +12571,6 @@ $root.hermes = (function() {
                 if (tag === error)
                     break;
                 switch (tag >>> 3) {
-                case 1: {
-                        message.id = reader.int32();
-                        break;
-                    }
                 case 2: {
                         message.name = reader.string();
                         break;
@@ -12647,9 +12632,6 @@ $root.hermes = (function() {
                 long = 0;
             if (long > $util.recursionLimit)
                 return "maximum nesting depth exceeded";
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                if (!$util.isInteger(message.id))
-                    return "id: integer expected";
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
@@ -12700,8 +12682,6 @@ $root.hermes = (function() {
             if (long > $util.recursionLimit)
                 throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.EventRef();
-            if (object.id != null)
-                message.id = object.id | 0;
             if (object.name != null)
                 message.name = String(object.name);
             if (object.component != null)
@@ -12774,14 +12754,11 @@ $root.hermes = (function() {
             if (options.arrays || options.defaults)
                 object["arguments"] = [];
             if (options.defaults) {
-                object.id = 0;
                 object.name = "";
                 object.component = "";
                 object.severity = options.enums === String ? "EVR_DIAGNOSTIC" : 0;
                 object.dictionary = "";
             }
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                object.id = message.id;
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
             if (message.component != null && Object.hasOwnProperty.call(message, "component"))
@@ -13158,7 +13135,6 @@ $root.hermes = (function() {
          * Properties of a TelemetryRef.
          * @memberof hermes
          * @interface ITelemetryRef
-         * @property {number|null} [id] TelemetryRef id
          * @property {string|null} [name] TelemetryRef name
          * @property {string|null} [component] TelemetryRef component
          * @property {string|null} [dictionary] TelemetryRef dictionary
@@ -13178,14 +13154,6 @@ $root.hermes = (function() {
                     if (properties[keys[i]] != null && keys[i] !== "__proto__")
                         this[keys[i]] = properties[keys[i]];
         }
-
-        /**
-         * TelemetryRef id.
-         * @member {number} id
-         * @memberof hermes.TelemetryRef
-         * @instance
-         */
-        TelemetryRef.prototype.id = 0;
 
         /**
          * TelemetryRef name.
@@ -13239,8 +13207,6 @@ $root.hermes = (function() {
                 q = 0;
             if (q > $util.recursionLimit)
                 throw Error("max depth exceeded");
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.name);
             if (message.component != null && Object.hasOwnProperty.call(message, "component"))
@@ -13287,10 +13253,6 @@ $root.hermes = (function() {
                 if (tag === error)
                     break;
                 switch (tag >>> 3) {
-                case 1: {
-                        message.id = reader.int32();
-                        break;
-                    }
                 case 2: {
                         message.name = reader.string();
                         break;
@@ -13342,9 +13304,6 @@ $root.hermes = (function() {
                 long = 0;
             if (long > $util.recursionLimit)
                 return "maximum nesting depth exceeded";
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                if (!$util.isInteger(message.id))
-                    return "id: integer expected";
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 if (!$util.isString(message.name))
                     return "name: string expected";
@@ -13375,8 +13334,6 @@ $root.hermes = (function() {
             if (long > $util.recursionLimit)
                 throw Error("maximum nesting depth exceeded");
             var message = new $root.hermes.TelemetryRef();
-            if (object.id != null)
-                message.id = object.id | 0;
             if (object.name != null)
                 message.name = String(object.name);
             if (object.component != null)
@@ -13404,13 +13361,10 @@ $root.hermes = (function() {
                 throw Error("max depth exceeded");
             var object = {};
             if (options.defaults) {
-                object.id = 0;
                 object.name = "";
                 object.component = "";
                 object.dictionary = "";
             }
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                object.id = message.id;
             if (message.name != null && Object.hasOwnProperty.call(message, "name"))
                 object.name = message.name;
             if (message.component != null && Object.hasOwnProperty.call(message, "component"))

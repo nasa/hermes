@@ -653,7 +653,6 @@ func (x *EventDef) GetFormat() *FormatString {
 
 type EventRef struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
-	Id        int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name      string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Component string                 `protobuf:"bytes,3,opt,name=component,proto3" json:"component,omitempty"`
 	Severity  EvrSeverity            `protobuf:"varint,4,opt,name=severity,proto3,enum=hermes.EvrSeverity" json:"severity,omitempty"`
@@ -692,13 +691,6 @@ func (x *EventRef) ProtoReflect() protoreflect.Message {
 // Deprecated: Use EventRef.ProtoReflect.Descriptor instead.
 func (*EventRef) Descriptor() ([]byte, []int) {
 	return file_dictionary_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *EventRef) GetId() int32 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
 }
 
 func (x *EventRef) GetName() string {
@@ -823,7 +815,6 @@ func (x *TelemetryDef) GetMetadata() string {
 // Lightweight reference for passing dictionary items through message busses
 type TelemetryRef struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
-	Id        int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name      string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Component string                 `protobuf:"bytes,3,opt,name=component,proto3" json:"component,omitempty"`
 	// (optional) dictionary ID this comes from
@@ -860,13 +851,6 @@ func (x *TelemetryRef) ProtoReflect() protoreflect.Message {
 // Deprecated: Use TelemetryRef.ProtoReflect.Descriptor instead.
 func (*TelemetryRef) Descriptor() ([]byte, []int) {
 	return file_dictionary_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *TelemetryRef) GetId() int32 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
 }
 
 func (x *TelemetryRef) GetName() string {
@@ -1150,9 +1134,8 @@ const file_dictionary_proto_rawDesc = "" +
 	"\rformat_string\x18\x05 \x01(\tB\x02\x18\x01R\fformatString\x12+\n" +
 	"\targuments\x18\x06 \x03(\v2\r.hermes.FieldR\targuments\x12\x1a\n" +
 	"\bmetadata\x18\a \x01(\tR\bmetadata\x12,\n" +
-	"\x06format\x18\b \x01(\v2\x14.hermes.FormatStringR\x06format\"\xbb\x01\n" +
-	"\bEventRef\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
+	"\x06format\x18\b \x01(\v2\x14.hermes.FormatStringR\x06format\"\xb1\x01\n" +
+	"\bEventRef\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +
 	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12/\n" +
 	"\bseverity\x18\x04 \x01(\x0e2\x13.hermes.EvrSeverityR\bseverity\x12\x1c\n" +
@@ -1160,21 +1143,20 @@ const file_dictionary_proto_rawDesc = "" +
 	"\n" +
 	"dictionary\x18\n" +
 	" \x01(\tR\n" +
-	"dictionary\"\x94\x01\n" +
+	"dictionaryJ\x04\b\x01\x10\x02\"\x94\x01\n" +
 	"\fTelemetryDef\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +
 	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12 \n" +
 	"\x04type\x18\x04 \x01(\v2\f.hermes.TypeR\x04type\x12\x1a\n" +
-	"\bmetadata\x18\x06 \x01(\tR\bmetadataJ\x04\b\x05\x10\x06\"p\n" +
-	"\fTelemetryRef\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
+	"\bmetadata\x18\x06 \x01(\tR\bmetadataJ\x04\b\x05\x10\x06\"f\n" +
+	"\fTelemetryRef\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +
 	"\tcomponent\x18\x03 \x01(\tR\tcomponent\x12\x1e\n" +
 	"\n" +
 	"dictionary\x18\n" +
 	" \x01(\tR\n" +
-	"dictionary\"R\n" +
+	"dictionaryJ\x04\b\x01\x10\x02\"R\n" +
 	"\x0eDictionaryHead\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
