@@ -109,9 +109,22 @@ valuesLoop:
 	return nil
 }
 
+// insertOrder must insert "*Defs" tables before the tables that FK-reference them; map
+// iteration order (used previously) is randomized and intermittently violated that FK.
+var insertOrder = []string{"telemetryDefs", "eventDefs", "telemetry", "events"}
+
 func (tx *SQLTx) Commit() error {
+	done := make(map[string]bool, len(tx.inserts))
+	for _, table := range insertOrder {
+		if values, ok := tx.inserts[table]; ok {
+			tx.buildInsert(table, values)
+			done[table] = true
+		}
+	}
 	for table, values := range tx.inserts {
-		tx.buildInsert(table, values)
+		if !done[table] {
+			tx.buildInsert(table, values)
+		}
 	}
 
 	if err := tx.tx.Commit(); err != nil {
