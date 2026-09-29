@@ -1,10 +1,12 @@
 package fprime
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/nasa/hermes/pkg/host"
 	"github.com/nasa/hermes/pkg/pb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -78,4 +80,33 @@ func (p *LogValue) ToEvent() (*pb.Event, error) {
 		Message: fmt.Sprintf(fmtString, argsAny...),
 		Args:    args,
 	}, nil
+}
+
+type tlmPktMd struct {
+	keys []string
+}
+
+func (p *TelemPacket) ToTelemetry(
+	dict *host.DictionaryNamespace,
+) ([]*pb.Telemetry, error) {
+	var md tlmPktMd
+	err := json.Unmarshal([]byte(p.Def.Metadata), &md)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal metadata: %v", err)
+	}
+
+	out := []*pb.Telemetry{}
+	time := timeToTimestamp(p.Time)
+	for _, tlmName := range md.keys {
+		tlmDef := dict.Telemetry.Get1(tlmName)
+		tlmValue := p.Value.GetO().O[tlmName]
+
+		out = append(out, &pb.Telemetry{
+			Ref:   tlmDef.ToRef(),
+			Time:  time,
+			Value: tlmValue,
+		})
+	}
+
+	return out, nil
 }

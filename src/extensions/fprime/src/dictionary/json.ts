@@ -466,6 +466,7 @@ export function parseFprimeJsonDictionary(rawJson: string): Dictionary {
     for (const s of json.telemetryPacketSets ?? []) {
         for (const pkt of s.members) {
             // Resolve the telemetry packet as a single struct type
+            const keys: string[] = [];
             const type: Def.ObjectType = {
                 kind: Def.TypeKind.object,
                 name: pkt.name,
@@ -476,8 +477,9 @@ export function parseFprimeJsonDictionary(rawJson: string): Dictionary {
                         throw new Error(`No telemetry with name '${key}'`);
                     }
 
+                    keys.push(key);
                     return {
-                        name: key.replaceAll('.', '_'),
+                        name: key,
                         type: memberTlm.type,
                     };
                 })
@@ -488,9 +490,7 @@ export function parseFprimeJsonDictionary(rawJson: string): Dictionary {
                 id: pkt.id,
                 component: '_',
                 type,
-                metadata: {
-                    group: pkt.group,
-                }
+                metadata: { keys }
             });
         }
     }
