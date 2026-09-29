@@ -26,10 +26,13 @@ pub struct PluginInfo {
     /// Plugin name
     pub name: String,
     /// Plugin description
+    #[serde(default)]
     pub description: String,
     /// Plugin version
+    #[serde(default)]
     pub version: String,
     /// Plugin vendor
+    #[serde(default)]
     pub vendor: String,
 }
 
