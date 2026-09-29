@@ -2,7 +2,7 @@ import { DataQueryRequest, DataSourceInstanceSettings, CoreApp, ScopedVars } fro
 import { DataSourceWithBackend, getTemplateSrv } from '@grafana/runtime';
 import { from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, ChannelQuery, ChannelRef, KeyRef, ResolvedQuery, withDefaults } from './types';
+import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, ChannelQuery, ChannelRef, KeyRef, ResolvedQuery, TimeField, withDefaults } from './types';
 import { aliasForLabels, buildQuery, resolveChannels, resolveQuery } from 'query';
 
 export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptions> {
@@ -77,8 +77,11 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
   }
 
   // Telemetry resources
-  async getChannels(): Promise<ChannelRef[]> {
-    return this.getResource('telemetry/channels');
+  async getChannels(
+    sources: string[] = [],
+    range?: { from: string; to: string; timeField: TimeField }
+  ): Promise<ChannelRef[]> {
+    return this.getResource('telemetry/channels', { sources, ...(range ?? {}) });
   }
 
   async getSources(): Promise<string[]> {

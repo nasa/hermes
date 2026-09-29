@@ -75,6 +75,7 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
           onChange={onChange}
           onRunQuery={onRunQuery}
           datasource={datasource}
+          range={range}
         />
       )}
 

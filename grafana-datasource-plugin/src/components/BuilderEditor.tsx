@@ -1,6 +1,6 @@
 import React from 'react';
 import { CollapsableSection, DateTimePicker, InlineField, RadioButtonGroup } from '@grafana/ui';
-import { dateTime, DateTime, SelectableValue } from '@grafana/data';
+import { dateTime, DateTime, SelectableValue, TimeRange } from '@grafana/data';
 import { DataSource } from '../datasource';
 import { MyQuery, QueryType, TimeField } from '../types';
 import { TelemetryFields } from './TelemetryFields';
@@ -11,6 +11,7 @@ interface BuilderEditorProps {
   onChange: (query: MyQuery) => void;
   onRunQuery: () => void;
   datasource: DataSource;
+  range?: TimeRange;
 }
 
 const QUERY_TYPE_OPTIONS: Array<SelectableValue<QueryType>> = [
@@ -24,7 +25,7 @@ const TIME_FIELD_OPTIONS: Array<SelectableValue<TimeField>> = [
   { label: 'On-board Time', value: 'time' },
 ];
 
-export function BuilderEditor({ query, onChange, onRunQuery, datasource }: BuilderEditorProps) {
+export function BuilderEditor({ query, onChange, onRunQuery, datasource, range }: BuilderEditorProps) {
   const queryType = query.queryType ?? 'telemetry';
 
   const onQueryTypeChange = (value: QueryType) => {
@@ -86,6 +87,7 @@ export function BuilderEditor({ query, onChange, onRunQuery, datasource }: Build
           onChange={onChange}
           onRunQuery={onRunQuery}
           datasource={datasource}
+          range={range}
           sharedOptions={sharedOptions}
         />
       ) : (
