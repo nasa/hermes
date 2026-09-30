@@ -1,0 +1,173 @@
+syntax="proto2";
+
+package yamcs.protobuf;
+option java_package = "org.yamcs.protobuf";
+
+import "google/protobuf/timestamp.proto";
+
+// Union type for storing a value
+message Value {
+  enum Type {
+    FLOAT = 0;
+    DOUBLE = 1;
+    UINT32 = 2;
+    SINT32 = 3;
+    BINARY = 4;
+    STRING = 5;
+    TIMESTAMP = 6;
+    UINT64 = 7;
+    SINT64 = 8;
+    BOOLEAN = 9;
+    AGGREGATE = 10;
+    ARRAY = 11;
+    // Enumerated values have both an integer (sint64Value) and a string representation
+    ENUMERATED = 12;
+    NONE = 13;
+  }
+  required Type type = 1;
+  optional float floatValue = 2;
+  optional double doubleValue = 3;
+  optional sint32 sint32Value = 4;
+  optional uint32 uint32Value = 5;
+  optional bytes binaryValue = 6;
+  optional string stringValue = 7;
+  optional int64 timestampValue = 8;
+  optional uint64 uint64Value = 9;
+  optional sint64 sint64Value = 10;
+  optional bool booleanValue = 11;
+  optional AggregateValue aggregateValue = 12;
+  repeated Value arrayValue = 13;
+}
+
+// An aggregate value is an ordered list of (member name, member value).
+// Two arrays are used in order to be able to send just the values (since
+// the names will not change)
+message AggregateValue {
+   repeated string name = 1;
+   repeated Value value = 2;
+}
+
+// Used by external clients to identify an item in the Mission Database
+// If namespace is set, then the name is that of an alias, rather than
+// the qualified name.
+message NamedObjectId {
+  required string name = 1;
+  optional string namespace = 2;
+}
+
+message NamedObjectList {
+  repeated NamedObjectId list = 1;
+}
+
+//contains histogram data
+message ArchiveRecord {
+  optional NamedObjectId id = 1;
+  optional int32 num = 4;
+  optional int64 seqFirst = 6;
+  optional int64 seqLast = 7;
+  optional google.protobuf.Timestamp first = 8;
+  optional google.protobuf.Timestamp last = 9;
+  map<string, string> extra = 10;
+}
+
+enum EndAction {
+  LOOP = 1;
+  QUIT = 2;
+  STOP = 3;
+}
+
+message ReplaySpeed {
+  enum ReplaySpeedType {
+    AFAP = 1;
+    FIXED_DELAY = 2;
+    REALTIME = 3;
+    STEP_BY_STEP = 4;
+  }
+  required ReplaySpeedType type = 1;
+  optional float param = 2;
+}
+
+//used to replay (concurrently) TM packets, parameters and events
+message ReplayRequest {
+  // **Required.** The time at which the replay should start. 
+  optional google.protobuf.Timestamp start = 13;
+  
+  // The time at which the replay should stop.
+  // If unspecified, the replay will keep going as long  as there is remaining data.
+  optional google.protobuf.Timestamp stop = 14;
+
+  //what should happen at the end of the replay
+  optional EndAction endAction = 3[default=QUIT];
+
+  //how fast the replay should go
+  optional ReplaySpeed speed = 4;
+
+  // Reverse the direction of the replay
+  optional bool reverse = 15;
+  
+  optional ParameterReplayRequest parameterRequest = 8;
+
+  // By default all Packets, Events, CommandHistory are part of the replay
+  // Unless one or more of the below requests are specified.
+  optional PacketReplayRequest packetRequest = 9;
+  optional EventReplayRequest eventRequest = 10;
+  optional CommandHistoryReplayRequest commandHistoryRequest = 11;
+  optional PpReplayRequest ppRequest = 12;
+
+  // Start the replay following initialization
+  // Defaults to true, if unspecified
+  optional bool autostart = 16 [default=true];
+}
+
+message ParameterReplayRequest {
+  repeated NamedObjectId nameFilter = 1; // At least 1 filter is required
+  optional bool sendRaw = 2[default=false];
+  optional bool performMonitoring = 3[default=false]; //i.e. out of limit checking
+}
+
+message PacketReplayRequest {
+  // No filter, means all packets for which privileges exist, are sent
+  repeated NamedObjectId nameFilter = 1;
+  //if specified, only replay packets originally received on one of those links
+  repeated string tmLinks = 2;
+}
+
+message EventReplayRequest {
+}
+
+message CommandHistoryReplayRequest {
+  // No filter, means all command history entries are sent
+  repeated NamedObjectId nameFilter = 1;
+}
+
+//Request to replay parameters - they can be filtered by the parameter group
+message PpReplayRequest {
+  // No filter, means all pp groups are sent
+  repeated string groupNameFilter = 1;
+  // exclude the parameters from these groups
+  //   this takes precedence over the filter above (i.e. if a group is part of both, it will be excluded)
+  repeated string groupNameExclude = 2;
+}
+
+message ReplayStatus {
+  enum ReplayState {
+    // just at the beginning or when the replay request (start, stop or packet selection) changes
+    INITIALIZATION = 0;
+    RUNNING = 1;
+    
+    // The replay has reached the end with the endaction stop
+    STOPPED = 2;
+
+    // The replay stopped due to an error.
+    ERROR = 3;
+    PAUSED = 4;
+
+    // The replay is finished and closed
+    CLOSED = 5;
+  }
+  required ReplayState state = 1;
+  optional ReplayRequest request = 2;
+
+  // In case state is ERROR
+  optional string errorMessage = 3;
+}

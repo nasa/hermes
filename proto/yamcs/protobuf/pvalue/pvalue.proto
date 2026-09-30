@@ -1,0 +1,172 @@
+syntax="proto2";
+
+package yamcs.protobuf.pvalue;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
+import "google/protobuf/timestamp.proto";
+
+//this can also be called validity status
+enum AcquisitionStatus {
+    // OK!
+    ACQUIRED = 0;
+  
+    // No value received so far
+    NOT_RECEIVED = 1;
+  
+    // Some value has been received but is invalid
+    INVALID = 2;
+  
+    // The parameter is coming from a packet which has not since updated although it should have been
+   EXPIRED = 3;
+}
+
+enum MonitoringResult {
+    DISABLED = 0;
+    IN_LIMITS = 1;
+    WATCH = 7;
+    WARNING = 10;
+    DISTRESS = 13;
+    CRITICAL = 16;
+    SEVERE = 19;
+}
+
+enum RangeCondition {
+    LOW = 0;
+    HIGH = 1;
+}
+
+message ParameterValue {
+    // Parameter identifier
+    optional NamedObjectId id = 1;
+
+    // Raw value (uncalibrated)
+    optional Value rawValue = 2;
+
+    // Engineering value (calibrated)
+    optional Value engValue = 3;
+
+    // Time of Yamcs reception
+    optional google.protobuf.Timestamp acquisitionTime = 4;
+
+    // Time of generation (~ packet time)
+    optional google.protobuf.Timestamp generationTime = 5;
+
+    optional AcquisitionStatus acquisitionStatus = 6;
+    
+    // Deprecated: this field was originally introduced for compatibility
+    // with Airbus CGS/CD-MCS system. It was redundant, because when false,
+    // the acquisitionStatus is also set to INVALID.
+    optional bool processingStatus = 7 [deprecated = true];
+    optional MonitoringResult monitoringResult = 8;
+    optional RangeCondition rangeCondition = 9;
+
+    // Context-dependent ranges
+    repeated mdb.AlarmRange alarmRange = 25;
+
+    // How long (in milliseconds) this parameter value is valid
+    // Note that there is an option when subscribing to parameters to get
+    // updated when the parameter values expire. 
+    optional int64 expireMillis = 26;
+
+    // When transferring parameters over WebSocket, this value might be used
+    // instead of the id above in order to reduce the bandwidth.
+    // Note that the id <-> numericId assignment is only valid in the context
+    // of a single WebSocket call.
+    optional uint32 numericId = 27;
+}
+
+message ParameterData {
+    repeated ParameterValue parameter = 1;
+
+    // The next three fields are used by the recorder as unique key to store
+    // parameters in "rows" and also by components that provide parameters
+    // from external sources. The time should roughly correspond to the parameter 
+    // time but can be rounded for better efficiency.
+    optional string group = 2;
+    optional int64  generationTime = 3;
+    optional int32 seqNum = 4;
+
+    // Used when parameter data is delivered as result of subscriptions
+    optional int32 subscriptionId = 5;
+}
+
+message TimeSeries {
+    message Sample {
+        // Start time of the sample interval.
+        optional google.protobuf.Timestamp time = 6;
+
+        // Average numeric value during the sample interval.
+        optional double avg = 2;
+
+        // Minimum numeric value during the sample interval.
+        optional double min = 3;
+
+        // Maximum numeric value during the sample interval.
+        optional double max = 4;
+
+        // Number of samples during the sample interval.
+        // If this value is zero, it indicates a gap.
+        optional int32 n = 5;
+
+        // Generation time of the `min` value.
+        optional google.protobuf.Timestamp minTime = 7;
+
+        // Generation time of the `max` value.
+        optional google.protobuf.Timestamp maxTime = 8;
+
+        // Generation time of the first value in this sample
+        // interval.
+        optional google.protobuf.Timestamp firstTime = 9;
+
+        // Generation time of the last value in this sample
+        // interval.
+        optional google.protobuf.Timestamp lastTime = 10;
+    }
+
+    // List of samples.
+    repeated Sample sample = 1;
+}
+
+message Ranges {
+    message Range {
+        // Generation time of a parameter value.
+        optional google.protobuf.Timestamp start = 7;
+
+        // If the value changes, `stop` is the generation time of the new value.
+        // If the parameter expires or the `maxGap` has been set, `stop` is
+        // the generation time of the last value.
+        optional google.protobuf.Timestamp stop = 8;
+
+        // Total number of parameter values in this range.
+        //
+        // This is the sum of the `counts` array, and `otherCount`.
+        optional int32 count = 4;
+        
+        // The `minRange` option on the request allows to specify
+        // the minimum length of returned ranges.
+        //
+        // Practically we guarantee that stop-start >= minRange (mind the leap
+        // seconds!).
+        //
+        // If `minRange` was set, the returned ranges may include multiple
+        // values. These are given by `engValues` and `counts`.
+        //
+        // The `maxValues` option on the request allows to limit the number
+        // of distinct values returned across all the ranges.
+        //
+        // The counts correspond one to one to the engValues, the two arrays have
+        // the same length.
+        repeated Value engValues = 5;
+
+        // Array of same length as `engValues`, with respective value counts
+        // within this range.
+        repeated int32 counts = 6;
+
+        // Values in this range that do not match one of the returned
+        // `engValues`.
+        optional int32 otherCount = 9;
+    }
+    repeated Range range = 1;
+}
