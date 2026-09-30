@@ -20,7 +20,6 @@ func (e *CommandDef) ArgNames() []string {
 
 func (e *EventDef) ToRef() *EventRef {
 	return &EventRef{
-		Id:         e.GetId(),
 		Component:  e.GetComponent(),
 		Name:       e.GetName(),
 		Severity:   e.GetSeverity(),
@@ -31,7 +30,6 @@ func (e *EventDef) ToRef() *EventRef {
 
 func (e *TelemetryDef) ToRef() *TelemetryRef {
 	return &TelemetryRef{
-		Id:         e.GetId(),
 		Component:  e.GetComponent(),
 		Name:       e.GetName(),
 		Dictionary: "", // TODO(tumbar) Is there an easy way to fill this

@@ -831,8 +831,6 @@ export interface Event extends Item {
 }
 
 export interface EventRef extends Item {
-    id: number;
-
     /**
      * Component or module
      */
@@ -900,11 +898,6 @@ export interface Telemetry extends Item<{
 }
 
 export interface TelemetryRef extends Item {
-    /**
-     * Raw ID used for identifying incoming serialized telemetry
-     */
-    id?: number;
-
     /**
      * Telemetry name
      */

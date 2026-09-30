@@ -9,15 +9,12 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/nasa/hermes/pkg/pb"
+	"github.com/nasa/hermes/pkg/sqldefs"
 )
 
 const (
-	insertEventDefSQL = `INSERT INTO eventDefs (id, component, name, severity, args)
-		VALUES (:id, :component, :name, :severity, :args) ON CONFLICT DO NOTHING`
 	insertEventSQL = `INSERT INTO events (eventDefId, time, timeSclk, message, source, args, ert)
 		VALUES (:eventDefId, :time, :timeSclk, :message, :source, :args, :ert) ON CONFLICT DO NOTHING`
-	insertTelemetryDefSQL = `INSERT INTO telemetryDefs (id, name, component)
-		VALUES (:id, :name, :component) ON CONFLICT DO NOTHING`
 	insertTelemetrySQL = `INSERT INTO telemetry (time, telemetryDefId, timeSclk, source, labels, key, valueType, integral, floating, boolval, string, bytes, ert)
 		VALUES (:time, :telemetryDefId, :timeSclk, :source, :labels, :key, :valueType, :integral, :floating, :boolval, :string, :bytes, :ert) ON CONFLICT DO NOTHING`
 )
@@ -34,7 +31,7 @@ func valuesToAnys(values []*pb.Value) ([]any, error) {
 	return valueAnys, nil
 }
 
-func InsertEvent(ctx context.Context, db *sqlx.DB, msg *pb.SourcedEvent) error {
+func InsertEvent(ctx context.Context, db *sqlx.DB, defs *sqldefs.Cache, msg *pb.SourcedEvent) error {
 	event := msg.GetEvent()
 
 	eventArgsArray, err := valuesToAnys(event.GetArgs())
@@ -59,18 +56,16 @@ func InsertEvent(ctx context.Context, db *sqlx.DB, msg *pb.SourcedEvent) error {
 	defer tx.Rollback()
 
 	ref := event.GetRef()
-	if _, err := tx.NamedExecContext(ctx, insertEventDefSQL, map[string]any{
-		"id":        ref.GetId(),
-		"component": ref.GetComponent(),
-		"name":      ref.GetName(),
-		"severity":  ref.GetSeverity(),
-		"args":      string(defArgs),
-	}); err != nil {
-		return fmt.Errorf("failed to insert event def: %w", err)
+	txDefs := defs.Begin()
+	eventDefId, err := txDefs.EventDefID(
+		ctx, tx, ref.GetComponent(), ref.GetName(), ref.GetSeverity(), string(defArgs),
+	)
+	if err != nil {
+		return err
 	}
 
 	if _, err := tx.NamedExecContext(ctx, insertEventSQL, map[string]any{
-		"eventDefId": ref.GetId(),
+		"eventDefId": eventDefId,
 		"time":       event.GetTime().GetUnix().AsTime(),
 		"timeSclk":   event.GetTime().GetSclk(),
 		"message":    event.GetMessage(),
@@ -81,10 +76,16 @@ func InsertEvent(ctx context.Context, db *sqlx.DB, msg *pb.SourcedEvent) error {
 		return fmt.Errorf("failed to insert event: %w", err)
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	// Only now is the def row durable and safe to memoize process-wide.
+	txDefs.Publish()
+	return nil
 }
 
-func InsertTelemetry(ctx context.Context, db *sqlx.DB, msg *pb.SourcedTelemetry) error {
+func InsertTelemetry(ctx context.Context, db *sqlx.DB, defs *sqldefs.Cache, msg *pb.SourcedTelemetry) error {
 	tlm := msg.GetTelemetry()
 	def := tlm.GetRef()
 
@@ -99,22 +100,26 @@ func InsertTelemetry(ctx context.Context, db *sqlx.DB, msg *pb.SourcedTelemetry)
 	}
 	defer tx.Rollback()
 
-	if _, err := tx.NamedExecContext(ctx, insertTelemetryDefSQL, map[string]any{
-		"id":        def.GetId(),
-		"name":      def.GetName(),
-		"component": def.GetComponent(),
-	}); err != nil {
-		return fmt.Errorf("failed to insert telemetry def: %w", err)
+	txDefs := defs.Begin()
+	telemetryDefId, err := txDefs.TelemetryDefID(ctx, tx, def.GetComponent(), def.GetName())
+	if err != nil {
+		return err
 	}
 
-	if err := insertValue(ctx, tx, tlm.GetTime(), def.GetId(), msg.GetSource(), string(labelsByte), "value", tlm.GetValue()); err != nil {
+	if err := insertValue(ctx, tx, tlm.GetTime(), telemetryDefId, msg.GetSource(), string(labelsByte), "value", tlm.GetValue()); err != nil {
 		return fmt.Errorf("failed to insert telemetry value: %w", err)
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	// Only now is the def row durable and safe to memoize process-wide.
+	txDefs.Publish()
+	return nil
 }
 
-func insertValue(ctx context.Context, tx *sqlx.Tx, time *pb.Time, telemetryDefId int32, source string, labels string, path string, value *pb.Value) error {
+func insertValue(ctx context.Context, tx *sqlx.Tx, time *pb.Time, telemetryDefId int64, source string, labels string, path string, value *pb.Value) error {
 	var (
 		valueType          string
 		integral, floating any

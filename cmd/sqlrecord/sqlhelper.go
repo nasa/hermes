@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -10,24 +11,42 @@ import (
 
 	"github.com/nasa/hermes/pkg/log"
 	"github.com/nasa/hermes/pkg/pb"
+	"github.com/nasa/hermes/pkg/sqldefs"
 )
 
 type SQLTx struct {
+	db        *sql.DB
 	tx        *sql.Tx
 	templates SQLTemplates
+	defs      *sqldefs.TxCache
 	inserts   map[string][]map[string]any
 }
 
-func NewSQLTx(db *sql.DB, templates SQLTemplates) (*SQLTx, error) {
+func NewSQLTx(db *sql.DB, templates SQLTemplates, defs *sqldefs.Cache) (*SQLTx, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
 	return &SQLTx{
+		db:        db,
 		tx:        tx,
 		templates: templates,
+		defs:      defs.Begin(),
 		inserts:   make(map[string][]map[string]any),
 	}, nil
+}
+
+func (tx *SQLTx) ResolveTelemetryDef(ctx context.Context, component, name string) (int64, error) {
+	return tx.defs.TelemetryDefID(ctx, tx.tx, component, name)
+}
+
+func (tx *SQLTx) ResolveEventDef(
+	ctx context.Context,
+	component, name string,
+	severity any,
+	args string,
+) (int64, error) {
+	return tx.defs.EventDefID(ctx, tx.tx, component, name, severity, args)
 }
 
 func (tx *SQLTx) Insert(table string, values map[string]any) {
@@ -95,7 +114,13 @@ func (tx *SQLTx) Commit() error {
 		tx.buildInsert(table, values)
 	}
 
-	return tx.tx.Commit()
+	if err := tx.tx.Commit(); err != nil {
+		return err
+	}
+
+	// Only now are the def rows durable and safe to memoize process-wide.
+	tx.defs.Publish()
+	return nil
 }
 
 type SQLTemplates struct {
@@ -105,6 +130,11 @@ type SQLTemplates struct {
 	CreateTelemetries    string
 	TimeConverter        func(time.Time) any
 	PlaceholderFormatter func(uint64) string
+
+	// Queries supplies the dialect's def upserts. The cache that uses them
+	// belongs to the recorder, not here: def ids are assigned per database, so
+	// a process-wide cache would hand one database's ids to another.
+	Queries sqldefs.Queries
 }
 
 func (t *SQLTemplates) CreateTables(db *sql.DB, log log.Logger, extraColumn *ExtraColumn) error {
@@ -167,16 +197,16 @@ func (t *SQLTemplates) InsertEvent(tx Tx, srcEvent *pb.SourcedEvent, extraColumn
 		return fmt.Errorf("failed to convert def args to json: %w", err)
 	}
 
-	tx.Insert("eventDefs", map[string]any{
-		"id":        event.GetRef().GetId(),
-		"component": event.GetRef().GetComponent(),
-		"name":      event.GetRef().GetName(),
-		"severity":  event.GetRef().GetSeverity(),
-		"args":      string(defArgs),
-	})
+	ref := event.GetRef()
+	eventDefId, err := tx.ResolveEventDef(
+		context.TODO(), ref.GetComponent(), ref.GetName(), ref.GetSeverity(), string(defArgs),
+	)
+	if err != nil {
+		return err
+	}
 
 	eventValues := map[string]any{
-		"eventDefId": event.GetRef().GetId(),
+		"eventDefId": eventDefId,
 		"time":       t.TimeConverter(event.GetTime().GetUnix().AsTime()),
 		"timeSclk":   event.GetTime().GetSclk(),
 		"message":    event.GetMessage(),
@@ -201,13 +231,12 @@ func (t *SQLTemplates) InsertTelemetry(tx Tx, srcTlm *pb.SourcedTelemetry, extra
 	}
 	labelsString := string(labelsByte)
 
-	tx.Insert("telemetryDefs", map[string]any{
-		"id":        def.GetId(),
-		"name":      def.GetName(),
-		"component": def.GetComponent(),
-	})
+	telemetryDefId, err := tx.ResolveTelemetryDef(context.TODO(), def.GetComponent(), def.GetName())
+	if err != nil {
+		return err
+	}
 
-	err = t.insertValue(tx, extraColumn, tlm.GetTime(), def.GetId(), srcTlm.GetSource(), labelsString, "value", tlm.GetValue())
+	err = t.insertValue(tx, extraColumn, tlm.GetTime(), telemetryDefId, srcTlm.GetSource(), labelsString, "value", tlm.GetValue())
 	if err != nil {
 		return fmt.Errorf("failed to insert telemetry value: %w", err)
 	}
@@ -215,7 +244,7 @@ func (t *SQLTemplates) InsertTelemetry(tx Tx, srcTlm *pb.SourcedTelemetry, extra
 	return nil
 }
 
-func (t *SQLTemplates) insertValue(tx Tx, extraColumn *ExtraColumn, time *pb.Time, telemetryDefId int32, source string, labels string, path string, value *pb.Value) error {
+func (t *SQLTemplates) insertValue(tx Tx, extraColumn *ExtraColumn, time *pb.Time, telemetryDefId int64, source string, labels string, path string, value *pb.Value) error {
 	telValues := map[string]any{
 		"time":           t.TimeConverter(time.GetUnix().AsTime()),
 		"telemetryDefId": telemetryDefId,

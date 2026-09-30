@@ -16,7 +16,7 @@ type rowValue struct {
 }
 
 func TestEdge(t *testing.T) {
-	telString := "telemetry:{ref:{id:4061  name:\"MotTlmHstReqStart\"  component:\"mot\"}  time:{unix:{seconds:1754432124  nanos:164048350}  sclk:2.6544459530005646e+09}  value:{o:{o:{key:\"table\"  value:{o:{o:{key:\"csw_en\"  value:{u:3221225472}}  o:{key:\"csw_trigger\"  value:{u:15777792}}  o:{key:\"csw_trip_on_open\"  value:{u:3236954112}}  o:{key:\"nrti_skip\"  value:{i:0}}  o:{key:\"sc_time0\"  value:{f:8.077619952324219e+08}}  o:{key:\"servo_timeout_secs\"  value:{u:13}}  o:{key:\"type\"  value:{u:1}}}}}}}  labels:{key:\"apid\"  value:\"MotExerRing-456\"}}  source:\"m20-rce-a\""
+	telString := "telemetry:{ref:{name:\"MotTlmHstReqStart\"  component:\"mot\"}  time:{unix:{seconds:1754432124  nanos:164048350}  sclk:2.6544459530005646e+09}  value:{o:{o:{key:\"table\"  value:{o:{o:{key:\"csw_en\"  value:{u:3221225472}}  o:{key:\"csw_trigger\"  value:{u:15777792}}  o:{key:\"csw_trip_on_open\"  value:{u:3236954112}}  o:{key:\"nrti_skip\"  value:{i:0}}  o:{key:\"sc_time0\"  value:{f:8.077619952324219e+08}}  o:{key:\"servo_timeout_secs\"  value:{u:13}}  o:{key:\"type\"  value:{u:1}}}}}}}  labels:{key:\"apid\"  value:\"MotExerRing-456\"}}  source:\"m20-rce-a\""
 
 	tel := &pb.SourcedTelemetry{}
 	err := prototext.Unmarshal([]byte(telString), tel)
@@ -35,6 +35,15 @@ func TestEdge(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = tx.Commit()
+	assert.NoError(t, err)
+
+	// The def id is assigned by the database, so assert the rows point at the
+	// def for this channel's (component, name) rather than at a fixed number.
+	var wantDefId int64
+	err = recorder.db.QueryRow(
+		"SELECT id FROM telemetryDefs WHERE component = ? AND name = ?",
+		"mot", "MotTlmHstReqStart",
+	).Scan(&wantDefId)
 	assert.NoError(t, err)
 
 	rows, err := recorder.db.Query("SELECT * FROM telemetry")
@@ -64,7 +73,7 @@ func TestEdge(t *testing.T) {
 		err = rows.Scan(&id, &telDefId, &time, &timeSclk, &source, &labels, &key, &valueType, &integral, &floating, &boolval, &str, &bites)
 		assert.NoError(t, err)
 
-		assert.Equal(t, int64(4061), telDefId)
+		assert.Equal(t, wantDefId, telDefId)
 		assert.Equal(t, "m20-rce-a", source)
 
 		var value any

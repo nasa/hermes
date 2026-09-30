@@ -120,6 +120,18 @@ func (f *Fsw) downlinkLoop() {
 					Event:  evr,
 				})
 			}
+		case *TelemPacket:
+			tlmValues, err := data.ToTelemetry()
+			if err != nil {
+				f.Logger.Error("failed to extract telemetry from packet", "err", err)
+			} else {
+				for _, tlm := range tlmValues {
+					host.Telemetry.Emit(&pb.SourcedTelemetry{
+						Source:    f.Id,
+						Telemetry: tlm,
+					})
+				}
+			}
 		default:
 			f.Logger.Warn("unknown downlink packet", "type", fmt.Sprintf("%T", data))
 		}

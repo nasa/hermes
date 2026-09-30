@@ -63,7 +63,6 @@ func (e *Event) Record() slog.Record {
 
 	rec.Add(
 		"severity", e.GetRef().GetSeverity().LogLevel(),
-		"id", e.GetRef().GetId(),
 		"severity_text", e.GetRef().GetSeverity().LogLevelRaw(),
 		"component", e.GetRef().GetComponent(),
 		"name", e.GetRef().GetName(),
@@ -103,7 +102,6 @@ func (t *Telemetry) Record() slog.Record {
 		rec.Add("err", err)
 	} else {
 		rec.Add(
-			"id", t.GetRef().GetId(),
 			"component", t.GetRef().GetComponent(),
 			"name", t.GetRef().GetName(),
 			"value", v,

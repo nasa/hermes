@@ -26,6 +26,7 @@ import { UplinkLanguageProvider } from './kernels/uplink';
 import { DownlinkProvider } from './components/DownlinkViewer';
 import { UplinkProvider } from './components/UplinkViewer';
 import { VscodeApi } from './api';
+import { DebounceEmitter } from './utils/DebounceEmitter';
 
 export class VscodeHermes implements CoreApi {
     private subscriptions: vscode.Disposable[] = [];
@@ -44,6 +45,13 @@ export class VscodeHermes implements CoreApi {
     private autoDictionariesByProvider = new Map<string, Set<string>>();
     private dictionaryProvidersChanged = new vscode.EventEmitter<void>();
 
+    private dictionaryReloadRequests = new DebounceEmitter<string, string[]>({
+        merge: (providerIds) => Array.from(new Set(providerIds))
+    });
+
+    /** Latest scan per provider, so two never run against the same provider at once */
+    private dictionaryReloadChain = new Map<string, Promise<void>>();
+
     onDictionaryProvidersChanged = this.dictionaryProvidersChanged.event;
 
     private shellScriptPaths = new Set<string>();
@@ -57,6 +65,19 @@ export class VscodeHermes implements CoreApi {
         this.log.info(`Initializing VscodeHermes with extensionPath: ${extensionPath}`);
         this.notebookLanguages = new NotebookLanguageManager();
         this.dictionaryStatus = new Map();
+
+        this.subscriptions.push(
+            this.dictionaryReloadRequests,
+            this.dictionaryReloadRequests.event((providerIds) => {
+                for (const providerId of providerIds) {
+                    // The provider may have unregistered while we were debouncing
+                    const provider = this.dictionaryProviders.get(providerId);
+                    if (provider?.provideExternalDictionaries) {
+                        this.queueExternalDictionaryLoad(providerId, provider);
+                    }
+                }
+            })
+        );
     }
 
     async activate(): Promise<void> {
@@ -129,7 +150,7 @@ export class VscodeHermes implements CoreApi {
             for (const [providerId, provider] of this.dictionaryProviders.entries()) {
                 if (provider.provideExternalDictionaries) {
                     this.log.info(`Reloading external dictionaries for provider: ${providerId}`);
-                    this.loadExternalDictionaries(providerId, provider);
+                    this.dictionaryReloadRequests.fire(providerId);
                 }
             }
         }
@@ -166,14 +187,14 @@ export class VscodeHermes implements CoreApi {
                 subscriptions.push(
                     dictionaryProvider.onExternalDictionariesUpdated(() => {
                         this.log.info(`External dictionaries updated for provider ${id}`);
-                        this.loadExternalDictionaries(id, dictionaryProvider);
+                        this.dictionaryReloadRequests.fire(id);
                     })
                 );
             }
 
             // Initial load of external dictionaries
             this.log.info(`Starting initial load of external dictionaries for provider ${id}`);
-            this.loadExternalDictionaries(id, dictionaryProvider);
+            this.dictionaryReloadRequests.fire(id);
         } else {
             this.log.info(`Provider ${id} does not support external dictionaries auto-discovery`);
         }
@@ -210,6 +231,26 @@ export class VscodeHermes implements CoreApi {
                 }
             }
         };
+    }
+
+    private queueExternalDictionaryLoad(
+        providerId: string,
+        provider: DictionaryProvider
+    ): void {
+        const previous = this.dictionaryReloadChain.get(providerId)
+            ?? Promise.resolve();
+
+        const current = previous
+            .then(() => this.loadExternalDictionaries(providerId, provider))
+            .finally(() => {
+                // Only the newest scan clears the chain, so a scan queued behind
+                // this one keeps the entry alive
+                if (this.dictionaryReloadChain.get(providerId) === current) {
+                    this.dictionaryReloadChain.delete(providerId);
+                }
+            });
+
+        this.dictionaryReloadChain.set(providerId, current);
     }
 
     /**

@@ -79,3 +79,28 @@ func (p *LogValue) ToEvent() (*pb.Event, error) {
 		Args:    args,
 	}, nil
 }
+
+type tlmPktMd struct {
+	keys []string
+}
+
+func (p *TelemPacket) ToTelemetry() ([]*pb.Telemetry, error) {
+	out := []*pb.Telemetry{}
+	time := timeToTimestamp(p.Time)
+	for key, value := range p.Value.GetO().O {
+		s := strings.Split(key, ".")
+		c := strings.Join(s[:len(s)-1], ".")
+		n := s[len(s)-1]
+
+		out = append(out, &pb.Telemetry{
+			Ref: &pb.TelemetryRef{
+				Name:      n,
+				Component: c,
+			},
+			Time:  time,
+			Value: value,
+		})
+	}
+
+	return out, nil
+}
