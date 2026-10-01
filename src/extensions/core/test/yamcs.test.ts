@@ -169,6 +169,15 @@ describe('TelemetryDatabase with YAMCS parameters', () => {
         db.dispose();
     });
 
+    test('stores a resent cached value once', () => {
+        const { db, send } = database();
+        const name = '/BigData_YamcsDeployment/ComCcsds/comQueue/comQueueDepth';
+        send([pv(name, 1000, comQueueDepth)]);
+        send([pv(name, 1000, comQueueDepth)]);
+        expect(db.get(`yamcs:fprime-project:${name}[1]`)?.time).toEqual([1000]);
+        db.dispose();
+    });
+
     test('skips values without a name or generation time', () => {
         const { db, send } = database();
         send([{ engValue: comQueueDepth }, { id: { name: '/A/B' }, engValue: comQueueDepth }]);

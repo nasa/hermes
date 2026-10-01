@@ -150,6 +150,10 @@ export class TelemetryDatabase implements vscode.Disposable {
 
                 // Values can arrive a little out of order. YAMCS has no SCLK, so 0 marks it absent.
                 const i = insertionIndex(data.time, time);
+                if (data.time[i - 1] === time && data.valueStr![i - 1] === leaf.valueStr) {
+                    // YAMCS resends its cached value on every new subscription
+                    continue;
+                }
                 data.time.splice(i, 0, time);
                 data.sclk.splice(i, 0, 0);
                 data.valueStr!.splice(i, 0, leaf.valueStr);
