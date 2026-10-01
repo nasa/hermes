@@ -71,7 +71,7 @@ function channelToKey(ch: ChannelRef): string {
 
 function toChannelOptions(entries: ChannelRef[]): Array<ComboboxOption<string>> {
   return entries.map((e) => ({
-    label: `${e.component}.${e.name}`,
+    label: `${e.component}/${e.name}`,
     description: e.component,
     value: channelToKey(e),
   }));
@@ -81,8 +81,8 @@ function channelLabel(ch: ChannelQuery): string {
   if (ch.raw !== undefined) {
     return ch.raw;
   }
-  // Avoid rendering a stray trailing dot when a channel has no name.
-  return ch.name ? `${ch.component}.${ch.name}` : ch.component;
+  // Avoid rendering a stray trailing slash when a channel has no name.
+  return ch.name ? `${ch.component}/${ch.name}` : ch.component;
 }
 
 function channelValue(ch: ChannelQuery): string {
@@ -332,7 +332,7 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
           prefixIcon="calculator-alt"
         />
       </InlineField>
-      <InlineField label="Source" labelWidth={16} tooltip="FSW source identifier (optional)" grow shrink>
+      <InlineField label="Instance" labelWidth={16} tooltip="YAMCS instance (optional)" grow shrink>
         <MultiCombobox
           id="query-editor-source"
           data-testid="query-editor-source"
@@ -341,7 +341,7 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
           onChange={onSourceChange}
           isClearable
           loading={sourceLoading}
-          placeholder="All sources"
+          placeholder="All instances"
           prefixIcon="rocket"
         />
       </InlineField>
@@ -349,7 +349,7 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
         .filter(([, keys]) => keys.length > 1)
         .map(([id, keys]) => {
           const { component: chComp, channel: chName } = keys[0];
-          const chLabel = `${chComp}.${chName}`;
+          const chLabel = `${chComp}/${chName}`;
           const selectedForChannel = (query.keys ?? []).filter(
             (k) => channelKeyId(k.component, k.channel) === id
           );
@@ -357,7 +357,7 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
             <InlineField
               key={id}
               label={chLabel}
-              tooltip={`Value field path for ${chLabel}`}
+              tooltip={`Members of ${chLabel}`}
               grow
               shrink
             >
@@ -369,7 +369,7 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
                 onChange={(opts) => onChannelKeyChange(chComp, chName, opts)}
                 isClearable
                 loading={keyLoading}
-                placeholder="All keys"
+                placeholder="All members"
                 prefixIcon="key-skeleton-alt"
               />
             </InlineField>

@@ -17,7 +17,7 @@ jest.mock('@grafana/runtime', () => ({
 }));
 
 const SCALAR_KEYS: Record<string, KeyRef[]> = {
-  'CDH.Temperature': [{ component: 'CDH', channel: 'Temperature', key: 'value' }],
+  'CDH.Temperature': [{ component: 'CDH', channel: 'Temperature', key: '' }],
 };
 
 function query(overrides?: Partial<MyQuery>): MyQuery {
@@ -53,13 +53,13 @@ describe('TransformFields — template variable shorthand', () => {
     vars = { num: '8' };
     renderFields({ transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$num' }] });
 
-    const input = screen.getByTestId('query-editor-transform-CDH.Temperature');
+    const input = screen.getByTestId('query-editor-transform-CDH/Temperature');
     // The raw variable reference is preserved in the field...
     expect(input).toHaveValue('$num');
     // ...but it is not flagged as invalid (validation runs on the expansion).
     expect(screen.queryByText(/must reference \$__value/)).not.toBeInTheDocument();
     // ...and the resolved-expression hint reflects the expansion.
-    const hint = screen.getByTestId('query-editor-transform-preview-CDH.Temperature');
+    const hint = screen.getByTestId('query-editor-transform-preview-CDH/Temperature');
     expect(hint).toHaveAttribute('title', '= $__value * 8');
   });
 
@@ -67,14 +67,14 @@ describe('TransformFields — template variable shorthand', () => {
     vars = { gain: '2' };
     renderFields({ transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$__value * $gain' }] });
 
-    const hint = screen.getByTestId('query-editor-transform-preview-CDH.Temperature');
+    const hint = screen.getByTestId('query-editor-transform-preview-CDH/Temperature');
     expect(hint).toHaveAttribute('title', '= $__value * 2');
   });
 
   it('shows no resolved-expression hint when the expression has no variables or shorthand', () => {
     renderFields({ transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$__value * 2' }] });
 
-    expect(screen.queryByTestId('query-editor-transform-preview-CDH.Temperature')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('query-editor-transform-preview-CDH/Temperature')).not.toBeInTheDocument();
   });
 
   it('runs the query on blur when a variable resolves to a bare number', () => {
@@ -83,7 +83,7 @@ describe('TransformFields — template variable shorthand', () => {
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$num' }],
     });
 
-    const input = screen.getByTestId('query-editor-transform-CDH.Temperature');
+    const input = screen.getByTestId('query-editor-transform-CDH/Temperature');
     onRunQuery.mockClear();
     act(() => {
       fireEvent.blur(input);
@@ -97,7 +97,7 @@ describe('TransformFields — template variable shorthand', () => {
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$bad' }],
     });
 
-    const input = screen.getByTestId('query-editor-transform-CDH.Temperature');
+    const input = screen.getByTestId('query-editor-transform-CDH/Temperature');
     expect(screen.getByText(/must reference \$__value/)).toBeInTheDocument();
 
     onRunQuery.mockClear();
@@ -113,7 +113,7 @@ describe('TransformFields — template variable shorthand', () => {
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$num' }],
     });
 
-    const input = screen.getByTestId('query-editor-transform-CDH.Temperature');
+    const input = screen.getByTestId('query-editor-transform-CDH/Temperature');
     act(() => {
       fireEvent.change(input, { target: { value: '$gain' } });
     });
@@ -137,8 +137,8 @@ describe('TransformFields — display name override', () => {
   it('shows the row label as the alias placeholder', () => {
     renderFields();
     openSection();
-    const alias = screen.getByTestId('query-editor-alias-CDH.Temperature');
-    expect(alias).toHaveAttribute('placeholder', 'CDH.Temperature');
+    const alias = screen.getByTestId('query-editor-alias-CDH/Temperature');
+    expect(alias).toHaveAttribute('placeholder', 'CDH/Temperature');
     expect(alias).toHaveValue('');
   });
 
@@ -146,13 +146,13 @@ describe('TransformFields — display name override', () => {
     renderFields({
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
     });
-    expect(screen.getByTestId('query-editor-alias-CDH.Temperature')).toHaveValue('Reactor Temp');
+    expect(screen.getByTestId('query-editor-alias-CDH/Temperature')).toHaveValue('Reactor Temp');
   });
 
   it('stores a name-only override (empty expr) on change', () => {
     const { onChange } = renderFields();
     openSection();
-    const alias = screen.getByTestId('query-editor-alias-CDH.Temperature');
+    const alias = screen.getByTestId('query-editor-alias-CDH/Temperature');
     act(() => {
       fireEvent.change(alias, { target: { value: 'Reactor Temp' } });
     });
@@ -169,7 +169,7 @@ describe('TransformFields — display name override', () => {
     const { onChange } = renderFields({
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$__value * 2' }],
     });
-    const alias = screen.getByTestId('query-editor-alias-CDH.Temperature');
+    const alias = screen.getByTestId('query-editor-alias-CDH/Temperature');
     act(() => {
       fireEvent.change(alias, { target: { value: 'Reactor Temp' } });
     });
@@ -186,7 +186,7 @@ describe('TransformFields — display name override', () => {
     const { onChange } = renderFields({
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
     });
-    const expr = screen.getByTestId('query-editor-transform-CDH.Temperature');
+    const expr = screen.getByTestId('query-editor-transform-CDH/Temperature');
     act(() => {
       fireEvent.change(expr, { target: { value: '2' } });
     });
@@ -203,7 +203,7 @@ describe('TransformFields — display name override', () => {
     const { onChange } = renderFields({
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
     });
-    const alias = screen.getByTestId('query-editor-alias-CDH.Temperature');
+    const alias = screen.getByTestId('query-editor-alias-CDH/Temperature');
     act(() => {
       fireEvent.change(alias, { target: { value: '' } });
     });
@@ -216,7 +216,7 @@ describe('TransformFields — display name override', () => {
     const { onChange } = renderFields({
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2', name: 'Reactor Temp' }],
     });
-    const alias = screen.getByTestId('query-editor-alias-CDH.Temperature');
+    const alias = screen.getByTestId('query-editor-alias-CDH/Temperature');
     act(() => {
       fireEvent.change(alias, { target: { value: '' } });
     });
@@ -232,7 +232,7 @@ describe('TransformFields — display name override', () => {
     renderFields({
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: '$label Temp' }],
     });
-    const hint = screen.getByTestId('query-editor-alias-preview-CDH.Temperature');
+    const hint = screen.getByTestId('query-editor-alias-preview-CDH/Temperature');
     expect(hint).toHaveAttribute('title', '= Reactor Temp');
   });
 
@@ -240,6 +240,6 @@ describe('TransformFields — display name override', () => {
     renderFields({
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
     });
-    expect(screen.queryByTestId('query-editor-alias-preview-CDH.Temperature')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('query-editor-alias-preview-CDH/Temperature')).not.toBeInTheDocument();
   });
 });

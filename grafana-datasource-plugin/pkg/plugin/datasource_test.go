@@ -92,7 +92,7 @@ func TestQueryDispatch(t *testing.T) {
 	})
 
 	t.Run("returns empty response for telemetry with missing channel", func(t *testing.T) {
-		qJSON, _ := json.Marshal(queryModel{QueryType: "telemetry", TimeField: "time", Aggregation: "avg"})
+		qJSON, _ := json.Marshal(queryModel{QueryType: "telemetry", TimeField: "generation_time", Aggregation: "avg"})
 		resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 			Queries: []backend.DataQuery{
 				{RefID: "A", JSON: qJSON},
@@ -111,7 +111,7 @@ func TestQueryDataMultipleQueries(t *testing.T) {
 	ds := Datasource{}
 
 	q1, _ := json.Marshal(queryModel{QueryType: "unknown"})
-	q2, _ := json.Marshal(queryModel{QueryType: "telemetry", TimeField: "time", Aggregation: "avg"})
+	q2, _ := json.Marshal(queryModel{QueryType: "telemetry", TimeField: "generation_time", Aggregation: "avg"})
 
 	resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 		Queries: []backend.DataQuery{
@@ -141,28 +141,28 @@ func TestBuildResponseIntType(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	now := time.Now().Truncate(time.Second)
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "comp", "ch", "src", "int", "", 42.0, nil, nil, nil, nil).
-		AddRow(now.Add(time.Second), "comp", "ch", "src", "int", "", 100.0, nil, nil, nil, nil)
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/comp", "ch", "src", "SINT64", "", 42.0, nil, nil, nil, nil).
+		AddRow(now.Add(time.Second), "/comp", "ch", "src", "SINT64", "", 100.0, nil, nil, nil, nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 
 	resultRows, _ := db.Query("SELECT")
-	qm := queryModel{Channels: []channelRef{{"comp", "ch"}}, TimeField: "time", Aggregation: "avg"}
+	qm := queryModel{Channels: []channelRef{{"/comp", "ch"}}, TimeField: "generation_time", Aggregation: "avg"}
 	resp := buildResponse(qm, resultRows)
 
 	if len(resp.Frames) != 1 {
 		t.Fatalf("expected 1 frame, got %d", len(resp.Frames))
 	}
 	frame := resp.Frames[0]
-	if frame.Name != "comp.ch" {
-		t.Errorf("expected frame name 'comp.ch', got %q", frame.Name)
+	if frame.Name != "/comp/ch" {
+		t.Errorf("expected frame name '/comp/ch', got %q", frame.Name)
 	}
 	if len(frame.Fields) != 2 {
 		t.Fatalf("expected 2 fields, got %d", len(frame.Fields))
 	}
-	if frame.Fields[1].Name != "comp.ch" {
-		t.Errorf("expected value field 'comp.ch', got %q", frame.Fields[1].Name)
+	if frame.Fields[1].Name != "/comp/ch" {
+		t.Errorf("expected value field '/comp/ch', got %q", frame.Fields[1].Name)
 	}
 	if frame.Fields[0].Len() != 2 {
 		t.Errorf("expected 2 rows, got %d", frame.Fields[0].Len())
@@ -181,20 +181,20 @@ func TestBuildResponseUintType(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	now := time.Now().Truncate(time.Second)
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "c", "ch", "src", "uint", "", 255.0, nil, nil, nil, nil)
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/c", "ch", "src", "UINT64", "", 18446744073709551615.0, nil, nil, nil, nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	qm := queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "avg"}
+	qm := queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "generation_time", Aggregation: "avg"}
 	resp := buildResponse(qm, resultRows)
 
 	if len(resp.Frames) != 1 || resp.Frames[0].Fields[0].Len() != 1 {
 		t.Fatal("expected 1 frame with 1 row")
 	}
 	val := resp.Frames[0].Fields[1].At(0).(*float64)
-	if *val != 255.0 {
-		t.Errorf("expected 255.0, got %f", *val)
+	if *val != 18446744073709551615.0 {
+		t.Errorf("expected 2^64-1, got %f", *val)
 	}
 }
 
@@ -206,12 +206,12 @@ func TestBuildResponseFloatType(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	now := time.Now().Truncate(time.Second)
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "c", "ch", "src", "float", "", nil, 3.14, nil, nil, nil)
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/c", "ch", "src", "DOUBLE", "", nil, 3.14, nil, nil, nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "avg"}, resultRows)
+	resp := buildResponse(queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "generation_time", Aggregation: "avg"}, resultRows)
 
 	val := resp.Frames[0].Fields[1].At(0).(*float64)
 	if *val != 3.14 {
@@ -227,13 +227,13 @@ func TestBuildResponseBoolType(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	now := time.Now().Truncate(time.Second)
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "c", "ch", "src", "bool", "", nil, nil, 1.0, nil, nil).
-		AddRow(now.Add(time.Second), "c", "ch", "src", "bool", "", nil, nil, 0.0, nil, nil)
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/c", "ch", "src", "BOOLEAN", "", nil, nil, 1.0, nil, nil).
+		AddRow(now.Add(time.Second), "/c", "ch", "src", "BOOLEAN", "", nil, nil, 0.0, nil, nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "avg"}, resultRows)
+	resp := buildResponse(queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "generation_time", Aggregation: "avg"}, resultRows)
 
 	v1 := resp.Frames[0].Fields[1].At(0).(*bool)
 	v2 := resp.Frames[0].Fields[1].At(1).(*bool)
@@ -253,12 +253,12 @@ func TestBuildResponseStringType(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	now := time.Now().Truncate(time.Second)
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "c", "ch", "src", "string", "", nil, nil, nil, "hello", nil)
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/c", "ch", "src", "STRING", "", nil, nil, nil, "hello", nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "first"}, resultRows)
+	resp := buildResponse(queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "generation_time", Aggregation: "first"}, resultRows)
 
 	val := resp.Frames[0].Fields[1].At(0).(*string)
 	if *val != "hello" {
@@ -274,13 +274,13 @@ func TestBuildResponseBytesType(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	now := time.Now().Truncate(time.Second)
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "c", "ch", "src", "bytes", "", nil, nil, nil, nil, []byte{0x1a, 0x2f, 0xb0}).
-		AddRow(now.Add(time.Second), "c", "ch", "src", "bytes", "", nil, nil, nil, nil, nil)
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/c", "ch", "src", "BINARY", "", nil, nil, nil, nil, []byte{0x1a, 0x2f, 0xb0}).
+		AddRow(now.Add(time.Second), "/c", "ch", "src", "BINARY", "", nil, nil, nil, nil, nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "first"}, resultRows)
+	resp := buildResponse(queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "generation_time", Aggregation: "first"}, resultRows)
 
 	if len(resp.Frames) != 1 {
 		t.Fatalf("expected 1 frame, got %d", len(resp.Frames))
@@ -302,22 +302,25 @@ func TestValidateAggregation(t *testing.T) {
 		valueType   string
 		wantErr     bool
 	}{
-		{"avg", "float", false},
-		{"avg", "int", false},
-		{"avg", "bool", false},
-		{"avg", "string", true},
-		{"avg", "enum", true},
-		{"avg", "bytes", true},
-		{"sum", "string", true},
-		{"min", "float", false},
-		{"min", "string", false},
-		{"min", "bytes", true},
-		{"max", "bytes", true},
-		{"first", "string", false},
-		{"first", "bytes", false},
-		{"last", "bytes", false},
-		{"count", "string", false},
-		{"raw", "bytes", false},
+		{"avg", "DOUBLE", false},
+		{"avg", "SINT64", false},
+		{"avg", "UINT64", false},
+		{"avg", "BOOLEAN", false},
+		{"avg", "STRING", true},
+		{"avg", "ENUMERATED", true},
+		{"avg", "BINARY", true},
+		{"avg", "TIMESTAMP", true},
+		{"sum", "STRING", true},
+		{"min", "FLOAT", false},
+		{"min", "STRING", false},
+		{"min", "TIMESTAMP", false},
+		{"min", "BINARY", true},
+		{"max", "BINARY", true},
+		{"first", "STRING", false},
+		{"first", "BINARY", false},
+		{"last", "BINARY", false},
+		{"count", "STRING", false},
+		{"raw", "BINARY", false},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s_%s", tt.aggregation, tt.valueType), func(t *testing.T) {
@@ -337,12 +340,12 @@ func TestBuildResponseRejectsInvalidAggregation(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	now := time.Now().Truncate(time.Second)
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "c", "ch", "src", "string", "", nil, nil, nil, nil, nil)
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/c", "ch", "src", "STRING", "", nil, nil, nil, nil, nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "avg"}, resultRows)
+	resp := buildResponse(queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "generation_time", Aggregation: "avg"}, resultRows)
 
 	if resp.Status != backend.StatusBadRequest {
 		t.Fatalf("expected StatusBadRequest for avg on string, got %v", resp.Status)
@@ -360,13 +363,13 @@ func TestBuildResponseEnumType(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	now := time.Now().Truncate(time.Second)
-	// enum falls through to default (string) branch in buildResponse
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "c", "ch", "src", "enum", "", nil, nil, nil, "MY_ENUM_VAL", nil)
+	// ENUMERATED falls through to the default (string) branch, showing its label
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/c", "ch", "src", "ENUMERATED", "", nil, nil, nil, "MY_ENUM_VAL", nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "first"}, resultRows)
+	resp := buildResponse(queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "generation_time", Aggregation: "first"}, resultRows)
 
 	val := resp.Frames[0].Fields[1].At(0).(*string)
 	if *val != "MY_ENUM_VAL" {
@@ -383,12 +386,12 @@ func TestBuildResponseNullValues(t *testing.T) {
 
 	now := time.Now().Truncate(time.Second)
 	// All value columns are NULL
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "c", "ch", "src", "int", "", nil, nil, nil, nil, nil)
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/c", "ch", "src", "SINT64", "", nil, nil, nil, nil, nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "avg"}, resultRows)
+	resp := buildResponse(queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "generation_time", Aggregation: "avg"}, resultRows)
 
 	val := resp.Frames[0].Fields[1].At(0)
 	if val != (*float64)(nil) {
@@ -403,11 +406,11 @@ func TestBuildResponseEmptyRows(t *testing.T) {
 	}
 	defer func() { _ = db.Close() }()
 
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"})
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"})
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	resp := buildResponse(queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "time", Aggregation: "avg"}, resultRows)
+	resp := buildResponse(queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "generation_time", Aggregation: "avg"}, resultRows)
 
 	if len(resp.Frames) != 0 {
 		t.Fatalf("expected 0 frames for empty result, got %d", len(resp.Frames))
@@ -431,7 +434,7 @@ func TestQueryEventsWithMock(t *testing.T) {
 	mock.ExpectQuery("SELECT").WillReturnRows(eventRows)
 
 	rawSql := "SELECT * FROM events"
-	qJSON, _ := json.Marshal(queryModel{QueryType: "events", Sources: []string{"src1"}, TimeField: "time", Aggregation: "avg", RawSql: &rawSql})
+	qJSON, _ := json.Marshal(queryModel{QueryType: "events", Sources: []string{"src1"}, TimeField: "generation_time", Aggregation: "avg", RawSql: &rawSql})
 	resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 		Queries: []backend.DataQuery{
 			{RefID: "A", JSON: qJSON, TimeRange: backend.TimeRange{From: now.Add(-time.Hour), To: now.Add(time.Hour)}},
@@ -474,14 +477,14 @@ func TestQueryTelemetryWithMock(t *testing.T) {
 	ds := Datasource{db: db}
 	now := time.Now().Truncate(time.Second)
 
-	telemetryRows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "comp1", "ch1", "src1", "float", "", nil, 1.5, nil, nil, nil).
-		AddRow(now.Add(time.Second), "comp1", "ch1", "src1", "float", "", nil, 2.5, nil, nil, nil)
+	telemetryRows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/comp1", "ch1", "src1", "DOUBLE", "", nil, 1.5, nil, nil, nil).
+		AddRow(now.Add(time.Second), "/comp1", "ch1", "src1", "DOUBLE", "", nil, 2.5, nil, nil, nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(telemetryRows)
 
-	rawSql := "SELECT * FROM telemetry"
-	qJSON, _ := json.Marshal(queryModel{QueryType: "telemetry", Channels: []channelRef{{"comp1", "ch1"}}, Sources: []string{"src1"}, TimeField: "time", Aggregation: "avg", RawSql: &rawSql})
+	rawSql := "SELECT * FROM parameter_values"
+	qJSON, _ := json.Marshal(queryModel{QueryType: "telemetry", Channels: []channelRef{{"/comp1", "ch1"}}, Sources: []string{"src1"}, TimeField: "generation_time", Aggregation: "avg", RawSql: &rawSql})
 	resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 		Queries: []backend.DataQuery{
 			{
@@ -507,11 +510,11 @@ func TestQueryTelemetryWithMock(t *testing.T) {
 		t.Fatalf("expected 1 frame, got %d", len(dr.Frames))
 	}
 	frame := dr.Frames[0]
-	if frame.Name != "comp1.ch1" {
-		t.Errorf("expected frame name 'comp1.ch1', got %q", frame.Name)
+	if frame.Name != "/comp1/ch1" {
+		t.Errorf("expected frame name '/comp1/ch1', got %q", frame.Name)
 	}
-	if frame.Fields[1].Name != "comp1.ch1" {
-		t.Errorf("expected field name 'comp1.ch1', got %q", frame.Fields[1].Name)
+	if frame.Fields[1].Name != "/comp1/ch1" {
+		t.Errorf("expected field name '/comp1/ch1', got %q", frame.Fields[1].Name)
 	}
 	if frame.Fields[0].Len() != 2 {
 		t.Errorf("expected 2 rows, got %d", frame.Fields[0].Len())
@@ -584,15 +587,15 @@ func TestBuildResponseMultiComponentChannel(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	now := time.Now().Truncate(time.Second)
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "CDH", "Temperature", "fsw-1", "float", "", nil, 22.5, nil, nil, nil).
-		AddRow(now, "Sensors", "Voltage", "fsw-1", "float", "", nil, 3.3, nil, nil, nil).
-		AddRow(now.Add(time.Second), "CDH", "Temperature", "fsw-1", "float", "", nil, 23.0, nil, nil, nil).
-		AddRow(now.Add(time.Second), "Sensors", "Voltage", "fsw-1", "float", "", nil, 3.4, nil, nil, nil)
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/CDH", "Temperature", "fsw-1", "DOUBLE", "", nil, 22.5, nil, nil, nil).
+		AddRow(now, "/Sensors", "Voltage", "fsw-1", "DOUBLE", "", nil, 3.3, nil, nil, nil).
+		AddRow(now.Add(time.Second), "/CDH", "Temperature", "fsw-1", "DOUBLE", "", nil, 23.0, nil, nil, nil).
+		AddRow(now.Add(time.Second), "/Sensors", "Voltage", "fsw-1", "DOUBLE", "", nil, 3.4, nil, nil, nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	qm := queryModel{Channels: []channelRef{{"CDH", "Temperature"}, {"Sensors", "Voltage"}}, TimeField: "time", Aggregation: "avg"}
+	qm := queryModel{Channels: []channelRef{{"/CDH", "Temperature"}, {"/Sensors", "Voltage"}}, TimeField: "generation_time", Aggregation: "avg"}
 	resp := buildResponse(qm, resultRows)
 
 	if len(resp.Frames) != 2 {
@@ -603,11 +606,11 @@ func TestBuildResponseMultiComponentChannel(t *testing.T) {
 	for _, f := range resp.Frames {
 		frameNames[f.Name] = true
 	}
-	if !frameNames["CDH.Temperature"] {
-		t.Error("missing frame CDH.Temperature")
+	if !frameNames["/CDH/Temperature"] {
+		t.Error("missing frame /CDH/Temperature")
 	}
-	if !frameNames["Sensors.Voltage"] {
-		t.Error("missing frame Sensors.Voltage")
+	if !frameNames["/Sensors/Voltage"] {
+		t.Error("missing frame /Sensors/Voltage")
 	}
 }
 
@@ -619,13 +622,13 @@ func TestBuildResponseKeyFiltering(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	now := time.Now().Truncate(time.Second)
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "CDH", "Attitude", "fsw-1", "float", "value.x", nil, 1.0, nil, nil, nil).
-		AddRow(now, "CDH", "Attitude", "fsw-1", "float", "value.y", nil, 2.0, nil, nil, nil)
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/CDH", "Attitude", "fsw-1", "DOUBLE", ".x", nil, 1.0, nil, nil, nil).
+		AddRow(now, "/CDH", "Attitude", "fsw-1", "DOUBLE", ".y", nil, 2.0, nil, nil, nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	qm := queryModel{Channels: []channelRef{{"CDH", "Attitude"}}, Keys: []keyRef{{"CDH", "Attitude", "value.x"}, {"CDH", "Attitude", "value.y"}}, TimeField: "time", Aggregation: "avg"}
+	qm := queryModel{Channels: []channelRef{{"/CDH", "Attitude"}}, Keys: []keyRef{{"/CDH", "Attitude", ".x"}, {"/CDH", "Attitude", ".y"}}, TimeField: "generation_time", Aggregation: "avg"}
 	resp := buildResponse(qm, resultRows)
 
 	if len(resp.Frames) != 2 {
@@ -636,15 +639,15 @@ func TestBuildResponseKeyFiltering(t *testing.T) {
 	for _, f := range resp.Frames {
 		frameNames[f.Name] = true
 	}
-	if !frameNames["CDH.Attitude.value.x"] {
-		t.Error("missing frame for key value.x")
+	if !frameNames["/CDH/Attitude.x"] {
+		t.Error("missing frame for member .x")
 	}
-	if !frameNames["CDH.Attitude.value.y"] {
-		t.Error("missing frame for key value.y")
+	if !frameNames["/CDH/Attitude.y"] {
+		t.Error("missing frame for member .y")
 	}
 }
 
-func TestBuildResponseErtTimeField(t *testing.T) {
+func TestBuildResponseNamesSingleMemberAndInstances(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("sqlmock: %v", err)
@@ -652,27 +655,51 @@ func TestBuildResponseErtTimeField(t *testing.T) {
 	defer func() { _ = db.Close() }()
 
 	now := time.Now().Truncate(time.Second)
-	rows := sqlmock.NewRows([]string{"time_bucket", "component", "channel", "source", "valueType", "key", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
-		AddRow(now, "c", "ch", "src", "float", "", nil, 9.9, nil, nil, nil)
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/CDH", "Temps", "fsw-a", "FLOAT", "[0]", nil, 1.0, nil, nil, nil).
+		AddRow(now, "/CDH", "Temps", "fsw-b", "FLOAT", "[0]", nil, 2.0, nil, nil, nil)
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	qm := queryModel{Channels: []channelRef{{"c", "ch"}}, TimeField: "ert", Aggregation: "avg"}
+	resp := buildResponse(queryModel{TimeField: "generation_time", Aggregation: "avg"}, resultRows)
+
+	if len(resp.Frames) != 2 {
+		t.Fatalf("expected 2 frames (one per instance), got %d", len(resp.Frames))
+	}
+	if resp.Frames[0].Name != "/CDH/Temps[0] (fsw-a)" || resp.Frames[1].Name != "/CDH/Temps[0] (fsw-b)" {
+		t.Errorf("unexpected frame names %q, %q", resp.Frames[0].Name, resp.Frames[1].Name)
+	}
+}
+
+func TestBuildResponseAcquisitionTimeField(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("sqlmock: %v", err)
+	}
+	defer func() { _ = db.Close() }()
+
+	now := time.Now().Truncate(time.Second)
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/c", "ch", "src", "DOUBLE", "", nil, 9.9, nil, nil, nil)
+
+	mock.ExpectQuery("SELECT").WillReturnRows(rows)
+	resultRows, _ := db.Query("SELECT")
+	qm := queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "acquisition_time", Aggregation: "avg"}
 	resp := buildResponse(qm, resultRows)
 
 	if len(resp.Frames) != 1 {
 		t.Fatalf("expected 1 frame, got %d", len(resp.Frames))
 	}
 	frame := resp.Frames[0]
-	if frame.Name != "c.ch" {
-		t.Errorf("expected frame name 'c.ch', got %q", frame.Name)
+	if frame.Name != "/c/ch" {
+		t.Errorf("expected frame name '/c/ch', got %q", frame.Name)
 	}
-	if frame.Fields[0].Name != "ert" {
-		t.Errorf("expected time field 'ert', got %q", frame.Fields[0].Name)
+	if frame.Fields[0].Name != "acquisition_time" {
+		t.Errorf("expected time field 'acquisition_time', got %q", frame.Fields[0].Name)
 	}
 }
 
-func TestQueryTelemetryErtTimeField(t *testing.T) {
+func TestQueryTelemetryAcquisitionTimeField(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("sqlmock: %v", err)
@@ -682,8 +709,8 @@ func TestQueryTelemetryErtTimeField(t *testing.T) {
 	ds := Datasource{db: db}
 	mock.ExpectQuery("SELECT").WillReturnRows(sqlmock.NewRows([]string{"time", "value"}))
 
-	rawSql := "SELECT * FROM telemetry"
-	qJSON, _ := json.Marshal(queryModel{QueryType: "telemetry", TimeField: "ert", Aggregation: "avg", RawSql: &rawSql})
+	rawSql := "SELECT * FROM parameter_values"
+	qJSON, _ := json.Marshal(queryModel{QueryType: "telemetry", TimeField: "acquisition_time", Aggregation: "avg", RawSql: &rawSql})
 	resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 		Queries: []backend.DataQuery{
 			{RefID: "A", JSON: qJSON},
@@ -693,14 +720,14 @@ func TestQueryTelemetryErtTimeField(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if resp.Responses["A"].Status != 0 {
-		t.Errorf("expected no error for ert time field, got status %v", resp.Responses["A"].Status)
+		t.Errorf("expected no error for acquisition_time, got status %v", resp.Responses["A"].Status)
 	}
 }
 
 func TestQueryTelemetryInvalidTimeField(t *testing.T) {
 	ds := Datasource{}
 
-	qJSON, _ := json.Marshal(queryModel{QueryType: "telemetry", Channels: []channelRef{{"comp", "ch"}}, TimeField: "bogus", Aggregation: "avg"})
+	qJSON, _ := json.Marshal(queryModel{QueryType: "telemetry", Channels: []channelRef{{"/comp", "ch"}}, TimeField: "bogus", Aggregation: "avg"})
 	resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 		Queries: []backend.DataQuery{
 			{RefID: "A", JSON: qJSON},
@@ -728,36 +755,6 @@ func (r *responseRecorder) Write(b []byte) (int, error) {
 }
 func (r *responseRecorder) WriteHeader(code int) { r.code = code }
 
-func TestResourceHandlerComponents(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("sqlmock: %v", err)
-	}
-	defer func() { _ = db.Close() }()
-
-	ds := &Datasource{db: db}
-
-	mock.ExpectQuery("SELECT DISTINCT component").WillReturnRows(
-		sqlmock.NewRows([]string{"component"}).AddRow("CDH").AddRow("Sensors").AddRow("Power"),
-	)
-
-	req, _ := http.NewRequest("GET", "/telemetry/components", nil)
-	rr := &responseRecorder{header: http.Header{}}
-	ds.handleGetTelemetryComponents(rr, req)
-
-	if rr.code != http.StatusOK {
-		t.Fatalf("expected 200, got %d", rr.code)
-	}
-
-	var result []string
-	if err := json.Unmarshal(rr.body, &result); err != nil {
-		t.Fatalf("json unmarshal: %v", err)
-	}
-	if len(result) != 3 || result[0] != "CDH" || result[1] != "Sensors" || result[2] != "Power" {
-		t.Errorf("unexpected components: %v", result)
-	}
-}
-
 func TestResourceHandlerChannels(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -767,11 +764,11 @@ func TestResourceHandlerChannels(t *testing.T) {
 
 	ds := &Datasource{db: db}
 
-	mock.ExpectQuery("SELECT component").WillReturnRows(
-		sqlmock.NewRows([]string{"component", "name"}).AddRow("CDH", "Temperature").AddRow("Sensors", "Voltage"),
+	mock.ExpectQuery(`SELECT DISTINCT space_system, name FROM parameters`).WillReturnRows(
+		sqlmock.NewRows([]string{"space_system", "name"}).AddRow("/CDH", "Temperature").AddRow("/Sensors", "Voltage"),
 	)
 
-	req, _ := http.NewRequest("GET", "/telemetry/channels?components=CDH&components=Sensors", nil)
+	req, _ := http.NewRequest("GET", "/telemetry/channels", nil)
 	rr := &responseRecorder{header: http.Header{}}
 	ds.handleGetTelemetryChannels(rr, req)
 
@@ -783,7 +780,7 @@ func TestResourceHandlerChannels(t *testing.T) {
 	if err := json.Unmarshal(rr.body, &result); err != nil {
 		t.Fatalf("json unmarshal: %v", err)
 	}
-	if len(result) != 2 || result[0].Name != "Temperature" || result[0].Component != "CDH" {
+	if len(result) != 2 || result[0].Name != "Temperature" || result[0].Component != "/CDH" {
 		t.Errorf("unexpected channels: %v", result)
 	}
 }
@@ -797,8 +794,8 @@ func TestResourceHandlerChannelsAll(t *testing.T) {
 
 	ds := &Datasource{db: db}
 
-	mock.ExpectQuery("SELECT component").WillReturnRows(
-		sqlmock.NewRows([]string{"component", "name"}).AddRow("CDH", "Temperature").AddRow("Sensors", "Voltage"),
+	mock.ExpectQuery(`SELECT DISTINCT space_system, name FROM parameters`).WillReturnRows(
+		sqlmock.NewRows([]string{"space_system", "name"}).AddRow("/CDH", "Temperature").AddRow("/Sensors", "Voltage"),
 	)
 
 	req, _ := http.NewRequest("GET", "/telemetry/channels", nil)
@@ -827,8 +824,8 @@ func TestResourceHandlerSources(t *testing.T) {
 
 	ds := &Datasource{db: db}
 
-	mock.ExpectQuery("SELECT DISTINCT source").WillReturnRows(
-		sqlmock.NewRows([]string{"source"}).AddRow("fsw-1").AddRow("fsw-2"),
+	mock.ExpectQuery(`SELECT DISTINCT instance FROM parameters`).WillReturnRows(
+		sqlmock.NewRows([]string{"instance"}).AddRow("fsw-1").AddRow("fsw-2"),
 	)
 
 	req, _ := http.NewRequest("GET", "/telemetry/sources", nil)
@@ -857,14 +854,15 @@ func TestResourceHandlerKeys(t *testing.T) {
 
 	ds := &Datasource{db: db}
 
-	mock.ExpectQuery("SELECT DISTINCT").WillReturnRows(
-		sqlmock.NewRows([]string{"component", "name", "key"}).
-			AddRow("CDH", "Attitude", "value").
-			AddRow("CDH", "Attitude", "value.x").
-			AddRow("CDH", "Attitude", "value.y"),
-	)
+	mock.ExpectQuery(`(?s)SELECT DISTINCT p.space_system, p.name, m.member_path.*FROM parameter_values v.*LIMIT 1000`).
+		WithArgs(`{"/CDH","/Sensors"}`, `{"Attitude","Attitude"}`).
+		WillReturnRows(sqlmock.NewRows([]string{"space_system", "name", "member_path"}).
+			AddRow("/CDH", "Attitude", ".x").
+			AddRow("/CDH", "Attitude", ".y").
+			AddRow("/Sensors", "Attitude", ""),
+		)
 
-	req, _ := http.NewRequest("GET", "/telemetry/keys?components=CDH&channels=Attitude", nil)
+	req, _ := http.NewRequest("GET", "/telemetry/keys?components=/CDH&channels=Attitude&components=/Sensors&channels=Attitude", nil)
 	rr := &responseRecorder{header: http.Header{}}
 	ds.handleGetTelemetryKeys(rr, req)
 
@@ -879,7 +877,7 @@ func TestResourceHandlerKeys(t *testing.T) {
 	if len(result) != 3 {
 		t.Errorf("expected 3 keys, got %v", result)
 	}
-	if result[0].Component != "CDH" || result[0].Channel != "Attitude" || result[0].Key != "value" {
+	if result[0].Component != "/CDH" || result[0].Channel != "Attitude" || result[0].Key != ".x" {
 		t.Errorf("unexpected first key entry: %v", result[0])
 	}
 }
@@ -901,6 +899,18 @@ func TestResourceHandlerKeysEmpty(t *testing.T) {
 	}
 	if len(result) != 0 {
 		t.Errorf("expected empty keys for missing params, got %v", result)
+	}
+}
+
+func TestResourceHandlerKeysMismatchedPairs(t *testing.T) {
+	ds := &Datasource{}
+
+	req, _ := http.NewRequest("GET", "/telemetry/keys?components=/CDH&channels=Attitude&channels=Temperature", nil)
+	rr := &responseRecorder{header: http.Header{}}
+	ds.handleGetTelemetryKeys(rr, req)
+
+	if rr.code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", rr.code)
 	}
 }
 

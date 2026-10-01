@@ -10,12 +10,12 @@
 
 **Hermes** is a Grafana backend datasource plugin that connects to a [TimescaleDB](https://www.timescale.com/) database to query and visualize **telemetry** and **events** data from NASA's [Hermes ground data system (GDS)](https://github.com/nasa/hermes).
 
-The plugin provides a multi-select query editor for querying events and telemetry, making it easy to build dashboards over spacecraft telemetry and event streams without writing raw SQL. Multiple telemetry channels, sources, and keys can be selected in a single query to overlay or compare data series. Additionally you can write custom SQL queries.
+The plugin provides a multi-select query editor for querying events and telemetry, making it easy to build dashboards over spacecraft telemetry and event streams without writing raw SQL. Multiple telemetry channels, instances, and members can be selected in a single query to overlay or compare data series. Additionally you can write custom SQL queries.
 
 ## Requirements
 
 - **Grafana** >= 12.3.0
-- **TimescaleDB** (PostgreSQL with the TimescaleDB extension); the plugin expects the Hermes schema (`telemetryDefs`, `telemetry`, `eventDefs`, `events` tables/hypertables) to already exist in the target database. See [Hermes](https://github.com/nasa/hermes) for help.
+- **TimescaleDB** (PostgreSQL with the TimescaleDB extension); the plugin expects the Hermes v6 schema (the `parameters` table and the `parameter_values` hypertable) to already exist in the target database. See [Hermes](https://github.com/nasa/hermes) for help.
 
 ## Getting Started
 
@@ -35,15 +35,15 @@ Create a new panel and select **Hermes**. Use the **Builder / Code** toggle at t
 
 #### Builder: Telemetry
 
-Select **Telemetry** in the bottom-right toggle. Queries time-series values from the `telemetry` hypertable.
+Select **Telemetry** in the bottom-right toggle. Queries time-series values from the `parameter_values` hypertable.
 
 | Field           | Type                   | Description                                                                                                                               |
 | --------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **Channel**     | multi-select, required | One or more `component.channel` pairs. Each unique combination produces its own data frame.                                               |
+| **Channel**     | multi-select, required | One or more YAMCS parameters, shown as `/space_system/name`. Each unique combination produces its own data frame.                        |
 | **Aggregation** | select                 | Function applied per time bucket: `Average`, `Min`, `Max`, `Count`, `First`, `Last`, `Sum`, `Derivative`, `Raw (none)`.                   |
-| **Source**      | multi-select, optional | FSW source identifier. Leave empty to include all sources.                                                                                |
-| **Keys**        | multi-select, optional | Sub-field paths for compound (object/array) channels. Appears per-channel only when multiple keys exist. Leave empty to include all keys. |
-| **Value Transform** | text, optional     | *(Collapsible)* Rescale or convert values per channel, or per key for compound channels. See below.                                       |
+| **Instance**    | multi-select, optional | YAMCS instance. Leave empty to include all instances.                                                                                     |
+| **Members**     | multi-select, optional | Struct members and array elements (e.g. `.APID`, `[0]`). Appears per-channel only when there are several. Leave empty to include all.    |
+| **Value Transform** | text, optional     | *(Collapsible)* Rescale or convert values per channel, or per member for struct and array channels. See below.                                       |
 
 <br>
 
@@ -73,7 +73,7 @@ Notes:
 
 #### Builder: Events
 
-Select **Events** in the bottom-right toggle. Returns event log entries with fields: timestamp, component, name, severity, message, source, args.
+Hidden for now: the v6 recorder does not write events yet.
 
 | Field      | Type                   | Description                                                |
 | ---------- | ---------------------- | ---------------------------------------------------------- |
@@ -87,7 +87,7 @@ Available for both query types:
 
 | Field                  | Description                                                                                            |
 | ---------------------- | ------------------------------------------------------------------------------------------------------ |
-| **Time Field**         | `Receive Time` (ERT) or `On-board Time` (spacecraft clock)                                             |
+| **Time Field**         | `Generation Time` (YAMCS generation time, the default) or `Receive Time` (YAMCS acquisition time)     |
 | **From / To Override** | *(Advanced, collapsible)* Pin the query to an absolute time range, ignoring the dashboard time picker. |
 
 <br>

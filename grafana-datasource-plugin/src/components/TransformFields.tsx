@@ -66,7 +66,7 @@ export function buildTransformRows(
         id: transformId(component, channel),
         component,
         channel,
-        label: `${component}.${channel}`,
+        label: `${component}/${channel}`,
       });
       continue;
     }
@@ -80,7 +80,7 @@ export function buildTransformRows(
         component,
         channel,
         targetKey: k.key,
-        label: `${component}.${channel}.${k.key}`,
+        label: `${component}/${channel}${k.key}`,
       });
     }
   }

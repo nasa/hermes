@@ -27,27 +27,13 @@ func scanStrings(rows *sql.Rows) ([]string, error) {
 	return items, nil
 }
 
-func (d *Datasource) handleGetTelemetryComponents(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT component FROM telemetryDefs ORDER BY component;")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	items, err := scanStrings(rows)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	writeJSONResponse(w, items)
-}
-
 type channelEntry struct {
 	Component string `json:"component"`
 	Name      string `json:"name"`
 }
 
 func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT component, name FROM telemetryDefs ORDER BY component, name;")
+	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT space_system, name FROM parameters ORDER BY space_system, name;")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -71,7 +57,7 @@ func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.R
 }
 
 func (d *Datasource) handleGetTelemetrySources(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT source FROM telemetry ORDER BY source;")
+	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT instance FROM parameters ORDER BY instance;")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -91,20 +77,32 @@ type keyEntry struct {
 }
 
 func (d *Datasource) handleGetTelemetryKeys(w http.ResponseWriter, r *http.Request) {
+	// components[i] and channels[i] together name one selected channel.
 	components := r.URL.Query()["components"]
 	channels := r.URL.Query()["channels"]
-	if len(components) == 0 || len(channels) == 0 {
+	if len(components) != len(channels) {
+		http.Error(w, "components and channels must have the same length", http.StatusBadRequest)
+		return
+	}
+	if len(components) == 0 {
 		writeJSONResponse(w, []keyEntry{})
 		return
 	}
 
+	// Members are listed per parameter (one per instance) and capped so a large
+	// array cannot flood the picker.
 	query := `
-		SELECT DISTINCT d.component, d.name, t.key 
-		FROM telemetry t
-		JOIN telemetryDefs d ON t.telemetryDefId = d.id
-		WHERE d.component = ANY($1) AND d.name = ANY($2) AND t.key IS NOT NULL
-		ORDER BY d.component, d.name, t.key
-		LIMIT 200;`
+		SELECT DISTINCT p.space_system, p.name, m.member_path
+		FROM unnest($1::text[], $2::text[]) AS sel(space_system, name)
+		JOIN parameters p ON p.space_system = sel.space_system AND p.name = sel.name
+		CROSS JOIN LATERAL (
+			SELECT DISTINCT v.member_path
+			FROM parameter_values v
+			WHERE v.parameter_id = p.id
+			ORDER BY v.member_path
+			LIMIT 1000
+		) m
+		ORDER BY p.space_system, p.name, m.member_path;`
 
 	rows, err := d.db.QueryContext(r.Context(), query, pq.Array(components), pq.Array(channels))
 	if err != nil {

@@ -2,9 +2,10 @@ import { DataSourceJsonData } from '@grafana/data';
 import { DataQuery } from '@grafana/schema';
 
 export type QueryType = 'telemetry' | 'events' | 'raw';
-export type TimeField = 'time' | 'ert';
+export type TimeField = 'generation_time' | 'acquisition_time';
 export type Aggregation = 'avg' | 'min' | 'max' | 'count' | 'first' | 'last' | 'sum' | 'deriv' | 'raw' | 'latest';
 
+// A YAMCS parameter: component holds its space system, e.g. /BigData_YamcsDeployment.
 export interface ChannelRef {
   component: string;
   name: string;
@@ -22,7 +23,7 @@ export type ChannelQuery = ChannelRef | ChannelExpression;
 export interface KeyRef {
   component: string;
   channel: string;
-  key: string;
+  key: string;  // member path within the value, e.g. .APID or [0].x; '' for the whole value
 }
 
 export interface TransformRef {
@@ -36,7 +37,7 @@ export interface TransformRef {
 export interface MyQuery extends DataQuery {
   queryType: QueryType;
   channels: ChannelQuery[];
-  sources: string[];
+  sources: string[];  // YAMCS instances
   keys: KeyRef[];
   timeField?: TimeField;
   timeOverrideFrom?: string;
@@ -48,7 +49,7 @@ export interface MyQuery extends DataQuery {
 
 export type ResolvedQuery = Omit<MyQuery, 'channels'> & { channels: ChannelRef[] };
 
-export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], transforms: [], timeField: 'ert', aggregation: 'avg' };
+export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], transforms: [], timeField: 'generation_time', aggregation: 'avg' };
 
 export function withDefaults(query: MyQuery): MyQuery {
   return {
