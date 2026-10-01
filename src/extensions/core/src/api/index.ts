@@ -4,6 +4,7 @@ import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { BackendProvider } from '@gov.nasa.jpl.hermes/vscode';
 import { Proto, Sourced, Event, Telemetry } from '@gov.nasa.jpl.hermes/types';
 import { Offline } from './Offline';
+import { isYamcsParameterSource, YamcsParameterHandler, YamcsParameterSource } from './Yamcs';
 
 /**
  * VscodeApi wraps the actual API implementation and maintains stable
@@ -11,7 +12,7 @@ import { Offline } from './Offline';
  * extension to change backend connections without requiring a window reload
  * or re-subscribing to events.
  */
-export class VscodeApi implements Hermes.Api {
+export class VscodeApi implements Hermes.Api, YamcsParameterSource {
     private _onContextRefresh = new vscode.EventEmitter<void>();
     onContextRefresh = this._onContextRefresh.event;
 
@@ -27,10 +28,12 @@ export class VscodeApi implements Hermes.Api {
 
     private eventSubscribers = new Map<(pkt: Sourced<Event>) => void, Proto.IBusFilter | undefined>();
     private telemetrySubscribers = new Map<(pkt: Sourced<Telemetry>) => void, Proto.IBusFilter | undefined>();
+    private yamcsSubscribers = new Set<YamcsParameterHandler>();
 
     private apiSubscriptions: vscode.Disposable[] = [];
     private eventSubscriptions = new Map<(pkt: Sourced<Event>) => void, vscode.Disposable>();
     private telemetrySubscriptions = new Map<(pkt: Sourced<Telemetry>) => void, vscode.Disposable>();
+    private yamcsSubscriptions = new Map<YamcsParameterHandler, vscode.Disposable>();
 
     onFswChange = this._onFswChange.event;
     onProvidersChange = this._onProvidersChange.event;
@@ -269,6 +272,14 @@ export class VscodeApi implements Hermes.Api {
             this.apiSubscriptions.push(subscription);
         }
 
+        if (isYamcsParameterSource(this.currentApi)) {
+            for (const handler of this.yamcsSubscribers) {
+                const subscription = this.currentApi.onYamcsParameters(handler);
+                this.yamcsSubscriptions.set(handler, subscription);
+                this.apiSubscriptions.push(subscription);
+            }
+        }
+
         this._onContextRefresh.fire();
     }
 
@@ -382,6 +393,22 @@ export class VscodeApi implements Hermes.Api {
                     sub.dispose();
                     this.telemetrySubscriptions.delete(handler);
                 }
+            }
+        };
+    }
+
+    onYamcsParameters(handler: YamcsParameterHandler): vscode.Disposable {
+        this.yamcsSubscribers.add(handler);
+
+        if (this.currentApi && isYamcsParameterSource(this.currentApi)) {
+            this.yamcsSubscriptions.set(handler, this.currentApi.onYamcsParameters(handler));
+        }
+
+        return {
+            dispose: () => {
+                this.yamcsSubscribers.delete(handler);
+                this.yamcsSubscriptions.get(handler)?.dispose();
+                this.yamcsSubscriptions.delete(handler);
             }
         };
     }
@@ -520,8 +547,10 @@ export class VscodeApi implements Hermes.Api {
 
         this.eventSubscribers.clear();
         this.telemetrySubscribers.clear();
+        this.yamcsSubscribers.clear();
         this.eventSubscriptions.clear();
         this.telemetrySubscriptions.clear();
+        this.yamcsSubscriptions.clear();
 
         for (const disposable of this.disposables) {
             disposable.dispose();

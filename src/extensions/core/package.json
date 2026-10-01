@@ -327,6 +327,27 @@
                             }
                         }
                     },
+                    "hermes.host.yamcs": {
+                        "type": "object",
+                        "description": "YAMCS server to connect to in YAMCS mode, through the yamcs-grpc plugin",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "host:port of the yamcs-grpc plugin",
+                                "default": "localhost:8091"
+                            },
+                            "instance": {
+                                "type": "string",
+                                "description": "YAMCS instance",
+                                "default": "fprime-project"
+                            },
+                            "processor": {
+                                "type": "string",
+                                "description": "YAMCS processor",
+                                "default": "realtime"
+                            }
+                        }
+                    },
                     "hermes.host.binary": {
                         "description": "Path to a Hermes backend binary to run for 'local' host mode. Leave blank to use bundled backend binary.",
                         "type": "string"

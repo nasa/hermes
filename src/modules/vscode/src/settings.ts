@@ -25,6 +25,7 @@ export const names = {
     },
     host: {
         remotes: "hermes.host.remotes",
+        yamcs: "hermes.host.yamcs",
         binary: "hermes.host.binary",
         args: "hermes.host.args",
         bind: "hermes.host.bind",
@@ -79,6 +80,22 @@ export interface Remote {
     authenticationMethod: HostAuthenticationKind;
     skipTLSVerify: boolean;
     color?: string;
+}
+
+export interface Yamcs {
+    // host:port of the yamcs-grpc plugin
+    address: string;
+    instance: string;
+    processor: string;
+}
+
+export function hostYamcs(): Yamcs {
+    return {
+        address: "localhost:8091",
+        instance: "fprime-project",
+        processor: "realtime",
+        ...getSetting<Partial<Yamcs>>(names.host.yamcs, {}),
+    };
 }
 
 export function hostBinary(): string | undefined {
