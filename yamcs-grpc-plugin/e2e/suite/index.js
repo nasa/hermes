@@ -40,6 +40,10 @@ exports.run = async function () {
         };
         step('extension activated');
 
+        // Save a dictionary in Offline mode; YAMCS mode should load it from workspace storage
+        await waitFor('Offline backend', () => core.api.currentApi, 5000);
+        const dictionaryId = await core.api.addDictionary({ head: { name: 'e2e', version: '1', type: 'e2e' } });
+
         // Count the rows the table panel formats for its 'update' messages
         const updates = [];
         const table = core.telemetryTablePanel;
@@ -55,6 +59,8 @@ exports.run = async function () {
         await vscode.commands.executeCommand('hermes.host.set', 'yamcs', state);
         const subscribed = Date.now();
         step(`backend set to ${core.api.currentProvider.type}, status bar "${core.api.secondaryItem.text}" (${core.api.secondaryItem.tooltip})`);
+        result.dictionaryLoaded = dictionaryId in await core.api.allDictionaries();
+        await core.api.removeDictionary(dictionaryId);
 
         const versionKey = await waitFor('FrameworkVersion', () => key('/version/FrameworkVersion'), 5000);
         result.frameworkVersionAfterMs = Date.now() - subscribed;
@@ -98,6 +104,9 @@ exports.run = async function () {
         result.errorStatus = { text: core.api.secondaryItem.text, tooltip: core.api.secondaryItem.tooltip };
         step('subscription error shown');
 
+        if (!result.dictionaryLoaded) {
+            throw new Error('the workspace dictionary did not load in YAMCS mode');
+        }
         if (result.cpuPointsWhileOffline !== 0 || result.frameworkVersionPoints !== 1) {
             throw new Error('unexpected points while offline or after switching back');
         }
