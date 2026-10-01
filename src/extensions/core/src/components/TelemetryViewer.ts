@@ -3,11 +3,14 @@ import { tmpdir } from 'tmp';
 
 import { Telemetry, Sourced, TimeFormat } from '@gov.nasa.jpl.hermes/types';
 import { Api } from '@gov.nasa.jpl.hermes/api';
+import { YamcsParameterValue } from '@gov.nasa.jpl.hermes/rpc';
 import { WebViewMessenger, WebViewPanelBase } from '@gov.nasa.jpl.hermes/vscode';
 
-import { FrontendTableMessage, BackendTableMessage, FrontendPlotMessage, BackendPlotMessage, TelemetrySeries, TelemetrySeriesData, TableState } from '../../common/telemetry';
+import { FrontendTableMessage, BackendTableMessage, FrontendPlotMessage, BackendPlotMessage, TelemetrySeries, TelemetrySeriesData, TelemetrySeriesDataPoint, TableState } from '../../common/telemetry';
 import { cullTelemetrySeriesData } from '../../common/telemetryTimeWindow';
 import { DebounceEmitter } from '../utils/DebounceEmitter';
+import { YamcsParameterSource } from '../api/Yamcs';
+import { insertionIndex, leaves, millis, splitName } from './yamcsRows';
 
 const MAX_POINTS_PER_CHANNEL = 10000; // ~10 minutes at 10Hz
 
@@ -32,9 +35,16 @@ export class TelemetryDatabase implements vscode.Disposable {
     });
     onNewTelemetryData = this.telemetryDebouncer.event;
 
-    private telemetrySubscription: vscode.Disposable;
+    // Keys of YAMCS channels with new points
+    private yamcsDebouncer = new DebounceEmitter<string, Set<string>>({
+        merge: (keys) => new Set(keys)
+    });
+    onNewYamcsData = this.yamcsDebouncer.event;
 
-    constructor(readonly api: Api) {
+    private telemetrySubscription: vscode.Disposable;
+    private yamcsSubscription?: vscode.Disposable;
+
+    constructor(readonly api: Api & Partial<YamcsParameterSource>) {
         this.series = new Map();
         this.data = new Map();
 
@@ -109,6 +119,52 @@ export class TelemetryDatabase implements vscode.Disposable {
 
             this.telemetryDebouncer.fire(telem);
         });
+
+        this.yamcsSubscription = this.api.onYamcsParameters?.((instance, values) => this.addYamcs(instance, values));
+    }
+
+    /**
+     * One channel per scalar leaf, keyed by qualified name plus member path,
+     * at the value's generation time.
+     */
+    private addYamcs(instance: string, values: YamcsParameterValue[]) {
+        const source = `yamcs:${instance}`;
+        for (const pv of values) {
+            const time = millis(pv.generationTime);
+            if (!pv.id?.name || time === undefined) {
+                continue;
+            }
+
+            const [component, name] = splitName(pv.id.name);
+            for (const leaf of leaves(pv.engValue)) {
+                const key = `${source}:${pv.id.name}${leaf.memberPath}`;
+                if (!this.series.has(key)) {
+                    this.series.set(key, { source, component, name: name + leaf.memberPath });
+                }
+
+                let data = this.data.get(key);
+                if (!data) {
+                    data = { time: [], sclk: [], valueStr: [], valueNum: [] };
+                    this.data.set(key, data);
+                }
+
+                // Values can arrive a little out of order. YAMCS has no SCLK, so 0 marks it absent.
+                const i = insertionIndex(data.time, time);
+                data.time.splice(i, 0, time);
+                data.sclk.splice(i, 0, 0);
+                data.valueStr!.splice(i, 0, leaf.valueStr);
+                data.valueNum!.splice(i, 0, leaf.valueNum);
+
+                if (data.time.length > MAX_POINTS_PER_CHANNEL) {
+                    data.time.shift();
+                    data.sclk.shift();
+                    data.valueStr!.shift();
+                    data.valueNum!.shift();
+                }
+
+                this.yamcsDebouncer.fire(key);
+            }
+        }
     }
 
     private getChannelKey(telem: Sourced<Telemetry>): string {
@@ -136,6 +192,8 @@ export class TelemetryDatabase implements vscode.Disposable {
     dispose() {
         this.telemetrySubscription.dispose();
         this.telemetryDebouncer.dispose();
+        this.yamcsSubscription?.dispose();
+        this.yamcsDebouncer.dispose();
         this.tableStateEmitter.dispose();
     }
 }
@@ -165,30 +223,9 @@ export class TelemetryTablePanel extends WebViewPanelBase implements vscode.Webv
             switch (msg.type) {
                 case 'refresh': {
                     // Get all the latest values from all the channels
-                    const channels: Record<string, any> = {};
-                    for (const [key, series] of this.db.series.entries()) {
-                        const data = this.db.data.get(key)!;
-                        if (data.time.length < 1) {
-                            continue;
-                        }
-
-                        const lastIdx = data.time.length - 1;
-                        const valueNum = data.valueNum?.[lastIdx];
-                        const isNumerical = valueNum !== undefined && !isNaN(valueNum);
-
-                        channels[key] = {
-                            ...series,
-                            time: data.time[lastIdx],
-                            sclk: data.sclk[lastIdx],
-                            valueStr: data.valueStr?.[lastIdx],
-                            valueNum,
-                            isNumerical
-                        };
-                    }
-
                     messenger.postMessage({
                         type: "latest",
-                        channels
+                        channels: this.latest(this.db.series.keys())
                     });
 
                     break;
@@ -214,10 +251,43 @@ export class TelemetryTablePanel extends WebViewPanelBase implements vscode.Webv
             });
         });
 
+        const yamcsDisp = this.db.onNewYamcsData((keys) => {
+            messenger.postMessage({
+                type: 'update',
+                channels: this.latest(keys)
+            });
+        });
+
         webviewView.onDidDispose(() => {
             messenger.dispose();
             disp.dispose();
+            yamcsDisp.dispose();
         });
+    }
+
+    private latest(keys: Iterable<string>): Record<string, TelemetrySeries & TelemetrySeriesDataPoint> {
+        const channels: Record<string, TelemetrySeries & TelemetrySeriesDataPoint> = {};
+        for (const key of keys) {
+            const series = this.db.series.get(key);
+            const data = this.db.data.get(key);
+            if (!series || !data || data.time.length < 1) {
+                continue;
+            }
+
+            const lastIdx = data.time.length - 1;
+            const valueNum = data.valueNum?.[lastIdx];
+            const isNumerical = valueNum !== undefined && !isNaN(valueNum);
+
+            channels[key] = {
+                ...series,
+                time: data.time[lastIdx],
+                sclk: data.sclk[lastIdx],
+                valueStr: data.valueStr?.[lastIdx],
+                valueNum,
+                isNumerical
+            };
+        }
+        return channels;
     }
 }
 
@@ -283,7 +353,7 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
         });
 
         // Forward batched updates to frontend (only for selected channels)
-        const telemetryDisp = this.db.onNewTelemetryData((points) => {
+        const appendLatest = (keys: Iterable<string>) => {
             const selectedChannels = new Set(this.db.tableState.channels);
             if (selectedChannels.size === 0) {
                 return; // No channels selected, don't send anything
@@ -292,8 +362,7 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
             // Filter telemetry to only selected channels
             const filteredData: Record<string, TelemetrySeriesData> = {};
 
-            for (const telem of points) {
-                const key = `${telem.source}.${telem.def.component}.${telem.def.name}`;
+            for (const key of keys) {
                 if (!selectedChannels.has(key)) {
                     continue; // Skip unselected channels
                 }
@@ -319,12 +388,18 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
                     data: filteredData
                 });
             }
+        };
+
+        const telemetryDisp = this.db.onNewTelemetryData((points) => {
+            appendLatest(points.map((telem) => `${telem.source}.${telem.def.component}.${telem.def.name}`));
         });
+        const yamcsDisp = this.db.onNewYamcsData(appendLatest);
 
         webviewView.onDidDispose(() => {
             messenger.dispose();
             tableStateDisp.dispose();
             telemetryDisp.dispose();
+            yamcsDisp.dispose();
         });
     }
 

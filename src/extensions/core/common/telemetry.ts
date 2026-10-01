@@ -55,6 +55,8 @@ export interface TableState {
 export type BackendTableMessage = (
     | { type: "latest", channels: Record<string, TelemetrySeries & TelemetrySeriesDataPoint> }
     | { type: "append", points: Sourced<Telemetry>[] }
+    // Formatted rows to merge by key, as in "latest"
+    | { type: "update", channels: Record<string, TelemetrySeries & TelemetrySeriesDataPoint> }
 );
 
 export type FrontendTableMessage = (
