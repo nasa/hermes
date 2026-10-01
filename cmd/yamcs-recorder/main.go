@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"slices"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -80,6 +81,10 @@ func run(ctx context.Context, cfg config, logger *slog.Logger) error {
 	if err := store.Migrate(ctx, db, logger); err != nil {
 		return err
 	}
+	stored, err := store.LatestGenerationTimes(ctx, db, cfg.instance)
+	if err != nil {
+		return err
+	}
 
 	conn, err := yamcs.Dial(cfg.yamcs)
 	if err != nil {
@@ -98,7 +103,7 @@ func run(ctx context.Context, cfg config, logger *slog.Logger) error {
 		return err
 	}
 	logger.Info("recording", "yamcs", cfg.yamcs, "instance", cfg.instance, "processor", cfg.processor,
-		"parameters", len(names))
+		"parameters", len(names), "parameters_with_history", len(stored))
 
 	var st stats
 	go st.logEvery(ctx, logger)
@@ -115,8 +120,10 @@ func run(ctx context.Context, cfg config, logger *slog.Logger) error {
 			logger.Warn("YAMCS rejected parameters", "count", len(invalid), "first", invalid[0].GetName())
 		}
 		rows, unmapped := conv.Rows(data)
+		rows, skipped := dropStored(rows, stored)
 		st.values.Add(int64(len(data.GetValues())))
 		st.unmapped.Add(int64(unmapped))
+		st.skippedCached.Add(int64(skipped))
 		if len(rows) == 0 {
 			continue
 		}
@@ -132,16 +139,27 @@ func run(ctx context.Context, cfg config, logger *slog.Logger) error {
 	return ctx.Err()
 }
 
+// dropStored removes rows generated at or before the newest time stored for
+// their parameter at startup. The subscription starts with YAMCS's cached
+// value of each parameter, which an earlier run may have stored already.
+func dropStored(rows []store.Row, stored map[store.Parameter]time.Time) (kept []store.Row, skipped int) {
+	kept = slices.DeleteFunc(rows, func(r store.Row) bool {
+		t, ok := stored[r.Parameter]
+		return ok && !r.GenerationTime.After(t)
+	})
+	return kept, len(rows) - len(kept)
+}
+
 // stats are totals since start, logged instead of a line per value or error.
 type stats struct {
-	values, rows, unmapped, insertErrors atomic.Int64
-	lastInsertError                      atomic.Pointer[string]
+	values, rows, unmapped, skippedCached, insertErrors atomic.Int64
+	lastInsertError                                     atomic.Pointer[string]
 }
 
 func (s *stats) log(logger *slog.Logger) {
 	attrs := []any{
-		"values", s.values.Load(), "rows", s.rows.Load(),
-		"unmapped", s.unmapped.Load(), "insert_errors", s.insertErrors.Load(),
+		"values", s.values.Load(), "rows", s.rows.Load(), "unmapped", s.unmapped.Load(),
+		"skipped_cached", s.skippedCached.Load(), "insert_errors", s.insertErrors.Load(),
 	}
 	// Only the latest error since the previous line.
 	if msg := s.lastInsertError.Swap(nil); msg != nil {

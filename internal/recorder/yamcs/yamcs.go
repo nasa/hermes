@@ -55,9 +55,10 @@ func TelemeteredParameters(ctx context.Context, conn grpc.ClientConnInterface, i
 	}
 }
 
-// Subscribe subscribes to names on processor. Values come only as they change
-// (no cached values first), and names YAMCS does not know are reported in the
-// replies' invalid field rather than failing the subscription.
+// Subscribe subscribes to names on processor. YAMCS first sends the last value
+// of each parameter it has cached, then values as they change. Names YAMCS
+// does not know are reported in the replies' invalid field rather than failing
+// the subscription.
 func Subscribe(ctx context.Context, conn grpc.ClientConnInterface, instance, processor string, names []string) (processing.ProcessingApi_SubscribeParametersClient, error) {
 	ids := make([]*protobuf.NamedObjectId, len(names))
 	for i, name := range names {
@@ -71,7 +72,7 @@ func Subscribe(ctx context.Context, conn grpc.ClientConnInterface, instance, pro
 		Instance:       proto.String(instance),
 		Processor:      proto.String(processor),
 		Id:             ids,
-		SendFromCache:  proto.Bool(false),
+		SendFromCache:  proto.Bool(true),
 		AbortOnInvalid: proto.Bool(false),
 	}); err != nil {
 		// io.EOF means the server ended the stream; Recv has the reason.
