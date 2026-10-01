@@ -22,7 +22,7 @@ jest.mock('vscode', () => {
 
 import type * as vscode from 'vscode';
 import type * as Hermes from '@gov.nasa.jpl.hermes/api';
-import { YamcsClient, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
+import { inTopLevelSpaceSystem, YamcsClient, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
 
 import { YamcsBackendProvider, YamcsParameterHandler } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
@@ -73,6 +73,18 @@ describe('splitName', () => {
 
     test('puts a root parameter in /', () => {
         expect(splitName('/P')).toEqual(['/', 'P']);
+    });
+});
+
+describe('inTopLevelSpaceSystem', () => {
+    test('matches packet header fields but not channels', () => {
+        expect(inTopLevelSpaceSystem('/Dep/FPrimeTime')).toBe(true);
+        expect(inTopLevelSpaceSystem('/Dep/CdhCore/version/FrameworkVersion')).toBe(false);
+        expect(inTopLevelSpaceSystem('/Dep/systemResources/CPU')).toBe(false);
+    });
+
+    test('does not match a root parameter', () => {
+        expect(inTopLevelSpaceSystem('/P')).toBe(false);
     });
 });
 
@@ -226,15 +238,25 @@ async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<
 }
 
 (address ? describe : describe.skip)('YAMCS (live)', () => {
+    // The fprime-yamcs packet header fields, all directly in the deployment's space system
+    const headerFields = [
+        'CCSDS_Packet_ID', 'CCSDS_Packet_Length', 'CCSDS_Packet_Sequence', 'DataDescType', 'FPrimeChannelId', 'FPrimeEventId',
+        'FPrimeFilePacketByteOffset', 'FPrimeFilePacketChecksum', 'FPrimeFilePacketDataSize', 'FPrimeFilePacketDestinationPath',
+        'FPrimeFilePacketFileSize', 'FPrimeFilePacketSeqIndex', 'FPrimeFilePacketSourcePath', 'FPrimeFilePacketType',
+        'FPrimePacketId', 'FPrimeTime',
+    ];
+
     test('lists every TELEMETERED parameter across pages', async () => {
         const client = new YamcsClient(address!);
         try {
             await client.waitForReady(5000);
             const names = await client.listTelemetered(instance);
-            console.log(`${names.length} TELEMETERED parameters in ${instance}`);
+            const topLevel = names.filter(inTopLevelSpaceSystem);
+            console.log(`${names.length} TELEMETERED parameters in ${instance}, ${topLevel.length} in a top-level space system`);
             // YAMCS pages ListParameters by 100
             expect(names.length).toBeGreaterThan(100);
             expect(new Set(names).size).toBe(names.length);
+            expect(topLevel.map((name) => name.substring(name.lastIndexOf('/') + 1)).sort()).toEqual([...headerFields].sort());
         } finally {
             client.close();
         }
@@ -258,9 +280,9 @@ async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<
 
             const cpuKey = await waitFor(keyEndingWith('/systemResources/CPU'), 10000);
             await waitFor(() => db.get(cpuKey)!.time.length >= 3 || undefined, 15000);
-            const apidKey = await waitFor(keyEndingWith('/CCSDS_Packet_ID.APID'), 10000);
             const depthKey = await waitFor(keyEndingWith('/comQueue/comQueueDepth[1]'), 10000);
-            const flagsKey = await waitFor(keyEndingWith('/CCSDS_Packet_Sequence.GroupFlags'), 10000);
+            const buffKey = await waitFor(keyEndingWith('/comQueue/buffQueueDepth[0]'), 10000);
+            const headers = [...db.series.values()].filter((s) => headerFields.includes(s.name.split(/[.[]/)[0]));
 
             const latest = (key: string) => {
                 const data = db.get(key)!;
@@ -272,20 +294,19 @@ async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<
                 cachedFrameworkVersionAfterMs: cachedAfter,
                 frameworkVersion: latest(versionKey),
                 cpu: { ...latest(cpuKey), points: db.get(cpuKey)!.time.length },
-                apid: latest(apidKey),
                 comQueueDepth1: latest(depthKey),
-                groupFlags: latest(flagsKey),
+                buffQueueDepth0: latest(buffKey),
+                headerFieldChannels: headers.length,
             }, null, 2));
 
             expect(version.valueStr![0]).not.toBe('');
             expect(version.time[0]).toBeLessThan(subscribed - 60 * 1000);
             expect(cachedAfter).toBeLessThan(2000);
             expect(db.get(cpuKey)!.valueNum!.every(Number.isFinite)).toBe(true);
-            expect(db.series.get(apidKey)?.name).toBe('CCSDS_Packet_ID.APID');
-            expect(Number.isInteger(latest(apidKey).valueNum)).toBe(true);
             expect(db.series.get(depthKey)?.name).toBe('comQueueDepth[1]');
             expect(Number.isInteger(latest(depthKey).valueNum)).toBe(true);
-            expect(latest(flagsKey).valueStr).toMatch(/^[A-Za-z]+$/);
+            expect(Number.isInteger(latest(buffKey).valueNum)).toBe(true);
+            expect(headers).toEqual([]);
             for (const data of db.data.values()) {
                 expect(data.time.every((t, i) => i === 0 || data.time[i - 1] <= t)).toBe(true);
             }
@@ -294,4 +315,32 @@ async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<
             api.dispose();
         }
     }, 60000);
+
+    test('includeTopLevel brings back the packet header fields', async () => {
+        const api = await new YamcsBackendProvider().provideBackendApi(
+            { address: address!, instance, processor: 'realtime', includeTopLevel: true },
+            {} as vscode.ExtensionContext,
+            log,
+        );
+        const db = new TelemetryDatabase(api);
+        const keyEndingWith = (suffix: string) => () => [...db.data.keys()].find((k) => k.endsWith(suffix));
+
+        try {
+            const apidKey = await waitFor(keyEndingWith('/CCSDS_Packet_ID.APID'), 10000);
+            const flagsKey = await waitFor(keyEndingWith('/CCSDS_Packet_Sequence.GroupFlags'), 10000);
+            const headers = [...db.series.values()].filter((s) => headerFields.includes(s.name.split(/[.[]/)[0]));
+            console.log(JSON.stringify({
+                headerFieldChannels: headers.map((s) => s.name),
+                apid: db.get(apidKey)!.valueStr,
+                groupFlags: db.get(flagsKey)!.valueStr,
+            }));
+
+            expect(db.series.get(apidKey)?.name).toBe('CCSDS_Packet_ID.APID');
+            expect(db.get(apidKey)!.valueNum!.every(Number.isInteger)).toBe(true);
+            expect(db.get(flagsKey)!.valueStr!.every((s) => /^[A-Za-z]+$/.test(s))).toBe(true);
+        } finally {
+            db.dispose();
+            api.dispose();
+        }
+    }, 30000);
 });

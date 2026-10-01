@@ -23,6 +23,15 @@ const yamcsDefinition = protoLoader.fromJSON(yamcsDescriptor as any, {
 const yamcsPackage = grpc.loadPackageDefinition(yamcsDefinition) as unknown as ProtoGrpcType;
 
 /**
+ * Whether a parameter sits directly in a top-level space system, such as
+ * /BigData_YamcsDeployment/FPrimeTime. fprime-yamcs puts the CCSDS and F Prime
+ * packet header fields there, and every F Prime channel at least one level below.
+ */
+export function inTopLevelSpaceSystem(qualifiedName: string): boolean {
+    return /^\/[^/]+$/.test(qualifiedName.substring(0, qualifiedName.lastIndexOf('/')));
+}
+
+/**
  * Client for the YAMCS API that the yamcs-grpc plugin serves over gRPC.
  */
 export class YamcsClient {

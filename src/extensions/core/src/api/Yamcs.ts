@@ -46,8 +46,10 @@ class Yamcs extends Offline implements YamcsParameterSource {
         const cancelled = token?.onCancellationRequested(() => client.close());
         try {
             await client.waitForReady(5000);
-            const names = await client.listTelemetered(state.instance);
-            log.info(`Found ${names.length} TELEMETERED parameters in YAMCS instance ${state.instance}`);
+            const all = await client.listTelemetered(state.instance);
+            // In fprime-yamcs these are packet header fields, not channels
+            const names = state.includeTopLevel ? all : all.filter((name) => !Rpc.inTopLevelSpaceSystem(name));
+            log.info(`Found ${all.length} TELEMETERED parameters in YAMCS instance ${state.instance}, subscribing to ${names.length}`);
 
             const api = new Yamcs(context, log, client, state, names);
             await api._activate();

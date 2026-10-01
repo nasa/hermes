@@ -345,6 +345,11 @@
                                 "type": "string",
                                 "description": "YAMCS processor",
                                 "default": "realtime"
+                            },
+                            "includeTopLevel": {
+                                "type": "boolean",
+                                "description": "Also show parameters directly in a top-level space system. fprime-yamcs puts the CCSDS and F Prime packet header fields there, so these are hidden by default.",
+                                "default": false
                             }
                         }
                     },

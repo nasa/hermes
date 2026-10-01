@@ -87,6 +87,8 @@ export interface Yamcs {
     address: string;
     instance: string;
     processor: string;
+    // Also subscribe to parameters directly in a top-level space system
+    includeTopLevel?: boolean;
 }
 
 export function hostYamcs(): Yamcs {

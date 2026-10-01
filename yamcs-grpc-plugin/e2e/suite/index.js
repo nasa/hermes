@@ -66,18 +66,18 @@ exports.run = async function () {
         result.frameworkVersionAfterMs = Date.now() - subscribed;
         const cpuKey = await waitFor('CPU', () => key('/systemResources/CPU'), 10000);
         await waitFor('3 CPU points', () => db.get(cpuKey).time.length >= 3, 15000);
-        const apidKey = await waitFor('APID', () => key('/CCSDS_Packet_ID.APID'), 10000);
+        const buffKey = await waitFor('buffQueueDepth[0]', () => key('/comQueue/buffQueueDepth[0]'), 10000);
         const depthKey = await waitFor('comQueueDepth[1]', () => key('/comQueue/comQueueDepth[1]'), 10000);
-        const flagsKey = await waitFor('GroupFlags', () => key('/CCSDS_Packet_Sequence.GroupFlags'), 10000);
+        const depth0Key = await waitFor('comQueueDepth[0]', () => key('/comQueue/comQueueDepth[0]'), 10000);
         result.channels = db.series.size;
-        result.rows = [versionKey, cpuKey, apidKey, depthKey, flagsKey].map(latest);
+        result.rows = [versionKey, cpuKey, buffKey, depthKey, depth0Key].map(latest);
         step('YAMCS rows in the telemetry database');
 
         await vscode.commands.executeCommand('hermes.telemetryTable.focus');
         await waitFor('a table update', () => updates.length > 0, 10000);
         await sleep(2000);
         result.tableUpdates = updates.length;
-        result.tableUpdateSample = updates[updates.length - 1][apidKey] ?? Object.values(updates[updates.length - 1])[0];
+        result.tableUpdateSample = updates[updates.length - 1][buffKey] ?? Object.values(updates[updates.length - 1])[0];
         step('table panel sent update rows');
 
         // Switching away detaches the subscription and switching back reattaches it
