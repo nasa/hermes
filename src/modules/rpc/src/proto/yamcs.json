@@ -1,0 +1,5815 @@
+{
+  "nested": {
+    "yamcs": {
+      "nested": {
+        "protobuf": {
+          "options": {
+            "java_package": "org.yamcs.protobuf"
+          },
+          "nested": {
+            "processing": {
+              "options": {
+                "java_package": "org.yamcs.protobuf",
+                "java_outer_classname": "ProcessingProto",
+                "java_multiple_files": true
+              },
+              "nested": {
+                "ProcessingApi": {
+                  "edition": "proto2",
+                  "options": {
+                    "(yamcs.api.markdown)": true
+                  },
+                  "methods": {
+                    "ListProcessorTypes": {
+                      "requestType": "google.protobuf.Empty",
+                      "responseType": "ListProcessorTypesResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/processor-types"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/processor-types"
+                          }
+                        }
+                      ]
+                    },
+                    "ListProcessors": {
+                      "requestType": "ListProcessorsRequest",
+                      "responseType": "ListProcessorsResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/processors"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/processors"
+                          }
+                        }
+                      ]
+                    },
+                    "GetProcessor": {
+                      "requestType": "GetProcessorRequest",
+                      "responseType": "yamcsManagement.ProcessorInfo",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/processors/{instance}/{processor}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/processors/{instance}/{processor}"
+                          }
+                        }
+                      ]
+                    },
+                    "DeleteProcessor": {
+                      "requestType": "DeleteProcessorRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).delete": "/api/processors/{instance}/{processor}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "delete": "/api/processors/{instance}/{processor}"
+                          }
+                        }
+                      ]
+                    },
+                    "EditProcessor": {
+                      "requestType": "EditProcessorRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).patch": "/api/processors/{instance}/{processor}",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "patch": "/api/processors/{instance}/{processor}",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "CreateProcessor": {
+                      "requestType": "CreateProcessorRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/processors",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/processors",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "GetParameterValue": {
+                      "requestType": "GetParameterValueRequest",
+                      "responseType": "pvalue.ParameterValue",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/processors/{instance}/{processor}/parameters/{name*}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/processors/{instance}/{processor}/parameters/{name*}"
+                          }
+                        }
+                      ]
+                    },
+                    "SetParameterValue": {
+                      "requestType": "SetParameterValueRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).put": "/api/processors/{instance}/{processor}/parameters/{name*}",
+                        "(yamcs.api.route).body": "value",
+                        "(yamcs.api.route).additional_bindings.post": "/api/processors/{instance}/{processor}/parameters/{name*}",
+                        "(yamcs.api.route).additional_bindings.body": "value"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "put": "/api/processors/{instance}/{processor}/parameters/{name*}",
+                            "body": "value",
+                            "additional_bindings": {
+                              "post": "/api/processors/{instance}/{processor}/parameters/{name*}",
+                              "body": "value"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "BatchGetParameterValues": {
+                      "requestType": "BatchGetParameterValuesRequest",
+                      "responseType": "BatchGetParameterValuesResponse",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/processors/{instance}/{processor}/parameters:batchGet",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/processors/{instance}/{processor}/parameters:batchGet",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "BatchSetParameterValues": {
+                      "requestType": "BatchSetParameterValuesRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/processors/{instance}/{processor}/parameters:batchSet",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/processors/{instance}/{processor}/parameters:batchSet",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "SubscribeTMStatistics": {
+                      "requestType": "SubscribeTMStatisticsRequest",
+                      "responseType": "yamcsManagement.Statistics",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.websocket).topic": "tmstats"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.websocket)": {
+                            "topic": "tmstats"
+                          }
+                        }
+                      ]
+                    },
+                    "SubscribeParameters": {
+                      "requestType": "SubscribeParametersRequest",
+                      "requestStream": true,
+                      "responseType": "SubscribeParametersData",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.websocket).topic": "parameters"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.websocket)": {
+                            "topic": "parameters"
+                          }
+                        }
+                      ]
+                    },
+                    "SubscribeProcessors": {
+                      "requestType": "SubscribeProcessorsRequest",
+                      "responseType": "yamcsManagement.ProcessorInfo",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.websocket).topic": "processors"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.websocket)": {
+                            "topic": "processors"
+                          }
+                        }
+                      ]
+                    },
+                    "GetAlgorithmStatus": {
+                      "requestType": "GetAlgorithmStatusRequest",
+                      "responseType": "AlgorithmStatus",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/processors/{instance}/{processor}/algorithms/{name*}/status"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/processors/{instance}/{processor}/algorithms/{name*}/status"
+                          }
+                        }
+                      ]
+                    },
+                    "SubscribeAlgorithmStatus": {
+                      "requestType": "SubscribeAlgorithmStatusRequest",
+                      "responseType": "AlgorithmStatus",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.websocket).topic": "algorithm-status"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.websocket)": {
+                            "topic": "algorithm-status"
+                          }
+                        }
+                      ]
+                    },
+                    "GetAlgorithmTrace": {
+                      "requestType": "GetAlgorithmTraceRequest",
+                      "responseType": "AlgorithmTrace",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/processors/{instance}/{processor}/algorithms/{name*}/trace"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/processors/{instance}/{processor}/algorithms/{name*}/trace"
+                          }
+                        }
+                      ]
+                    },
+                    "EditAlgorithmTrace": {
+                      "requestType": "EditAlgorithmTraceRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).patch": "/api/processors/{instance}/{processor}/algorithms/{name*}/trace",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "patch": "/api/processors/{instance}/{processor}/algorithms/{name*}/trace",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "ListProcessorTypesResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "types": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "ListProcessorsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "ListProcessorsResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "processors": {
+                      "rule": "repeated",
+                      "type": "yamcsManagement.ProcessorInfo",
+                      "id": 1
+                    }
+                  }
+                },
+                "SubscribeTMStatisticsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "SubscribeProcessorsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "SubscribeParametersRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "id": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 3
+                    },
+                    "abortOnInvalid": {
+                      "type": "bool",
+                      "id": 4
+                    },
+                    "updateOnExpiration": {
+                      "type": "bool",
+                      "id": 5
+                    },
+                    "sendFromCache": {
+                      "type": "bool",
+                      "id": 6
+                    },
+                    "action": {
+                      "type": "Action",
+                      "id": 7
+                    },
+                    "maxBytes": {
+                      "type": "int32",
+                      "id": 8
+                    }
+                  },
+                  "nested": {
+                    "Action": {
+                      "values": {
+                        "REPLACE": 0,
+                        "ADD": 1,
+                        "REMOVE": 2
+                      }
+                    }
+                  }
+                },
+                "SubscribeParametersData": {
+                  "edition": "proto2",
+                  "fields": {
+                    "mapping": {
+                      "keyType": "uint32",
+                      "type": "NamedObjectId",
+                      "id": 1
+                    },
+                    "info": {
+                      "keyType": "uint32",
+                      "type": "SubscribedParameterInfo",
+                      "id": 4
+                    },
+                    "invalid": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 2
+                    },
+                    "values": {
+                      "rule": "repeated",
+                      "type": "pvalue.ParameterValue",
+                      "id": 3
+                    }
+                  }
+                },
+                "SubscribedParameterInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "parameter": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "units": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "dataSource": {
+                      "type": "mdb.DataSourceType",
+                      "id": 3
+                    },
+                    "enumValues": {
+                      "rule": "repeated",
+                      "type": "mdb.EnumValue",
+                      "id": 4
+                    },
+                    "enumRanges": {
+                      "rule": "repeated",
+                      "type": "mdb.EnumRange",
+                      "id": 5
+                    }
+                  }
+                },
+                "GetProcessorRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "DeleteProcessorRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "CreateProcessorRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "persistent": {
+                      "type": "bool",
+                      "id": 4
+                    },
+                    "type": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "config": {
+                      "type": "string",
+                      "id": 6
+                    }
+                  }
+                },
+                "EditProcessorRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "state": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "seek": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 4
+                    },
+                    "speed": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "start": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 6
+                    },
+                    "stop": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 7
+                    },
+                    "loop": {
+                      "type": "bool",
+                      "id": 8
+                    }
+                  }
+                },
+                "GetParameterValueRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "fromCache": {
+                      "type": "bool",
+                      "id": 4
+                    },
+                    "timeout": {
+                      "type": "uint64",
+                      "id": 5
+                    }
+                  }
+                },
+                "SetParameterValueRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "value": {
+                      "type": "Value",
+                      "id": 4
+                    },
+                    "generationTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 5
+                    },
+                    "expiresIn": {
+                      "type": "uint64",
+                      "id": 6
+                    }
+                  }
+                },
+                "BatchGetParameterValuesRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "id": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 1
+                    },
+                    "fromCache": {
+                      "type": "bool",
+                      "id": 2
+                    },
+                    "timeout": {
+                      "type": "uint64",
+                      "id": 3
+                    }
+                  }
+                },
+                "BatchGetParameterValuesResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "value": {
+                      "rule": "repeated",
+                      "type": "pvalue.ParameterValue",
+                      "id": 1
+                    }
+                  }
+                },
+                "BatchSetParameterValuesRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "request": {
+                      "rule": "repeated",
+                      "type": "SetParameterValueRequest",
+                      "id": 1
+                    }
+                  },
+                  "nested": {
+                    "SetParameterValueRequest": {
+                      "fields": {
+                        "id": {
+                          "type": "NamedObjectId",
+                          "id": 1
+                        },
+                        "value": {
+                          "type": "Value",
+                          "id": 2
+                        },
+                        "generationTime": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 3
+                        },
+                        "expiresIn": {
+                          "type": "uint64",
+                          "id": 4
+                        }
+                      }
+                    }
+                  }
+                },
+                "GetAlgorithmStatusRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "SubscribeAlgorithmStatusRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "GetAlgorithmTraceRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "EditAlgorithmTraceRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "state": {
+                      "type": "string",
+                      "id": 4
+                    }
+                  }
+                },
+                "AlgorithmStatus": {
+                  "edition": "proto2",
+                  "fields": {
+                    "active": {
+                      "type": "bool",
+                      "id": 1
+                    },
+                    "traceEnabled": {
+                      "type": "bool",
+                      "id": 2
+                    },
+                    "runCount": {
+                      "type": "uint32",
+                      "id": 3
+                    },
+                    "lastRun": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 4
+                    },
+                    "errorCount": {
+                      "type": "uint32",
+                      "id": 5
+                    },
+                    "errorMessage": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "errorTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 7
+                    },
+                    "execTimeNs": {
+                      "type": "uint64",
+                      "id": 8
+                    }
+                  }
+                },
+                "AlgorithmTrace": {
+                  "edition": "proto2",
+                  "fields": {
+                    "runs": {
+                      "rule": "repeated",
+                      "type": "Run",
+                      "id": 1
+                    },
+                    "logs": {
+                      "rule": "repeated",
+                      "type": "Log",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "Run": {
+                      "fields": {
+                        "time": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 1
+                        },
+                        "inputs": {
+                          "rule": "repeated",
+                          "type": "pvalue.ParameterValue",
+                          "id": 2
+                        },
+                        "outputs": {
+                          "rule": "repeated",
+                          "type": "pvalue.ParameterValue",
+                          "id": 3
+                        },
+                        "returnValue": {
+                          "type": "string",
+                          "id": 4
+                        },
+                        "error": {
+                          "type": "string",
+                          "id": 5
+                        }
+                      }
+                    },
+                    "Log": {
+                      "fields": {
+                        "time": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 2
+                        },
+                        "msg": {
+                          "type": "string",
+                          "id": 3
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "mdb": {
+              "options": {
+                "java_package": "org.yamcs.protobuf"
+              },
+              "nested": {
+                "MdbApi": {
+                  "edition": "proto2",
+                  "options": {
+                    "(yamcs.api.label)": "MDB",
+                    "(yamcs.api.markdown)": true
+                  },
+                  "methods": {
+                    "GetMissionDatabase": {
+                      "requestType": "GetMissionDatabaseRequest",
+                      "responseType": "MissionDatabase",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}"
+                          }
+                        }
+                      ]
+                    },
+                    "ExportJavaMissionDatabase": {
+                      "requestType": "ExportJavaMissionDatabaseRequest",
+                      "responseType": "yamcs.api.HttpBody",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}:exportJava"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}:exportJava"
+                          }
+                        }
+                      ]
+                    },
+                    "ListSpaceSystems": {
+                      "requestType": "ListSpaceSystemsRequest",
+                      "responseType": "ListSpaceSystemsResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/space-systems",
+                        "(yamcs.api.route).field_mask_root": "spaceSystems"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}/space-systems",
+                            "field_mask_root": "spaceSystems"
+                          }
+                        }
+                      ]
+                    },
+                    "GetSpaceSystem": {
+                      "requestType": "GetSpaceSystemRequest",
+                      "responseType": "SpaceSystemInfo",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/space-systems/{name*}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}/space-systems/{name*}"
+                          }
+                        }
+                      ]
+                    },
+                    "ExportXtce": {
+                      "requestType": "ExportXtceRequest",
+                      "responseType": "yamcs.api.HttpBody",
+                      "options": {
+                        "(yamcs.api.route).label": "Export XTCE",
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/space-systems/{name*}:exportXTCE"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "label": "Export XTCE",
+                            "get": "/api/mdb/{instance}/space-systems/{name*}:exportXTCE"
+                          }
+                        }
+                      ]
+                    },
+                    "StreamMissionDatabase": {
+                      "requestType": "StreamMissionDatabaseRequest",
+                      "responseType": "MissionDatabaseItem",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}:streamMissionDatabase",
+                        "(yamcs.api.route).offloaded": true
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}:streamMissionDatabase",
+                            "offloaded": true
+                          }
+                        }
+                      ]
+                    },
+                    "ListParameters": {
+                      "requestType": "ListParametersRequest",
+                      "responseType": "ListParametersResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/parameters",
+                        "(yamcs.api.route).field_mask_root": "parameters"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}/parameters",
+                            "field_mask_root": "parameters"
+                          }
+                        }
+                      ]
+                    },
+                    "GetParameter": {
+                      "requestType": "GetParameterRequest",
+                      "responseType": "ParameterInfo",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/parameters/{name*}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}/parameters/{name*}"
+                          }
+                        }
+                      ]
+                    },
+                    "CreateParameter": {
+                      "requestType": "CreateParameterRequest",
+                      "responseType": "ParameterInfo",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/mdb/{instance}/parameters",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/mdb/{instance}/parameters",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "BatchGetParameters": {
+                      "requestType": "BatchGetParametersRequest",
+                      "responseType": "BatchGetParametersResponse",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/mdb/{instance}/parameters:batchGet",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/mdb/{instance}/parameters:batchGet",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "ListParameterTypes": {
+                      "requestType": "ListParameterTypesRequest",
+                      "responseType": "ListParameterTypesResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/parameter-types",
+                        "(yamcs.api.route).field_mask_root": "parameterTypes"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}/parameter-types",
+                            "field_mask_root": "parameterTypes"
+                          }
+                        }
+                      ]
+                    },
+                    "GetParameterType": {
+                      "requestType": "GetParameterTypeRequest",
+                      "responseType": "ParameterTypeInfo",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/parameter-types/{name*}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}/parameter-types/{name*}"
+                          }
+                        }
+                      ]
+                    },
+                    "CreateParameterType": {
+                      "requestType": "CreateParameterTypeRequest",
+                      "responseType": "ParameterTypeInfo",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/mdb/{instance}/parameter-types",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/mdb/{instance}/parameter-types",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "ListContainers": {
+                      "requestType": "ListContainersRequest",
+                      "responseType": "ListContainersResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/containers",
+                        "(yamcs.api.route).field_mask_root": "containers"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}/containers",
+                            "field_mask_root": "containers"
+                          }
+                        }
+                      ]
+                    },
+                    "GetContainer": {
+                      "requestType": "GetContainerRequest",
+                      "responseType": "ContainerInfo",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/containers/{name*}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}/containers/{name*}"
+                          }
+                        }
+                      ]
+                    },
+                    "ListCommands": {
+                      "requestType": "ListCommandsRequest",
+                      "responseType": "ListCommandsResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/commands",
+                        "(yamcs.api.route).field_mask_root": "commands"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}/commands",
+                            "field_mask_root": "commands"
+                          }
+                        }
+                      ]
+                    },
+                    "GetCommand": {
+                      "requestType": "GetCommandRequest",
+                      "responseType": "CommandInfo",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/commands/{name*}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}/commands/{name*}"
+                          }
+                        }
+                      ]
+                    },
+                    "ListAlgorithms": {
+                      "requestType": "ListAlgorithmsRequest",
+                      "responseType": "ListAlgorithmsResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/algorithms",
+                        "(yamcs.api.route).field_mask_root": "algorithms"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}/algorithms",
+                            "field_mask_root": "algorithms"
+                          }
+                        }
+                      ]
+                    },
+                    "GetAlgorithm": {
+                      "requestType": "GetAlgorithmRequest",
+                      "responseType": "AlgorithmInfo",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/mdb/{instance}/algorithms/{name*}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/mdb/{instance}/algorithms/{name*}"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "MissionDatabase": {
+                  "edition": "proto2",
+                  "fields": {
+                    "configName": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "version": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "spaceSystem": {
+                      "rule": "repeated",
+                      "type": "SpaceSystemInfo",
+                      "id": 4,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "spaceSystems": {
+                      "rule": "repeated",
+                      "type": "SpaceSystemInfo",
+                      "id": 11
+                    },
+                    "parameterCount": {
+                      "type": "int32",
+                      "id": 6
+                    },
+                    "containerCount": {
+                      "type": "int32",
+                      "id": 7
+                    },
+                    "commandCount": {
+                      "type": "int32",
+                      "id": 8
+                    },
+                    "algorithmCount": {
+                      "type": "int32",
+                      "id": 9
+                    },
+                    "parameterTypeCount": {
+                      "type": "int32",
+                      "id": 10
+                    }
+                  }
+                },
+                "HistoryInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "version": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "date": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "message": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "author": {
+                      "type": "string",
+                      "id": 4
+                    }
+                  }
+                },
+                "DataSourceType": {
+                  "edition": "proto2",
+                  "values": {
+                    "TELEMETERED": 0,
+                    "DERIVED": 1,
+                    "CONSTANT": 2,
+                    "LOCAL": 3,
+                    "SYSTEM": 4,
+                    "COMMAND": 5,
+                    "COMMAND_HISTORY": 6,
+                    "EXTERNAL1": 7,
+                    "EXTERNAL2": 8,
+                    "EXTERNAL3": 9,
+                    "GROUND": 10
+                  }
+                },
+                "AlarmLevelType": {
+                  "edition": "proto2",
+                  "values": {
+                    "NORMAL": 0,
+                    "WATCH": 1,
+                    "WARNING": 2,
+                    "DISTRESS": 3,
+                    "CRITICAL": 4,
+                    "SEVERE": 5
+                  }
+                },
+                "UnitInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "unit": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "AlarmRange": {
+                  "edition": "proto2",
+                  "fields": {
+                    "level": {
+                      "type": "AlarmLevelType",
+                      "id": 1
+                    },
+                    "minInclusive": {
+                      "type": "double",
+                      "id": 2
+                    },
+                    "maxInclusive": {
+                      "type": "double",
+                      "id": 3
+                    },
+                    "minExclusive": {
+                      "type": "double",
+                      "id": 4
+                    },
+                    "maxExclusive": {
+                      "type": "double",
+                      "id": 5
+                    }
+                  }
+                },
+                "EnumerationAlarm": {
+                  "edition": "proto2",
+                  "fields": {
+                    "level": {
+                      "type": "AlarmLevelType",
+                      "id": 1
+                    },
+                    "label": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "AlarmInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "minViolations": {
+                      "type": "int32",
+                      "id": 1
+                    },
+                    "staticAlarmRange": {
+                      "rule": "repeated",
+                      "type": "AlarmRange",
+                      "id": 2,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "staticAlarmRanges": {
+                      "rule": "repeated",
+                      "type": "AlarmRange",
+                      "id": 4
+                    },
+                    "enumerationAlarm": {
+                      "rule": "repeated",
+                      "type": "EnumerationAlarm",
+                      "id": 3,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "enumerationAlarms": {
+                      "rule": "repeated",
+                      "type": "EnumerationAlarm",
+                      "id": 5
+                    },
+                    "defaultLevel": {
+                      "type": "AlarmLevelType",
+                      "id": 6
+                    }
+                  }
+                },
+                "ContextAlarmInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "comparison": {
+                      "rule": "repeated",
+                      "type": "ComparisonInfo",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "alarm": {
+                      "type": "AlarmInfo",
+                      "id": 2
+                    },
+                    "context": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "DataEncodingInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "type": {
+                      "type": "Type",
+                      "id": 1
+                    },
+                    "littleEndian": {
+                      "type": "bool",
+                      "id": 2
+                    },
+                    "sizeInBits": {
+                      "type": "int32",
+                      "id": 3
+                    },
+                    "encoding": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "defaultCalibrator": {
+                      "type": "CalibratorInfo",
+                      "id": 6
+                    },
+                    "contextCalibrator": {
+                      "rule": "repeated",
+                      "type": "ContextCalibratorInfo",
+                      "id": 7,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "contextCalibrators": {
+                      "rule": "repeated",
+                      "type": "ContextCalibratorInfo",
+                      "id": 8
+                    }
+                  },
+                  "nested": {
+                    "Type": {
+                      "values": {
+                        "BINARY": 0,
+                        "BOOLEAN": 1,
+                        "FLOAT": 2,
+                        "INTEGER": 3,
+                        "STRING": 4
+                      }
+                    }
+                  }
+                },
+                "ContextCalibratorInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "comparison": {
+                      "rule": "repeated",
+                      "type": "ComparisonInfo",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "calibrator": {
+                      "type": "CalibratorInfo",
+                      "id": 2
+                    },
+                    "context": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "CalibratorInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "polynomialCalibrator": {
+                      "type": "PolynomialCalibratorInfo",
+                      "id": 2
+                    },
+                    "splineCalibrator": {
+                      "type": "SplineCalibratorInfo",
+                      "id": 3
+                    },
+                    "javaExpressionCalibrator": {
+                      "type": "JavaExpressionCalibratorInfo",
+                      "id": 4
+                    },
+                    "type": {
+                      "type": "Type",
+                      "id": 5
+                    }
+                  },
+                  "nested": {
+                    "Type": {
+                      "values": {
+                        "POLYNOMIAL": 0,
+                        "SPLINE": 1,
+                        "MATH_OPERATION": 2,
+                        "JAVA_EXPRESSION": 3,
+                        "ALGORITHM": 4
+                      }
+                    }
+                  }
+                },
+                "PolynomialCalibratorInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "coefficient": {
+                      "rule": "repeated",
+                      "type": "double",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "coefficients": {
+                      "rule": "repeated",
+                      "type": "double",
+                      "id": 2
+                    }
+                  }
+                },
+                "SplineCalibratorInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "point": {
+                      "rule": "repeated",
+                      "type": "SplinePointInfo",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "points": {
+                      "rule": "repeated",
+                      "type": "SplinePointInfo",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "SplinePointInfo": {
+                      "fields": {
+                        "raw": {
+                          "type": "double",
+                          "id": 1
+                        },
+                        "calibrated": {
+                          "type": "double",
+                          "id": 2
+                        }
+                      }
+                    }
+                  }
+                },
+                "JavaExpressionCalibratorInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "formula": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "EnumValue": {
+                  "edition": "proto2",
+                  "fields": {
+                    "value": {
+                      "type": "int64",
+                      "id": 1
+                    },
+                    "label": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "description": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "EnumRange": {
+                  "edition": "proto2",
+                  "fields": {
+                    "min": {
+                      "type": "double",
+                      "id": 1
+                    },
+                    "max": {
+                      "type": "double",
+                      "id": 2
+                    },
+                    "minInclusive": {
+                      "type": "bool",
+                      "id": 3
+                    },
+                    "maxInclusive": {
+                      "type": "bool",
+                      "id": 4
+                    },
+                    "label": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "description": {
+                      "type": "string",
+                      "id": 6
+                    }
+                  }
+                },
+                "ParameterTypeInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 16
+                    },
+                    "qualifiedName": {
+                      "type": "string",
+                      "id": 17
+                    },
+                    "shortDescription": {
+                      "type": "string",
+                      "id": 18
+                    },
+                    "longDescription": {
+                      "type": "string",
+                      "id": 19
+                    },
+                    "alias": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 20
+                    },
+                    "engType": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "dataEncoding": {
+                      "type": "DataEncodingInfo",
+                      "id": 2
+                    },
+                    "unitSet": {
+                      "rule": "repeated",
+                      "type": "UnitInfo",
+                      "id": 3
+                    },
+                    "defaultAlarm": {
+                      "type": "AlarmInfo",
+                      "id": 4
+                    },
+                    "enumValue": {
+                      "rule": "repeated",
+                      "type": "EnumValue",
+                      "id": 5,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "enumValues": {
+                      "rule": "repeated",
+                      "type": "EnumValue",
+                      "id": 22
+                    },
+                    "enumRanges": {
+                      "rule": "repeated",
+                      "type": "EnumRange",
+                      "id": 23
+                    },
+                    "absoluteTimeInfo": {
+                      "type": "AbsoluteTimeInfo",
+                      "id": 6
+                    },
+                    "contextAlarm": {
+                      "rule": "repeated",
+                      "type": "ContextAlarmInfo",
+                      "id": 7
+                    },
+                    "member": {
+                      "rule": "repeated",
+                      "type": "MemberInfo",
+                      "id": 8
+                    },
+                    "arrayInfo": {
+                      "type": "ArrayInfo",
+                      "id": 9
+                    },
+                    "ancillaryData": {
+                      "keyType": "string",
+                      "type": "AncillaryDataInfo",
+                      "id": 10
+                    },
+                    "numberFormat": {
+                      "type": "NumberFormatTypeInfo",
+                      "id": 11
+                    },
+                    "signed": {
+                      "type": "bool",
+                      "id": 12
+                    },
+                    "sizeInBits": {
+                      "type": "int32",
+                      "id": 21
+                    },
+                    "zeroStringValue": {
+                      "type": "string",
+                      "id": 13
+                    },
+                    "oneStringValue": {
+                      "type": "string",
+                      "id": 14
+                    },
+                    "usedBy": {
+                      "rule": "repeated",
+                      "type": "ParameterInfo",
+                      "id": 15
+                    },
+                    "initialValue": {
+                      "type": "string",
+                      "id": 24
+                    },
+                    "rawValidRange": {
+                      "type": "ValidRangeInfo",
+                      "id": 25
+                    },
+                    "engValidRange": {
+                      "type": "ValidRangeInfo",
+                      "id": 26
+                    }
+                  }
+                },
+                "ValidRangeInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "minimum": {
+                      "type": "double",
+                      "id": 1
+                    },
+                    "maximum": {
+                      "type": "double",
+                      "id": 2
+                    },
+                    "minimumInclusive": {
+                      "type": "bool",
+                      "id": 3
+                    },
+                    "maximumInclusive": {
+                      "type": "bool",
+                      "id": 4
+                    }
+                  }
+                },
+                "NumberFormatTypeInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "numberBase": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "minimumFractionDigits": {
+                      "type": "int32",
+                      "id": 2
+                    },
+                    "maximumFractionDigits": {
+                      "type": "int32",
+                      "id": 3
+                    },
+                    "minimumIntegerDigits": {
+                      "type": "int32",
+                      "id": 4
+                    },
+                    "maximumIntegerDigits": {
+                      "type": "int32",
+                      "id": 5
+                    },
+                    "negativeSuffix": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "positiveSuffix": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "negativePrefix": {
+                      "type": "string",
+                      "id": 8
+                    },
+                    "positivePrefix": {
+                      "type": "string",
+                      "id": 9
+                    },
+                    "showThousandsGrouping": {
+                      "type": "bool",
+                      "id": 10
+                    },
+                    "notation": {
+                      "type": "string",
+                      "id": 11
+                    }
+                  }
+                },
+                "GetContainerRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "GetParameterTypeRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "AbsoluteTimeInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "initialValue": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "scale": {
+                      "type": "double",
+                      "id": 2
+                    },
+                    "offset": {
+                      "type": "double",
+                      "id": 3
+                    },
+                    "offsetFrom": {
+                      "type": "ParameterInfo",
+                      "id": 4
+                    },
+                    "epoch": {
+                      "type": "string",
+                      "id": 5
+                    }
+                  }
+                },
+                "MemberInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "shortDescription": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "longDescription": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "alias": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 5
+                    },
+                    "type": {
+                      "type": "ParameterTypeInfo",
+                      "id": 6
+                    }
+                  }
+                },
+                "ArgumentMemberInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "shortDescription": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "longDescription": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "alias": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 5
+                    },
+                    "type": {
+                      "type": "ArgumentTypeInfo",
+                      "id": 6
+                    },
+                    "initialValue": {
+                      "type": "string",
+                      "id": 7
+                    }
+                  }
+                },
+                "ParameterDimensionInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "fixedValue": {
+                      "type": "int64",
+                      "id": 1
+                    },
+                    "parameter": {
+                      "type": "ParameterInfo",
+                      "id": 2
+                    },
+                    "slope": {
+                      "type": "int64",
+                      "id": 3
+                    },
+                    "intercept": {
+                      "type": "int64",
+                      "id": 4
+                    }
+                  }
+                },
+                "ArrayInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "type": {
+                      "type": "ParameterTypeInfo",
+                      "id": 1
+                    },
+                    "dimensions": {
+                      "rule": "repeated",
+                      "type": "ParameterDimensionInfo",
+                      "id": 3
+                    }
+                  }
+                },
+                "UsedByInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "algorithm": {
+                      "rule": "repeated",
+                      "type": "AlgorithmInfo",
+                      "id": 1
+                    },
+                    "container": {
+                      "rule": "repeated",
+                      "type": "ContainerInfo",
+                      "id": 2
+                    }
+                  }
+                },
+                "ParameterInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "qualifiedName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "shortDescription": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "longDescription": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "alias": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 5
+                    },
+                    "type": {
+                      "type": "ParameterTypeInfo",
+                      "id": 6
+                    },
+                    "dataSource": {
+                      "type": "DataSourceType",
+                      "id": 7
+                    },
+                    "usedBy": {
+                      "type": "UsedByInfo",
+                      "id": 8
+                    },
+                    "ancillaryData": {
+                      "keyType": "string",
+                      "type": "AncillaryDataInfo",
+                      "id": 9
+                    },
+                    "path": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 10
+                    }
+                  }
+                },
+                "AncillaryDataInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "value": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "mimeType": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "href": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "ArgumentTypeInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "engType": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "dataEncoding": {
+                      "type": "DataEncodingInfo",
+                      "id": 2
+                    },
+                    "unitSet": {
+                      "rule": "repeated",
+                      "type": "UnitInfo",
+                      "id": 3
+                    },
+                    "enumValue": {
+                      "rule": "repeated",
+                      "type": "EnumValue",
+                      "id": 5
+                    },
+                    "rangeMin": {
+                      "type": "double",
+                      "id": 6
+                    },
+                    "rangeMax": {
+                      "type": "double",
+                      "id": 7
+                    },
+                    "member": {
+                      "rule": "repeated",
+                      "type": "ArgumentMemberInfo",
+                      "id": 8
+                    },
+                    "zeroStringValue": {
+                      "type": "string",
+                      "id": 9
+                    },
+                    "oneStringValue": {
+                      "type": "string",
+                      "id": 10
+                    },
+                    "minChars": {
+                      "type": "int32",
+                      "id": 11
+                    },
+                    "maxChars": {
+                      "type": "int32",
+                      "id": 12
+                    },
+                    "signed": {
+                      "type": "bool",
+                      "id": 13
+                    },
+                    "minBytes": {
+                      "type": "int32",
+                      "id": 14
+                    },
+                    "maxBytes": {
+                      "type": "int32",
+                      "id": 15
+                    },
+                    "dimensions": {
+                      "rule": "repeated",
+                      "type": "ArgumentDimensionInfo",
+                      "id": 16
+                    },
+                    "elementType": {
+                      "type": "ArgumentTypeInfo",
+                      "id": 17
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 18
+                    },
+                    "sizeInBits": {
+                      "type": "int32",
+                      "id": 19
+                    }
+                  }
+                },
+                "ArgumentDimensionInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "fixedValue": {
+                      "type": "int64",
+                      "id": 1
+                    },
+                    "parameter": {
+                      "type": "ParameterInfo",
+                      "id": 2
+                    },
+                    "argument": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "slope": {
+                      "type": "int64",
+                      "id": 4
+                    },
+                    "intercept": {
+                      "type": "int64",
+                      "id": 5
+                    }
+                  }
+                },
+                "ArgumentInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "description": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "initialValue": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "type": {
+                      "type": "ArgumentTypeInfo",
+                      "id": 6
+                    }
+                  }
+                },
+                "ArgumentAssignmentInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "value": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "SignificanceInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "consequenceLevel": {
+                      "type": "SignificanceLevelType",
+                      "id": 1
+                    },
+                    "reasonForWarning": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "SignificanceLevelType": {
+                      "values": {
+                        "NONE": 1,
+                        "WATCH": 2,
+                        "WARNING": 3,
+                        "DISTRESS": 4,
+                        "CRITICAL": 5,
+                        "SEVERE": 6
+                      }
+                    }
+                  }
+                },
+                "ComparisonInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "parameter": {
+                      "type": "ParameterInfo",
+                      "id": 1
+                    },
+                    "operator": {
+                      "type": "OperatorType",
+                      "id": 2
+                    },
+                    "value": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "argument": {
+                      "type": "ArgumentInfo",
+                      "id": 4
+                    }
+                  },
+                  "nested": {
+                    "OperatorType": {
+                      "values": {
+                        "EQUAL_TO": 1,
+                        "NOT_EQUAL_TO": 2,
+                        "GREATER_THAN": 3,
+                        "GREATER_THAN_OR_EQUAL_TO": 4,
+                        "SMALLER_THAN": 5,
+                        "SMALLER_THAN_OR_EQUAL_TO": 6
+                      }
+                    }
+                  }
+                },
+                "TransmissionConstraintInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "expression": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "timeout": {
+                      "type": "int64",
+                      "id": 2
+                    }
+                  }
+                },
+                "CommandInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "qualifiedName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "shortDescription": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "longDescription": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "alias": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 5
+                    },
+                    "baseCommand": {
+                      "type": "CommandInfo",
+                      "id": 6
+                    },
+                    "abstract": {
+                      "type": "bool",
+                      "id": 7
+                    },
+                    "argument": {
+                      "rule": "repeated",
+                      "type": "ArgumentInfo",
+                      "id": 8
+                    },
+                    "argumentAssignment": {
+                      "rule": "repeated",
+                      "type": "ArgumentAssignmentInfo",
+                      "id": 9
+                    },
+                    "significance": {
+                      "type": "SignificanceInfo",
+                      "id": 10
+                    },
+                    "constraint": {
+                      "rule": "repeated",
+                      "type": "TransmissionConstraintInfo",
+                      "id": 11
+                    },
+                    "commandContainer": {
+                      "type": "CommandContainerInfo",
+                      "id": 13
+                    },
+                    "verifier": {
+                      "rule": "repeated",
+                      "type": "VerifierInfo",
+                      "id": 14
+                    },
+                    "ancillaryData": {
+                      "keyType": "string",
+                      "type": "AncillaryDataInfo",
+                      "id": 15
+                    },
+                    "effectiveSignificance": {
+                      "type": "SignificanceInfo",
+                      "id": 16
+                    }
+                  }
+                },
+                "VerifierInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "stage": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "container": {
+                      "type": "ContainerInfo",
+                      "id": 2
+                    },
+                    "algorithm": {
+                      "type": "AlgorithmInfo",
+                      "id": 3
+                    },
+                    "onSuccess": {
+                      "type": "TerminationActionType",
+                      "id": 4
+                    },
+                    "onFail": {
+                      "type": "TerminationActionType",
+                      "id": 5
+                    },
+                    "onTimeout": {
+                      "type": "TerminationActionType",
+                      "id": 6
+                    },
+                    "checkWindow": {
+                      "type": "CheckWindowInfo",
+                      "id": 7
+                    },
+                    "expression": {
+                      "type": "string",
+                      "id": 8
+                    }
+                  },
+                  "nested": {
+                    "TerminationActionType": {
+                      "values": {
+                        "SUCCESS": 1,
+                        "FAIL": 2
+                      }
+                    }
+                  }
+                },
+                "CheckWindowInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "timeToStartChecking": {
+                      "type": "int64",
+                      "id": 1
+                    },
+                    "timeToStopChecking": {
+                      "type": "int64",
+                      "id": 2
+                    },
+                    "relativeTo": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "RepeatInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "fixedCount": {
+                      "type": "int64",
+                      "id": 1
+                    },
+                    "dynamicCount": {
+                      "type": "ParameterInfo",
+                      "id": 2
+                    },
+                    "bitsBetween": {
+                      "type": "int32",
+                      "id": 3
+                    }
+                  }
+                },
+                "SequenceEntryInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "locationInBits": {
+                      "type": "int32",
+                      "id": 1
+                    },
+                    "referenceLocation": {
+                      "type": "ReferenceLocationType",
+                      "id": 2
+                    },
+                    "container": {
+                      "type": "ContainerInfo",
+                      "id": 3
+                    },
+                    "parameter": {
+                      "type": "ParameterInfo",
+                      "id": 4
+                    },
+                    "argument": {
+                      "type": "ArgumentInfo",
+                      "id": 6
+                    },
+                    "fixedValue": {
+                      "type": "FixedValueInfo",
+                      "id": 7
+                    },
+                    "repeat": {
+                      "type": "RepeatInfo",
+                      "id": 5
+                    },
+                    "indirectParameterRef": {
+                      "type": "IndirectParameterRefInfo",
+                      "id": 8
+                    }
+                  },
+                  "nested": {
+                    "ReferenceLocationType": {
+                      "values": {
+                        "CONTAINER_START": 1,
+                        "PREVIOUS_ENTRY": 2
+                      }
+                    }
+                  }
+                },
+                "FixedValueInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "hexValue": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "sizeInBits": {
+                      "type": "int32",
+                      "id": 3
+                    }
+                  }
+                },
+                "CommandContainerInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "qualifiedName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "shortDescription": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "longDescription": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "alias": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 5
+                    },
+                    "sizeInBits": {
+                      "type": "int32",
+                      "id": 6
+                    },
+                    "baseContainer": {
+                      "type": "CommandContainerInfo",
+                      "id": 7
+                    },
+                    "entry": {
+                      "rule": "repeated",
+                      "type": "SequenceEntryInfo",
+                      "id": 8
+                    }
+                  }
+                },
+                "IndirectParameterRefInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "parameter": {
+                      "type": "ParameterInfo",
+                      "id": 1
+                    },
+                    "aliasNamespace": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "ContainerInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "qualifiedName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "shortDescription": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "longDescription": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "alias": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 5
+                    },
+                    "maxInterval": {
+                      "type": "int64",
+                      "id": 6
+                    },
+                    "sizeInBits": {
+                      "type": "int32",
+                      "id": 7
+                    },
+                    "baseContainer": {
+                      "type": "ContainerInfo",
+                      "id": 8
+                    },
+                    "restrictionCriteria": {
+                      "rule": "repeated",
+                      "type": "ComparisonInfo",
+                      "id": 9,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "restrictionCriteriaExpression": {
+                      "type": "string",
+                      "id": 13
+                    },
+                    "entry": {
+                      "rule": "repeated",
+                      "type": "SequenceEntryInfo",
+                      "id": 10
+                    },
+                    "usedBy": {
+                      "type": "UsedByInfo",
+                      "id": 11
+                    },
+                    "ancillaryData": {
+                      "keyType": "string",
+                      "type": "AncillaryDataInfo",
+                      "id": 12
+                    },
+                    "archivePartition": {
+                      "type": "bool",
+                      "id": 14
+                    }
+                  }
+                },
+                "InputParameterInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "parameter": {
+                      "type": "ParameterInfo",
+                      "id": 1
+                    },
+                    "inputName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "parameterInstance": {
+                      "type": "int32",
+                      "id": 3
+                    },
+                    "mandatory": {
+                      "type": "bool",
+                      "id": 4
+                    },
+                    "argument": {
+                      "type": "ArgumentInfo",
+                      "id": 5
+                    }
+                  }
+                },
+                "OutputParameterInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "parameter": {
+                      "type": "ParameterInfo",
+                      "id": 1
+                    },
+                    "outputName": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "MathElement": {
+                  "edition": "proto2",
+                  "fields": {
+                    "type": {
+                      "type": "Type",
+                      "id": 1
+                    },
+                    "operator": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "value": {
+                      "type": "double",
+                      "id": 3
+                    },
+                    "parameter": {
+                      "type": "ParameterInfo",
+                      "id": 4
+                    },
+                    "parameterInstance": {
+                      "type": "int32",
+                      "id": 5
+                    }
+                  },
+                  "nested": {
+                    "Type": {
+                      "values": {
+                        "VALUE_OPERAND": 1,
+                        "THIS_PARAMETER_OPERAND": 2,
+                        "OPERATOR": 3,
+                        "PARAMETER": 4
+                      }
+                    }
+                  }
+                },
+                "AlgorithmInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "qualifiedName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "shortDescription": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "longDescription": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "alias": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 5
+                    },
+                    "scope": {
+                      "type": "Scope",
+                      "id": 6
+                    },
+                    "type": {
+                      "type": "Type",
+                      "id": 13
+                    },
+                    "language": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "text": {
+                      "type": "string",
+                      "id": 8
+                    },
+                    "inputParameter": {
+                      "rule": "repeated",
+                      "type": "InputParameterInfo",
+                      "id": 9
+                    },
+                    "outputParameter": {
+                      "rule": "repeated",
+                      "type": "OutputParameterInfo",
+                      "id": 10
+                    },
+                    "onParameterUpdate": {
+                      "rule": "repeated",
+                      "type": "ParameterInfo",
+                      "id": 11
+                    },
+                    "onPeriodicRate": {
+                      "rule": "repeated",
+                      "type": "int64",
+                      "id": 12
+                    },
+                    "mathElements": {
+                      "rule": "repeated",
+                      "type": "MathElement",
+                      "id": 14
+                    }
+                  },
+                  "nested": {
+                    "Type": {
+                      "values": {
+                        "CUSTOM": 1,
+                        "MATH": 2
+                      }
+                    },
+                    "Scope": {
+                      "values": {
+                        "GLOBAL": 0,
+                        "COMMAND_VERIFICATION": 1,
+                        "CONTAINER_PROCESSING": 2
+                      }
+                    }
+                  }
+                },
+                "ListSpaceSystemsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "q": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "next": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "pos": {
+                      "type": "int32",
+                      "id": 8
+                    },
+                    "limit": {
+                      "type": "int32",
+                      "id": 9
+                    }
+                  }
+                },
+                "ListContainersRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "q": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "system": {
+                      "type": "string",
+                      "id": 10
+                    },
+                    "next": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "pos": {
+                      "type": "int32",
+                      "id": 8
+                    },
+                    "limit": {
+                      "type": "int32",
+                      "id": 9
+                    }
+                  }
+                },
+                "ListParameterTypesRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "q": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "system": {
+                      "type": "string",
+                      "id": 10
+                    },
+                    "next": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "pos": {
+                      "type": "int32",
+                      "id": 8
+                    },
+                    "limit": {
+                      "type": "int32",
+                      "id": 9
+                    }
+                  }
+                },
+                "ListAlgorithmsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "q": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "system": {
+                      "type": "string",
+                      "id": 10
+                    },
+                    "next": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "pos": {
+                      "type": "int32",
+                      "id": 8
+                    },
+                    "limit": {
+                      "type": "int32",
+                      "id": 9
+                    },
+                    "scope": {
+                      "type": "AlgorithmInfo.Scope",
+                      "id": 11
+                    }
+                  }
+                },
+                "ListCommandsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "q": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "system": {
+                      "type": "string",
+                      "id": 11
+                    },
+                    "details": {
+                      "type": "bool",
+                      "id": 4
+                    },
+                    "next": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "pos": {
+                      "type": "int32",
+                      "id": 8
+                    },
+                    "limit": {
+                      "type": "int32",
+                      "id": 9
+                    },
+                    "noAbstract": {
+                      "type": "bool",
+                      "id": 10
+                    }
+                  }
+                },
+                "GetParameterRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "ListParametersRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "q": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "searchMembers": {
+                      "type": "bool",
+                      "id": 12
+                    },
+                    "details": {
+                      "type": "bool",
+                      "id": 4
+                    },
+                    "type": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 5
+                    },
+                    "source": {
+                      "type": "DataSourceType",
+                      "id": 10
+                    },
+                    "system": {
+                      "type": "string",
+                      "id": 11
+                    },
+                    "next": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "pos": {
+                      "type": "int32",
+                      "id": 8
+                    },
+                    "limit": {
+                      "type": "int32",
+                      "id": 9
+                    }
+                  }
+                },
+                "ListParametersResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "systems": {
+                      "rule": "repeated",
+                      "type": "SpaceSystemInfo",
+                      "id": 5
+                    },
+                    "spaceSystems": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 4,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "parameters": {
+                      "rule": "repeated",
+                      "type": "ParameterInfo",
+                      "id": 1
+                    },
+                    "continuationToken": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "totalSize": {
+                      "type": "int32",
+                      "id": 3
+                    }
+                  }
+                },
+                "BatchGetParametersRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "id": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 1
+                    }
+                  }
+                },
+                "BatchGetParametersResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "response": {
+                      "rule": "repeated",
+                      "type": "GetParameterResponse",
+                      "id": 1
+                    }
+                  },
+                  "nested": {
+                    "GetParameterResponse": {
+                      "fields": {
+                        "id": {
+                          "type": "NamedObjectId",
+                          "id": 1
+                        },
+                        "parameter": {
+                          "type": "ParameterInfo",
+                          "id": 2
+                        }
+                      }
+                    }
+                  }
+                },
+                "ListContainersResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "systems": {
+                      "rule": "repeated",
+                      "type": "SpaceSystemInfo",
+                      "id": 5
+                    },
+                    "spaceSystems": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 4,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "containers": {
+                      "rule": "repeated",
+                      "type": "ContainerInfo",
+                      "id": 1
+                    },
+                    "continuationToken": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "totalSize": {
+                      "type": "int32",
+                      "id": 3
+                    }
+                  }
+                },
+                "ListParameterTypesResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "systems": {
+                      "rule": "repeated",
+                      "type": "SpaceSystemInfo",
+                      "id": 5
+                    },
+                    "spaceSystems": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 4,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "parameterTypes": {
+                      "rule": "repeated",
+                      "type": "ParameterTypeInfo",
+                      "id": 1
+                    },
+                    "continuationToken": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "totalSize": {
+                      "type": "int32",
+                      "id": 3
+                    }
+                  }
+                },
+                "ListCommandsResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "systems": {
+                      "rule": "repeated",
+                      "type": "SpaceSystemInfo",
+                      "id": 5
+                    },
+                    "spaceSystems": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 4,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "commands": {
+                      "rule": "repeated",
+                      "type": "CommandInfo",
+                      "id": 1
+                    },
+                    "continuationToken": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "totalSize": {
+                      "type": "int32",
+                      "id": 3
+                    }
+                  }
+                },
+                "ListAlgorithmsResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "systems": {
+                      "rule": "repeated",
+                      "type": "SpaceSystemInfo",
+                      "id": 5
+                    },
+                    "spaceSystems": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 4,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "algorithms": {
+                      "rule": "repeated",
+                      "type": "AlgorithmInfo",
+                      "id": 1
+                    },
+                    "continuationToken": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "totalSize": {
+                      "type": "int32",
+                      "id": 3
+                    }
+                  }
+                },
+                "GetAlgorithmRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "CreateParameterRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "shortDescription": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "longDescription": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "aliases": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 5
+                    },
+                    "dataSource": {
+                      "type": "DataSourceType",
+                      "id": 6
+                    },
+                    "parameterType": {
+                      "type": "string",
+                      "id": 7
+                    }
+                  }
+                },
+                "CreateParameterTypeRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "shortDescription": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "longDescription": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "aliases": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 5
+                    },
+                    "engType": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "unit": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "signed": {
+                      "type": "bool",
+                      "id": 8
+                    },
+                    "defaultAlarm": {
+                      "type": "AlarmInfo",
+                      "id": 9
+                    },
+                    "contextAlarms": {
+                      "rule": "repeated",
+                      "type": "ContextAlarmInfo",
+                      "id": 10
+                    },
+                    "enumerationValues": {
+                      "rule": "repeated",
+                      "type": "EnumValue",
+                      "id": 11
+                    },
+                    "zeroStringValue": {
+                      "type": "string",
+                      "id": 12
+                    },
+                    "oneStringValue": {
+                      "type": "string",
+                      "id": 13
+                    }
+                  }
+                },
+                "GetMissionDatabaseRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "ExportJavaMissionDatabaseRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "StreamMissionDatabaseRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "includeSpaceSystems": {
+                      "type": "bool",
+                      "id": 2
+                    },
+                    "includeContainers": {
+                      "type": "bool",
+                      "id": 3
+                    },
+                    "includeParameters": {
+                      "type": "bool",
+                      "id": 4
+                    },
+                    "includeParameterTypes": {
+                      "type": "bool",
+                      "id": 5
+                    },
+                    "includeCommands": {
+                      "type": "bool",
+                      "id": 6
+                    },
+                    "includeAlgorithms": {
+                      "type": "bool",
+                      "id": 7
+                    }
+                  }
+                },
+                "MissionDatabaseItem": {
+                  "edition": "proto2",
+                  "oneofs": {
+                    "item": {
+                      "oneof": [
+                        "spaceSystem",
+                        "container",
+                        "parameter",
+                        "parameterType",
+                        "command",
+                        "algorithm"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "spaceSystem": {
+                      "type": "SpaceSystemInfo",
+                      "id": 1
+                    },
+                    "container": {
+                      "type": "ContainerInfo",
+                      "id": 2
+                    },
+                    "parameter": {
+                      "type": "ParameterInfo",
+                      "id": 3
+                    },
+                    "parameterType": {
+                      "type": "ParameterTypeInfo",
+                      "id": 4
+                    },
+                    "command": {
+                      "type": "CommandInfo",
+                      "id": 5
+                    },
+                    "algorithm": {
+                      "type": "AlgorithmInfo",
+                      "id": 6
+                    }
+                  }
+                },
+                "ListSpaceSystemsResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "spaceSystems": {
+                      "rule": "repeated",
+                      "type": "SpaceSystemInfo",
+                      "id": 1
+                    },
+                    "continuationToken": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "totalSize": {
+                      "type": "int32",
+                      "id": 3
+                    }
+                  }
+                },
+                "GetSpaceSystemRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "ExportXtceRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "version": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "GetCommandRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "SpaceSystemInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "qualifiedName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "shortDescription": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "longDescription": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "alias": {
+                      "rule": "repeated",
+                      "type": "NamedObjectId",
+                      "id": 16
+                    },
+                    "version": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "history": {
+                      "rule": "repeated",
+                      "type": "HistoryInfo",
+                      "id": 14
+                    },
+                    "sub": {
+                      "rule": "repeated",
+                      "type": "SpaceSystemInfo",
+                      "id": 15
+                    },
+                    "ancillaryData": {
+                      "keyType": "string",
+                      "type": "AncillaryDataInfo",
+                      "id": 17
+                    }
+                  }
+                }
+              }
+            },
+            "Value": {
+              "edition": "proto2",
+              "fields": {
+                "type": {
+                  "rule": "required",
+                  "type": "Type",
+                  "id": 1
+                },
+                "floatValue": {
+                  "type": "float",
+                  "id": 2
+                },
+                "doubleValue": {
+                  "type": "double",
+                  "id": 3
+                },
+                "sint32Value": {
+                  "type": "sint32",
+                  "id": 4
+                },
+                "uint32Value": {
+                  "type": "uint32",
+                  "id": 5
+                },
+                "binaryValue": {
+                  "type": "bytes",
+                  "id": 6
+                },
+                "stringValue": {
+                  "type": "string",
+                  "id": 7
+                },
+                "timestampValue": {
+                  "type": "int64",
+                  "id": 8
+                },
+                "uint64Value": {
+                  "type": "uint64",
+                  "id": 9
+                },
+                "sint64Value": {
+                  "type": "sint64",
+                  "id": 10
+                },
+                "booleanValue": {
+                  "type": "bool",
+                  "id": 11
+                },
+                "aggregateValue": {
+                  "type": "AggregateValue",
+                  "id": 12
+                },
+                "arrayValue": {
+                  "rule": "repeated",
+                  "type": "Value",
+                  "id": 13
+                }
+              },
+              "nested": {
+                "Type": {
+                  "values": {
+                    "FLOAT": 0,
+                    "DOUBLE": 1,
+                    "UINT32": 2,
+                    "SINT32": 3,
+                    "BINARY": 4,
+                    "STRING": 5,
+                    "TIMESTAMP": 6,
+                    "UINT64": 7,
+                    "SINT64": 8,
+                    "BOOLEAN": 9,
+                    "AGGREGATE": 10,
+                    "ARRAY": 11,
+                    "ENUMERATED": 12,
+                    "NONE": 13
+                  }
+                }
+              }
+            },
+            "AggregateValue": {
+              "edition": "proto2",
+              "fields": {
+                "name": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 1
+                },
+                "value": {
+                  "rule": "repeated",
+                  "type": "Value",
+                  "id": 2
+                }
+              }
+            },
+            "NamedObjectId": {
+              "edition": "proto2",
+              "fields": {
+                "name": {
+                  "rule": "required",
+                  "type": "string",
+                  "id": 1
+                },
+                "namespace": {
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
+            "NamedObjectList": {
+              "edition": "proto2",
+              "fields": {
+                "list": {
+                  "rule": "repeated",
+                  "type": "NamedObjectId",
+                  "id": 1
+                }
+              }
+            },
+            "ArchiveRecord": {
+              "edition": "proto2",
+              "fields": {
+                "id": {
+                  "type": "NamedObjectId",
+                  "id": 1
+                },
+                "num": {
+                  "type": "int32",
+                  "id": 4
+                },
+                "seqFirst": {
+                  "type": "int64",
+                  "id": 6
+                },
+                "seqLast": {
+                  "type": "int64",
+                  "id": 7
+                },
+                "first": {
+                  "type": "google.protobuf.Timestamp",
+                  "id": 8
+                },
+                "last": {
+                  "type": "google.protobuf.Timestamp",
+                  "id": 9
+                },
+                "extra": {
+                  "keyType": "string",
+                  "type": "string",
+                  "id": 10
+                }
+              }
+            },
+            "EndAction": {
+              "edition": "proto2",
+              "values": {
+                "LOOP": 1,
+                "QUIT": 2,
+                "STOP": 3
+              }
+            },
+            "ReplaySpeed": {
+              "edition": "proto2",
+              "fields": {
+                "type": {
+                  "rule": "required",
+                  "type": "ReplaySpeedType",
+                  "id": 1
+                },
+                "param": {
+                  "type": "float",
+                  "id": 2
+                }
+              },
+              "nested": {
+                "ReplaySpeedType": {
+                  "values": {
+                    "AFAP": 1,
+                    "FIXED_DELAY": 2,
+                    "REALTIME": 3,
+                    "STEP_BY_STEP": 4
+                  }
+                }
+              }
+            },
+            "ReplayRequest": {
+              "edition": "proto2",
+              "fields": {
+                "start": {
+                  "type": "google.protobuf.Timestamp",
+                  "id": 13
+                },
+                "stop": {
+                  "type": "google.protobuf.Timestamp",
+                  "id": 14
+                },
+                "endAction": {
+                  "type": "EndAction",
+                  "id": 3,
+                  "options": {
+                    "default": "QUIT"
+                  }
+                },
+                "speed": {
+                  "type": "ReplaySpeed",
+                  "id": 4
+                },
+                "reverse": {
+                  "type": "bool",
+                  "id": 15
+                },
+                "parameterRequest": {
+                  "type": "ParameterReplayRequest",
+                  "id": 8
+                },
+                "packetRequest": {
+                  "type": "PacketReplayRequest",
+                  "id": 9
+                },
+                "eventRequest": {
+                  "type": "EventReplayRequest",
+                  "id": 10
+                },
+                "commandHistoryRequest": {
+                  "type": "CommandHistoryReplayRequest",
+                  "id": 11
+                },
+                "ppRequest": {
+                  "type": "PpReplayRequest",
+                  "id": 12
+                },
+                "autostart": {
+                  "type": "bool",
+                  "id": 16,
+                  "options": {
+                    "default": true
+                  }
+                }
+              }
+            },
+            "ParameterReplayRequest": {
+              "edition": "proto2",
+              "fields": {
+                "nameFilter": {
+                  "rule": "repeated",
+                  "type": "NamedObjectId",
+                  "id": 1
+                },
+                "sendRaw": {
+                  "type": "bool",
+                  "id": 2,
+                  "options": {
+                    "default": false
+                  }
+                },
+                "performMonitoring": {
+                  "type": "bool",
+                  "id": 3,
+                  "options": {
+                    "default": false
+                  }
+                }
+              }
+            },
+            "PacketReplayRequest": {
+              "edition": "proto2",
+              "fields": {
+                "nameFilter": {
+                  "rule": "repeated",
+                  "type": "NamedObjectId",
+                  "id": 1
+                },
+                "tmLinks": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
+            "EventReplayRequest": {
+              "edition": "proto2",
+              "fields": {}
+            },
+            "CommandHistoryReplayRequest": {
+              "edition": "proto2",
+              "fields": {
+                "nameFilter": {
+                  "rule": "repeated",
+                  "type": "NamedObjectId",
+                  "id": 1
+                }
+              }
+            },
+            "PpReplayRequest": {
+              "edition": "proto2",
+              "fields": {
+                "groupNameFilter": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 1
+                },
+                "groupNameExclude": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
+            "ReplayStatus": {
+              "edition": "proto2",
+              "fields": {
+                "state": {
+                  "rule": "required",
+                  "type": "ReplayState",
+                  "id": 1
+                },
+                "request": {
+                  "type": "ReplayRequest",
+                  "id": 2
+                },
+                "errorMessage": {
+                  "type": "string",
+                  "id": 3
+                }
+              },
+              "nested": {
+                "ReplayState": {
+                  "values": {
+                    "INITIALIZATION": 0,
+                    "RUNNING": 1,
+                    "STOPPED": 2,
+                    "ERROR": 3,
+                    "PAUSED": 4,
+                    "CLOSED": 5
+                  }
+                }
+              }
+            },
+            "pvalue": {
+              "options": {
+                "java_package": "org.yamcs.protobuf"
+              },
+              "nested": {
+                "AcquisitionStatus": {
+                  "edition": "proto2",
+                  "values": {
+                    "ACQUIRED": 0,
+                    "NOT_RECEIVED": 1,
+                    "INVALID": 2,
+                    "EXPIRED": 3
+                  }
+                },
+                "MonitoringResult": {
+                  "edition": "proto2",
+                  "values": {
+                    "DISABLED": 0,
+                    "IN_LIMITS": 1,
+                    "WATCH": 7,
+                    "WARNING": 10,
+                    "DISTRESS": 13,
+                    "CRITICAL": 16,
+                    "SEVERE": 19
+                  }
+                },
+                "RangeCondition": {
+                  "edition": "proto2",
+                  "values": {
+                    "LOW": 0,
+                    "HIGH": 1
+                  }
+                },
+                "ParameterValue": {
+                  "edition": "proto2",
+                  "fields": {
+                    "id": {
+                      "type": "NamedObjectId",
+                      "id": 1
+                    },
+                    "rawValue": {
+                      "type": "Value",
+                      "id": 2
+                    },
+                    "engValue": {
+                      "type": "Value",
+                      "id": 3
+                    },
+                    "acquisitionTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 4
+                    },
+                    "generationTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 5
+                    },
+                    "acquisitionStatus": {
+                      "type": "AcquisitionStatus",
+                      "id": 6
+                    },
+                    "processingStatus": {
+                      "type": "bool",
+                      "id": 7,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "monitoringResult": {
+                      "type": "MonitoringResult",
+                      "id": 8
+                    },
+                    "rangeCondition": {
+                      "type": "RangeCondition",
+                      "id": 9
+                    },
+                    "alarmRange": {
+                      "rule": "repeated",
+                      "type": "mdb.AlarmRange",
+                      "id": 25
+                    },
+                    "expireMillis": {
+                      "type": "int64",
+                      "id": 26
+                    },
+                    "numericId": {
+                      "type": "uint32",
+                      "id": 27
+                    }
+                  }
+                },
+                "ParameterData": {
+                  "edition": "proto2",
+                  "fields": {
+                    "parameter": {
+                      "rule": "repeated",
+                      "type": "ParameterValue",
+                      "id": 1
+                    },
+                    "group": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "generationTime": {
+                      "type": "int64",
+                      "id": 3
+                    },
+                    "seqNum": {
+                      "type": "int32",
+                      "id": 4
+                    },
+                    "subscriptionId": {
+                      "type": "int32",
+                      "id": 5
+                    }
+                  }
+                },
+                "TimeSeries": {
+                  "edition": "proto2",
+                  "fields": {
+                    "sample": {
+                      "rule": "repeated",
+                      "type": "Sample",
+                      "id": 1
+                    }
+                  },
+                  "nested": {
+                    "Sample": {
+                      "fields": {
+                        "time": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 6
+                        },
+                        "avg": {
+                          "type": "double",
+                          "id": 2
+                        },
+                        "min": {
+                          "type": "double",
+                          "id": 3
+                        },
+                        "max": {
+                          "type": "double",
+                          "id": 4
+                        },
+                        "n": {
+                          "type": "int32",
+                          "id": 5
+                        },
+                        "minTime": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 7
+                        },
+                        "maxTime": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 8
+                        },
+                        "firstTime": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 9
+                        },
+                        "lastTime": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 10
+                        }
+                      }
+                    }
+                  }
+                },
+                "Ranges": {
+                  "edition": "proto2",
+                  "fields": {
+                    "range": {
+                      "rule": "repeated",
+                      "type": "Range",
+                      "id": 1
+                    }
+                  },
+                  "nested": {
+                    "Range": {
+                      "fields": {
+                        "start": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 7
+                        },
+                        "stop": {
+                          "type": "google.protobuf.Timestamp",
+                          "id": 8
+                        },
+                        "count": {
+                          "type": "int32",
+                          "id": 4
+                        },
+                        "engValues": {
+                          "rule": "repeated",
+                          "type": "Value",
+                          "id": 5
+                        },
+                        "counts": {
+                          "rule": "repeated",
+                          "type": "int32",
+                          "id": 6
+                        },
+                        "otherCount": {
+                          "type": "int32",
+                          "id": 9
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "yamcsManagement": {
+              "options": {
+                "java_package": "org.yamcs.protobuf",
+                "java_outer_classname": "YamcsManagementProto",
+                "java_multiple_files": true
+              },
+              "nested": {
+                "ProcessorInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "type": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "spec": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "creator": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "hasAlarms": {
+                      "type": "bool",
+                      "id": 6
+                    },
+                    "hasCommanding": {
+                      "type": "bool",
+                      "id": 7
+                    },
+                    "state": {
+                      "type": "services.ServiceState",
+                      "id": 8
+                    },
+                    "replayRequest": {
+                      "type": "ReplayRequest",
+                      "id": 9
+                    },
+                    "replayState": {
+                      "type": "ReplayStatus.ReplayState",
+                      "id": 10
+                    },
+                    "services": {
+                      "rule": "repeated",
+                      "type": "services.ServiceInfo",
+                      "id": 16
+                    },
+                    "persistent": {
+                      "type": "bool",
+                      "id": 17
+                    },
+                    "time": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 18
+                    },
+                    "replay": {
+                      "type": "bool",
+                      "id": 19
+                    },
+                    "checkCommandClearance": {
+                      "type": "bool",
+                      "id": 20
+                    },
+                    "overrideAlgorithmsEnabled": {
+                      "type": "bool",
+                      "id": 23
+                    },
+                    "protected": {
+                      "type": "bool",
+                      "id": 21
+                    },
+                    "acknowledgments": {
+                      "rule": "repeated",
+                      "type": "AcknowledgmentInfo",
+                      "id": 22
+                    }
+                  }
+                },
+                "AcknowledgmentInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "description": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "TmStatistics": {
+                  "edition": "proto2",
+                  "fields": {
+                    "packetName": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "qualifiedName": {
+                      "type": "string",
+                      "id": 9
+                    },
+                    "receivedPackets": {
+                      "type": "int64",
+                      "id": 2
+                    },
+                    "subscribedParameterCount": {
+                      "type": "int32",
+                      "id": 6
+                    },
+                    "lastReceived": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 10
+                    },
+                    "lastPacketTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 11
+                    },
+                    "packetRate": {
+                      "type": "int64",
+                      "id": 12
+                    },
+                    "dataRate": {
+                      "type": "int64",
+                      "id": 13
+                    }
+                  },
+                  "reserved": [
+                    [
+                      3,
+                      3
+                    ],
+                    [
+                      4,
+                      4
+                    ],
+                    [
+                      7,
+                      7
+                    ],
+                    [
+                      8,
+                      8
+                    ]
+                  ]
+                },
+                "Statistics": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "tmstats": {
+                      "rule": "repeated",
+                      "type": "TmStatistics",
+                      "id": 3
+                    },
+                    "lastUpdated": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 6
+                    }
+                  },
+                  "reserved": [
+                    [
+                      2,
+                      2
+                    ],
+                    [
+                      4,
+                      4
+                    ],
+                    [
+                      5,
+                      5
+                    ]
+                  ]
+                },
+                "ProcessorManagementRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "operation": {
+                      "type": "Operation",
+                      "id": 1
+                    },
+                    "instance": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "type": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "config": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "persistent": {
+                      "type": "bool",
+                      "id": 7,
+                      "options": {
+                        "default": false
+                      }
+                    }
+                  },
+                  "nested": {
+                    "Operation": {
+                      "values": {
+                        "CREATE_PROCESSOR": 0,
+                        "CONNECT_TO_PROCESSOR": 1
+                      }
+                    }
+                  }
+                },
+                "ProcessorRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "operation": {
+                      "type": "Operation",
+                      "id": 1
+                    },
+                    "instance": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "seekTime": {
+                      "type": "int64",
+                      "id": 4
+                    },
+                    "replaySpeed": {
+                      "type": "ReplaySpeed",
+                      "id": 5
+                    }
+                  },
+                  "nested": {
+                    "Operation": {
+                      "values": {
+                        "PAUSE": 2,
+                        "RESUME": 3,
+                        "SEEK": 4,
+                        "CHANGE_SPEED": 5
+                      }
+                    }
+                  }
+                },
+                "StreamEvent": {
+                  "edition": "proto2",
+                  "fields": {
+                    "type": {
+                      "type": "Type",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "dataCount": {
+                      "type": "int64",
+                      "id": 3
+                    }
+                  },
+                  "nested": {
+                    "Type": {
+                      "values": {
+                        "CREATED": 1,
+                        "DELETED": 2,
+                        "UPDATED": 3
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "services": {
+              "options": {
+                "java_package": "org.yamcs.protobuf",
+                "java_outer_classname": "ServicesProto",
+                "java_multiple_files": true
+              },
+              "nested": {
+                "ServiceInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "state": {
+                      "type": "ServiceState",
+                      "id": 3
+                    },
+                    "className": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "failureMessage": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "failureCause": {
+                      "type": "string",
+                      "id": 7
+                    }
+                  }
+                },
+                "ServiceState": {
+                  "edition": "proto2",
+                  "values": {
+                    "NEW": 0,
+                    "STARTING": 1,
+                    "RUNNING": 2,
+                    "STOPPING": 3,
+                    "TERMINATED": 4,
+                    "FAILED": 5
+                  }
+                }
+              }
+            }
+          }
+        },
+        "api": {
+          "options": {
+            "java_multiple_files": true,
+            "java_outer_classname": "HttpBodyProto",
+            "java_package": "org.yamcs.api"
+          },
+          "nested": {
+            "label": {
+              "edition": "proto2",
+              "type": "string",
+              "id": 2048,
+              "extend": "google.protobuf.ServiceOptions"
+            },
+            "markdown": {
+              "edition": "proto2",
+              "type": "bool",
+              "id": 2058,
+              "extend": "google.protobuf.ServiceOptions"
+            },
+            "route": {
+              "edition": "proto2",
+              "type": "HttpRoute",
+              "id": 6433,
+              "extend": "google.protobuf.MethodOptions"
+            },
+            "websocket": {
+              "edition": "proto2",
+              "type": "WebSocketTopic",
+              "id": 6443,
+              "extend": "google.protobuf.MethodOptions"
+            },
+            "fieldBehavior": {
+              "edition": "proto2",
+              "rule": "repeated",
+              "type": "FieldBehavior",
+              "id": 6533,
+              "extend": "google.protobuf.FieldOptions"
+            },
+            "HttpRoute": {
+              "edition": "proto2",
+              "oneofs": {
+                "pattern": {
+                  "oneof": [
+                    "get",
+                    "put",
+                    "post",
+                    "delete",
+                    "patch"
+                  ]
+                }
+              },
+              "fields": {
+                "get": {
+                  "type": "string",
+                  "id": 1
+                },
+                "put": {
+                  "type": "string",
+                  "id": 2
+                },
+                "post": {
+                  "type": "string",
+                  "id": 3
+                },
+                "delete": {
+                  "type": "string",
+                  "id": 4
+                },
+                "patch": {
+                  "type": "string",
+                  "id": 5
+                },
+                "deprecated": {
+                  "type": "bool",
+                  "id": 6
+                },
+                "body": {
+                  "type": "string",
+                  "id": 7
+                },
+                "maxBodySize": {
+                  "type": "int32",
+                  "id": 8
+                },
+                "offloaded": {
+                  "type": "bool",
+                  "id": 9
+                },
+                "fieldMaskRoot": {
+                  "type": "string",
+                  "id": 10
+                },
+                "additionalBindings": {
+                  "rule": "repeated",
+                  "type": "HttpRoute",
+                  "id": 11
+                },
+                "log": {
+                  "type": "string",
+                  "id": 12
+                },
+                "label": {
+                  "type": "string",
+                  "id": 13
+                }
+              }
+            },
+            "WebSocketTopic": {
+              "edition": "proto2",
+              "fields": {
+                "topic": {
+                  "type": "string",
+                  "id": 1
+                },
+                "deprecated": {
+                  "type": "bool",
+                  "id": 2
+                },
+                "additionalBindings": {
+                  "rule": "repeated",
+                  "type": "WebSocketTopic",
+                  "id": 3
+                },
+                "label": {
+                  "type": "string",
+                  "id": 4
+                }
+              }
+            },
+            "FieldBehavior": {
+              "edition": "proto2",
+              "values": {
+                "FIELD_BEHAVIOR_UNSPECIFIED": 0,
+                "SECRET": 1
+              }
+            },
+            "HttpBody": {
+              "edition": "proto2",
+              "fields": {
+                "contentType": {
+                  "type": "string",
+                  "id": 1
+                },
+                "filename": {
+                  "type": "string",
+                  "id": 2
+                },
+                "data": {
+                  "type": "bytes",
+                  "id": 3
+                },
+                "metadata": {
+                  "keyType": "string",
+                  "type": "string",
+                  "id": 4
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "google": {
+      "nested": {
+        "protobuf": {
+          "options": {
+            "go_package": "google.golang.org/protobuf/types/descriptorpb",
+            "java_package": "com.google.protobuf",
+            "java_outer_classname": "DescriptorProtos",
+            "csharp_namespace": "Google.Protobuf.Reflection",
+            "objc_class_prefix": "GPB",
+            "cc_enable_arenas": true,
+            "optimize_for": "SPEED"
+          },
+          "nested": {
+            "Empty": {
+              "fields": {}
+            },
+            "Timestamp": {
+              "fields": {
+                "seconds": {
+                  "type": "int64",
+                  "id": 1
+                },
+                "nanos": {
+                  "type": "int32",
+                  "id": 2
+                }
+              }
+            },
+            "FileDescriptorSet": {
+              "edition": "proto2",
+              "fields": {
+                "file": {
+                  "rule": "repeated",
+                  "type": "FileDescriptorProto",
+                  "id": 1
+                }
+              },
+              "extensions": [
+                [
+                  536000000,
+                  536000000
+                ]
+              ]
+            },
+            "Edition": {
+              "edition": "proto2",
+              "values": {
+                "EDITION_UNKNOWN": 0,
+                "EDITION_LEGACY": 900,
+                "EDITION_PROTO2": 998,
+                "EDITION_PROTO3": 999,
+                "EDITION_2023": 1000,
+                "EDITION_2024": 1001,
+                "EDITION_1_TEST_ONLY": 1,
+                "EDITION_2_TEST_ONLY": 2,
+                "EDITION_99997_TEST_ONLY": 99997,
+                "EDITION_99998_TEST_ONLY": 99998,
+                "EDITION_99999_TEST_ONLY": 99999,
+                "EDITION_MAX": 2147483647
+              }
+            },
+            "FileDescriptorProto": {
+              "edition": "proto2",
+              "fields": {
+                "name": {
+                  "type": "string",
+                  "id": 1
+                },
+                "package": {
+                  "type": "string",
+                  "id": 2
+                },
+                "dependency": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 3
+                },
+                "publicDependency": {
+                  "rule": "repeated",
+                  "type": "int32",
+                  "id": 10
+                },
+                "weakDependency": {
+                  "rule": "repeated",
+                  "type": "int32",
+                  "id": 11
+                },
+                "optionDependency": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 15
+                },
+                "messageType": {
+                  "rule": "repeated",
+                  "type": "DescriptorProto",
+                  "id": 4
+                },
+                "enumType": {
+                  "rule": "repeated",
+                  "type": "EnumDescriptorProto",
+                  "id": 5
+                },
+                "service": {
+                  "rule": "repeated",
+                  "type": "ServiceDescriptorProto",
+                  "id": 6
+                },
+                "extension": {
+                  "rule": "repeated",
+                  "type": "FieldDescriptorProto",
+                  "id": 7
+                },
+                "options": {
+                  "type": "FileOptions",
+                  "id": 8
+                },
+                "sourceCodeInfo": {
+                  "type": "SourceCodeInfo",
+                  "id": 9
+                },
+                "syntax": {
+                  "type": "string",
+                  "id": 12
+                },
+                "edition": {
+                  "type": "Edition",
+                  "id": 14
+                }
+              }
+            },
+            "DescriptorProto": {
+              "edition": "proto2",
+              "fields": {
+                "name": {
+                  "type": "string",
+                  "id": 1
+                },
+                "field": {
+                  "rule": "repeated",
+                  "type": "FieldDescriptorProto",
+                  "id": 2
+                },
+                "extension": {
+                  "rule": "repeated",
+                  "type": "FieldDescriptorProto",
+                  "id": 6
+                },
+                "nestedType": {
+                  "rule": "repeated",
+                  "type": "DescriptorProto",
+                  "id": 3
+                },
+                "enumType": {
+                  "rule": "repeated",
+                  "type": "EnumDescriptorProto",
+                  "id": 4
+                },
+                "extensionRange": {
+                  "rule": "repeated",
+                  "type": "ExtensionRange",
+                  "id": 5
+                },
+                "oneofDecl": {
+                  "rule": "repeated",
+                  "type": "OneofDescriptorProto",
+                  "id": 8
+                },
+                "options": {
+                  "type": "MessageOptions",
+                  "id": 7
+                },
+                "reservedRange": {
+                  "rule": "repeated",
+                  "type": "ReservedRange",
+                  "id": 9
+                },
+                "reservedName": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 10
+                },
+                "visibility": {
+                  "type": "SymbolVisibility",
+                  "id": 11
+                }
+              },
+              "nested": {
+                "ExtensionRange": {
+                  "fields": {
+                    "start": {
+                      "type": "int32",
+                      "id": 1
+                    },
+                    "end": {
+                      "type": "int32",
+                      "id": 2
+                    },
+                    "options": {
+                      "type": "ExtensionRangeOptions",
+                      "id": 3
+                    }
+                  }
+                },
+                "ReservedRange": {
+                  "fields": {
+                    "start": {
+                      "type": "int32",
+                      "id": 1
+                    },
+                    "end": {
+                      "type": "int32",
+                      "id": 2
+                    }
+                  }
+                }
+              }
+            },
+            "ExtensionRangeOptions": {
+              "edition": "proto2",
+              "fields": {
+                "uninterpretedOption": {
+                  "rule": "repeated",
+                  "type": "UninterpretedOption",
+                  "id": 999
+                },
+                "declaration": {
+                  "rule": "repeated",
+                  "type": "Declaration",
+                  "id": 2,
+                  "options": {
+                    "retention": "RETENTION_SOURCE"
+                  }
+                },
+                "features": {
+                  "type": "FeatureSet",
+                  "id": 50
+                },
+                "verification": {
+                  "type": "VerificationState",
+                  "id": 3,
+                  "options": {
+                    "default": "UNVERIFIED",
+                    "retention": "RETENTION_SOURCE"
+                  }
+                }
+              },
+              "extensions": [
+                [
+                  1000,
+                  536870911
+                ]
+              ],
+              "nested": {
+                "Declaration": {
+                  "fields": {
+                    "number": {
+                      "type": "int32",
+                      "id": 1
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "type": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "reserved": {
+                      "type": "bool",
+                      "id": 5
+                    },
+                    "repeated": {
+                      "type": "bool",
+                      "id": 6
+                    }
+                  },
+                  "reserved": [
+                    [
+                      4,
+                      4
+                    ]
+                  ]
+                },
+                "VerificationState": {
+                  "values": {
+                    "DECLARATION": 0,
+                    "UNVERIFIED": 1
+                  }
+                }
+              }
+            },
+            "FieldDescriptorProto": {
+              "edition": "proto2",
+              "fields": {
+                "name": {
+                  "type": "string",
+                  "id": 1
+                },
+                "number": {
+                  "type": "int32",
+                  "id": 3
+                },
+                "label": {
+                  "type": "Label",
+                  "id": 4
+                },
+                "type": {
+                  "type": "Type",
+                  "id": 5
+                },
+                "typeName": {
+                  "type": "string",
+                  "id": 6
+                },
+                "extendee": {
+                  "type": "string",
+                  "id": 2
+                },
+                "defaultValue": {
+                  "type": "string",
+                  "id": 7
+                },
+                "oneofIndex": {
+                  "type": "int32",
+                  "id": 9
+                },
+                "jsonName": {
+                  "type": "string",
+                  "id": 10
+                },
+                "options": {
+                  "type": "FieldOptions",
+                  "id": 8
+                },
+                "proto3Optional": {
+                  "type": "bool",
+                  "id": 17
+                }
+              },
+              "nested": {
+                "Type": {
+                  "values": {
+                    "TYPE_DOUBLE": 1,
+                    "TYPE_FLOAT": 2,
+                    "TYPE_INT64": 3,
+                    "TYPE_UINT64": 4,
+                    "TYPE_INT32": 5,
+                    "TYPE_FIXED64": 6,
+                    "TYPE_FIXED32": 7,
+                    "TYPE_BOOL": 8,
+                    "TYPE_STRING": 9,
+                    "TYPE_GROUP": 10,
+                    "TYPE_MESSAGE": 11,
+                    "TYPE_BYTES": 12,
+                    "TYPE_UINT32": 13,
+                    "TYPE_ENUM": 14,
+                    "TYPE_SFIXED32": 15,
+                    "TYPE_SFIXED64": 16,
+                    "TYPE_SINT32": 17,
+                    "TYPE_SINT64": 18
+                  }
+                },
+                "Label": {
+                  "values": {
+                    "LABEL_OPTIONAL": 1,
+                    "LABEL_REPEATED": 3,
+                    "LABEL_REQUIRED": 2
+                  }
+                }
+              }
+            },
+            "OneofDescriptorProto": {
+              "edition": "proto2",
+              "fields": {
+                "name": {
+                  "type": "string",
+                  "id": 1
+                },
+                "options": {
+                  "type": "OneofOptions",
+                  "id": 2
+                }
+              }
+            },
+            "EnumDescriptorProto": {
+              "edition": "proto2",
+              "fields": {
+                "name": {
+                  "type": "string",
+                  "id": 1
+                },
+                "value": {
+                  "rule": "repeated",
+                  "type": "EnumValueDescriptorProto",
+                  "id": 2
+                },
+                "options": {
+                  "type": "EnumOptions",
+                  "id": 3
+                },
+                "reservedRange": {
+                  "rule": "repeated",
+                  "type": "EnumReservedRange",
+                  "id": 4
+                },
+                "reservedName": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 5
+                },
+                "visibility": {
+                  "type": "SymbolVisibility",
+                  "id": 6
+                }
+              },
+              "nested": {
+                "EnumReservedRange": {
+                  "fields": {
+                    "start": {
+                      "type": "int32",
+                      "id": 1
+                    },
+                    "end": {
+                      "type": "int32",
+                      "id": 2
+                    }
+                  }
+                }
+              }
+            },
+            "EnumValueDescriptorProto": {
+              "edition": "proto2",
+              "fields": {
+                "name": {
+                  "type": "string",
+                  "id": 1
+                },
+                "number": {
+                  "type": "int32",
+                  "id": 2
+                },
+                "options": {
+                  "type": "EnumValueOptions",
+                  "id": 3
+                }
+              }
+            },
+            "ServiceDescriptorProto": {
+              "edition": "proto2",
+              "fields": {
+                "name": {
+                  "type": "string",
+                  "id": 1
+                },
+                "method": {
+                  "rule": "repeated",
+                  "type": "MethodDescriptorProto",
+                  "id": 2
+                },
+                "options": {
+                  "type": "ServiceOptions",
+                  "id": 3
+                }
+              }
+            },
+            "MethodDescriptorProto": {
+              "edition": "proto2",
+              "fields": {
+                "name": {
+                  "type": "string",
+                  "id": 1
+                },
+                "inputType": {
+                  "type": "string",
+                  "id": 2
+                },
+                "outputType": {
+                  "type": "string",
+                  "id": 3
+                },
+                "options": {
+                  "type": "MethodOptions",
+                  "id": 4
+                },
+                "clientStreaming": {
+                  "type": "bool",
+                  "id": 5
+                },
+                "serverStreaming": {
+                  "type": "bool",
+                  "id": 6
+                }
+              }
+            },
+            "FileOptions": {
+              "edition": "proto2",
+              "fields": {
+                "javaPackage": {
+                  "type": "string",
+                  "id": 1
+                },
+                "javaOuterClassname": {
+                  "type": "string",
+                  "id": 8
+                },
+                "javaMultipleFiles": {
+                  "type": "bool",
+                  "id": 10
+                },
+                "javaGenerateEqualsAndHash": {
+                  "type": "bool",
+                  "id": 20,
+                  "options": {
+                    "deprecated": true
+                  }
+                },
+                "javaStringCheckUtf8": {
+                  "type": "bool",
+                  "id": 27
+                },
+                "optimizeFor": {
+                  "type": "OptimizeMode",
+                  "id": 9,
+                  "options": {
+                    "default": "SPEED"
+                  }
+                },
+                "goPackage": {
+                  "type": "string",
+                  "id": 11
+                },
+                "ccGenericServices": {
+                  "type": "bool",
+                  "id": 16
+                },
+                "javaGenericServices": {
+                  "type": "bool",
+                  "id": 17
+                },
+                "pyGenericServices": {
+                  "type": "bool",
+                  "id": 18
+                },
+                "deprecated": {
+                  "type": "bool",
+                  "id": 23
+                },
+                "ccEnableArenas": {
+                  "type": "bool",
+                  "id": 31,
+                  "options": {
+                    "default": true
+                  }
+                },
+                "objcClassPrefix": {
+                  "type": "string",
+                  "id": 36
+                },
+                "csharpNamespace": {
+                  "type": "string",
+                  "id": 37
+                },
+                "swiftPrefix": {
+                  "type": "string",
+                  "id": 39
+                },
+                "phpClassPrefix": {
+                  "type": "string",
+                  "id": 40
+                },
+                "phpNamespace": {
+                  "type": "string",
+                  "id": 41
+                },
+                "phpMetadataNamespace": {
+                  "type": "string",
+                  "id": 44
+                },
+                "rubyPackage": {
+                  "type": "string",
+                  "id": 45
+                },
+                "features": {
+                  "type": "FeatureSet",
+                  "id": 50
+                },
+                "uninterpretedOption": {
+                  "rule": "repeated",
+                  "type": "UninterpretedOption",
+                  "id": 999
+                }
+              },
+              "extensions": [
+                [
+                  1000,
+                  536870911
+                ]
+              ],
+              "reserved": [
+                [
+                  42,
+                  42
+                ],
+                [
+                  38,
+                  38
+                ],
+                "php_generic_services"
+              ],
+              "nested": {
+                "OptimizeMode": {
+                  "values": {
+                    "SPEED": 1,
+                    "CODE_SIZE": 2,
+                    "LITE_RUNTIME": 3
+                  }
+                }
+              }
+            },
+            "MessageOptions": {
+              "edition": "proto2",
+              "fields": {
+                "messageSetWireFormat": {
+                  "type": "bool",
+                  "id": 1
+                },
+                "noStandardDescriptorAccessor": {
+                  "type": "bool",
+                  "id": 2
+                },
+                "deprecated": {
+                  "type": "bool",
+                  "id": 3
+                },
+                "mapEntry": {
+                  "type": "bool",
+                  "id": 7
+                },
+                "deprecatedLegacyJsonFieldConflicts": {
+                  "type": "bool",
+                  "id": 11,
+                  "options": {
+                    "deprecated": true
+                  }
+                },
+                "features": {
+                  "type": "FeatureSet",
+                  "id": 12
+                },
+                "uninterpretedOption": {
+                  "rule": "repeated",
+                  "type": "UninterpretedOption",
+                  "id": 999
+                }
+              },
+              "extensions": [
+                [
+                  1000,
+                  536870911
+                ]
+              ],
+              "reserved": [
+                [
+                  4,
+                  4
+                ],
+                [
+                  5,
+                  5
+                ],
+                [
+                  6,
+                  6
+                ],
+                [
+                  8,
+                  8
+                ],
+                [
+                  9,
+                  9
+                ]
+              ]
+            },
+            "FieldOptions": {
+              "edition": "proto2",
+              "fields": {
+                "ctype": {
+                  "type": "CType",
+                  "id": 1,
+                  "options": {
+                    "default": "STRING"
+                  }
+                },
+                "packed": {
+                  "type": "bool",
+                  "id": 2
+                },
+                "jstype": {
+                  "type": "JSType",
+                  "id": 6,
+                  "options": {
+                    "default": "JS_NORMAL"
+                  }
+                },
+                "lazy": {
+                  "type": "bool",
+                  "id": 5
+                },
+                "unverifiedLazy": {
+                  "type": "bool",
+                  "id": 15
+                },
+                "deprecated": {
+                  "type": "bool",
+                  "id": 3
+                },
+                "weak": {
+                  "type": "bool",
+                  "id": 10,
+                  "options": {
+                    "deprecated": true
+                  }
+                },
+                "debugRedact": {
+                  "type": "bool",
+                  "id": 16
+                },
+                "retention": {
+                  "type": "OptionRetention",
+                  "id": 17
+                },
+                "targets": {
+                  "rule": "repeated",
+                  "type": "OptionTargetType",
+                  "id": 19
+                },
+                "editionDefaults": {
+                  "rule": "repeated",
+                  "type": "EditionDefault",
+                  "id": 20
+                },
+                "features": {
+                  "type": "FeatureSet",
+                  "id": 21
+                },
+                "featureSupport": {
+                  "type": "FeatureSupport",
+                  "id": 22
+                },
+                "uninterpretedOption": {
+                  "rule": "repeated",
+                  "type": "UninterpretedOption",
+                  "id": 999
+                }
+              },
+              "extensions": [
+                [
+                  1000,
+                  536870911
+                ]
+              ],
+              "reserved": [
+                [
+                  4,
+                  4
+                ],
+                [
+                  18,
+                  18
+                ]
+              ],
+              "nested": {
+                "CType": {
+                  "values": {
+                    "STRING": 0,
+                    "CORD": 1,
+                    "STRING_PIECE": 2
+                  }
+                },
+                "JSType": {
+                  "values": {
+                    "JS_NORMAL": 0,
+                    "JS_STRING": 1,
+                    "JS_NUMBER": 2
+                  }
+                },
+                "OptionRetention": {
+                  "values": {
+                    "RETENTION_UNKNOWN": 0,
+                    "RETENTION_RUNTIME": 1,
+                    "RETENTION_SOURCE": 2
+                  }
+                },
+                "OptionTargetType": {
+                  "values": {
+                    "TARGET_TYPE_UNKNOWN": 0,
+                    "TARGET_TYPE_FILE": 1,
+                    "TARGET_TYPE_EXTENSION_RANGE": 2,
+                    "TARGET_TYPE_MESSAGE": 3,
+                    "TARGET_TYPE_FIELD": 4,
+                    "TARGET_TYPE_ONEOF": 5,
+                    "TARGET_TYPE_ENUM": 6,
+                    "TARGET_TYPE_ENUM_ENTRY": 7,
+                    "TARGET_TYPE_SERVICE": 8,
+                    "TARGET_TYPE_METHOD": 9
+                  }
+                },
+                "EditionDefault": {
+                  "fields": {
+                    "edition": {
+                      "type": "Edition",
+                      "id": 3
+                    },
+                    "value": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "FeatureSupport": {
+                  "fields": {
+                    "editionIntroduced": {
+                      "type": "Edition",
+                      "id": 1
+                    },
+                    "editionDeprecated": {
+                      "type": "Edition",
+                      "id": 2
+                    },
+                    "deprecationWarning": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "editionRemoved": {
+                      "type": "Edition",
+                      "id": 4
+                    }
+                  }
+                }
+              }
+            },
+            "OneofOptions": {
+              "edition": "proto2",
+              "fields": {
+                "features": {
+                  "type": "FeatureSet",
+                  "id": 1
+                },
+                "uninterpretedOption": {
+                  "rule": "repeated",
+                  "type": "UninterpretedOption",
+                  "id": 999
+                }
+              },
+              "extensions": [
+                [
+                  1000,
+                  536870911
+                ]
+              ]
+            },
+            "EnumOptions": {
+              "edition": "proto2",
+              "fields": {
+                "allowAlias": {
+                  "type": "bool",
+                  "id": 2
+                },
+                "deprecated": {
+                  "type": "bool",
+                  "id": 3
+                },
+                "deprecatedLegacyJsonFieldConflicts": {
+                  "type": "bool",
+                  "id": 6,
+                  "options": {
+                    "deprecated": true
+                  }
+                },
+                "features": {
+                  "type": "FeatureSet",
+                  "id": 7
+                },
+                "uninterpretedOption": {
+                  "rule": "repeated",
+                  "type": "UninterpretedOption",
+                  "id": 999
+                }
+              },
+              "extensions": [
+                [
+                  1000,
+                  536870911
+                ]
+              ],
+              "reserved": [
+                [
+                  5,
+                  5
+                ]
+              ]
+            },
+            "EnumValueOptions": {
+              "edition": "proto2",
+              "fields": {
+                "deprecated": {
+                  "type": "bool",
+                  "id": 1
+                },
+                "features": {
+                  "type": "FeatureSet",
+                  "id": 2
+                },
+                "debugRedact": {
+                  "type": "bool",
+                  "id": 3
+                },
+                "featureSupport": {
+                  "type": "FieldOptions.FeatureSupport",
+                  "id": 4
+                },
+                "uninterpretedOption": {
+                  "rule": "repeated",
+                  "type": "UninterpretedOption",
+                  "id": 999
+                }
+              },
+              "extensions": [
+                [
+                  1000,
+                  536870911
+                ]
+              ]
+            },
+            "ServiceOptions": {
+              "edition": "proto2",
+              "fields": {
+                "features": {
+                  "type": "FeatureSet",
+                  "id": 34
+                },
+                "deprecated": {
+                  "type": "bool",
+                  "id": 33
+                },
+                "uninterpretedOption": {
+                  "rule": "repeated",
+                  "type": "UninterpretedOption",
+                  "id": 999
+                }
+              },
+              "extensions": [
+                [
+                  1000,
+                  536870911
+                ]
+              ]
+            },
+            "MethodOptions": {
+              "edition": "proto2",
+              "fields": {
+                "deprecated": {
+                  "type": "bool",
+                  "id": 33
+                },
+                "idempotencyLevel": {
+                  "type": "IdempotencyLevel",
+                  "id": 34,
+                  "options": {
+                    "default": "IDEMPOTENCY_UNKNOWN"
+                  }
+                },
+                "features": {
+                  "type": "FeatureSet",
+                  "id": 35
+                },
+                "uninterpretedOption": {
+                  "rule": "repeated",
+                  "type": "UninterpretedOption",
+                  "id": 999
+                }
+              },
+              "extensions": [
+                [
+                  1000,
+                  536870911
+                ]
+              ],
+              "nested": {
+                "IdempotencyLevel": {
+                  "values": {
+                    "IDEMPOTENCY_UNKNOWN": 0,
+                    "NO_SIDE_EFFECTS": 1,
+                    "IDEMPOTENT": 2
+                  }
+                }
+              }
+            },
+            "UninterpretedOption": {
+              "edition": "proto2",
+              "fields": {
+                "name": {
+                  "rule": "repeated",
+                  "type": "NamePart",
+                  "id": 2
+                },
+                "identifierValue": {
+                  "type": "string",
+                  "id": 3
+                },
+                "positiveIntValue": {
+                  "type": "uint64",
+                  "id": 4
+                },
+                "negativeIntValue": {
+                  "type": "int64",
+                  "id": 5
+                },
+                "doubleValue": {
+                  "type": "double",
+                  "id": 6
+                },
+                "stringValue": {
+                  "type": "bytes",
+                  "id": 7
+                },
+                "aggregateValue": {
+                  "type": "string",
+                  "id": 8
+                }
+              },
+              "nested": {
+                "NamePart": {
+                  "fields": {
+                    "namePart": {
+                      "rule": "required",
+                      "type": "string",
+                      "id": 1
+                    },
+                    "isExtension": {
+                      "rule": "required",
+                      "type": "bool",
+                      "id": 2
+                    }
+                  }
+                }
+              }
+            },
+            "FeatureSet": {
+              "edition": "proto2",
+              "fields": {
+                "fieldPresence": {
+                  "type": "FieldPresence",
+                  "id": 1,
+                  "options": {
+                    "retention": "RETENTION_RUNTIME",
+                    "targets": "TARGET_TYPE_FILE",
+                    "feature_support.edition_introduced": "EDITION_2023",
+                    "edition_defaults.edition": "EDITION_2023",
+                    "edition_defaults.value": "EXPLICIT"
+                  }
+                },
+                "enumType": {
+                  "type": "EnumType",
+                  "id": 2,
+                  "options": {
+                    "retention": "RETENTION_RUNTIME",
+                    "targets": "TARGET_TYPE_FILE",
+                    "feature_support.edition_introduced": "EDITION_2023",
+                    "edition_defaults.edition": "EDITION_PROTO3",
+                    "edition_defaults.value": "OPEN"
+                  }
+                },
+                "repeatedFieldEncoding": {
+                  "type": "RepeatedFieldEncoding",
+                  "id": 3,
+                  "options": {
+                    "retention": "RETENTION_RUNTIME",
+                    "targets": "TARGET_TYPE_FILE",
+                    "feature_support.edition_introduced": "EDITION_2023",
+                    "edition_defaults.edition": "EDITION_PROTO3",
+                    "edition_defaults.value": "PACKED"
+                  }
+                },
+                "utf8Validation": {
+                  "type": "Utf8Validation",
+                  "id": 4,
+                  "options": {
+                    "retention": "RETENTION_RUNTIME",
+                    "targets": "TARGET_TYPE_FILE",
+                    "feature_support.edition_introduced": "EDITION_2023",
+                    "edition_defaults.edition": "EDITION_PROTO3",
+                    "edition_defaults.value": "VERIFY"
+                  }
+                },
+                "messageEncoding": {
+                  "type": "MessageEncoding",
+                  "id": 5,
+                  "options": {
+                    "retention": "RETENTION_RUNTIME",
+                    "targets": "TARGET_TYPE_FILE",
+                    "feature_support.edition_introduced": "EDITION_2023",
+                    "edition_defaults.edition": "EDITION_LEGACY",
+                    "edition_defaults.value": "LENGTH_PREFIXED"
+                  }
+                },
+                "jsonFormat": {
+                  "type": "JsonFormat",
+                  "id": 6,
+                  "options": {
+                    "retention": "RETENTION_RUNTIME",
+                    "targets": "TARGET_TYPE_FILE",
+                    "feature_support.edition_introduced": "EDITION_2023",
+                    "edition_defaults.edition": "EDITION_PROTO3",
+                    "edition_defaults.value": "ALLOW"
+                  }
+                },
+                "enforceNamingStyle": {
+                  "type": "EnforceNamingStyle",
+                  "id": 7,
+                  "options": {
+                    "retention": "RETENTION_SOURCE",
+                    "targets": "TARGET_TYPE_METHOD",
+                    "feature_support.edition_introduced": "EDITION_2024",
+                    "edition_defaults.edition": "EDITION_2024",
+                    "edition_defaults.value": "STYLE2024"
+                  }
+                },
+                "defaultSymbolVisibility": {
+                  "type": "VisibilityFeature.DefaultSymbolVisibility",
+                  "id": 8,
+                  "options": {
+                    "retention": "RETENTION_SOURCE",
+                    "targets": "TARGET_TYPE_FILE",
+                    "feature_support.edition_introduced": "EDITION_2024",
+                    "edition_defaults.edition": "EDITION_2024",
+                    "edition_defaults.value": "EXPORT_TOP_LEVEL"
+                  }
+                }
+              },
+              "extensions": [
+                [
+                  1000,
+                  9994
+                ],
+                [
+                  9995,
+                  9999
+                ],
+                [
+                  10000,
+                  10000
+                ]
+              ],
+              "reserved": [
+                [
+                  999,
+                  999
+                ]
+              ],
+              "nested": {
+                "FieldPresence": {
+                  "values": {
+                    "FIELD_PRESENCE_UNKNOWN": 0,
+                    "EXPLICIT": 1,
+                    "IMPLICIT": 2,
+                    "LEGACY_REQUIRED": 3
+                  }
+                },
+                "EnumType": {
+                  "values": {
+                    "ENUM_TYPE_UNKNOWN": 0,
+                    "OPEN": 1,
+                    "CLOSED": 2
+                  }
+                },
+                "RepeatedFieldEncoding": {
+                  "values": {
+                    "REPEATED_FIELD_ENCODING_UNKNOWN": 0,
+                    "PACKED": 1,
+                    "EXPANDED": 2
+                  }
+                },
+                "Utf8Validation": {
+                  "values": {
+                    "UTF8_VALIDATION_UNKNOWN": 0,
+                    "VERIFY": 2,
+                    "NONE": 3
+                  }
+                },
+                "MessageEncoding": {
+                  "values": {
+                    "MESSAGE_ENCODING_UNKNOWN": 0,
+                    "LENGTH_PREFIXED": 1,
+                    "DELIMITED": 2
+                  }
+                },
+                "JsonFormat": {
+                  "values": {
+                    "JSON_FORMAT_UNKNOWN": 0,
+                    "ALLOW": 1,
+                    "LEGACY_BEST_EFFORT": 2
+                  }
+                },
+                "EnforceNamingStyle": {
+                  "values": {
+                    "ENFORCE_NAMING_STYLE_UNKNOWN": 0,
+                    "STYLE2024": 1,
+                    "STYLE_LEGACY": 2
+                  }
+                },
+                "VisibilityFeature": {
+                  "fields": {},
+                  "reserved": [
+                    [
+                      1,
+                      536870911
+                    ]
+                  ],
+                  "nested": {
+                    "DefaultSymbolVisibility": {
+                      "values": {
+                        "DEFAULT_SYMBOL_VISIBILITY_UNKNOWN": 0,
+                        "EXPORT_ALL": 1,
+                        "EXPORT_TOP_LEVEL": 2,
+                        "LOCAL_ALL": 3,
+                        "STRICT": 4
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "FeatureSetDefaults": {
+              "edition": "proto2",
+              "fields": {
+                "defaults": {
+                  "rule": "repeated",
+                  "type": "FeatureSetEditionDefault",
+                  "id": 1
+                },
+                "minimumEdition": {
+                  "type": "Edition",
+                  "id": 4
+                },
+                "maximumEdition": {
+                  "type": "Edition",
+                  "id": 5
+                }
+              },
+              "nested": {
+                "FeatureSetEditionDefault": {
+                  "fields": {
+                    "edition": {
+                      "type": "Edition",
+                      "id": 3
+                    },
+                    "overridableFeatures": {
+                      "type": "FeatureSet",
+                      "id": 4
+                    },
+                    "fixedFeatures": {
+                      "type": "FeatureSet",
+                      "id": 5
+                    }
+                  },
+                  "reserved": [
+                    [
+                      1,
+                      1
+                    ],
+                    [
+                      2,
+                      2
+                    ],
+                    "features"
+                  ]
+                }
+              }
+            },
+            "SourceCodeInfo": {
+              "edition": "proto2",
+              "fields": {
+                "location": {
+                  "rule": "repeated",
+                  "type": "Location",
+                  "id": 1
+                }
+              },
+              "extensions": [
+                [
+                  536000000,
+                  536000000
+                ]
+              ],
+              "nested": {
+                "Location": {
+                  "fields": {
+                    "path": {
+                      "rule": "repeated",
+                      "type": "int32",
+                      "id": 1,
+                      "options": {
+                        "packed": true
+                      }
+                    },
+                    "span": {
+                      "rule": "repeated",
+                      "type": "int32",
+                      "id": 2,
+                      "options": {
+                        "packed": true
+                      }
+                    },
+                    "leadingComments": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "trailingComments": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "leadingDetachedComments": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 6
+                    }
+                  }
+                }
+              }
+            },
+            "GeneratedCodeInfo": {
+              "edition": "proto2",
+              "fields": {
+                "annotation": {
+                  "rule": "repeated",
+                  "type": "Annotation",
+                  "id": 1
+                }
+              },
+              "nested": {
+                "Annotation": {
+                  "fields": {
+                    "path": {
+                      "rule": "repeated",
+                      "type": "int32",
+                      "id": 1,
+                      "options": {
+                        "packed": true
+                      }
+                    },
+                    "sourceFile": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "begin": {
+                      "type": "int32",
+                      "id": 3
+                    },
+                    "end": {
+                      "type": "int32",
+                      "id": 4
+                    },
+                    "semantic": {
+                      "type": "Semantic",
+                      "id": 5
+                    }
+                  },
+                  "nested": {
+                    "Semantic": {
+                      "values": {
+                        "NONE": 0,
+                        "SET": 1,
+                        "ALIAS": 2
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "SymbolVisibility": {
+              "edition": "proto2",
+              "values": {
+                "VISIBILITY_UNSET": 0,
+                "VISIBILITY_LOCAL": 1,
+                "VISIBILITY_EXPORT": 2
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
