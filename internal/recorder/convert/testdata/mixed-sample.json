@@ -1,0 +1,82 @@
+{
+  "mapping": {
+    "34": {
+      "name": "/BigData_YamcsDeployment/BigData/systemResources/MEMORY_TOTAL"
+    },
+    "58": {
+      "name": "/BigData_YamcsDeployment/CdhCore/version/FrameworkVersion"
+    },
+    "122": {
+      "name": "/yamcs/JosephLenovo/jvm/memoryUsed"
+    },
+    "136": {
+      "name": "/yamcs/JosephLenovo/links/UDP_TM_IN/dataInRate"
+    },
+    "139": {
+      "name": "/yamcs/JosephLenovo/links/UDP_TM_IN/linkStatus"
+    }
+  }
+}
+{
+  "values": [
+    {
+      "rawValue": {
+        "type": "UINT64",
+        "uint64Value": "16173720"
+      },
+      "engValue": {
+        "type": "UINT64",
+        "uint64Value": "16173720"
+      },
+      "acquisitionTime": "2026-09-30T20:30:14.185Z",
+      "generationTime": "2026-09-30T20:30:14.184Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 34
+    },
+    {
+      "rawValue": {
+        "type": "STRING",
+        "stringValue": "7d8f579"
+      },
+      "engValue": {
+        "type": "STRING",
+        "stringValue": "7d8f579"
+      },
+      "acquisitionTime": "2026-09-29T22:54:28.095Z",
+      "generationTime": "2026-09-29T22:54:28.076Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 58
+    },
+    {
+      "engValue": {
+        "type": "SINT64",
+        "sint64Value": "249244"
+      },
+      "acquisitionTime": "2026-09-30T20:29:38.778Z",
+      "generationTime": "2026-09-30T20:29:38.778Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 122
+    },
+    {
+      "engValue": {
+        "type": "DOUBLE",
+        "doubleValue": 1300
+      },
+      "acquisitionTime": "2026-09-30T20:30:13.777Z",
+      "generationTime": "2026-09-30T20:30:13.777Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 136
+    },
+    {
+      "engValue": {
+        "type": "ENUMERATED",
+        "stringValue": "OK",
+        "sint64Value": "0"
+      },
+      "acquisitionTime": "2026-09-30T20:30:13.777Z",
+      "generationTime": "2026-09-30T20:30:13.777Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 139
+    }
+  ]
+}

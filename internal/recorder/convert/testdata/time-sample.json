@@ -1,0 +1,172 @@
+{
+  "mapping": {
+    "1": {
+      "name": "/BigData_YamcsDeployment/FPrimeTime"
+    },
+    "2": {
+      "name": "/BigData_YamcsDeployment/BigData/systemResources/CPU"
+    }
+  },
+  "info": {
+    "1": {
+      "parameter": "/BigData_YamcsDeployment/FPrimeTime",
+      "dataSource": "TELEMETERED"
+    },
+    "2": {
+      "parameter": "/BigData_YamcsDeployment/BigData/systemResources/CPU",
+      "dataSource": "TELEMETERED"
+    }
+  }
+}
+{
+  "values": [
+    {
+      "rawValue": {
+        "type": "AGGREGATE",
+        "aggregateValue": {
+          "name": [
+            "timeBase",
+            "timeContext",
+            "seconds",
+            "useconds"
+          ],
+          "value": [
+            {
+              "type": "UINT32",
+              "uint32Value": 2
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 0
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 1790809516
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 668064
+            }
+          ]
+        }
+      },
+      "engValue": {
+        "type": "AGGREGATE",
+        "aggregateValue": {
+          "name": [
+            "timeBase",
+            "timeContext",
+            "seconds",
+            "useconds"
+          ],
+          "value": [
+            {
+              "type": "ENUMERATED",
+              "stringValue": "TB_WORKSTATION_TIME",
+              "sint64Value": "2"
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 0
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 1790809516
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 668064
+            }
+          ]
+        }
+      },
+      "acquisitionTime": "2026-09-30T23:05:17.668Z",
+      "generationTime": "2026-09-30T23:05:17.668Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 1
+    }
+  ]
+}
+{
+  "values": [
+    {
+      "rawValue": {
+        "type": "AGGREGATE",
+        "aggregateValue": {
+          "name": [
+            "timeBase",
+            "timeContext",
+            "seconds",
+            "useconds"
+          ],
+          "value": [
+            {
+              "type": "UINT32",
+              "uint32Value": 2
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 0
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 1790809518
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 668124
+            }
+          ]
+        }
+      },
+      "engValue": {
+        "type": "AGGREGATE",
+        "aggregateValue": {
+          "name": [
+            "timeBase",
+            "timeContext",
+            "seconds",
+            "useconds"
+          ],
+          "value": [
+            {
+              "type": "ENUMERATED",
+              "stringValue": "TB_WORKSTATION_TIME",
+              "sint64Value": "2"
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 0
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 1790809518
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 668124
+            }
+          ]
+        }
+      },
+      "acquisitionTime": "2026-09-30T23:05:19.669Z",
+      "generationTime": "2026-09-30T23:05:19.668Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 1
+    },
+    {
+      "rawValue": {
+        "type": "FLOAT",
+        "floatValue": 0.06188119
+      },
+      "engValue": {
+        "type": "FLOAT",
+        "floatValue": 0.06188119
+      },
+      "acquisitionTime": "2026-09-30T23:05:19.669Z",
+      "generationTime": "2026-09-30T23:05:19.668Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 2
+    }
+  ]
+}

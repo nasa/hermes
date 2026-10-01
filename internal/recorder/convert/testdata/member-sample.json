@@ -1,0 +1,218 @@
+{
+  "mapping": {
+    "1": {
+      "name": "/BigData_YamcsDeployment/CCSDS_Packet_ID"
+    },
+    "2": {
+      "name": "/BigData_YamcsDeployment/ComCcsds/comQueue/comQueueDepth"
+    }
+  },
+  "values": [
+    {
+      "rawValue": {
+        "type": "AGGREGATE",
+        "aggregateValue": {
+          "name": [
+            "Version",
+            "Type",
+            "SecHdrFlag",
+            "APID"
+          ],
+          "value": [
+            {
+              "type": "UINT32",
+              "uint32Value": 0
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 0
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 0
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 4
+            }
+          ]
+        }
+      },
+      "engValue": {
+        "type": "AGGREGATE",
+        "aggregateValue": {
+          "name": [
+            "Version",
+            "Type",
+            "SecHdrFlag",
+            "APID"
+          ],
+          "value": [
+            {
+              "type": "UINT32",
+              "uint32Value": 0
+            },
+            {
+              "type": "BOOLEAN",
+              "booleanValue": false
+            },
+            {
+              "type": "BOOLEAN",
+              "booleanValue": false
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 4
+            }
+          ]
+        }
+      },
+      "acquisitionTime": "2026-09-30T21:15:10.064Z",
+      "generationTime": "2026-09-30T21:15:10.063Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 1
+    },
+    {
+      "rawValue": {
+        "type": "ARRAY",
+        "arrayValue": [
+          {
+            "type": "UINT32",
+            "uint32Value": 0
+          },
+          {
+            "type": "UINT32",
+            "uint32Value": 2
+          }
+        ]
+      },
+      "engValue": {
+        "type": "ARRAY",
+        "arrayValue": [
+          {
+            "type": "UINT32",
+            "uint32Value": 0
+          },
+          {
+            "type": "UINT32",
+            "uint32Value": 2
+          }
+        ]
+      },
+      "acquisitionTime": "2026-09-30T21:15:10.063Z",
+      "generationTime": "2026-09-30T21:15:10.063Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 2
+    }
+  ],
+  "info": {
+    "1": {
+      "parameter": "/BigData_YamcsDeployment/CCSDS_Packet_ID",
+      "dataSource": "TELEMETERED"
+    },
+    "2": {
+      "parameter": "/BigData_YamcsDeployment/ComCcsds/comQueue/comQueueDepth",
+      "dataSource": "TELEMETERED"
+    }
+  }
+}
+{
+  "values": [
+    {
+      "rawValue": {
+        "type": "AGGREGATE",
+        "aggregateValue": {
+          "name": [
+            "Version",
+            "Type",
+            "SecHdrFlag",
+            "APID"
+          ],
+          "value": [
+            {
+              "type": "UINT32",
+              "uint32Value": 0
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 0
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 0
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 4
+            }
+          ]
+        }
+      },
+      "engValue": {
+        "type": "AGGREGATE",
+        "aggregateValue": {
+          "name": [
+            "Version",
+            "Type",
+            "SecHdrFlag",
+            "APID"
+          ],
+          "value": [
+            {
+              "type": "UINT32",
+              "uint32Value": 0
+            },
+            {
+              "type": "BOOLEAN",
+              "booleanValue": false
+            },
+            {
+              "type": "BOOLEAN",
+              "booleanValue": false
+            },
+            {
+              "type": "UINT32",
+              "uint32Value": 4
+            }
+          ]
+        }
+      },
+      "acquisitionTime": "2026-09-30T21:15:11.063Z",
+      "generationTime": "2026-09-30T21:15:11.063Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 1
+    },
+    {
+      "rawValue": {
+        "type": "ARRAY",
+        "arrayValue": [
+          {
+            "type": "UINT32",
+            "uint32Value": 0
+          },
+          {
+            "type": "UINT32",
+            "uint32Value": 2
+          }
+        ]
+      },
+      "engValue": {
+        "type": "ARRAY",
+        "arrayValue": [
+          {
+            "type": "UINT32",
+            "uint32Value": 0
+          },
+          {
+            "type": "UINT32",
+            "uint32Value": 2
+          }
+        ]
+      },
+      "acquisitionTime": "2026-09-30T21:15:11.063Z",
+      "generationTime": "2026-09-30T21:15:11.063Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 2
+    }
+  ]
+}
