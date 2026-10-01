@@ -8,6 +8,7 @@ export type Aggregation = 'avg' | 'min' | 'max' | 'count' | 'first' | 'last' | '
 export interface ChannelRef {
   component: string;
   name: string;
+  source?: string; // Omitted in legacy queries, which select all sources.
   raw?: never;
 }
 
