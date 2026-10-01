@@ -2,6 +2,7 @@ package store
 
 import (
 	"database/sql"
+	"strconv"
 	"time"
 )
 
@@ -33,8 +34,11 @@ type Value struct {
 	Binary []byte // nil is NULL
 }
 
+// FloatValue widens v through its shortest decimal form, so 0.1 is stored as
+// 0.1 rather than 0.10000000149011612. float32 of the result is still v.
 func FloatValue(v float32) Value {
-	return Value{Type: TypeFloat, Float: sql.NullFloat64{Float64: float64(v), Valid: true}}
+	wide, _ := strconv.ParseFloat(strconv.FormatFloat(float64(v), 'g', -1, 32), 64)
+	return Value{Type: TypeFloat, Float: sql.NullFloat64{Float64: wide, Valid: true}}
 }
 
 func DoubleValue(v float64) Value {
