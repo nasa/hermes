@@ -55,6 +55,21 @@ grpcurl -plaintext -import-path proto -proto yamcs/protobuf/processing/processin
     127.0.0.1:8091 yamcs.protobuf.processing.ProcessingApi/SubscribeParameters
 ```
 
+In VS Code, set `hermes.host.yamcs` to the plugin's address and instance, run **Hermes: Change
+Backend Mode** and pick **YAMCS**. Every TELEMETERED parameter shows up in the telemetry table and
+plot with source `yamcs:<instance>`. Aggregates and arrays get one row per member, named like the
+recorder's member paths (`CCSDS_Packet_ID.APID`, `comQueueDepth[1]`).
+
+Checks against a running plugin, from the repo root:
+
+```sh
+YAMCS_GRPC_ADDRESS=localhost:8095 yarn jest src/extensions/core/test/yamcs.test.ts
+node build build
+YAMCS_GRPC_ADDRESS=localhost:8095 node yamcs-grpc-plugin/e2e/run.js   # downloads VS Code 1.138.0 on first run
+```
+
+`VSCODE_TEST_CACHE` points `run.js` at an existing download instead.
+
 ## Not done
 
 - `GrpcContext` has to live in `org.yamcs.http` because `Context`'s constructor is package-private.
