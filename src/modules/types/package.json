@@ -4,12 +4,5 @@
     "main": "src/index.ts",
     "module": "src/index.ts",
     "sideEffects": false,
-    "scripts": {
-        "schema": "typescript-json-schema --required --noExtraProps -o schemas/dictionary-modifier.json src/modifier/types.ts DictionaryModifierJson"
-    },
-    "devDependencies": {
-        "@types/json-schema": "^7.0.15",
-        "typescript-json-schema": "^0.68.0"
-    },
     "gitHead": "ae5d9bc28a728716fe9a9f81930c9ad8be87f55e"
 }
