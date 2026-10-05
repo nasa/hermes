@@ -69,7 +69,9 @@ export function BuilderEditor({ query, onChange, onRunQuery, datasource }: Build
       />
       <RadioButtonGroup
         id="query-editor-query-type"
-        options={QUERY_TYPE_OPTIONS.filter(opt => opt.value !== 'raw')}
+        // yamcs-recorder only records telemetry, so we leave Events out of the toggle.
+        // Raw SQL stays out too, since a query becomes raw SQL by switching the editor to Code.
+        options={QUERY_TYPE_OPTIONS.filter(opt => opt.value === 'telemetry')}
         value={queryType}
         onChange={onQueryTypeChange}
         size="sm"

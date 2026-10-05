@@ -61,7 +61,7 @@ describe('QueryEditor — Telemetry', () => {
     await act(async () => { render(<QueryEditor {...buildProps()} />); });
 
     expect(screen.getByRole('radio', { name: /Telemetry/ })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: /Events/ })).toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: /Events/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: /Component/ })).not.toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /Parameter/ })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /Instance/ })).toBeInTheDocument();

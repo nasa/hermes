@@ -76,7 +76,7 @@ export function ConfigEditor(props: Props) {
           onChange={onPasswordChange}
         />
       </InlineField>
-      <InlineField label="Database" labelWidth={14} tooltip="Database name where telemetry and events will be stored." required>
+      <InlineField label="Database" labelWidth={14} tooltip="Database that yamcs-recorder writes to." required>
         <Input
           id="config-editor-database"
           onChange={onDatabaseChange}

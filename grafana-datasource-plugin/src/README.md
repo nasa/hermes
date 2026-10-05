@@ -8,9 +8,9 @@
 
 ## Overview
 
-**Hermes** is a Grafana backend datasource plugin that connects to a [TimescaleDB](https://www.timescale.com/) database to query and visualize **telemetry** and **events** data from NASA's [Hermes ground data system (GDS)](https://github.com/nasa/hermes).
+**Hermes** is a Grafana backend datasource plugin that connects to a [TimescaleDB](https://www.timescale.com/) database to query and visualize **telemetry** data from NASA's [Hermes ground data system (GDS)](https://github.com/nasa/hermes).
 
-The plugin provides a multi-select query editor for querying events and telemetry, making it easy to build dashboards over spacecraft telemetry and event streams without writing raw SQL. Multiple telemetry channels, instances, and members can be selected in a single query to overlay or compare data series. Additionally you can write custom SQL queries.
+The plugin provides a multi-select query editor for querying telemetry, making it easy to build dashboards over spacecraft telemetry without writing raw SQL. Multiple parameters, instances, and members can be selected in a single query to overlay or compare data series. Additionally you can write custom SQL queries.
 
 ## Requirements
 
@@ -73,17 +73,13 @@ Notes:
 
 #### Builder: Events
 
-Select **Events** in the bottom-right toggle. Returns event log entries with fields: timestamp, component, name, severity, message, source, args.
-
-| Field      | Type                   | Description                                                |
-| ---------- | ---------------------- | ---------------------------------------------------------- |
-| **Source** | multi-select, optional | FSW source identifier. Leave empty to include all sources. |
+The Events query type is hidden because yamcs-recorder only records telemetry.
 
 <br>
 
 #### Builder: Shared options
 
-Available for both query types:
+Available for all query types:
 
 | Field                  | Description                                                                                            |
 | ---------------------- | ------------------------------------------------------------------------------------------------------ |

@@ -1,6 +1,6 @@
 # Hermes-Datasource
 
-A [Grafana](https://grafana.com/) backend datasource plugin that connects to [TimescaleDB](https://www.timescale.com/) to query and visualize **telemetry** and **event** data from NASA's Hermes flight software system.
+A [Grafana](https://grafana.com/) backend datasource plugin that connects to [TimescaleDB](https://www.timescale.com/) to query and visualize **telemetry** data from NASA's Hermes ground data system.
 
 For end-user documentation (configuration, query editor usage, etc.), see the [plugin catalog README](src/README.md).
 
