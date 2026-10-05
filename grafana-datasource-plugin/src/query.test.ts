@@ -195,6 +195,7 @@ describe('buildTelemetryQuery — aggregations', () => {
   it.each([
     ['raw'],
     ['deriv'],
+    ['latest'],
   ])('does not aggregate or group for %s', (agg) => {
     const sql = buildTelemetryQuery(aggQuery(agg), FROM, TO);
     expect(sql).toContain('t.integral::double precision AS val_int');

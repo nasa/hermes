@@ -264,7 +264,7 @@ export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string):
     const channelPredicate = channelClauses.join("\n\t\t       OR ");
 
     let intervalExpr;
-    if (q.aggregation !== "raw" && q.aggregation !== "deriv") {
+    if (q.aggregation !== "raw" && q.aggregation !== "deriv" && q.aggregation !== "latest") {
         intervalExpr = `time_bucket($__interval, t.${q.timeField})`;
     } else {
         intervalExpr = `t.${q.timeField}`;
