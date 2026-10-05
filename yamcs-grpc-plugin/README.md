@@ -62,6 +62,21 @@ grpcurl -plaintext -import-path proto -proto yamcs/protobuf/processing/processin
     localhost:8091 yamcs.protobuf.processing.ProcessingApi/SubscribeParameters
 ```
 
+## VS Code
+
+In VS Code, run **Hermes: Change Backend Mode**, pick **YAMCS**, and enter the plugin's address and
+the instance. The prompts are prefilled from the `hermes.host.yamcs` setting, then from your last
+answers. The setting also picks the processor. Clicking the instance name in the status bar
+prompts again.
+Parameters directly in a top-level space system, where fprime-yamcs puts the CCSDS and F Prime packet
+header fields, are left out unless `hermes.host.yamcs` sets `includeTopLevel`.
+
+Checks against fprime-yamcs with the plugin and a running F Prime deployment, from the repo root:
+
+```sh
+YAMCS_GRPC_ADDRESS=localhost:8091 yarn jest src/extensions/core/test/yamcs.test.ts
+```
+
 ## Not done
 
 - `GrpcContext` has to live in `org.yamcs.http` because `Context`'s constructor is package-private.
