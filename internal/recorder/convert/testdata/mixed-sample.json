@@ -1,0 +1,126 @@
+{
+  "mapping": {
+    "1": {
+      "name": "/Ref_Ref/CdhCore/version/FrameworkVersion"
+    },
+    "2": {
+      "name": "/Ref_Ref/Ref/systemResources/MEMORY_TOTAL"
+    },
+    "3": {
+      "name": "/yamcs/yamcs-server/jvm/memoryUsed"
+    },
+    "4": {
+      "name": "/yamcs/yamcs-server/links/UDP_TM_IN/dataInRate"
+    },
+    "5": {
+      "name": "/yamcs/yamcs-server/links/UDP_TM_IN/linkStatus"
+    }
+  },
+  "values": [
+    {
+      "rawValue": {
+        "type": "STRING",
+        "stringValue": "7d8f579"
+      },
+      "engValue": {
+        "type": "STRING",
+        "stringValue": "7d8f579"
+      },
+      "acquisitionTime": "2026-10-06T23:08:13.728Z",
+      "generationTime": "2026-10-06T23:08:13.698Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 1
+    },
+    {
+      "rawValue": {
+        "type": "UINT64",
+        "uint64Value": "16173720"
+      },
+      "engValue": {
+        "type": "UINT64",
+        "uint64Value": "16173720"
+      },
+      "acquisitionTime": "2026-10-06T23:09:04.708Z",
+      "generationTime": "2026-10-06T23:09:04.699Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 2
+    },
+    {
+      "engValue": {
+        "type": "SINT64",
+        "sint64Value": "44609"
+      },
+      "acquisitionTime": "2026-10-06T23:08:12.776Z",
+      "generationTime": "2026-10-06T23:08:12.776Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 3
+    },
+    {
+      "engValue": {
+        "type": "DOUBLE",
+        "doubleValue": 1024
+      },
+      "acquisitionTime": "2026-10-06T23:09:04.773Z",
+      "generationTime": "2026-10-06T23:09:04.773Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 4
+    },
+    {
+      "engValue": {
+        "type": "ENUMERATED",
+        "stringValue": "OK",
+        "sint64Value": "0"
+      },
+      "acquisitionTime": "2026-10-06T23:09:04.773Z",
+      "generationTime": "2026-10-06T23:09:04.773Z",
+      "acquisitionStatus": "ACQUIRED",
+      "numericId": 5
+    }
+  ],
+  "info": {
+    "1": {
+      "parameter": "/Ref_Ref/CdhCore/version/FrameworkVersion",
+      "dataSource": "TELEMETERED"
+    },
+    "2": {
+      "parameter": "/Ref_Ref/Ref/systemResources/MEMORY_TOTAL",
+      "dataSource": "TELEMETERED"
+    },
+    "3": {
+      "parameter": "/yamcs/yamcs-server/jvm/memoryUsed",
+      "units": "KB",
+      "dataSource": "SYSTEM"
+    },
+    "4": {
+      "parameter": "/yamcs/yamcs-server/links/UDP_TM_IN/dataInRate",
+      "units": "Bps",
+      "dataSource": "SYSTEM"
+    },
+    "5": {
+      "parameter": "/yamcs/yamcs-server/links/UDP_TM_IN/linkStatus",
+      "dataSource": "SYSTEM",
+      "enumValues": [
+        {
+          "value": "0",
+          "label": "OK",
+          "description": "This link is up and ready to receive (or send) data"
+        },
+        {
+          "value": "1",
+          "label": "UNAVAIL",
+          "description": "This link is down unexpectedly"
+        },
+        {
+          "value": "2",
+          "label": "DISABLED",
+          "description": "This link was disabled by a user"
+        },
+        {
+          "value": "3",
+          "label": "FAILED",
+          "description": "An internal error occurred while processing data"
+        }
+      ]
+    }
+  }
+}
