@@ -79,11 +79,20 @@ YAMCS mode can't send commands or show events. It sends no credentials, so it fa
 or its instance stopped, the status bar turns red with the reason in its tooltip. To subscribe again,
 run **Hermes: Reconnect to Backend**.
 
-Checks against fprime-yamcs with the plugin and a running F Prime deployment, from the repo root:
+Checks against fprime-yamcs with the plugin and a running F Prime deployment, from the repo root.
+They wait for FrameworkVersion, which F Prime sends only at boot, so the deployment must have booted
+while this YAMCS instance was running:
 
 ```sh
 YAMCS_GRPC_ADDRESS=localhost:8091 yarn jest src/extensions/core/test/yamcs.test.ts
+node build build
+node src/extensions/core/test/e2e/run.js   # downloads VS Code 1.138.0 on first run
 ```
+
+The live jest tests run only when `YAMCS_GRPC_ADDRESS` is set. `run.js` defaults to `localhost:8091`
+and writes `result.json` next to itself. Both read `YAMCS_INSTANCE`, default `fprime-project`.
+`VSCODE_TEST_CACHE` points `run.js` at an existing VS Code download. `E2E_HOLD_MS` holds the window
+open that many milliseconds with the telemetry table showing.
 
 ## Not done
 

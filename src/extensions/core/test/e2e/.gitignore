@@ -1,0 +1,5 @@
+.vscode-test/
+user-data/
+extensions/
+result.json
+workspace/
