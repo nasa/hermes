@@ -32,7 +32,7 @@ type channelEntry struct {
 }
 
 func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT component, name FROM telemetryDefs ORDER BY component, name;")
+	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT space_system, name FROM parameters ORDER BY space_system, name;")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -56,7 +56,7 @@ func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.R
 }
 
 func (d *Datasource) handleGetTelemetrySources(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT source FROM telemetry ORDER BY source;")
+	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT instance FROM parameters ORDER BY instance;")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -91,14 +91,21 @@ func (d *Datasource) handleGetTelemetryKeys(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// We list each parameter's members in its own subquery so parameter_id has
+	// a single value inside it. TimescaleDB's SkipScan can then jump from one
+	// member_path to the next in the (parameter_id, member_path, generation_time)
+	// index instead of reading every stored value. The outer DISTINCT drops
+	// repeats when a parameter exists in several instances.
 	query := `
-		SELECT DISTINCT d.component, d.name, t.key 
+		SELECT DISTINCT p.space_system, p.name, m.member_path
 		FROM json_to_recordset($1::json) AS sel(component text, name text)
-		JOIN telemetryDefs d ON d.component = sel.component AND d.name = sel.name
-		JOIN telemetry t ON t.telemetryDefId = d.id
-		WHERE t.key IS NOT NULL
-		ORDER BY d.component, d.name, t.key
-		LIMIT 200;`
+		JOIN parameters p ON p.space_system = sel.component AND p.name = sel.name
+		CROSS JOIN LATERAL (
+			SELECT DISTINCT v.member_path
+			FROM parameter_values v
+			WHERE v.parameter_id = p.id
+		) m
+		ORDER BY p.space_system, p.name, m.member_path;`
 
 	rows, err := d.db.QueryContext(r.Context(), query, string(body))
 	if err != nil {

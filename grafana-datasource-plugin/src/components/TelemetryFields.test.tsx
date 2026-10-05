@@ -36,9 +36,9 @@ const MOCK_CHANNELS: ChannelRef[] = [
 ];
 
 const MOCK_KEYS: KeyRef[] = [
-  { component: 'CDH', channel: 'Temperature', key: 'value' },
-  { component: 'CDH', channel: 'Voltage', key: 'value' },
-  { component: 'PWR', channel: 'Current', key: 'value' },
+  { component: 'CDH', channel: 'Temperature', key: '' },
+  { component: 'CDH', channel: 'Voltage', key: '' },
+  { component: 'PWR', channel: 'Current', key: '' },
 ];
 
 const MOCK_SOURCES = ['FSW-A', 'FSW-B'];
@@ -162,7 +162,7 @@ describe('TelemetryFields — multi-key channels', () => {
 
   it('does not render key selector for channels with single keys', async () => {
     const SINGLE_KEY: KeyRef[] = [
-      { component: 'CDH', channel: 'Temperature', key: 'value' },
+      { component: 'CDH', channel: 'Temperature', key: '' },
     ];
 
     const ds = mockDatasource();
@@ -209,7 +209,7 @@ describe('TelemetryFields — displays existing values', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('CDH.Temperature')).toBeInTheDocument();
+      expect(screen.getByText('CDH/Temperature')).toBeInTheDocument();
     });
   });
 

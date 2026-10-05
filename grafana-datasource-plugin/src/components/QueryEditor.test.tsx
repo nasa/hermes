@@ -36,9 +36,8 @@ function mockDatasource(overrides?: Partial<DataSource>): DataSource {
     getChannels: jest.fn().mockResolvedValue([ch('CDH', 'Temperature'), ch('Sensors', 'Voltage')]),
     getSources: jest.fn().mockResolvedValue(['fsw-1', 'fsw-2']),
     getKeys: jest.fn().mockResolvedValue([
-      { component: 'CDH', channel: 'Temperature', key: 'value' },
-      { component: 'CDH', channel: 'Temperature', key: 'value.x' },
-      { component: 'CDH', channel: 'Temperature', key: 'value.y' },
+      { component: 'CDH', channel: 'Temperature', key: '.x' },
+      { component: 'CDH', channel: 'Temperature', key: '.y' },
     ]),
     getEventSources: jest.fn().mockResolvedValue(['fsw-1', 'fsw-2']),
     ...overrides,
@@ -64,16 +63,15 @@ describe('QueryEditor — Telemetry', () => {
     expect(screen.getByRole('radio', { name: /Telemetry/ })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /Events/ })).toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: /Component/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /Channel/ })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: /Source/ })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /Parameter/ })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /Instance/ })).toBeInTheDocument();
   });
 
   it('shows Key dropdown for compound channels', async () => {
     const ds = mockDatasource({
       getKeys: jest.fn().mockResolvedValue([
-      { component: 'CDH', channel: 'Temperature', key: 'value' },
-      { component: 'CDH', channel: 'Temperature', key: 'value.x' },
-      { component: 'CDH', channel: 'Temperature', key: 'value.y' },
+      { component: 'CDH', channel: 'Temperature', key: '.x' },
+      { component: 'CDH', channel: 'Temperature', key: '.y' },
     ]),
     });
     render(
@@ -86,13 +84,13 @@ describe('QueryEditor — Telemetry', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('combobox', { name: /CDH\.Temperature/ })).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /CDH\/Temperature/ })).toBeInTheDocument();
     });
   });
 
   it('hides Key dropdown for scalar channels', async () => {
     const ds = mockDatasource({
-      getKeys: jest.fn().mockResolvedValue([{ component: 'CDH', channel: 'Temperature', key: 'value' }]),
+      getKeys: jest.fn().mockResolvedValue([{ component: 'CDH', channel: 'Temperature', key: '' }]),
     });
     render(
       <QueryEditor
@@ -107,7 +105,7 @@ describe('QueryEditor — Telemetry', () => {
       expect(ds.getKeys).toHaveBeenCalled();
     });
 
-    expect(screen.queryByRole('combobox', { name: /CDH\.Temperature/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: /CDH\/Temperature/ })).not.toBeInTheDocument();
   });
 
   it('loads source options on mount', async () => {
@@ -158,9 +156,8 @@ describe('QueryEditor — Telemetry', () => {
   it('displays existing telemetry query values', async () => {
     const ds = mockDatasource({
       getKeys: jest.fn().mockResolvedValue([
-      { component: 'CDH', channel: 'Attitude', key: 'value' },
-      { component: 'CDH', channel: 'Attitude', key: 'value.x' },
-      { component: 'CDH', channel: 'Attitude', key: 'value.y' },
+      { component: 'CDH', channel: 'Attitude', key: '.x' },
+      { component: 'CDH', channel: 'Attitude', key: '.y' },
     ]),
     });
     await act(async () => {
@@ -173,7 +170,7 @@ describe('QueryEditor — Telemetry', () => {
               queryType: 'telemetry',
               channels: [ch('CDH', 'Attitude')],
               sources: ['fsw-1'],
-              keys: [{ component: 'CDH', channel: 'Attitude', key: 'value.x' }],
+              keys: [{ component: 'CDH', channel: 'Attitude', key: '.x' }],
               aggregation: 'avg',
             } as MyQuery,
           })}
@@ -183,18 +180,18 @@ describe('QueryEditor — Telemetry', () => {
     expect(screen.getByText('fsw-1')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByRole('combobox', { name: /CDH\.Attitude/ })).toBeInTheDocument();
-      expect(screen.getByText('value.x')).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /CDH\/Attitude/ })).toBeInTheDocument();
+      expect(screen.getByText('.x')).toBeInTheDocument();
     });
   });
 
   it('renders per-channel key dropdowns for two compound channels', async () => {
     const ds = mockDatasource({
       getKeys: jest.fn().mockResolvedValue([
-        { component: 'CDH', channel: 'Attitude', key: 'value' },
-        { component: 'CDH', channel: 'Attitude', key: 'value.x' },
-        { component: 'Sensors', channel: 'IMU', key: 'value' },
-        { component: 'Sensors', channel: 'IMU', key: 'value.roll' },
+        { component: 'CDH', channel: 'Attitude', key: '.x' },
+        { component: 'CDH', channel: 'Attitude', key: '.y' },
+        { component: 'Sensors', channel: 'IMU', key: '.pitch' },
+        { component: 'Sensors', channel: 'IMU', key: '.roll' },
       ]),
     });
     render(
@@ -214,17 +211,17 @@ describe('QueryEditor — Telemetry', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('combobox', { name: /CDH\.Attitude/ })).toBeInTheDocument();
-      expect(screen.getByRole('combobox', { name: /Sensors\.IMU/ })).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /CDH\/Attitude/ })).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /Sensors\/IMU/ })).toBeInTheDocument();
     });
   });
 
   it('shows key dropdown only for compound channel when mixed with scalar', async () => {
     const ds = mockDatasource({
       getKeys: jest.fn().mockResolvedValue([
-        { component: 'CDH', channel: 'Attitude', key: 'value' },
-        { component: 'CDH', channel: 'Attitude', key: 'value.x' },
-        { component: 'CDH', channel: 'Temperature', key: 'value' },
+        { component: 'CDH', channel: 'Attitude', key: '.x' },
+        { component: 'CDH', channel: 'Attitude', key: '.y' },
+        { component: 'CDH', channel: 'Temperature', key: '' },
       ]),
     });
     render(
@@ -244,9 +241,9 @@ describe('QueryEditor — Telemetry', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('combobox', { name: /CDH\.Attitude/ })).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /CDH\/Attitude/ })).toBeInTheDocument();
     });
-    expect(screen.queryByRole('combobox', { name: /CDH\.Temperature/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: /CDH\/Temperature/ })).not.toBeInTheDocument();
   });
 
   it('handles resource fetch errors gracefully', async () => {
@@ -260,7 +257,7 @@ describe('QueryEditor — Telemetry', () => {
       expect(ds.getChannels).toHaveBeenCalled();
     });
 
-    expect(screen.getByRole('combobox', { name: /Channel/ })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /Parameter/ })).toBeInTheDocument();
   });
 
   it('does not load event resources when in telemetry mode', async () => {
@@ -303,7 +300,7 @@ describe('QueryEditor — Events', () => {
       );
     });
 
-    expect(screen.queryByRole('combobox', { name: /Channel/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: /Parameter/ })).not.toBeInTheDocument();
   });
 
   it('loads event sources on mount', async () => {
@@ -387,7 +384,7 @@ describe('QueryEditor — Events', () => {
 describe('QueryEditor — Multi-select', () => {
   it('renders multiple selected channels', async () => {
     const ds = mockDatasource({
-      getKeys: jest.fn().mockResolvedValue([{ component: 'CDH', channel: 'Temperature', key: 'value' }]),
+      getKeys: jest.fn().mockResolvedValue([{ component: 'CDH', channel: 'Temperature', key: '' }]),
     });
     render(
       <QueryEditor
@@ -438,7 +435,7 @@ describe('QueryEditor — Multi-select', () => {
 describe('QueryEditor — Value transforms', () => {
   const scalarDs = () =>
     mockDatasource({
-      getKeys: jest.fn().mockResolvedValue([{ component: 'CDH', channel: 'Temperature', key: 'value' }]),
+      getKeys: jest.fn().mockResolvedValue([{ component: 'CDH', channel: 'Temperature', key: '' }]),
     });
 
   const telemetryQuery = (overrides?: Partial<MyQuery>): MyQuery =>
@@ -465,28 +462,28 @@ describe('QueryEditor — Value transforms', () => {
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query: telemetryQuery() })} />);
     await expandSection();
 
-    expect(screen.getByTestId('query-editor-transform-CDH.Temperature')).toBeInTheDocument();
+    expect(screen.getByTestId('query-editor-transform-CDH/Temperature')).toBeInTheDocument();
   });
 
   it('renders one transform input per key for a compound channel', async () => {
     const ds = mockDatasource({
       getKeys: jest.fn().mockResolvedValue([
-        { component: 'CDH', channel: 'Temperature', key: 'value.x' },
-        { component: 'CDH', channel: 'Temperature', key: 'value.y' },
+        { component: 'CDH', channel: 'Temperature', key: '.x' },
+        { component: 'CDH', channel: 'Temperature', key: '.y' },
       ]),
     });
     const query = telemetryQuery({
       keys: [
-        { component: 'CDH', channel: 'Temperature', key: 'value.x' },
-        { component: 'CDH', channel: 'Temperature', key: 'value.y' },
+        { component: 'CDH', channel: 'Temperature', key: '.x' },
+        { component: 'CDH', channel: 'Temperature', key: '.y' },
       ],
     });
     render(<QueryEditor {...buildProps({ datasource: ds, query })} />);
     await expandSection();
 
-    expect(screen.getByTestId('query-editor-transform-CDH.Temperature.value.x')).toBeInTheDocument();
-    expect(screen.getByTestId('query-editor-transform-CDH.Temperature.value.y')).toBeInTheDocument();
-    expect(screen.queryByTestId('query-editor-transform-CDH.Temperature')).not.toBeInTheDocument();
+    expect(screen.getByTestId('query-editor-transform-CDH/Temperature.x')).toBeInTheDocument();
+    expect(screen.getByTestId('query-editor-transform-CDH/Temperature.y')).toBeInTheDocument();
+    expect(screen.queryByTestId('query-editor-transform-CDH/Temperature')).not.toBeInTheDocument();
   });
 
   it('renders no transform section when no channel is selected', async () => {
@@ -501,7 +498,7 @@ describe('QueryEditor — Value transforms', () => {
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query: telemetryQuery() })} />);
 
     const section = await screen.findByTestId('query-editor-transform-section');
-    const timeFieldToggle = screen.getByRole('radio', { name: /Receive Time/ });
+    const timeFieldToggle = screen.getByRole('radio', { name: /Acquisition Time/ });
 
     expect(
       timeFieldToggle.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING
@@ -514,7 +511,7 @@ describe('QueryEditor — Value transforms', () => {
     });
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query })} />);
 
-    expect(await screen.findByTestId('query-editor-transform-CDH.Temperature')).toBeInTheDocument();
+    expect(await screen.findByTestId('query-editor-transform-CDH/Temperature')).toBeInTheDocument();
   });
 
   it('writes the raw input into query.transforms', async () => {
@@ -522,7 +519,7 @@ describe('QueryEditor — Value transforms', () => {
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query: telemetryQuery(), onChange })} />);
     await expandSection();
 
-    const input = screen.getByTestId('query-editor-transform-CDH.Temperature');
+    const input = screen.getByTestId('query-editor-transform-CDH/Temperature');
     await act(async () => {
       fireEvent.change(input, { target: { value: '2' } });
     });
@@ -540,7 +537,7 @@ describe('QueryEditor — Value transforms', () => {
     });
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query })} />);
 
-    const input = await screen.findByTestId('query-editor-transform-CDH.Temperature');
+    const input = await screen.findByTestId('query-editor-transform-CDH/Temperature');
     expect(input).toHaveValue('$__value - 273.15');
   });
 
@@ -551,7 +548,7 @@ describe('QueryEditor — Value transforms', () => {
     });
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query, onChange })} />);
 
-    const input = await screen.findByTestId('query-editor-transform-CDH.Temperature');
+    const input = await screen.findByTestId('query-editor-transform-CDH/Temperature');
     await act(async () => {
       fireEvent.change(input, { target: { value: '' } });
     });
@@ -566,7 +563,7 @@ describe('QueryEditor — Value transforms', () => {
     });
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query, onRunQuery })} />);
 
-    const input = await screen.findByTestId('query-editor-transform-CDH.Temperature');
+    const input = await screen.findByTestId('query-editor-transform-CDH/Temperature');
     expect(screen.getByText(/must reference \$__value/)).toBeInTheDocument();
 
     onRunQuery.mockClear();
@@ -583,7 +580,7 @@ describe('QueryEditor — Value transforms', () => {
     });
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query, onRunQuery })} />);
 
-    const input = await screen.findByTestId('query-editor-transform-CDH.Temperature');
+    const input = await screen.findByTestId('query-editor-transform-CDH/Temperature');
     onRunQuery.mockClear();
     await act(async () => {
       fireEvent.blur(input);
@@ -593,9 +590,9 @@ describe('QueryEditor — Value transforms', () => {
 });
 
 describe('withDefaults', () => {
-  it('fills in default timeField as ert (Receive Time)', () => {
+  it('fills in default timeField as generation_time (Generation Time)', () => {
     const q = withDefaults({ refId: 'A', channels: [], sources: [], keys: [] } as unknown as MyQuery);
-    expect(q.timeField).toBe('ert');
+    expect(q.timeField).toBe('generation_time');
   });
 
   it('fills in default queryType and aggregation', () => {
@@ -605,32 +602,32 @@ describe('withDefaults', () => {
   });
 
   it('preserves explicit values', () => {
-    const q = withDefaults({ refId: 'A', queryType: 'events', timeField: 'time', aggregation: 'max', channels: [], sources: [], keys: [] } as MyQuery);
+    const q = withDefaults({ refId: 'A', queryType: 'events', timeField: 'acquisition_time', aggregation: 'max', channels: [], sources: [], keys: [] } as MyQuery);
     expect(q.queryType).toBe('events');
-    expect(q.timeField).toBe('time');
+    expect(q.timeField).toBe('acquisition_time');
     expect(q.aggregation).toBe('max');
   });
 
-  it('DEFAULT_QUERY timeField matches UI default (ert)', () => {
-    expect(DEFAULT_QUERY.timeField).toBe('ert');
+  it('DEFAULT_QUERY timeField matches UI default (generation_time)', () => {
+    expect(DEFAULT_QUERY.timeField).toBe('generation_time');
   });
 });
 
 describe('QueryEditor — Time field toggle', () => {
-  it('renders Receive Time/On-board Time radio buttons for telemetry', async () => {
+  it('renders Generation Time/Acquisition Time radio buttons for telemetry', async () => {
     await act(async () => { render(<QueryEditor {...buildProps()} />); });
 
-    expect(screen.getByRole('radio', { name: /Receive Time/ })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: /On-board Time/ })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Generation Time/ })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Acquisition Time/ })).toBeInTheDocument();
   });
 
-  it('defaults to Receive Time when timeField is not set', async () => {
+  it('defaults to Generation Time when timeField is not set', async () => {
     await act(async () => { render(<QueryEditor {...buildProps()} />); });
 
-    expect(screen.getByRole('radio', { name: /Receive Time/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /Generation Time/ })).toBeChecked();
   });
 
-  it('selects Receive Time when timeField is ert', async () => {
+  it('selects Acquisition Time when timeField is acquisition_time', async () => {
     await act(async () => {
       render(
         <QueryEditor
@@ -641,7 +638,7 @@ describe('QueryEditor — Time field toggle', () => {
               channels: [],
               sources: [],
               keys: [],
-              timeField: 'ert',
+              timeField: 'acquisition_time',
               aggregation: 'avg',
             } as MyQuery,
           })}
@@ -649,10 +646,10 @@ describe('QueryEditor — Time field toggle', () => {
       );
     });
 
-    expect(screen.getByRole('radio', { name: /Receive Time/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /Acquisition Time/ })).toBeChecked();
   });
 
-  it('renders Receive Time/On-board Time radio buttons for events', async () => {
+  it('renders Generation Time/Acquisition Time radio buttons for events', async () => {
     await act(async () => {
       render(
         <QueryEditor
@@ -663,7 +660,7 @@ describe('QueryEditor — Time field toggle', () => {
       );
     });
 
-    expect(screen.getByRole('radio', { name: /Receive Time/ })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: /On-board Time/ })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Generation Time/ })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Acquisition Time/ })).toBeInTheDocument();
   });
 });

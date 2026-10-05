@@ -10,12 +10,12 @@
 
 **Hermes** is a Grafana backend datasource plugin that connects to a [TimescaleDB](https://www.timescale.com/) database to query and visualize **telemetry** and **events** data from NASA's [Hermes ground data system (GDS)](https://github.com/nasa/hermes).
 
-The plugin provides a multi-select query editor for querying events and telemetry, making it easy to build dashboards over spacecraft telemetry and event streams without writing raw SQL. Multiple telemetry channels, sources, and keys can be selected in a single query to overlay or compare data series. Additionally you can write custom SQL queries.
+The plugin provides a multi-select query editor for querying events and telemetry, making it easy to build dashboards over spacecraft telemetry and event streams without writing raw SQL. Multiple telemetry channels, instances, and members can be selected in a single query to overlay or compare data series. Additionally you can write custom SQL queries.
 
 ## Requirements
 
 - **Grafana** >= 12.3.0
-- **TimescaleDB** (PostgreSQL with the TimescaleDB extension); the plugin expects the Hermes schema (`telemetryDefs`, `telemetry`, `eventDefs`, `events` tables/hypertables) to already exist in the target database. See [Hermes](https://github.com/nasa/hermes) for help.
+- **TimescaleDB** (PostgreSQL with the TimescaleDB extension); the plugin reads the `parameters` table and `parameter_values` hypertable that [yamcs-recorder](https://github.com/nasa/hermes/tree/v6/cmd/yamcs-recorder) creates on start. See [Hermes](https://github.com/nasa/hermes) for help.
 
 ## Getting Started
 
@@ -35,21 +35,21 @@ Create a new panel and select **Hermes**. Use the **Builder / Code** toggle at t
 
 #### Builder: Telemetry
 
-Select **Telemetry** in the bottom-right toggle. Queries time-series values from the `telemetry` hypertable.
+Select **Telemetry** in the bottom-right toggle. Queries time-series values from the `parameter_values` hypertable.
 
 | Field           | Type                   | Description                                                                                                                               |
 | --------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **Channel**     | multi-select, required | One or more `component.channel` pairs. Each unique combination produces its own data frame.                                               |
-| **Aggregation** | select                 | Function applied per time bucket: `Average`, `Min`, `Max`, `Count`, `First`, `Last`, `Sum`, `Derivative`, `Raw (none)`.                   |
-| **Source**      | multi-select, optional | FSW source identifier. Leave empty to include all sources.                                                                                |
-| **Keys**        | multi-select, optional | Sub-field paths for compound (object/array) channels. Appears per-channel only when multiple keys exist. Leave empty to include all keys. |
-| **Value Transform** | text, optional     | *(Collapsible)* Rescale or convert values per channel, or per key for compound channels. See below.                                       |
+| **Parameter**   | multi-select, required | One or more YAMCS parameters, shown as `/space_system/name`. Each parameter, member and instance becomes its own series.                  |
+| **Aggregation** | select                 | Function applied per time bucket: `Average`, `Min`, `Max`, `Count`, `First`, `Last`, `Sum`, `Derivative`, `Raw (none)`, `Latest Value`.   |
+| **Instance**    | multi-select, optional | YAMCS instance. Leave empty to include all instances.                                                                                     |
+| **Members**     | multi-select, optional | Struct members and array elements (e.g. `[0]`, `.x`). Appears per parameter only when there are several. Adding the parameter selects all of its members; remove the ones you don't need. Clearing the box removes the parameter. |
+| **Value Transform** | text, optional     | *(Collapsible)* Rescale or convert values per parameter, or per member for struct and array parameters. See below.                        |
 
 <br>
 
 ##### Value Transform
 
-Each selected channel gets its own input. Enter a plain number to multiply by it, or any PostgreSQL expression using `$__value` in place of the stored value.
+Each selected parameter gets its own input. Enter a plain number to multiply by it, or any PostgreSQL expression using `$__value` in place of the stored value.
 
 | Input                       | Result                    |
 | --------------------------- | ------------------------- |
@@ -65,7 +65,7 @@ The transform is compiled into the generated SQL and applied before aggregation,
 
 Notes:
 
-- Applies to **numeric channels only**. Boolean, string, and byte values are returned unchanged.
+- Applies to **numeric parameters only**. Boolean, string, and byte values are returned unchanged.
 - Use `$__value`, not `$v` — Grafana reserves the `$__` prefix, so the token can never be shadowed by a dashboard variable.
 - `Count` counts the transformed expression, so an expression that changes null-ness (such as `COALESCE($__value, 0)`) will also change the count.
 
@@ -87,7 +87,7 @@ Available for both query types:
 
 | Field                  | Description                                                                                            |
 | ---------------------- | ------------------------------------------------------------------------------------------------------ |
-| **Time Field**         | `Receive Time` (ERT) or `On-board Time` (spacecraft clock)                                             |
+| **Time Field**         | `Generation Time` (when the value was produced, the default) or `Acquisition Time` (when YAMCS received it) |
 | **From / To Override** | *(Advanced, collapsible)* Pin the query to an absolute time range, ignoring the dashboard time picker. |
 
 <br>

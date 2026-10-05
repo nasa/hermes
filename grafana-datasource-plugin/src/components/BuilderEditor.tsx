@@ -20,8 +20,8 @@ const QUERY_TYPE_OPTIONS: Array<SelectableValue<QueryType>> = [
 ];
 
 const TIME_FIELD_OPTIONS: Array<SelectableValue<TimeField>> = [
-  { label: 'Receive Time', value: 'ert' },
-  { label: 'On-board Time', value: 'time' },
+  { label: 'Generation Time', value: 'generation_time' },
+  { label: 'Acquisition Time', value: 'acquisition_time' },
 ];
 
 export function BuilderEditor({ query, onChange, onRunQuery, datasource }: BuilderEditorProps) {
@@ -62,7 +62,7 @@ export function BuilderEditor({ query, onChange, onRunQuery, datasource }: Build
       <RadioButtonGroup
         id="query-editor-time-field"
         options={TIME_FIELD_OPTIONS}
-        value={query.timeField ?? 'ert'}
+        value={query.timeField ?? 'generation_time'}
         onChange={onTimeFieldChange}
         size="sm"
         fullWidth={false}

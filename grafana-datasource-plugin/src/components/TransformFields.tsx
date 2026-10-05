@@ -29,7 +29,7 @@ const SYNTAX_HELP = (
       Examples: <code>2</code>, <code>0.001</code>, <code>{`${VALUE_TOKEN} - 273.15`}</code>,{' '}
       <code>{`${VALUE_TOKEN} * 9.0/5.0 + 32`}</code>, <code>{`ABS(${VALUE_TOKEN})`}</code>
     </p>
-    <p>Applies to numeric channels only. Boolean, string, and byte values are unaffected.</p>
+    <p>Applies to numeric parameters only. Boolean, string, and byte values are unaffected.</p>
   </div>
 );
 
@@ -66,7 +66,7 @@ export function buildTransformRows(
         id: transformId(component, channel),
         component,
         channel,
-        label: `${component}.${channel}`,
+        label: `${component}/${channel}`,
       });
       continue;
     }
@@ -80,7 +80,7 @@ export function buildTransformRows(
         component,
         channel,
         targetKey: k.key,
-        label: `${component}.${channel}.${k.key}`,
+        label: `${component}/${channel}${k.key}`,
       });
     }
   }
