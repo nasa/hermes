@@ -27,20 +27,6 @@ func scanStrings(rows *sql.Rows) ([]string, error) {
 	return items, nil
 }
 
-func (d *Datasource) handleGetTelemetryComponents(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT component FROM telemetryDefs ORDER BY component;")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	items, err := scanStrings(rows)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	writeJSONResponse(w, items)
-}
-
 type channelEntry struct {
 	Component string `json:"component"`
 	Name      string `json:"name"`

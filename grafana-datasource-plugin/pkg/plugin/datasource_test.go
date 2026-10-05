@@ -728,36 +728,6 @@ func (r *responseRecorder) Write(b []byte) (int, error) {
 }
 func (r *responseRecorder) WriteHeader(code int) { r.code = code }
 
-func TestResourceHandlerComponents(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("sqlmock: %v", err)
-	}
-	defer func() { _ = db.Close() }()
-
-	ds := &Datasource{db: db}
-
-	mock.ExpectQuery("SELECT DISTINCT component").WillReturnRows(
-		sqlmock.NewRows([]string{"component"}).AddRow("CDH").AddRow("Sensors").AddRow("Power"),
-	)
-
-	req, _ := http.NewRequest("GET", "/telemetry/components", nil)
-	rr := &responseRecorder{header: http.Header{}}
-	ds.handleGetTelemetryComponents(rr, req)
-
-	if rr.code != http.StatusOK {
-		t.Fatalf("expected 200, got %d", rr.code)
-	}
-
-	var result []string
-	if err := json.Unmarshal(rr.body, &result); err != nil {
-		t.Fatalf("json unmarshal: %v", err)
-	}
-	if len(result) != 3 || result[0] != "CDH" || result[1] != "Sensors" || result[2] != "Power" {
-		t.Errorf("unexpected components: %v", result)
-	}
-}
-
 func TestResourceHandlerChannels(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {

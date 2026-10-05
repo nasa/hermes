@@ -57,7 +57,6 @@ func NewDatasource(_ context.Context, settings backend.DataSourceInstanceSetting
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/telemetry/components", ds.handleGetTelemetryComponents)
 	mux.HandleFunc("/telemetry/channels", ds.handleGetTelemetryChannels)
 	mux.HandleFunc("/telemetry/sources", ds.handleGetTelemetrySources)
 	mux.HandleFunc("/telemetry/keys", ds.handleGetTelemetryKeys)
