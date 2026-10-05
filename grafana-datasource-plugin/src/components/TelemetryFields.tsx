@@ -30,8 +30,10 @@ function toOptions(values: string[]): Array<ComboboxOption<string>> {
   return values.map((v) => ({ label: v, value: v }));
 }
 
+// Grafana returns saved keys with their fields sorted alphabetically, so we
+// stringify in a fixed order or a saved key won't match its picker option.
 function keyRefToValue(k: KeyRef): string {
-  return JSON.stringify(k);
+  return JSON.stringify({ component: k.component, channel: k.channel, key: k.key });
 }
 
 function valueToKeyRef(v: string): KeyRef {

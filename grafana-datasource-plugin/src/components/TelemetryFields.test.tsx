@@ -243,4 +243,26 @@ describe('TelemetryFields — displays existing values', () => {
       expect(screen.getByText('enabled')).toBeInTheDocument();
     });
   });
+
+  it('displays a saved key whose fields come back in alphabetical order', async () => {
+    const MULTI_KEY_KEYS: KeyRef[] = [
+      { component: 'CDH', channel: 'Status', key: 'enabled' },
+      { component: 'CDH', channel: 'Status', key: 'mode' },
+    ];
+
+    const ds = mockDatasource();
+    (ds.getKeys as jest.Mock).mockResolvedValue(MULTI_KEY_KEYS);
+
+    renderFields(
+      {
+        channels: [{ component: 'CDH', name: 'Status' }],
+        keys: [{ channel: 'Status', component: 'CDH', key: 'enabled' }],
+      },
+      ds
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('enabled')).toBeInTheDocument();
+    });
+  });
 });
