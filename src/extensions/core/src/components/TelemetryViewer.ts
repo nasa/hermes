@@ -3,13 +3,31 @@ import { tmpdir } from 'tmp';
 
 import { Telemetry, Sourced, TimeFormat } from '@gov.nasa.jpl.hermes/types';
 import { Api } from '@gov.nasa.jpl.hermes/api';
+import { YamcsParameterValue } from '@gov.nasa.jpl.hermes/rpc';
 import { WebViewMessenger, WebViewPanelBase } from '@gov.nasa.jpl.hermes/vscode';
 
-import { FrontendTableMessage, BackendTableMessage, FrontendPlotMessage, BackendPlotMessage, TelemetrySeries, TelemetrySeriesData, TableState } from '../../common/telemetry';
+import { FrontendTableMessage, BackendTableMessage, FrontendPlotMessage, BackendPlotMessage, TelemetrySeries, TelemetrySeriesData, TelemetrySeriesDataPoint, TableState } from '../../common/telemetry';
 import { cullTelemetrySeriesData } from '../../common/telemetryTimeWindow';
 import { DebounceEmitter } from '../utils/DebounceEmitter';
+import { YamcsParameterSource } from '../api/Yamcs';
+import { leaves, millis, splitName } from './yamcsRows';
 
 const MAX_POINTS_PER_CHANNEL = 10000; // ~10 minutes at 10Hz
+
+// Appends one point to every column array, keeping them in sync, and drops the
+// oldest point once the channel holds more than MAX_POINTS_PER_CHANNEL.
+function appendPoint(data: TelemetrySeriesData, time: number, sclk: number, valueStr: string, valueNum: number) {
+    data.time.push(time);
+    data.sclk.push(sclk);
+    data.valueStr!.push(valueStr);
+    data.valueNum!.push(valueNum);
+    if (data.time.length > MAX_POINTS_PER_CHANNEL) {
+        data.time.shift();
+        data.sclk.shift();
+        data.valueStr!.shift();
+        data.valueNum!.shift();
+    }
+}
 
 export class TelemetryDatabase implements vscode.Disposable {
     /// Time-series metadata for each channel
@@ -32,9 +50,18 @@ export class TelemetryDatabase implements vscode.Disposable {
     });
     onNewTelemetryData = this.telemetryDebouncer.event;
 
-    private telemetrySubscription: vscode.Disposable;
+    // F Prime telemetry reaches the table and plot as Telemetry points, each carrying its Hermes
+    // dictionary definition. YAMCS values come named by YAMCS instead, so we store them as rows here
+    // and only tell the panels which channels changed. The panels then read each channel's newest point.
+    private yamcsDebouncer = new DebounceEmitter<string, Set<string>>({
+        merge: (keys) => new Set(keys)
+    });
+    onNewYamcsData = this.yamcsDebouncer.event;
 
-    constructor(readonly api: Api) {
+    private telemetrySubscription: vscode.Disposable;
+    private yamcsSubscription?: vscode.Disposable;
+
+    constructor(readonly api: Api & Partial<YamcsParameterSource>) {
         this.series = new Map();
         this.data = new Map();
 
@@ -93,22 +120,57 @@ export class TelemetryDatabase implements vscode.Disposable {
                 }
             }
 
-            // Append to all column arrays to keep them in sync
-            data.time.push(time);
-            data.sclk.push(sclk);
-            data.valueStr!.push(valueStr);
-            data.valueNum!.push(valueNum ?? 0);
-
-            // Keep only last N points (ring buffer) - shift from all arrays
-            if (data.time.length > MAX_POINTS_PER_CHANNEL) {
-                data.time.shift();
-                data.sclk.shift();
-                data.valueStr!.shift();
-                data.valueNum!.shift();
-            }
-
+            appendPoint(data, time, sclk, valueStr, valueNum ?? 0);
             this.telemetryDebouncer.fire(telem);
         });
+
+        // Only YAMCS mode sends parameter values, so in every other mode this subscription stays quiet
+        this.yamcsSubscription = this.api.onYamcsParameters?.((instance, values) => this.addYamcs(instance, values));
+    }
+
+    /**
+     * Store each scalar leaf as its own channel, keyed by qualified name plus
+     * member path. Points use the value's acquisition time, when YAMCS received
+     * it, as F Prime telemetry uses the time it reached the extension.
+     */
+    private addYamcs(instance: string, values: YamcsParameterValue[]) {
+        const source = `yamcs:${instance}`;
+        for (const pv of values) {
+            const time = millis(pv.acquisitionTime);
+            if (!pv.id?.name || time === undefined) {
+                continue;
+            }
+
+            // The table has component and name columns. For a YAMCS value, the space system fills
+            // component, and each struct member or array element becomes its own row, named like
+            // comQueueDepth[1]. Prefixing the key with yamcs:<instance> keeps those rows apart from
+            // F Prime channels and from the same parameter in another instance.
+            const [component, name] = splitName(pv.id.name);
+            for (const leaf of leaves(pv.engValue)) {
+                const key = `${source}:${pv.id.name}${leaf.memberPath}`;
+                if (!this.series.has(key)) {
+                    this.series.set(key, { source, component, name: name + leaf.memberPath });
+                }
+
+                let data = this.data.get(key);
+                if (!data) {
+                    data = { time: [], sclk: [], valueStr: [], valueNum: [] };
+                    this.data.set(key, data);
+                }
+
+                // YAMCS re-sends each parameter's last value when a subscription opens, for example after
+                // switching modes and back. That copy keeps its acquisition time, so we skip a value equal
+                // to our newest point. We also skip anything older, which would put the plot out of time order.
+                const newestTime = data.time[data.time.length - 1];
+                const newestValue = data.valueStr![data.valueStr!.length - 1];
+                if (data.time.length > 0 && (time < newestTime || (time === newestTime && leaf.valueStr === newestValue))) {
+                    continue;
+                }
+                // YAMCS values have no SCLK
+                appendPoint(data, time, NaN, leaf.valueStr, leaf.valueNum);
+                this.yamcsDebouncer.fire(key);
+            }
+        }
     }
 
     private getChannelKey(telem: Sourced<Telemetry>): string {
@@ -136,6 +198,8 @@ export class TelemetryDatabase implements vscode.Disposable {
     dispose() {
         this.telemetrySubscription.dispose();
         this.telemetryDebouncer.dispose();
+        this.yamcsSubscription?.dispose();
+        this.yamcsDebouncer.dispose();
         this.tableStateEmitter.dispose();
     }
 }
@@ -165,30 +229,9 @@ export class TelemetryTablePanel extends WebViewPanelBase implements vscode.Webv
             switch (msg.type) {
                 case 'refresh': {
                     // Get all the latest values from all the channels
-                    const channels: Record<string, any> = {};
-                    for (const [key, series] of this.db.series.entries()) {
-                        const data = this.db.data.get(key)!;
-                        if (data.time.length < 1) {
-                            continue;
-                        }
-
-                        const lastIdx = data.time.length - 1;
-                        const valueNum = data.valueNum?.[lastIdx];
-                        const isNumerical = valueNum !== undefined && !isNaN(valueNum);
-
-                        channels[key] = {
-                            ...series,
-                            time: data.time[lastIdx],
-                            sclk: data.sclk[lastIdx],
-                            valueStr: data.valueStr?.[lastIdx],
-                            valueNum,
-                            isNumerical
-                        };
-                    }
-
                     messenger.postMessage({
                         type: "latest",
-                        channels
+                        channels: this.latest(this.db.series.keys())
                     });
 
                     break;
@@ -214,10 +257,47 @@ export class TelemetryTablePanel extends WebViewPanelBase implements vscode.Webv
             });
         });
 
+        // YAMCS rows have no Telemetry points to append, so we send the newest point of each channel
+        // that changed, and the table merges those rows in
+        const yamcsDisp = this.db.onNewYamcsData((keys) => {
+            messenger.postMessage({
+                type: 'update',
+                channels: this.latest(keys)
+            });
+        });
+
         webviewView.onDidDispose(() => {
             messenger.dispose();
             disp.dispose();
+            yamcsDisp.dispose();
         });
+    }
+
+    // The newest point of each channel in keys, as the table shows it. The table asks for every
+    // channel when it opens, and YAMCS updates ask for just the channels that changed.
+    private latest(keys: Iterable<string>): Record<string, TelemetrySeries & TelemetrySeriesDataPoint> {
+        const channels: Record<string, TelemetrySeries & TelemetrySeriesDataPoint> = {};
+        for (const key of keys) {
+            const series = this.db.series.get(key);
+            const data = this.db.data.get(key);
+            if (!series || !data || data.time.length < 1) {
+                continue;
+            }
+
+            const lastIdx = data.time.length - 1;
+            const valueNum = data.valueNum?.[lastIdx];
+            const isNumerical = valueNum !== undefined && !isNaN(valueNum);
+
+            channels[key] = {
+                ...series,
+                time: data.time[lastIdx],
+                sclk: data.sclk[lastIdx],
+                valueStr: data.valueStr?.[lastIdx],
+                valueNum,
+                isNumerical
+            };
+        }
+        return channels;
     }
 }
 
@@ -283,7 +363,7 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
         });
 
         // Forward batched updates to frontend (only for selected channels)
-        const telemetryDisp = this.db.onNewTelemetryData((points) => {
+        const appendLatest = (keys: Iterable<string>) => {
             const selectedChannels = new Set(this.db.tableState.channels);
             if (selectedChannels.size === 0) {
                 return; // No channels selected, don't send anything
@@ -292,8 +372,7 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
             // Filter telemetry to only selected channels
             const filteredData: Record<string, TelemetrySeriesData> = {};
 
-            for (const telem of points) {
-                const key = `${telem.source}.${telem.def.component}.${telem.def.name}`;
+            for (const key of keys) {
                 if (!selectedChannels.has(key)) {
                     continue; // Skip unselected channels
                 }
@@ -319,12 +398,20 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
                     data: filteredData
                 });
             }
+        };
+
+        // Both kinds of update append each changed channel's newest point. F Prime updates carry
+        // Telemetry points, so we turn them into channel keys first. YAMCS updates already carry keys.
+        const telemetryDisp = this.db.onNewTelemetryData((points) => {
+            appendLatest(points.map((telem) => `${telem.source}.${telem.def.component}.${telem.def.name}`));
         });
+        const yamcsDisp = this.db.onNewYamcsData(appendLatest);
 
         webviewView.onDidDispose(() => {
             messenger.dispose();
             tableStateDisp.dispose();
             telemetryDisp.dispose();
+            yamcsDisp.dispose();
         });
     }
 

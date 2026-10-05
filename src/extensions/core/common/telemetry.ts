@@ -27,7 +27,8 @@ export interface TelemetrySeriesDataPoint {
 
 export interface TelemetrySeriesData {
     /**
-     * Time in UTC milliseconds this point was received
+     * Time in UTC milliseconds this point was received: by the extension for F Prime telemetry,
+     * by YAMCS for YAMCS values
      */
     time: number[];
 
@@ -55,6 +56,8 @@ export interface TableState {
 export type BackendTableMessage = (
     | { type: "latest", channels: Record<string, TelemetrySeries & TelemetrySeriesDataPoint> }
     | { type: "append", points: Sourced<Telemetry>[] }
+    // Same rows as "latest", merged into the table instead of replacing it
+    | { type: "update", channels: Record<string, TelemetrySeries & TelemetrySeriesDataPoint> }
 );
 
 export type FrontendTableMessage = (

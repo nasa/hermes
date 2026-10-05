@@ -40,7 +40,9 @@ function formatTime(channel: ChannelInfo, format: TimeFormat): string {
         case TimeFormat.LOCAL:
             return new Date(channel.time - localTimeOffset).toISOString().slice(0, -1);
         case TimeFormat.SCLK:
-            return channel.sclk.toFixed(4);
+            // YAMCS rows have no SCLK. postMessage sends JSON, which turns their NaN into null,
+            // and isNaN(null) is false, so we check Number.isFinite instead.
+            return Number.isFinite(channel.sclk) ? channel.sclk.toFixed(4) : new Date(channel.time).toISOString();
         default:
             return new Date(channel.time).toISOString();
     }
@@ -183,6 +185,17 @@ export function TelemetryTable() {
                         });
                     }
 
+                    return Array.from(channelMap.values()).sort((a, b) => a.index - b.index);
+                });
+                break;
+            case 'update':
+                // YAMCS rows arrive as each changed channel's newest point rather than as Telemetry to
+                // append. We replace those rows where they are, and add new channels at the end.
+                setChannels(prev => {
+                    const channelMap = new Map(prev.map(ch => [ch.key, ch]));
+                    for (const [key, chn] of Object.entries(msg.channels)) {
+                        channelMap.set(key, { ...chn, key, index: channelMap.get(key)?.index ?? channelMap.size });
+                    }
                     return Array.from(channelMap.values()).sort((a, b) => a.index - b.index);
                 });
                 break;

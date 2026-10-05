@@ -67,9 +67,17 @@ grpcurl -plaintext -import-path proto -proto yamcs/protobuf/processing/processin
 In VS Code, run **Hermes: Change Backend Mode**, pick **YAMCS**, and enter the plugin's address and
 the instance. The prompts are prefilled from the `hermes.host.yamcs` setting, then from your last
 answers. The setting also picks the processor. Clicking the instance name in the status bar
-prompts again.
+prompts again. F Prime channels show up in the telemetry table and plot with source `yamcs:<instance>`.
 Parameters directly in a top-level space system, where fprime-yamcs puts the CCSDS and F Prime packet
-header fields, are left out unless `hermes.host.yamcs` sets `includeTopLevel`.
+header fields, are left out unless `hermes.host.yamcs` sets `includeTopLevel`. Structs and arrays get
+one row per member or element, such as `comQueueDepth[1]`, with member paths spelled the way
+yamcs-recorder (`cmd/yamcs-recorder`) stores them. Rows are timed by when YAMCS received each
+value, its acquisition time. YAMCS values have no SCLK, so the SCLK column shows that time in UTC.
+
+YAMCS mode can't send commands or show events. It sends no credentials, so it fails with
+`UNAUTHENTICATED` when YAMCS security is on. When its subscription ends, for example because YAMCS
+or its instance stopped, the status bar turns red with the reason in its tooltip. To subscribe again,
+run **Hermes: Reconnect to Backend**.
 
 Checks against fprime-yamcs with the plugin and a running F Prime deployment, from the repo root:
 
