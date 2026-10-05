@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -827,14 +828,16 @@ func TestResourceHandlerKeys(t *testing.T) {
 
 	ds := &Datasource{db: db}
 
-	mock.ExpectQuery("SELECT DISTINCT").WillReturnRows(
-		sqlmock.NewRows([]string{"component", "name", "key"}).
+	mock.ExpectQuery(`(?s)FROM json_to_recordset\(\$1::json\)`).
+		WithArgs(`[{"component":"CDH","name":"Attitude"},{"component":"Sensors","name":"Attitude"}]`).
+		WillReturnRows(sqlmock.NewRows([]string{"component", "name", "key"}).
 			AddRow("CDH", "Attitude", "value").
 			AddRow("CDH", "Attitude", "value.x").
 			AddRow("CDH", "Attitude", "value.y"),
-	)
+		)
 
-	req, _ := http.NewRequest("GET", "/telemetry/keys?components=CDH&channels=Attitude", nil)
+	body := `[{"component":"CDH","name":"Attitude"},{"component":"Sensors","name":"Attitude"}]`
+	req, _ := http.NewRequest("POST", "/telemetry/keys", strings.NewReader(body))
 	rr := &responseRecorder{header: http.Header{}}
 	ds.handleGetTelemetryKeys(rr, req)
 
@@ -857,7 +860,7 @@ func TestResourceHandlerKeys(t *testing.T) {
 func TestResourceHandlerKeysEmpty(t *testing.T) {
 	ds := &Datasource{}
 
-	req, _ := http.NewRequest("GET", "/telemetry/keys", nil)
+	req, _ := http.NewRequest("POST", "/telemetry/keys", strings.NewReader("[]"))
 	rr := &responseRecorder{header: http.Header{}}
 	ds.handleGetTelemetryKeys(rr, req)
 
@@ -871,6 +874,18 @@ func TestResourceHandlerKeysEmpty(t *testing.T) {
 	}
 	if len(result) != 0 {
 		t.Errorf("expected empty keys for missing params, got %v", result)
+	}
+}
+
+func TestResourceHandlerKeysBadBody(t *testing.T) {
+	ds := &Datasource{}
+
+	req, _ := http.NewRequest("POST", "/telemetry/keys", strings.NewReader("components=CDH"))
+	rr := &responseRecorder{header: http.Header{}}
+	ds.handleGetTelemetryKeys(rr, req)
+
+	if rr.code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", rr.code)
 	}
 }
 

@@ -3,9 +3,8 @@ package plugin
 import (
 	"database/sql"
 	"encoding/json"
+	"io"
 	"net/http"
-
-	"github.com/lib/pq"
 )
 
 func scanStrings(rows *sql.Rows) ([]string, error) {
@@ -77,22 +76,31 @@ type keyEntry struct {
 }
 
 func (d *Datasource) handleGetTelemetryKeys(w http.ResponseWriter, r *http.Request) {
-	components := r.URL.Query()["components"]
-	channels := r.URL.Query()["channels"]
-	if len(components) == 0 || len(channels) == 0 {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	var selected []channelEntry
+	if err := json.Unmarshal(body, &selected); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if len(selected) == 0 {
 		writeJSONResponse(w, []keyEntry{})
 		return
 	}
 
 	query := `
 		SELECT DISTINCT d.component, d.name, t.key 
-		FROM telemetry t
-		JOIN telemetryDefs d ON t.telemetryDefId = d.id
-		WHERE d.component = ANY($1) AND d.name = ANY($2) AND t.key IS NOT NULL
+		FROM json_to_recordset($1::json) AS sel(component text, name text)
+		JOIN telemetryDefs d ON d.component = sel.component AND d.name = sel.name
+		JOIN telemetry t ON t.telemetryDefId = d.id
+		WHERE t.key IS NOT NULL
 		ORDER BY d.component, d.name, t.key
 		LIMIT 200;`
 
-	rows, err := d.db.QueryContext(r.Context(), query, pq.Array(components), pq.Array(channels))
+	rows, err := d.db.QueryContext(r.Context(), query, string(body))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
