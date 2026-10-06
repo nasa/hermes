@@ -16,26 +16,26 @@ import {
 
 import VscodeToolbarButton from "@vscode-elements/react-elements/dist/components/VscodeToolbarButton";
 
-import { TimeFormat, DisplayEvent, EvrSeverity } from '@gov.nasa.jpl.hermes/types';
+import { TimeFormat } from '@gov.nasa.jpl.hermes/types';
 
 import { getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
-import type { BackendMessage, FrontendMessage } from '../../common/evrs';
+import type { BackendMessage, EventRow, FrontendMessage } from '../../common/evrs';
 
 import './style.css';
 import AnnotatedMultiSelect from '../common/AnnotatedMultiSelect';
 
 const messages = getMessages<FrontendMessage, BackendMessage>();
 
-interface IndexedEvr extends DisplayEvent {
+interface IndexedEvr extends EventRow {
     index: number;
 }
 
-type EvrSeverityFilter = EvrSeverity | '*';
+type EvrSeverityFilter = EventRow['severity'] | '*';
 
 const localTimeOffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
 
 function formatTime(
-    evr: DisplayEvent,
+    evr: EventRow,
     format: TimeFormat
 ) {
     switch (format) {
@@ -44,7 +44,9 @@ function formatTime(
         case TimeFormat.LOCAL:
             return new Date(evr.time - localTimeOffset).toISOString().slice(0, -1);
         case TimeFormat.SCLK:
-            return (evr.sclk).toFixed(4);
+            // YAMCS rows have no SCLK, so we show their UTC time. postMessage turns
+            // their NaN into null, so we check Number.isFinite rather than isNaN.
+            return Number.isFinite(evr.sclk) ? evr.sclk.toFixed(4) : new Date(evr.time).toISOString();
     }
 }
 
@@ -67,7 +69,7 @@ export function EvrTable() {
 
     const sourcesSevStr = useMemo(() => {
         const srcs = new Set<string>();
-        const sevs = new Set<EvrSeverity>();
+        const sevs = new Set<EventRow['severity']>();
         for (const evr of evrs) {
             srcs.add(evr.source);
             sevs.add(evr.severity);

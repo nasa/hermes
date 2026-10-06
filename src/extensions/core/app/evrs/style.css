@@ -48,52 +48,64 @@ table.hasFilter tr {
     cursor: pointer;
 }
 
-.FATAL {
+.FATAL,
+.CRITICAL {
     background: #ff5e66;
     color: #f1f1f2;
 }
 
-.FATAL.selected {
+.FATAL.selected,
+.CRITICAL.selected {
     background: #f7000c;
 }
 
-.FATAL:hover {
+.FATAL:hover,
+.CRITICAL:hover {
     background: #ff2b36;
 }
 
-.FATAL.selected:hover {
+.FATAL.selected:hover,
+.CRITICAL.selected:hover {
     background: #e6000c;
 }
 
-.WARNING_HI {
+.WARNING_HI,
+.WARNING {
     background: #FEA500;
 }
 
-.WARNING_HI.selected {
+.WARNING_HI.selected,
+.WARNING.selected {
     background: #986300;
 }
 
-.WARNING_HI:hover {
+.WARNING_HI:hover,
+.WARNING:hover {
     background: #cb8400;
 }
 
-.WARNING_HI.selected:hover {
+.WARNING_HI.selected:hover,
+.WARNING.selected:hover {
     background: #aa6f00;
 }
 
-.WARNING_LO {
+.WARNING_LO,
+.WATCH {
     background: #F0F001;
 }
 
-.WARNING_LO.selected {
+.WARNING_LO.selected,
+.WATCH.selected {
     background: #8a8a01;
 }
 
-.WARNING_LO:hover {
+.WARNING_LO:hover,
+.WATCH:hover {
     background: #bdbd01;
 }
 
-.WARNING_LO.selected:hover {
+.WARNING_LO.selected:hover,
+.WATCH.selected:hover {
     background: #a3a301;
 }
 
@@ -114,19 +126,23 @@ table.hasFilter tr {
     background: #3f3f3f;
 }
 
-.ACTIVITY_LO {
+.ACTIVITY_LO,
+.INFO {
     background: #D3D3D3;
 }
 
-.ACTIVITY_LO.selected {
+.ACTIVITY_LO.selected,
+.INFO.selected {
     background: #a0a0a0;
 }
 
-.ACTIVITY_LO:hover {
+.ACTIVITY_LO:hover,
+.INFO:hover {
     background: #bababa;
 }
 
-.ACTIVITY_LO.selected:hover {
+.ACTIVITY_LO.selected:hover,
+.INFO.selected:hover {
     background: #afafaf;
 }
 
@@ -161,4 +177,39 @@ table.hasFilter tr {
 
 .DIAGNOSTIC.selected:hover {
     background: #34c837;
+}
+
+/* YAMCS severities. INFO, WATCH, WARNING and CRITICAL share the rules above. */
+
+.DISTRESS {
+    background: #FF6A00;
+}
+
+.DISTRESS.selected {
+    background: #994000;
+}
+
+.DISTRESS:hover {
+    background: #cc5500;
+}
+
+.DISTRESS.selected:hover {
+    background: #ab4700;
+}
+
+.SEVERE {
+    background: #b3000c;
+    color: #f1f1f2;
+}
+
+.SEVERE.selected {
+    background: #6b0007;
+}
+
+.SEVERE:hover {
+    background: #8f000a;
+}
+
+.SEVERE.selected:hover {
+    background: #780008;
 }
