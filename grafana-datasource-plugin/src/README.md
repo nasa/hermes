@@ -67,7 +67,8 @@ Notes:
 
 - Applies to **numeric parameters only**. Boolean, string, and byte values are returned unchanged.
 - Use `$__value`, not `$v` — Grafana reserves the `$__` prefix, so the token can never be shadowed by a dashboard variable.
-- `Count` counts the transformed expression, so an expression that changes null-ness (such as `COALESCE($__value, 0)`) will also change the count.
+- `Count` counts samples, so a transform doesn't change it. For any parameter type, the count is a number.
+- For a boolean parameter, `Average` is the fraction of samples that were true and `Sum` is how many were true.
 
 <br>
 

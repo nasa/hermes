@@ -234,7 +234,7 @@ func TestBuildResponseBoolType(t *testing.T) {
 
 	mock.ExpectQuery("SELECT").WillReturnRows(rows)
 	resultRows, _ := db.Query("SELECT")
-	resp := buildResponse(queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "generation_time", Aggregation: "avg"}, resultRows)
+	resp := buildResponse(queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "generation_time", Aggregation: "last"}, resultRows)
 
 	v1 := resp.Frames[0].Fields[1].At(0).(*bool)
 	v2 := resp.Frames[0].Fields[1].At(1).(*bool)
@@ -243,6 +243,44 @@ func TestBuildResponseBoolType(t *testing.T) {
 	}
 	if *v2 != false {
 		t.Error("expected second bool row to be false")
+	}
+}
+
+func TestBuildResponseNumericAggregates(t *testing.T) {
+	tests := []struct {
+		aggregation, valueType string
+		valFloat, valBool      interface{}
+		want                   float64
+	}{
+		{"count", "BOOLEAN", 7.0, nil, 7},
+		{"count", "BINARY", 12.0, nil, 12},
+		{"count", "STRING", 3.0, nil, 3},
+		{"count", "UINT32", 5.0, nil, 5},
+		{"avg", "BOOLEAN", nil, 0.25, 0.25},
+		{"sum", "BOOLEAN", nil, 3.0, 3},
+	}
+	for _, tt := range tests {
+		t.Run(tt.aggregation+" "+tt.valueType, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("sqlmock: %v", err)
+			}
+			defer func() { _ = db.Close() }()
+
+			rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+				AddRow(time.Now(), "/c", "ch", "src", tt.valueType, "", nil, tt.valFloat, tt.valBool, nil, nil)
+			mock.ExpectQuery("SELECT").WillReturnRows(rows)
+			resultRows, _ := db.Query("SELECT")
+			resp := buildResponse(queryModel{Channels: []channelRef{{"/c", "ch"}}, TimeField: "generation_time", Aggregation: tt.aggregation}, resultRows)
+
+			if resp.Error != nil {
+				t.Fatalf("unexpected error: %v", resp.Error)
+			}
+			val, ok := resp.Frames[0].Fields[1].At(0).(*float64)
+			if !ok || val == nil || *val != tt.want {
+				t.Errorf("want number %v, got %#v", tt.want, resp.Frames[0].Fields[1].At(0))
+			}
+		})
 	}
 }
 

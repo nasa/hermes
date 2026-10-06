@@ -310,7 +310,8 @@ export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string):
             [aggInt, aggFloat, aggBool, aggStr, aggBytes] = wrap(call(q.aggregation.toUpperCase()), call(q.aggregation.toUpperCase()), nullify);
             break;
         case "count":
-            [aggInt, aggFloat, aggBool, aggStr, aggBytes] = wrap(call("COUNT"), (col) => `COUNT(${col})::text`);
+            // Every value type's count goes in the float column, so query.go can show it as a number
+            [aggInt, aggFloat, aggBool, aggStr, aggBytes] = ["NULL", "COUNT(*)::double precision", "NULL", "NULL", "NULL"];
             break;
         case "first":
         case "last":

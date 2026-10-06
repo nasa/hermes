@@ -183,6 +183,13 @@ func validateAggregation(aggregation string, dbValueType string) error {
 	return nil
 }
 
+// isNumericAggregate reports whether an aggregation's result is a number even
+// when the parameter's values are not: a count of any type, or the average or
+// sum of a boolean, which are the fraction and number of true samples.
+func isNumericAggregate(aggregation, dbValueType string) bool {
+	return aggregation == "count" || (dbValueType == "BOOLEAN" && (aggregation == "avg" || aggregation == "sum"))
+}
+
 func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 	frames := make(map[string]*data.Frame)
 
@@ -209,8 +216,12 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			frame = data.NewFrame(frameId)
 			frame.Fields = append(frame.Fields, data.NewField(qm.TimeField, nil, []time.Time{}))
 
+			valueType := dbValueType
+			if isNumericAggregate(qm.Aggregation, dbValueType) {
+				valueType = "DOUBLE"
+			}
 			var valueField *data.Field
-			switch dbValueType {
+			switch valueType {
 			case "UINT32", "SINT32", "UINT64", "SINT64", "FLOAT", "DOUBLE":
 				valueField = data.NewField("value", nil, []*float64{})
 			case "BOOLEAN":
@@ -238,6 +249,21 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			} else {
 				frame.AppendRow(t, val)
 			}
+		}
+
+		if isNumericAggregate(qm.Aggregation, dbValueType) {
+			// query.ts puts a boolean's average or sum in val_bool, and every
+			// count in val_float whatever the value type.
+			n := vBool
+			if qm.Aggregation == "count" {
+				n = vFloat
+			}
+			var valPtr *float64
+			if n.Valid {
+				valPtr = &n.Float64
+			}
+			appendRow(valPtr)
+			continue
 		}
 
 		// ENUMERATED and TIMESTAMP take the default case, showing the enum label or

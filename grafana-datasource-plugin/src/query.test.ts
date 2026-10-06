@@ -192,11 +192,13 @@ describe('buildTelemetryQuery — aggregations', () => {
     expect(sql).toContain('NULL AS val_bytes');
   });
 
-  it('casts count on the string column to text', () => {
+  it('puts count in the float column for every value type', () => {
     const sql = buildTelemetryQuery(aggQuery('count'), FROM, TO);
-    expect(sql).toContain(`COUNT(${INT_COL}) AS val_int`);
-    expect(sql).toContain('COUNT(v.string_value)::text AS val_str');
-    expect(sql).toContain('COUNT(v.binary_value)::text AS val_bytes');
+    expect(sql).toContain('NULL AS val_int');
+    expect(sql).toContain('COUNT(*)::double precision AS val_float');
+    expect(sql).toContain('NULL AS val_bool');
+    expect(sql).toContain('NULL AS val_str');
+    expect(sql).toContain('NULL AS val_bytes');
   });
 
   it.each([
