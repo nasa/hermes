@@ -1,5 +1,5 @@
 // Package convert turns YAMCS parameter subscription messages into recorder
-// store rows.
+// store rows, and YAMCS events into OpenTelemetry log records.
 package convert
 
 import (
