@@ -1,6 +1,6 @@
 // Package yamcs is the recorder's client for YAMCS, which it reaches through
 // the yamcs-grpc plugin. It lists the parameters to record and streams their
-// values.
+// values and the instance's events.
 package yamcs
 
 import (
@@ -16,6 +16,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/nasa/hermes/internal/yamcspb/protobuf"
+	"github.com/nasa/hermes/internal/yamcspb/protobuf/events"
 	"github.com/nasa/hermes/internal/yamcspb/protobuf/mdb"
 	"github.com/nasa/hermes/internal/yamcspb/protobuf/processing"
 	"github.com/nasa/hermes/internal/yamcspb/protobuf/services"
@@ -159,4 +160,26 @@ func (s subscription) Recv() (*processing.SubscribeParametersData, error) {
 		return nil, context.Cause(s.ctx)
 	}
 	return data, err
+}
+
+// SubscribeEvents streams instance's events as YAMCS raises them, without
+// replaying its archive. When the instance restarts, YAMCS leaves the event
+// stream open but silent, as it does the parameter stream. Subscribe already
+// watches the processor, so we don't watch it again here, and the caller
+// should end the event stream when the parameter stream ends.
+func SubscribeEvents(ctx context.Context, conn grpc.ClientConnInterface, instance string) (events.EventsApi_SubscribeEventsClient, error) {
+	stream, err := events.NewEventsApiClient(conn).SubscribeEvents(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open event subscription: %w", err)
+	}
+	err = stream.Send(&events.SubscribeEventsRequest{Instance: proto.String(instance)})
+	// Send returns io.EOF when YAMCS has already ended the stream, and only
+	// Recv returns YAMCS's error, so we ask Recv for it.
+	if errors.Is(err, io.EOF) {
+		_, err = stream.Recv()
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to send event subscription: %w", err)
+	}
+	return stream, nil
 }
