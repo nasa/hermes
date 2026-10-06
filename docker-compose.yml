@@ -20,9 +20,31 @@ services:
     depends_on:
       timescaledb:
         condition: service_started
+      loki:
+        condition: service_started
     volumes:
       - grafana-data:/var/lib/grafana
       - ./config:/etc/grafana/provisioning:ro
+  loki:
+    image: grafana/loki:latest
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+      - ./config/loki.yml:/etc/loki/local-config.yaml:ro
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    restart: unless-stopped
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      loki:
+        condition: service_started
+    volumes:
+      - ./config/otel-collector.yml:/etc/otelcol/config.yaml:ro
 volumes:
   timescale-data:
   grafana-data:
+  loki-data:
