@@ -3,6 +3,10 @@ import * as protoLoader from '@grpc/proto-loader';
 
 import yamcsDescriptor from './proto/yamcs.json';
 import type { ProtoGrpcType } from './proto/yamcs/processing';
+import type { ProtoGrpcType as EventsProtoGrpcType } from './proto/yamcs/events_service';
+import type { EventsApiClient } from './proto/yamcs/yamcs/protobuf/events/EventsApi';
+import type { Event__Output } from './proto/yamcs/yamcs/protobuf/events/Event';
+import type { ListEventsResponse__Output } from './proto/yamcs/yamcs/protobuf/events/ListEventsResponse';
 import type { MdbApiClient } from './proto/yamcs/yamcs/protobuf/mdb/MdbApi';
 import type { ListParametersResponse__Output } from './proto/yamcs/yamcs/protobuf/mdb/ListParametersResponse';
 import type { ProcessingApiClient } from './proto/yamcs/yamcs/protobuf/processing/ProcessingApi';
@@ -13,6 +17,7 @@ import type { ProcessorInfo__Output } from './proto/yamcs/yamcs/protobuf/yamcsMa
 export type { ParameterValue__Output as YamcsParameterValue } from './proto/yamcs/yamcs/protobuf/pvalue/ParameterValue';
 export type { Value__Output as YamcsValue } from './proto/yamcs/yamcs/protobuf/Value';
 export type { Timestamp__Output as YamcsTimestamp } from './proto/yamcs/google/protobuf/Timestamp';
+export type { Event__Output as YamcsEvent } from './proto/yamcs/yamcs/protobuf/events/Event';
 
 // 64-bit integers decode as strings so they stay exact, and enums as their names.
 // The generated types in ./proto/yamcs assume the same, so these options must match
@@ -21,7 +26,7 @@ const yamcsDefinition = protoLoader.fromJSON(yamcsDescriptor as any, {
     longs: String,
     enums: String,
 });
-const yamcsPackage = grpc.loadPackageDefinition(yamcsDefinition) as unknown as ProtoGrpcType;
+const yamcsPackage = grpc.loadPackageDefinition(yamcsDefinition) as unknown as ProtoGrpcType & EventsProtoGrpcType;
 
 /**
  * Client for the YAMCS API that the yamcs-grpc plugin serves over gRPC.
@@ -29,6 +34,7 @@ const yamcsPackage = grpc.loadPackageDefinition(yamcsDefinition) as unknown as P
 export class YamcsClient {
     private readonly processing: ProcessingApiClient;
     private readonly mdb: MdbApiClient;
+    private readonly events: EventsApiClient;
 
     constructor(address: string) {
         const credentials = grpc.credentials.createInsecure();
@@ -38,8 +44,11 @@ export class YamcsClient {
             // more often than that.
             'grpc.keepalive_time_ms': 5 * 60 * 1000,
         });
-        // MdbApi shares ProcessingApi's channel, so we only need to wait on and close processing.
+        // MdbApi and EventsApi share ProcessingApi's channel, so we only need to wait on and close processing.
         this.mdb = new yamcsPackage.yamcs.protobuf.mdb.MdbApi(address, credentials, {
+            channelOverride: this.processing.getChannel(),
+        });
+        this.events = new yamcsPackage.yamcs.protobuf.events.EventsApi(address, credentials, {
             channelOverride: this.processing.getChannel(),
         });
     }
@@ -157,6 +166,48 @@ export class YamcsClient {
         });
 
         return cancel;
+    }
+
+    /**
+     * The newest events of instance in the YAMCS archive, newest first
+     */
+    async listEvents(instance: string, limit: number): Promise<Event__Output[]> {
+        const page = await new Promise<ListEventsResponse__Output>((resolve, reject) => {
+            // Callers may hold live events back until listEvents returns, so we give
+            // ListEvents 10 seconds rather than letting a hung call wait forever.
+            this.events.ListEvents({ instance, limit, order: 'desc' }, { deadline: Date.now() + 10000 }, (err, res) => err ? reject(err) : resolve(res!));
+        });
+        // ListEventsResponse also fills its deprecated event field with the same list, so we read only events.
+        return page.events ?? [];
+    }
+
+    /**
+     * Subscribe to the events of instance as YAMCS raises them. YAMCS sends
+     * no earlier events; listEvents has those. YAMCS does not end this
+     * subscription when the instance restarts. It just goes quiet, so callers
+     * need another way to notice, like the processor watch in subscribeParameters.
+     * @returns a function that cancels the subscription
+     */
+    subscribeEvents(
+        instance: string,
+        onEvent: (event: Event__Output) => void,
+        onEnd: (err: Error) => void,
+    ): () => void {
+        const call = this.events.SubscribeEvents();
+        call.on('data', onEvent);
+
+        // 'status' arrives once however the call ends. 'error' still needs a
+        // listener or Node throws it.
+        call.on('error', () => { });
+        call.on('status', (status: grpc.StatusObject) => {
+            if (status.code !== grpc.status.CANCELLED) {
+                onEnd(new Error(`YAMCS event subscription ended: ${grpc.status[status.code]} ${status.details}`));
+            }
+        });
+
+        call.write({ instance });
+
+        return () => call.cancel();
     }
 
     close() {
