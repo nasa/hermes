@@ -3,6 +3,8 @@ import {
   bindValueToken,
   buildTelemetryQuery,
   buildTransformCase,
+  escArr,
+  escDate,
   namePreview,
   normalizeTransform,
   resolveChannels,
@@ -132,11 +134,21 @@ describe('buildTelemetryQuery — per-channel key scoping', () => {
     expect(sql).toContain("'{\".d\"}'");
     // Instance and time bounds are inlined.
     expect(sql).toContain("p.instance = ANY('{\"fsw-1\"}')");
-    expect(sql).toContain("2024-01-01 00:00:00.000");
+    expect(sql).toContain("'2024-01-01 00:00:00.000Z'");
   });
 
   it('throws when no channels are provided', () => {
     expect(() => buildTelemetryQuery(baseQuery({ channels: [] }), FROM, TO)).toThrow();
+  });
+});
+
+describe('escArr and escDate', () => {
+  it('escapes quotes and backslashes in array values', () => {
+    expect(escArr(['a"b', "c'd", 'e\\f'])).toBe(`'{"a\\"b","c''d","e\\\\f"}'`);
+  });
+
+  it('keeps the UTC zone on time bounds', () => {
+    expect(escDate('2024-01-01T00:00:00.000Z')).toBe("'2024-01-01 00:00:00.000Z'");
   });
 });
 

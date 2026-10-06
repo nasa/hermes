@@ -356,10 +356,12 @@ export function esc(v: string): string {
     return `'${v.replace(/'/g, "''")}'`;
 }
 
+// Inside a Postgres array literal, " and \ need a backslash. esc then handles '.
 export function escArr(arr: string[]): string {
-    return `'{${arr.map(v => `"${v}"`).join(",")}}'`;
+    return esc(`{${arr.map(v => `"${v.replace(/[\\"]/g, "\\$&")}"`).join(",")}}`);
 }
 
+// Keeps the trailing Z, so Postgres reads the bound as UTC rather than in the session's time zone
 export function escDate(d: string): string {
-    return `'${d.replace("T", " ").replace("Z", "")}'`;
+    return esc(d.replace("T", " "));
 }
