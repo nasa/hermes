@@ -74,7 +74,7 @@ Notes:
 
 #### Builder: Events
 
-The Events query type is hidden because yamcs-recorder only records telemetry.
+The Events query type is hidden because yamcs-recorder records only telemetry in TimescaleDB. With `--otlp`, it exports events through an OpenTelemetry collector to Loki, so query them through Grafana's Loki datasource.
 
 <br>
 
