@@ -1,0 +1,143 @@
+syntax="proto2";
+
+package yamcs.protobuf.yamcsManagement;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "YamcsManagementProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/services/services.proto";
+
+message ProcessorInfo {
+  // Yamcs instance name
+  optional string instance = 1;
+  
+  // Processor name
+  optional string name = 2;
+  optional string type = 3;
+  optional string spec = 4;
+  optional string creator = 5;
+  optional bool hasAlarms = 6;
+  optional bool hasCommanding = 7;
+  optional services.ServiceState state = 8;
+  optional ReplayRequest replayRequest = 9; //in case of replay
+  optional ReplayStatus.ReplayState replayState = 10; //in case of replay
+  repeated services.ServiceInfo services = 16;
+  optional bool persistent = 17;
+  optional google.protobuf.Timestamp time = 18;
+  optional bool replay = 19;
+  optional bool checkCommandClearance = 20;
+
+  // Whether this processor allows users to change algorithms at runtime
+  optional bool overrideAlgorithmsEnabled = 23;
+
+  // If true, this processor can not be deleted.
+  optional bool protected = 21;
+
+  // Globally available acknowledgments (in addition to Acknowledge_Queued,
+  // Acknowledge_Released and Acknowledge_Sent)
+  repeated AcknowledgmentInfo acknowledgments = 22;
+}
+
+message AcknowledgmentInfo {
+  // Acknowledgment name
+  optional string name = 1;
+
+  // Description of the acknowledgment
+  optional string description = 2;
+}
+
+message TmStatistics {
+  reserved 3,4,7, 8;
+  
+  // Packet name.
+  optional string packetName = 1;
+
+  optional string qualifiedName = 9;
+  optional int64 receivedPackets = 2;
+  optional int32 subscribedParameterCount = 6;
+  optional google.protobuf.Timestamp lastReceived = 10;
+  optional google.protobuf.Timestamp lastPacketTime = 11;
+  optional int64 packetRate = 12;
+  optional int64 dataRate = 13;
+}
+
+message Statistics {
+  reserved 2,4,5;
+  // Yamcs instance name.
+  optional string instance = 1;
+  
+  // Processor name.
+  optional string processor = 7;
+
+  repeated TmStatistics tmstats = 3;
+  optional google.protobuf.Timestamp lastUpdated = 6; //java local time of the last update
+}
+
+message ProcessorManagementRequest {
+  enum Operation {
+    CREATE_PROCESSOR = 0;
+    CONNECT_TO_PROCESSOR = 1;
+  }
+  optional Operation operation = 1;
+  optional string instance = 2; //yamcs instance
+  optional string name = 3; //processor name
+  optional string type = 4; //only for CREATE
+  optional string config = 5; //only for CREATE - used to be called spec
+  optional bool persistent = 7[default=false]; //only for CREATE
+}
+
+message ProcessorRequest {
+  enum Operation {
+    // Pause the processor
+    PAUSE = 2;
+
+    // Resume the processor
+    RESUME = 3;
+
+    // Seek to a specific time
+    SEEK = 4;
+
+    // Change speed of a processor
+    CHANGE_SPEED = 5;
+  }
+  // Which operation to perform with this request
+  optional Operation operation = 1;
+
+  // Yamcs instance name
+  optional string instance = 2;
+
+  // Processor name
+  optional string name = 3;
+
+  // Time to seek to, when `operation` is set to `SEEK`
+  optional int64 seekTime = 4;
+
+  // Speec, shen `operation` is set to `CHANGE_SPEED`
+  optional ReplaySpeed replaySpeed = 5;
+}
+
+message StreamEvent {
+  enum Type {
+    // A new stream was created
+    CREATED = 1;
+
+    // A stream was deleted
+    DELETED = 2;
+
+    // A stream's info was updated
+    UPDATED = 3;
+  }
+
+  // Event type
+  optional Type type = 1;
+
+  // Stream name
+  optional string name = 2;
+
+  // Number of tuples
+  optional int64 dataCount = 3;
+}

@@ -1,0 +1,1364 @@
+syntax="proto2";
+
+package yamcs.protobuf.mdb;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
+import "yamcs/protobuf/yamcs.proto";
+
+service MdbApi {
+  option (yamcs.api.label) = "MDB";
+  option (yamcs.api.markdown) = true;
+
+  // Get a mission database
+  rpc GetMissionDatabase(GetMissionDatabaseRequest) returns (MissionDatabase) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}"
+    };
+  }
+
+  // Export a java serialized dump of the mission database
+  rpc ExportJavaMissionDatabase(ExportJavaMissionDatabaseRequest) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}:exportJava"
+    };
+  }
+  
+  // List space systems
+  rpc ListSpaceSystems(ListSpaceSystemsRequest) returns (ListSpaceSystemsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/space-systems"
+      field_mask_root: "spaceSystems"
+    };
+  }
+  
+  // Get a space system
+  rpc GetSpaceSystem(GetSpaceSystemRequest) returns (SpaceSystemInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/space-systems/{name*}"
+    };
+  }
+
+  // Export an XTCE representation of a space system.
+  //
+  // If the requested space system is not the root, containers will have
+  // their qualified name stripped by the top name. In addition there may
+  // also be references to objects from space systems that are not part of
+  // the export.
+  rpc ExportXtce(ExportXtceRequest) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      label: "Export XTCE"
+      get: "/api/mdb/{instance}/space-systems/{name*}:exportXTCE"
+    };
+  }
+
+  // Stream Mission Database items.
+  //
+  // This operation is intended for tools that need to efficiently fetch
+  // the full list of parameters or commands, without using repeated
+  // pagination-based requests.
+  rpc StreamMissionDatabase(StreamMissionDatabaseRequest) returns (stream MissionDatabaseItem) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}:streamMissionDatabase"
+      offloaded: true
+    };
+  }
+
+  // List parameters
+  rpc ListParameters(ListParametersRequest) returns (ListParametersResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/parameters"
+      field_mask_root: "parameters"
+    };
+  }
+  
+  // Get a parameter
+  rpc GetParameter(GetParameterRequest) returns (ParameterInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/parameters/{name*}"
+    };
+  }
+
+  // Create a parameter
+  rpc CreateParameter(CreateParameterRequest) returns (ParameterInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/mdb/{instance}/parameters"
+      body: "*"
+    };
+  }
+
+  // Batch get of multiple parameters
+  rpc BatchGetParameters(BatchGetParametersRequest) returns (BatchGetParametersResponse) {
+    option (yamcs.api.route) = {
+      post: "/api/mdb/{instance}/parameters:batchGet"
+      body: "*"
+    };
+  }
+
+  // List parameter types
+  rpc ListParameterTypes(ListParameterTypesRequest) returns (ListParameterTypesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/parameter-types"
+      field_mask_root: "parameterTypes"
+    };
+  }
+
+  // Get a parameter type
+  rpc GetParameterType(GetParameterTypeRequest) returns (ParameterTypeInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/parameter-types/{name*}"
+    };
+  }
+
+  // Create a parameter type
+  rpc CreateParameterType(CreateParameterTypeRequest) returns (ParameterTypeInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/mdb/{instance}/parameter-types"
+      body: "*"
+    };
+  }
+
+  // List containers
+  rpc ListContainers(ListContainersRequest) returns (ListContainersResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/containers"
+      field_mask_root: "containers"
+    };
+  }
+  
+  // Get a container
+  rpc GetContainer(GetContainerRequest) returns (ContainerInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/containers/{name*}"
+    };
+  }
+  
+  // List commands
+  rpc ListCommands(ListCommandsRequest) returns (ListCommandsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/commands"
+      field_mask_root: "commands"
+    };
+  }
+  
+  // Get a command
+  rpc GetCommand(GetCommandRequest) returns (CommandInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/commands/{name*}"
+    };
+  }
+  
+  // List algorithms
+  rpc ListAlgorithms(ListAlgorithmsRequest) returns (ListAlgorithmsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/algorithms"
+      field_mask_root: "algorithms"
+    };
+  }
+  
+  // Get an algorithm
+  rpc GetAlgorithm(GetAlgorithmRequest) returns (AlgorithmInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/mdb/{instance}/algorithms/{name*}"
+    };
+  }
+}
+
+message MissionDatabase {
+  // This is the config section in mdb.yaml
+  optional string configName = 1;
+  
+  // Root space-system name
+  optional string name = 2;
+  
+  // Root space-system header version
+  optional string version = 3;
+
+  // Deprecated, use `spaceSystems` instead
+  repeated SpaceSystemInfo spaceSystem = 4 [deprecated=true];
+  repeated SpaceSystemInfo spaceSystems = 11;
+  optional int32 parameterCount = 6;
+  optional int32 containerCount = 7;
+  optional int32 commandCount = 8;
+  optional int32 algorithmCount = 9;
+  optional int32 parameterTypeCount = 10;
+}
+
+message HistoryInfo {
+  optional string version = 1;
+  optional string date = 2;
+  optional string message = 3;
+  optional string author = 4;
+}
+
+enum DataSourceType {
+  TELEMETERED = 0;
+  DERIVED = 1;
+  CONSTANT = 2;
+  LOCAL = 3;
+  SYSTEM = 4;
+  COMMAND = 5;
+  COMMAND_HISTORY = 6;
+  EXTERNAL1 = 7;
+  EXTERNAL2 = 8;
+  EXTERNAL3 = 9;
+  GROUND = 10;
+}
+
+enum AlarmLevelType {
+  NORMAL = 0;
+  WATCH = 1;
+  WARNING =  2;
+  DISTRESS = 3;
+  CRITICAL = 4;
+  SEVERE = 5;
+}
+
+message UnitInfo {
+  optional string unit = 1;
+}
+
+message AlarmRange {
+  optional AlarmLevelType level = 1;
+  optional double minInclusive = 2;
+  optional double maxInclusive = 3;
+  optional double minExclusive = 4;
+  optional double maxExclusive = 5;
+}
+
+message EnumerationAlarm {
+  optional AlarmLevelType level = 1;
+  optional string label = 3;
+}
+
+message AlarmInfo {
+  optional int32 minViolations = 1;
+
+  // Deprecated, use `staticAlarmRanges` instead
+  repeated AlarmRange staticAlarmRange = 2 [deprecated=true];
+  repeated AlarmRange staticAlarmRanges = 4;
+
+  // Deprecated, use `enumerationAlarms` instead
+  repeated EnumerationAlarm enumerationAlarm = 3 [deprecated=true];
+  repeated EnumerationAlarm enumerationAlarms = 5;
+
+  // Only used for enumeration alarms. Defines the alarm state if none of
+  // the conditions apply.
+  optional AlarmLevelType defaultLevel = 6;
+}
+
+message ContextAlarmInfo {
+  // Use `context` instead
+  repeated ComparisonInfo comparison = 1 [deprecated=true];
+
+  optional AlarmInfo alarm = 2;
+
+  // Expression describing the context when this alarm applies.
+  //
+  // Can also be used in UpdateParameterRequest to pass a context
+  // that is parsed on the server, according to the rules in the
+  // excel spreadsheet. Either this or a comparison has to be
+  // used (not both at the same time)
+  optional string context = 3;
+}
+
+message DataEncodingInfo {
+  enum Type {
+    BINARY = 0;
+    BOOLEAN = 1;
+    FLOAT = 2;
+    INTEGER = 3;
+    STRING = 4;
+  }
+  optional Type type = 1;
+  optional bool littleEndian = 2;
+  optional int32 sizeInBits = 3;
+  optional string encoding = 4;
+  optional CalibratorInfo defaultCalibrator = 6;
+
+  // Deprecated, use `contextCalibrators` instead
+  repeated ContextCalibratorInfo contextCalibrator = 7 [deprecated=true];
+  repeated ContextCalibratorInfo contextCalibrators = 8;
+}
+
+message ContextCalibratorInfo {
+  // Use `context` instead
+  repeated ComparisonInfo comparison = 1 [deprecated=true];
+
+  optional CalibratorInfo calibrator = 2;
+
+  // Expression describing the context when this calibrator applies
+  //
+  // Can also be used in UpdateParameterRequest to pass a context
+  // that is parsed on the server, according to the rules in the
+  // excel spreadsheet. Either this or a comparison has to be
+  // used (not both at the same time)
+  optional string context = 3;
+}
+
+message CalibratorInfo {
+  enum Type {
+     POLYNOMIAL = 0;
+     SPLINE = 1;
+     MATH_OPERATION = 2;
+     JAVA_EXPRESSION = 3;
+     ALGORITHM = 4;
+  }
+  optional PolynomialCalibratorInfo polynomialCalibrator = 2;
+  optional SplineCalibratorInfo splineCalibrator = 3;
+  optional JavaExpressionCalibratorInfo javaExpressionCalibrator = 4;
+  optional Type type = 5;
+}
+
+message PolynomialCalibratorInfo {
+  // Deprecated, use `coefficients` instead
+  repeated double coefficient = 1 [deprecated=true];
+  repeated double coefficients = 2;
+}
+
+message SplineCalibratorInfo {
+  message SplinePointInfo {
+    optional double raw = 1;
+    optional double calibrated = 2;
+  }
+  // Deprecated, use `points` instead
+  repeated SplinePointInfo point = 1 [deprecated=true];
+  repeated SplinePointInfo points = 2;
+}
+
+message JavaExpressionCalibratorInfo {
+  optional string formula = 1;
+}
+
+// Maps a numeric value to a label
+message EnumValue {
+  // Enum value
+  optional int64 value = 1;
+
+  // Enum label
+  optional string label = 2;
+
+  // Description of this enumeration value
+  optional string description = 3;
+}
+
+// Maps a range of numeric values to a label
+message EnumRange {
+  // Range start
+  optional double min = 1;
+
+  // Range end
+  optional double max = 2;
+
+  // Whether `min` is included in this range
+  optional bool minInclusive = 3;
+
+  // Whether `max` is included in this range
+  optional bool maxInclusive = 4;
+
+  // Enum label
+  optional string label = 5;
+
+  // Description of this enumeration range
+  optional string description = 6;
+}
+
+message ParameterTypeInfo {
+  optional string name = 16;
+  optional string qualifiedName = 17;
+  optional string shortDescription = 18;
+  optional string longDescription = 19;
+  repeated NamedObjectId alias = 20;
+
+  // Engineering type
+  optional string engType = 1;
+  optional DataEncodingInfo dataEncoding = 2;
+  repeated UnitInfo unitSet = 3;
+
+  // Default Alarm, effective when no contextual alarm takes precedence.
+  optional AlarmInfo defaultAlarm = 4;
+
+  // Deprecated, use `enumValues` instead
+  repeated EnumValue enumValue = 5 [deprecated = true];
+
+  // Value-to-label mappings if this is an enumeration type
+  repeated EnumValue enumValues = 22;
+
+  // Range-to-label mappings if this is an enumeration type
+  repeated EnumRange enumRanges = 23;
+
+  optional AbsoluteTimeInfo absoluteTimeInfo = 6;
+
+  // Contextual alarms
+  repeated ContextAlarmInfo contextAlarm = 7;
+  repeated MemberInfo member = 8;
+  optional ArrayInfo arrayInfo = 9;
+  map<string, AncillaryDataInfo> ancillaryData = 10;
+  
+  // Provides hints on how to format the engineering
+  // value as a string.
+  optional NumberFormatTypeInfo numberFormat = 11;
+
+  // True if the engineering type supports signed representation.
+  // (only used by integer parameter types)
+  optional bool signed = 12;
+
+  // Hint about the range of allowed engineering values
+  optional int32 sizeInBits = 21;
+
+  // String representation of a boolean zero (only used by boolean types)
+  optional string zeroStringValue = 13;
+
+  // String representation of a boolean one (only used by boolean types)
+  optional string oneStringValue = 14;
+
+  // Which parameters this type is used by. This field is only
+  // populated when requesting directly a single parameter type.
+  repeated ParameterInfo usedBy = 15;
+
+  // Initial value
+  optional string initialValue = 24;
+
+  // Valid range for the raw value (used by integer and float types)
+  optional ValidRangeInfo rawValidRange = 25;
+
+  // Valid range for the engineering value (used by integer and float types)
+  optional ValidRangeInfo engValidRange = 26;
+}
+
+message ValidRangeInfo {
+  // Minimum value
+  optional double minimum = 1;
+
+  // Maximum value
+  optional double maximum = 2;
+
+  // Whether the minimum value itself is valid
+  optional bool minimumInclusive = 3;
+
+  // Whether the maximum value itself is valid
+  optional bool maximumInclusive = 4;
+}
+
+message NumberFormatTypeInfo {
+  optional string numberBase = 1;
+  optional int32 minimumFractionDigits = 2;
+  optional int32 maximumFractionDigits = 3;
+  optional int32 minimumIntegerDigits = 4;
+  optional int32 maximumIntegerDigits = 5;
+  optional string negativeSuffix = 6;
+  optional string positiveSuffix = 7;
+  optional string negativePrefix = 8;
+  optional string positivePrefix = 9;
+  optional bool showThousandsGrouping = 10;
+  optional string notation = 11;
+}
+
+message GetContainerRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+  
+  // Container name
+  optional string name = 2;
+}
+
+message GetParameterTypeRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Parameter type name
+  optional string name = 2;
+}
+
+message AbsoluteTimeInfo {
+  optional string initialValue = 1;
+  optional double scale = 2;
+  optional double offset = 3;
+  optional ParameterInfo offsetFrom = 4;
+  optional string epoch = 5;
+}
+
+message MemberInfo {
+  optional string name = 1;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional ParameterTypeInfo type = 6;
+}
+
+message ArgumentMemberInfo {
+  optional string name = 1;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional ArgumentTypeInfo type = 6;
+  optional string initialValue = 7;
+}
+
+message ParameterDimensionInfo {
+  optional int64 fixedValue = 1;
+  optional ParameterInfo parameter = 2;
+  optional int64 slope = 3;
+  optional int64 intercept = 4;
+}
+
+message ArrayInfo {
+  optional ParameterTypeInfo type = 1;
+  repeated ParameterDimensionInfo dimensions = 3;
+}
+
+message UsedByInfo {
+  repeated AlgorithmInfo algorithm = 1;
+  repeated ContainerInfo container = 2;
+}
+
+message ParameterInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional ParameterTypeInfo type = 6;
+  optional DataSourceType dataSource = 7;
+  optional UsedByInfo usedBy = 8;
+  map<string, AncillaryDataInfo> ancillaryData = 9;
+  
+  // Operations that return aggregate members or array entries
+  // may use this field to indicate the path within the parameter.   
+  repeated string path = 10;
+}
+
+message AncillaryDataInfo {
+  optional string value = 1;
+  optional string mimeType = 2;
+  optional string href = 3;
+}
+
+message ArgumentTypeInfo {
+  optional string engType = 1;
+  optional DataEncodingInfo dataEncoding = 2;
+  repeated UnitInfo unitSet = 3;
+  
+  // Enumeration states (only used by enumerated arguments)
+  repeated EnumValue enumValue = 5;
+  
+  // Minimum value (only used by integer and float arguments)
+  optional double rangeMin = 6;
+  
+  // Maximum value (only used by integer and float arguments)
+  optional double rangeMax = 7;
+  
+  // Member information (only used by aggregate arguments)
+  repeated ArgumentMemberInfo member = 8;
+  
+  // String representation of a boolean zero (only used by boolean arguments)
+  optional string zeroStringValue = 9;
+  
+  // String representation of a boolean one (only used by boolean arguments)
+  optional string oneStringValue = 10;
+  
+  // Minimum character count (only used by string arguments)
+  optional int32 minChars = 11;
+  
+  // Maximum character count (only used by string arguments)
+  optional int32 maxChars = 12;
+  
+  // True if the engineering type supports signed representation.
+  // (only used by integer arguments)
+  optional bool signed = 13;
+  
+  // Minimum byte count (only used by binary arguments)
+  optional int32 minBytes = 14;
+  
+  // Maximum character count (only used by binary arguments)
+  optional int32 maxBytes = 15;
+
+  // Length of each dimension (only used by array arguments)
+  repeated ArgumentDimensionInfo dimensions = 16;
+
+  // Type of array entries (only used by array arguments)
+  optional ArgumentTypeInfo elementType = 17;
+
+  // Name of the parameter type
+  optional string name = 18;
+
+  // Hint about the range of allowed engineering values
+  optional int32 sizeInBits = 19;
+}
+
+message ArgumentDimensionInfo {
+  // Use a fixed integer value. If set, no other options are applicable.
+  // This value describes the length.
+  optional int64 fixedValue = 1;
+
+  // Use the value of the referenced parameter.
+  // The value describes the zero-based ending index (length - 1)
+  //
+  // For a value `v`, the dimension's length is determined
+  // as: `(v * slope) + intercept`. 
+  optional ParameterInfo parameter = 2;
+
+  // Use the value of the referenced argument.
+  // The value describes the zero-based ending index (length - 1)
+  //
+  // For a value `v`, the dimension's length is determined
+  // as: `(v * slope) + intercept`.
+  optional string argument = 3;
+
+  // Scale the value obtained from a parameter or argument reference.
+  optional int64 slope = 4;
+
+  // Shift the value obtained from a parameter or argument reference.
+  optional int64 intercept = 5;
+}
+
+message ArgumentInfo {
+  optional string name = 1;
+  optional string description = 2;
+  optional string initialValue = 4;
+  optional ArgumentTypeInfo type = 6;
+}
+
+message ArgumentAssignmentInfo {
+  optional string name = 1;
+  optional string value = 2;
+}
+
+message SignificanceInfo {
+  enum SignificanceLevelType {
+    NONE = 1;
+    WATCH = 2;
+    WARNING = 3;
+    DISTRESS = 4;
+    CRITICAL = 5;
+    SEVERE = 6;
+  }
+  optional SignificanceLevelType consequenceLevel = 1;
+  optional string reasonForWarning = 2;
+}
+
+message ComparisonInfo {
+  enum OperatorType {
+    EQUAL_TO = 1;
+    NOT_EQUAL_TO = 2;
+    GREATER_THAN = 3;
+    GREATER_THAN_OR_EQUAL_TO = 4;
+    SMALLER_THAN = 5;
+    SMALLER_THAN_OR_EQUAL_TO = 6;
+  }
+  optional ParameterInfo parameter = 1;
+  optional OperatorType operator = 2;
+  optional string value = 3;
+  optional ArgumentInfo argument = 4;
+}
+
+message TransmissionConstraintInfo {
+  optional string expression = 3;
+  optional int64 timeout = 2;
+}
+
+message CommandInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional CommandInfo baseCommand = 6;
+  optional bool abstract = 7;
+  repeated ArgumentInfo argument = 8;
+  repeated ArgumentAssignmentInfo argumentAssignment = 9;
+
+  // Command significance.
+  //
+  // This is the significance defined specifically for this command.
+  // If unset, there may still be a significance inherited from
+  // a base command.
+  optional SignificanceInfo significance = 10;
+  repeated TransmissionConstraintInfo constraint = 11;
+  optional CommandContainerInfo commandContainer = 13;
+  repeated VerifierInfo verifier = 14;
+  map<string, AncillaryDataInfo> ancillaryData = 15;
+
+  // Effective command significance.
+  //
+  // This is the significance obtained by looking up the first defined
+  // significance either in this command, or the nearest base command.
+  optional SignificanceInfo effectiveSignificance = 16;
+}
+
+message VerifierInfo {
+  enum TerminationActionType {
+    SUCCESS = 1;
+    FAIL = 2;
+  }
+  optional string stage = 1;
+
+  // Container update that is checked
+  optional ContainerInfo container = 2;
+  optional AlgorithmInfo algorithm = 3;
+
+  // What action to take when a check succeeds
+  optional TerminationActionType onSuccess = 4;
+
+  // What action to take when a check fails
+  optional TerminationActionType onFail = 5;
+
+  // What action to take when a check times out
+  optional TerminationActionType onTimeout = 6;
+
+  // Time window during which a check is executed
+  optional CheckWindowInfo checkWindow = 7;
+
+  // Expression used to check this verifier
+  optional string expression = 8;
+}
+
+message CheckWindowInfo {
+
+  // Delay in milliseconds before starting to check
+  optional int64 timeToStartChecking = 1;
+
+  // Duration in milliseconds of the check window
+  optional int64 timeToStopChecking = 2;
+
+  // Reference time for starting the check window
+  optional string relativeTo = 3;
+}
+
+message RepeatInfo {
+  optional int64 fixedCount = 1;
+  optional ParameterInfo dynamicCount = 2;
+  optional int32 bitsBetween = 3;
+}
+
+message SequenceEntryInfo {
+  enum ReferenceLocationType {
+    CONTAINER_START = 1;
+    PREVIOUS_ENTRY = 2;
+  }
+  optional int32 locationInBits = 1;
+  optional ReferenceLocationType referenceLocation = 2;
+
+  // For use in sequence containers
+  optional ContainerInfo container = 3;
+  optional ParameterInfo parameter = 4;
+
+  // For use in command containers
+  optional ArgumentInfo argument = 6;
+  optional FixedValueInfo fixedValue = 7;
+
+  optional RepeatInfo repeat = 5;
+  optional IndirectParameterRefInfo indirectParameterRef = 8;
+}
+
+message FixedValueInfo {
+  optional string name = 1;
+  optional string hexValue = 2;
+  optional int32 sizeInBits = 3;
+}
+
+message CommandContainerInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional int32 sizeInBits = 6;
+  optional CommandContainerInfo baseContainer = 7;
+  repeated SequenceEntryInfo entry = 8;
+}
+
+message IndirectParameterRefInfo {
+   optional ParameterInfo parameter = 1;
+   optional string aliasNamespace = 2;
+}
+
+message ContainerInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional int64 maxInterval = 6;
+  optional int32 sizeInBits = 7;
+  optional ContainerInfo baseContainer = 8;
+  repeated ComparisonInfo restrictionCriteria = 9 [deprecated=true];
+  optional string restrictionCriteriaExpression = 13;
+  repeated SequenceEntryInfo entry = 10;
+  optional UsedByInfo usedBy = 11;
+  map<string, AncillaryDataInfo> ancillaryData = 12;
+  optional bool archivePartition = 14;
+}
+
+message InputParameterInfo {
+  optional ParameterInfo parameter = 1;
+  optional string inputName = 2;
+  optional int32 parameterInstance = 3;
+  optional bool mandatory = 4;
+  optional ArgumentInfo argument = 5;
+}
+
+message OutputParameterInfo {
+  optional ParameterInfo parameter = 1;
+  optional string outputName = 2;
+}
+
+message MathElement {
+  enum Type {
+    VALUE_OPERAND = 1;
+    THIS_PARAMETER_OPERAND = 2;
+    OPERATOR = 3;
+    PARAMETER = 4;
+  }
+
+  // Type of element, either an operand kind or an operator.
+  optional Type type = 1;
+
+  // Operator symbol if type `OPERATOR`.
+  optional string operator = 2;
+
+  // Constant if type `VALUE_OPERAND`.
+  optional double value = 3;
+
+  // Parameter whose value is used if type `PARAMETER`.
+  optional ParameterInfo parameter = 4;
+
+  // Parameter instance specifier
+  optional int32 parameterInstance = 5;
+}
+
+message AlgorithmInfo {
+  enum Type {
+    CUSTOM = 1;
+    MATH = 2;
+  }
+  enum Scope {
+    GLOBAL = 0;
+    COMMAND_VERIFICATION = 1;
+    CONTAINER_PROCESSING = 2;
+  }
+
+  // Algorithm name
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional Scope scope = 6;
+
+  // Type of algorithm
+  optional Type type = 13;
+
+  // Language if this is a custom algorithm
+  optional string language = 7;
+
+  // Code if this is a custom algorithm
+  optional string text = 8;
+  repeated InputParameterInfo inputParameter = 9;
+  repeated OutputParameterInfo outputParameter = 10;
+  repeated ParameterInfo onParameterUpdate = 11;
+  repeated int64 onPeriodicRate = 12;
+
+  // Operands and operators in Reverse Polish Notation if type `MATH`.
+  repeated MathElement mathElements = 14;
+}
+
+message ListSpaceSystemsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+  
+  // The search keywords. This supports searching on qualified name or alias.
+  optional string q = 2;
+  
+  // Continuation token returned by a previous page response.
+  optional string next = 7;
+  
+  // The zero-based row number at which to start outputting results. Default: `0`
+  optional int32 pos = 8;
+  
+  // The maximum number of returned systems per page. Choose this value too high
+  // and you risk hitting the maximum response size limit enforced by the server.
+  // Default: `100`
+  optional int32 limit = 9;
+}
+
+message ListContainersRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+  
+  // The search keywords. This supports searching on qualified name or alias.
+  optional string q = 2;
+  
+  // List only direct child sub-systems or containers of the specified system.
+  // For example when querying the system `/a` against an MDB with containers
+  // `/a/b/c` and `/a/c`, the result returns the sub system `/a/b` and the
+  // container `/a/c`.
+  //
+  // When `system` and `q` are used together, matching containers at any
+  // depth are returned, starting from the specified space system.
+  optional string system = 10;
+  
+  // Continuation token returned by a previous page response.
+  optional string next = 7;
+  
+  // The zero-based row number at which to start outputting results. Default: `0`
+  optional int32 pos = 8;
+  
+  // The maximum number of returned containers per page. Choose this value too high
+  // and you risk hitting the maximum response size limit enforced by the server.
+  // Default: `100`
+  optional int32 limit = 9;
+}
+
+message ListParameterTypesRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // The search keywords. This supports searching on qualified name or alias.
+  optional string q = 2;
+
+  // List only direct child sub-systems or parameter types of the specified system.
+  // For example when querying the system `/a` against an MDB with parameter types
+  // `/a/b/c` and `/a/c`, the result returns the sub system `/a/b` and the
+  // parameter type `/a/c`.
+  //
+  // When `system` and `q` are used together, matching containers at any
+  // depth are returned, starting from the specified space system.
+  optional string system = 10;
+
+  // Continuation token returned by a previous page response.
+  optional string next = 7;
+
+  // The zero-based row number at which to start outputting results. Default: `0`
+  optional int32 pos = 8;
+
+  // The maximum number of returned items per page. Choose this value too high
+  // and you risk hitting the maximum response size limit enforced by the server.
+  // Default: `100`
+  optional int32 limit = 9;
+}
+
+message ListAlgorithmsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+  
+  // The search keywords. This supports searching on qualified name or alias.
+  optional string q = 2;
+  
+  // List only direct child sub-systems or algorithms of the specified system.
+  // For example when querying the system `/a` against an MDB with algorithms
+  // `/a/b/c` and `/a/c`, the result returns the sub system `/a/b` and the
+  // algorithm `/a/c`.
+  //
+  // When `system` and `q` are used together, matching algorithms at any
+  // depth are returned, starting from the specified space system.
+  optional string system = 10;
+
+  // Continuation token returned by a previous page response.
+  optional string next = 7;
+  
+  // The zero-based row number at which to start outputting results. Default: `0`
+  optional int32 pos = 8;
+  
+  // The maximum number of returned algorithms per page. Choose this value too
+  // high and you risk hitting the maximum response size limit enforced by
+  // the server. Default: `100`
+  optional int32 limit = 9;
+  
+  // Include only algorithms of the specified scope
+  optional AlgorithmInfo.Scope scope = 11;
+}
+
+message ListCommandsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+  
+  // The search keywords. This supports searching on qualified name or alias.
+  optional string q = 2;
+  
+  // List only direct child sub-systems or commands of the specified system.
+  // For example when querying the system `/a` against an MDB with commands
+  // `/a/b/c` and `/a/c`, the result returns the sub system `/a/b` and the
+  // command `/a/c`.
+  //
+  // When `system` and `q` are used together, matching commands at any
+  // depth are returned, starting from the specified space system.
+  optional string system = 11;
+
+  optional bool details = 4;
+  
+  // Continuation token returned by a previous page response.
+  optional string next = 7;
+  
+  // The zero-based row number at which to start outputting results. Default: `0`
+  optional int32 pos = 8;
+  
+  // The maximum number of returned commands per page. Choose this value too
+  // high and you risk hitting the maximum response size limit enforced by
+  // the server. Default: `100`
+  optional int32 limit = 9;
+  
+  // Exclude abstract commands
+  optional bool noAbstract = 10;
+}
+
+message GetParameterRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+  
+  // Parameter name
+  optional string name = 2;
+}
+
+message ListParametersRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+  
+  // The search keywords. This supports searching on qualified name or alias.
+  optional string q = 2;
+  
+  // When used together with `q`, include also aggregate members (at any depth)
+  // in the search.
+  //
+  // Note that this method returns only parameters. Members are part of the type definition.
+  optional bool searchMembers = 12;
+  
+  // Include details on each returned parameter (this includes long
+  // descriptions, aliases, and detailed type information).
+  // If unset, only summary information is returned.
+  optional bool details = 4;
+
+  // The parameter types to be included in the result. Valid types are `boolean`,
+  // `binary`, `enumeration`, `float`, `integer` or `string`.
+  // If unspecified, parameters of all types will be included.
+  repeated string type = 5;
+  
+  // Include only parameters of the specified source.
+  optional DataSourceType source = 10;
+  
+  // List only direct child sub-systems or parameters of the specified system.
+  // For example when querying the system `/a` against an MDB with parameters
+  // `/a/b/c` and `/a/c`, the result returns the sub system `/a/b` and the
+  // parameter `/a/c`.
+  //
+  // When `system` and `q` are used together, matching parameters at any
+  // depth are returned, starting from the specified space system.
+  optional string system = 11;
+  
+  // Continuation token returned by a previous page response.
+  optional string next = 7;
+  
+  // The zero-based row number at which to start outputting results. Default: `0`
+  optional int32 pos = 8;
+  
+  // The maximum number of returned parameters per page. Choose this value too
+  // high and you risk hitting the maximum response size limit enforced by the
+  // server. Default: `100`
+  optional int32 limit = 9;
+}
+
+message ListParametersResponse {
+  // Matching subsystems when the `system` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use `systems` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching parameters
+  repeated ParameterInfo parameters = 1;
+  
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the `next` parameter to this token.
+  optional string continuationToken = 2;
+  
+  // The total number of results (across all pages)
+  optional int32 totalSize = 3;
+}
+
+message BatchGetParametersRequest {
+  optional string instance = 2;
+  repeated NamedObjectId id = 1;
+}
+
+message BatchGetParametersResponse {
+  message GetParameterResponse {
+    optional NamedObjectId id = 1;
+    optional ParameterInfo parameter = 2;
+  }
+  repeated GetParameterResponse response = 1;
+}
+
+message ListContainersResponse {
+  // Matching subsystems when the `system` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use `systems` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching containers
+  repeated ContainerInfo containers = 1;
+  
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the `next` parameter to this token.
+  optional string continuationToken = 2;
+  
+  // The total number of results (across all pages)
+  optional int32 totalSize = 3;
+}
+
+message ListParameterTypesResponse {
+  // Matching subsystems when the `system` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use `systems` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching parameter types
+  repeated ParameterTypeInfo parameterTypes = 1;
+
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the `next` parameter to this token.
+  optional string continuationToken = 2;
+
+  // The total number of results (across all pages)
+  optional int32 totalSize = 3;
+}
+
+message ListCommandsResponse {
+  // Matching subsystems when the `system` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use `systems` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching commands
+  repeated CommandInfo commands = 1;
+  
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the `next` parameter to this token.
+  optional string continuationToken = 2;
+  
+  // The total number of results (across all pages)
+  optional int32 totalSize = 3;
+}
+
+message ListAlgorithmsResponse {
+  // Matching subsystems when the `system` option was specified
+  repeated SpaceSystemInfo systems = 5;
+
+  // Deprecated. Use `systems` instead
+  repeated string spaceSystems = 4 [deprecated=true];
+
+  // Matching algorithms
+  repeated AlgorithmInfo algorithms = 1;
+  
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the `next` parameter to this token.
+  optional string continuationToken = 2;
+  
+  // The total number of results (across all pages)
+  optional int32 totalSize = 3;
+}
+
+message GetAlgorithmRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+  
+  // Algorithm name
+  optional string name = 2;
+}
+
+message CreateParameterRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Fully qualified parameter name
+  optional string name = 2;
+
+  // Short description (one line)
+  optional string shortDescription = 3;
+
+  // Long description (Markdown)
+  optional string longDescription = 4;
+
+  // Aliases, keyed by namespace
+  map<string, string> aliases = 5;
+
+  // Type of datasource.
+  //
+  // One of TELEMETERED, DERIVED, CONSTANT, LOCAL, SYSTEM, COMMAND, COMMAND_HISTORY,
+  // EXTERNAL1, EXTERNAL2, or EXTERNAL3
+  optional DataSourceType dataSource = 6;
+
+  // Fully qualified name of a parameter type
+  optional string parameterType = 7;
+}
+
+message CreateParameterTypeRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Fully qualified parameter type name
+  optional string name = 2;
+
+  // Short description (one line)
+  optional string shortDescription = 3;
+
+  // Long description (Markdown)
+  optional string longDescription = 4;
+
+  // Aliases, keyed by namespace
+  map<string, string> aliases = 5;
+
+  // Engineering type. One of `float`, `integer`, `enumeration`,
+  // `binary`, `boolean` or `string`.
+  optional string engType = 6;
+
+  // Engineering unit
+  optional string unit = 7;
+
+  // Set to true if the engineering type supports signed representation.
+  // (only used with `integer` parameter types)
+  optional bool signed = 8;
+
+  // Default Alarm, effective when no contextual alarm takes precedence.
+  optional AlarmInfo defaultAlarm = 9;
+
+  // Contextual alarms
+  repeated ContextAlarmInfo contextAlarms = 10;
+
+  // Enumeration values.
+  // (only used with `enumeration` parameter types)
+  repeated EnumValue enumerationValues = 11;
+
+  // String representation of a boolean zero.
+  // (only used with `boolean` parameter types)
+  optional string zeroStringValue = 12;
+
+  // String representation of a boolean one.
+  // (only used with `boolean` parameter types)
+  optional string oneStringValue = 13;
+}
+
+message GetMissionDatabaseRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}
+
+message ExportJavaMissionDatabaseRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}
+
+message StreamMissionDatabaseRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Stream space systems. Default: `true`
+  optional bool includeSpaceSystems = 2;
+
+  // Stream containers. Default: `true`
+  optional bool includeContainers = 3;
+
+  // Stream parameters. Default: `true`
+  optional bool includeParameters = 4;
+
+  // Stream parameter types. Default: `true`
+  optional bool includeParameterTypes = 5;
+
+  // Stream commands. Default: `true`
+  optional bool includeCommands = 6;
+
+  // Stream algorithms. Default: `true`
+  optional bool includeAlgorithms = 7;
+}
+
+message MissionDatabaseItem {
+  oneof item {
+    // A space system
+    SpaceSystemInfo spaceSystem = 1;
+
+    // A container
+    ContainerInfo container = 2;
+
+    // A parameter
+    ParameterInfo parameter = 3;
+
+    // A parameter type
+    ParameterTypeInfo parameterType = 4;
+
+    // A command
+    CommandInfo command = 5;
+
+    // An algorithm
+    AlgorithmInfo algorithm = 6;
+  }
+}
+
+message ListSpaceSystemsResponse {
+  // Matching space systems
+  repeated SpaceSystemInfo spaceSystems = 1;
+  
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the `next` parameter to this token.
+  optional string continuationToken = 2;
+  
+  // The total number of results (across all pages)
+  optional int32 totalSize = 3;
+}
+
+message GetSpaceSystemRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+  
+  // Space-system name
+  optional string name = 2;
+}
+
+message ExportXtceRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Space-system name
+  optional string name = 2;
+
+  // XTCE version
+  //
+  // One of `1.2` or `1.3`
+  //
+  // Default: `1.2`
+  optional string version = 3;
+}
+
+message GetCommandRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+  
+  // Command name
+  optional string name = 2;
+}
+
+message SpaceSystemInfo {
+  // Space system name
+  optional string name = 1;
+  optional string qualifiedName = 2;
+
+  // Short description (one line)
+  optional string shortDescription = 3;
+
+  // Long description (Markdown)
+  optional string longDescription = 4;
+
+  repeated NamedObjectId alias = 16;
+  optional string version = 5;
+  repeated HistoryInfo history = 14;
+  repeated SpaceSystemInfo sub = 15;
+  map<string, AncillaryDataInfo> ancillaryData = 17;
+}
