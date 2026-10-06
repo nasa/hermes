@@ -79,12 +79,23 @@ exports.run = async function () {
         result.tableUpdateSample = Object.values(updates[updates.length - 1])[0];
         step('table panel sent update rows');
 
+        // The newest archived YAMCS events reach the events panel on connecting
+        const yamcsEvents = () => core.eventPanel.panelEvents.filter((e) => e.source === `yamcs:${state.instance}`);
+        await waitFor('a YAMCS event in the events panel', () => yamcsEvents().length > 0, 10000);
+        result.yamcsEvents = yamcsEvents().length;
+        result.newestYamcsEvent = yamcsEvents()[result.yamcsEvents - 1];
+        step('YAMCS events in the events panel');
+
         // Switching to Offline mode should close the YAMCS backend's parameter subscription, so no CPU points arrive,
         // and switching back should open a new one
         await vscode.commands.executeCommand('hermes.host.set', 'offline');
         const offlinePoints = db.get(cpuKey).time.length;
         await sleep(3000);
         result.cpuPointsWhileOffline = db.get(cpuKey).time.length - offlinePoints;
+        // The panel drops repeats, so we can't watch it to tell when switching back has sent the archived events again.
+        // We listen for that batch ourselves, starting while Offline so a live event can't reach us before it
+        const eventBatches = [];
+        const eventListener = core.api.onYamcsEvents((_, events) => eventBatches.push(events));
         await vscode.commands.executeCommand('hermes.host.set', 'yamcs', state);
         // The first point back can be the cached value YAMCS sends when we subscribe, so wait for a live one too
         await waitFor('CPU points after switching back', () => db.get(cpuKey).time.length >= offlinePoints + 2, 10000);
@@ -93,6 +104,15 @@ exports.run = async function () {
         result.frameworkVersionPoints = db.get(versionKey).time.length;
         if (result.cpuPointsWhileOffline !== 0 || result.frameworkVersionPoints !== 1) {
             throw new Error('unexpected points while offline or after switching back');
+        }
+        await waitFor('the archived YAMCS events again', () => eventBatches[0]?.length > 0, 10000);
+        eventListener.dispose();
+        // Rows have no sequence number, so two events alike in every row field would count as a repeat
+        const shown = yamcsEvents().map((e) => JSON.stringify(e));
+        result.yamcsEventsAfterSwitchingBack = shown.length;
+        result.repeatedYamcsEvents = shown.length - new Set(shown).size;
+        if (result.repeatedYamcsEvents !== 0) {
+            throw new Error('YAMCS events repeated in the events panel after switching back');
         }
         step('offline and back');
 
