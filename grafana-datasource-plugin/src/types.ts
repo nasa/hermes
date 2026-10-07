@@ -2,9 +2,13 @@ import { DataSourceJsonData } from '@grafana/data';
 import { DataQuery } from '@grafana/schema';
 
 export type QueryType = 'telemetry' | 'events' | 'raw';
-export type TimeField = 'time' | 'ert';
+export type TimeField = 'generation_time' | 'acquisition_time';
 export type Aggregation = 'avg' | 'min' | 'max' | 'count' | 'first' | 'last' | 'sum' | 'deriv' | 'raw' | 'latest';
 
+// A YAMCS parameter, with component holding its space system, e.g. /Ref_Ref/Ref/systemResources.
+// These field names come from the Hermes telemetry tables the plugin read before yamcs-recorder.
+// We kept them so the saved query format stays the same, though a query saved against those
+// tables still needs its parameters picked again.
 export interface ChannelRef {
   component: string;
   name: string;
@@ -22,7 +26,7 @@ export type ChannelQuery = ChannelRef | ChannelExpression;
 export interface KeyRef {
   component: string;
   channel: string;
-  key: string;
+  key: string;  // member path, e.g. .x or [0]; '' when the parameter is not a struct or array
 }
 
 export interface TransformRef {
@@ -36,7 +40,7 @@ export interface TransformRef {
 export interface MyQuery extends DataQuery {
   queryType: QueryType;
   channels: ChannelQuery[];
-  sources: string[];
+  sources: string[];  // YAMCS instances
   keys: KeyRef[];
   timeField?: TimeField;
   timeOverrideFrom?: string;
@@ -48,7 +52,7 @@ export interface MyQuery extends DataQuery {
 
 export type ResolvedQuery = Omit<MyQuery, 'channels'> & { channels: ChannelRef[] };
 
-export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], transforms: [], timeField: 'ert', aggregation: 'avg' };
+export const DEFAULT_QUERY: Partial<MyQuery> = { queryType: 'telemetry', channels: [], sources: [], keys: [], transforms: [], timeField: 'generation_time', aggregation: 'avg' };
 
 export function withDefaults(query: MyQuery): MyQuery {
   return {

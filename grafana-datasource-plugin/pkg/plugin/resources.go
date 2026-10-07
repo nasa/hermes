@@ -3,9 +3,8 @@ package plugin
 import (
 	"database/sql"
 	"encoding/json"
+	"io"
 	"net/http"
-
-	"github.com/lib/pq"
 )
 
 func scanStrings(rows *sql.Rows) ([]string, error) {
@@ -27,27 +26,13 @@ func scanStrings(rows *sql.Rows) ([]string, error) {
 	return items, nil
 }
 
-func (d *Datasource) handleGetTelemetryComponents(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT component FROM telemetryDefs ORDER BY component;")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	items, err := scanStrings(rows)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	writeJSONResponse(w, items)
-}
-
 type channelEntry struct {
 	Component string `json:"component"`
 	Name      string `json:"name"`
 }
 
 func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT component, name FROM telemetryDefs ORDER BY component, name;")
+	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT space_system, name FROM parameters ORDER BY space_system, name;")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -71,7 +56,7 @@ func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.R
 }
 
 func (d *Datasource) handleGetTelemetrySources(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT source FROM telemetry ORDER BY source;")
+	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT instance FROM parameters ORDER BY instance;")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -91,22 +76,38 @@ type keyEntry struct {
 }
 
 func (d *Datasource) handleGetTelemetryKeys(w http.ResponseWriter, r *http.Request) {
-	components := r.URL.Query()["components"]
-	channels := r.URL.Query()["channels"]
-	if len(components) == 0 || len(channels) == 0 {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	var selected []channelEntry
+	if err := json.Unmarshal(body, &selected); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if len(selected) == 0 {
 		writeJSONResponse(w, []keyEntry{})
 		return
 	}
 
+	// We list each parameter's members in its own subquery so parameter_id has
+	// a single value inside it. TimescaleDB's SkipScan can then jump from one
+	// member_path to the next in the (parameter_id, member_path, generation_time)
+	// index instead of reading every stored value. The outer DISTINCT drops
+	// repeats when a parameter exists in several instances.
 	query := `
-		SELECT DISTINCT d.component, d.name, t.key 
-		FROM telemetry t
-		JOIN telemetryDefs d ON t.telemetryDefId = d.id
-		WHERE d.component = ANY($1) AND d.name = ANY($2) AND t.key IS NOT NULL
-		ORDER BY d.component, d.name, t.key
-		LIMIT 200;`
+		SELECT DISTINCT p.space_system, p.name, m.member_path
+		FROM json_to_recordset($1::json) AS sel(component text, name text)
+		JOIN parameters p ON p.space_system = sel.component AND p.name = sel.name
+		CROSS JOIN LATERAL (
+			SELECT DISTINCT v.member_path
+			FROM parameter_values v
+			WHERE v.parameter_id = p.id
+		) m
+		ORDER BY p.space_system, p.name, m.member_path;`
 
-	rows, err := d.db.QueryContext(r.Context(), query, pq.Array(components), pq.Array(channels))
+	rows, err := d.db.QueryContext(r.Context(), query, string(body))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

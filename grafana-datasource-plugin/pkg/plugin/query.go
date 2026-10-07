@@ -37,27 +37,11 @@ func (d *Datasource) QueryData(ctx context.Context, req *backend.QueryDataReques
 	return response, nil
 }
 
-type channelRef struct {
-	Component string `json:"component"`
-	Name      string `json:"name"`
-}
-
-type keyRef struct {
-	Component string `json:"component"`
-	Channel   string `json:"channel"`
-	Key       string `json:"key"`
-}
-
 type queryModel struct {
-	QueryType        string       `json:"queryType"`
-	Channels         []channelRef `json:"channels"`
-	Sources          []string     `json:"sources"`
-	Keys             []keyRef     `json:"keys,omitempty"`
-	TimeField        string       `json:"timeField"`
-	TimeOverrideFrom string       `json:"timeOverrideFrom,omitempty"`
-	TimeOverrideTo   string       `json:"timeOverrideTo,omitempty"`
-	Aggregation      string       `json:"aggregation"`
-	RawSql           *string      `json:"rawSql,omitempty"`
+	QueryType   string  `json:"queryType"`
+	TimeField   string  `json:"timeField"`
+	Aggregation string  `json:"aggregation"`
+	RawSql      *string `json:"rawSql,omitempty"`
 }
 
 func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, query backend.DataQuery) backend.DataResponse {
@@ -69,8 +53,8 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	}
 
 	switch qm.TimeField {
-	case "time":
-	case "ert":
+	case "generation_time":
+	case "acquisition_time":
 	default:
 		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid time type: %s", qm.TimeField))
 	}
@@ -169,14 +153,21 @@ func validateAggregation(aggregation string, dbValueType string) error {
 	var invalid bool
 	switch aggregation {
 	case "avg", "sum":
-		invalid = dbValueType == "string" || dbValueType == "enum" || dbValueType == "bytes"
+		invalid = dbValueType == "STRING" || dbValueType == "ENUMERATED" || dbValueType == "BINARY" || dbValueType == "TIMESTAMP"
 	case "min", "max":
-		invalid = dbValueType == "bytes"
+		invalid = dbValueType == "BINARY"
 	}
 	if invalid {
 		return fmt.Errorf("aggregation %q cannot be applied to %q values; use first, last, count, or raw", aggregation, dbValueType)
 	}
 	return nil
+}
+
+// isNumericAggregate reports whether an aggregation's result is a number even
+// when the parameter's values are not: a count of any type, or the average or
+// sum of a boolean, which are the fraction and number of true samples.
+func isNumericAggregate(aggregation, dbValueType string) bool {
+	return aggregation == "count" || (dbValueType == "BOOLEAN" && (aggregation == "avg" || aggregation == "sum"))
 }
 
 func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
@@ -197,7 +188,7 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			return backend.ErrDataResponse(backend.StatusBadRequest, err.Error())
 		}
 
-		frameId := fmt.Sprintf("%s.%s.%s/%s(%s)", component, channel, key, qm.TimeField, source)
+		frameId := fmt.Sprintf("%s/%s%s/%s(%s)", component, channel, key, qm.TimeField, source)
 		frame, exists := frames[frameId]
 
 		// Create new frame
@@ -205,11 +196,15 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			frame = data.NewFrame(frameId)
 			frame.Fields = append(frame.Fields, data.NewField(qm.TimeField, nil, []time.Time{}))
 
+			valueType := dbValueType
+			if isNumericAggregate(qm.Aggregation, dbValueType) {
+				valueType = "DOUBLE"
+			}
 			var valueField *data.Field
-			switch dbValueType {
-			case "int", "uint", "float":
+			switch valueType {
+			case "UINT32", "SINT32", "UINT64", "SINT64", "FLOAT", "DOUBLE":
 				valueField = data.NewField("value", nil, []*float64{})
-			case "bool":
+			case "BOOLEAN":
 				valueField = data.NewField("value", nil, []*bool{})
 			default:
 				valueField = data.NewField("value", nil, []*string{})
@@ -236,27 +231,44 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			}
 		}
 
+		if isNumericAggregate(qm.Aggregation, dbValueType) {
+			// query.ts puts a boolean's average or sum in val_bool, and every
+			// count in val_float whatever the value type.
+			n := vBool
+			if qm.Aggregation == "count" {
+				n = vFloat
+			}
+			var valPtr *float64
+			if n.Valid {
+				valPtr = &n.Float64
+			}
+			appendRow(valPtr)
+			continue
+		}
+
+		// ENUMERATED and TIMESTAMP take the default case, showing the enum label or
+		// the UTC text the recorder stores.
 		switch dbValueType {
-		case "int", "uint":
+		case "UINT32", "SINT32", "UINT64", "SINT64":
 			var valPtr *float64
 			if vInt.Valid {
 				valPtr = &vInt.Float64
 			}
 			appendRow(valPtr)
-		case "float":
+		case "FLOAT", "DOUBLE":
 			var valPtr *float64
 			if vFloat.Valid {
 				valPtr = &vFloat.Float64
 			}
 			appendRow(valPtr)
-		case "bool":
+		case "BOOLEAN":
 			var valPtr *bool
 			if vBool.Valid {
 				b := vBool.Float64 > 0
 				valPtr = &b
 			}
 			appendRow(valPtr)
-		case "bytes":
+		case "BINARY":
 			var valPtr *string
 			if vBytes != nil {
 				s := hex.EncodeToString(vBytes)
@@ -280,21 +292,16 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 		computeDerivatives(&frames)
 	}
 
-	// Compute minimal display names across all frames
-	keySet := make(map[string]struct{})
+	// Name the instance only when the result spans more than one.
 	sourceSet := make(map[string]struct{})
 	for _, frame := range frames {
 		for _, field := range frame.Fields {
 			if field.Labels == nil {
 				continue
 			}
-			if field.Labels["key"] != "value" {
-				keySet[field.Labels["key"]] = struct{}{}
-			}
 			sourceSet[field.Labels["source"]] = struct{}{}
 		}
 	}
-	multiKey := len(keySet) > 1
 	multiSource := len(sourceSet) > 1
 
 	// Return all data frames with display names
@@ -305,11 +312,8 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			if field.Labels == nil {
 				continue
 			}
-			parts := []string{field.Labels["component"], field.Labels["channel"]}
-			if multiKey && field.Labels["key"] != "value" {
-				parts = append(parts, field.Labels["key"])
-			}
-			displayName := strings.Join(parts, ".")
+			// Matches how YAMCS writes the name, for example /CDH/Attitude.x or /CDH/Temps[0].
+			displayName := field.Labels["component"] + "/" + field.Labels["channel"] + field.Labels["key"]
 			if multiSource {
 				displayName += " (" + field.Labels["source"] + ")"
 			}

@@ -22,7 +22,7 @@ export function resolveChannels(
             return { component: replace(ch.component), name: replace(ch.name) };
         }
         const expanded = replace(ch.raw);
-        const match = known.find((k) => `${k.component}.${k.name}` === expanded);
+        const match = known.find((k) => `${k.component}/${k.name}` === expanded);
         if (match) {
             return { component: match.component, name: match.name };
         }
@@ -150,7 +150,10 @@ function applicableTransforms(q: ResolvedQuery): Array<{ t: TransformRef; expr: 
         .filter(({ expr }) => validateExpression(expr) === undefined)
         .filter(({ t }) => matchesSelectedChannel(t));
 
-    return [...usable.filter(({ t }) => !!t.targetKey), ...usable.filter(({ t }) => !t.targetKey)];
+    return [
+        ...usable.filter(({ t }) => t.targetKey !== undefined),
+        ...usable.filter(({ t }) => t.targetKey === undefined),
+    ];
 }
 
 export function buildTransformCase(q: ResolvedQuery, column: string): string {
@@ -159,9 +162,10 @@ export function buildTransformCase(q: ResolvedQuery, column: string): string {
         return column;
     }
     const branches = entries.map(({ t, expr }) => {
-        const conditions = [`d.component = ${esc(t.component)}`, `d.name = ${esc(t.channel)}`];
-        if (t.targetKey) {
-            conditions.push(`t.key = ${esc(t.targetKey)}`);
+        const conditions = [`p.space_system = ${esc(t.component)}`, `p.name = ${esc(t.channel)}`];
+        // A scalar's member path is '', so only undefined means the whole parameter.
+        if (t.targetKey !== undefined) {
+            conditions.push(`v.member_path = ${esc(t.targetKey)}`);
         }
         return `WHEN ${conditions.join(' AND ')} THEN ${bindValueToken(expr, column)}`;
     });
@@ -245,37 +249,37 @@ ORDER BY e.%s ASC;`,
 
 export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string): string {
     if (!q.channels || q.channels.length === 0) {
-        throw new Error("No telemetry channels specified for query");
+        throw new Error("No parameters specified for query");
     }
 
-    // Build a per-channel predicate so that keys selected on one channel do not
-    // filter out rows from other channels (e.g. scalar channels whose only key
-    // is "value"). Each channel matches all of its keys unless specific keys are
-    // selected for that channel.
+    // Each channel gets its own clause so members picked for one channel don't
+    // filter out another channel's rows. A channel with none picked matches all
+    // of its members.
     const channelClauses = q.channels.map((ch) => {
         const chKeys = q.keys.filter(
             (k) => k.component === ch.component && k.channel === ch.name
         );
         if (chKeys.length) {
-            return `(d.component = ${esc(ch.component)} AND d.name = ${esc(ch.name)} AND t.key LIKE ANY(${escArr(chKeys.map(k => k.key + "%"))}))`;
+            return `(p.space_system = ${esc(ch.component)} AND p.name = ${esc(ch.name)} AND v.member_path = ANY(${escArr(chKeys.map(k => k.key))}))`;
         }
-        return `(d.component = ${esc(ch.component)} AND d.name = ${esc(ch.name)})`;
+        return `(p.space_system = ${esc(ch.component)} AND p.name = ${esc(ch.name)})`;
     });
     const channelPredicate = channelClauses.join("\n\t\t       OR ");
 
     let intervalExpr;
-    if (q.aggregation !== "raw" && q.aggregation !== "deriv") {
-        intervalExpr = `time_bucket($__interval, t.${q.timeField})`;
+    if (q.aggregation !== "raw" && q.aggregation !== "deriv" && q.aggregation !== "latest") {
+        intervalExpr = `time_bucket($__interval, v.${q.timeField})`;
     } else {
-        intervalExpr = `t.${q.timeField}`;
+        intervalExpr = `v.${q.timeField}`;
     }
 
-    // Apply transforms to numeric columns ONLY
-    const intCol = buildTransformCase(q, "t.integral::double precision");
-    const floatCol = buildTransformCase(q, "t.floating::double precision");
-    const boolCol = "t.boolval::int::double precision";
-    const strCol = "t.string";
-    const bytesCol = "t.bytes";
+    // Apply transforms to numeric columns ONLY. The recorder stores UINT64 as
+    // its raw 64 bits, so we add 2^64 back when int_value comes out negative.
+    const intCol = buildTransformCase(q, "(CASE WHEN v.value_type = 'UINT64' AND v.int_value < 0 THEN v.int_value + 18446744073709551616 ELSE v.int_value END)::double precision");
+    const floatCol = buildTransformCase(q, "v.float_value");
+    const boolCol = "v.bool_value::int::double precision";
+    const strCol = "v.string_value";
+    const bytesCol = "v.binary_value";
 
     // wrap builds the aggregation expression for a column. numFn is applied to
     // numeric columns and strFn to the string column (defaults to numFn).
@@ -286,9 +290,9 @@ export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string):
     const nullify = () => "NULL";
     const plain = (col: string) => col;
     const call = (fn: string) => (col: string) => `${fn}(${col})`;
-    const ordered = (fn: string) => (col: string) => `${fn}(${col}, t.${q.timeField})`;
+    const ordered = (fn: string) => (col: string) => `${fn}(${col}, v.${q.timeField})`;
 
-    let groupByExpr = `GROUP BY time_bucket, d.component, d.name, t.source, t.valueType, t.key`;
+    let groupByExpr = `GROUP BY time_bucket, p.space_system, p.name, p.instance, v.value_type, v.member_path`;
     let aggInt: string, aggFloat: string, aggBool: string, aggStr: string, aggBytes: string;
     switch (q.aggregation) {
         case "raw":
@@ -306,7 +310,8 @@ export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string):
             [aggInt, aggFloat, aggBool, aggStr, aggBytes] = wrap(call(q.aggregation.toUpperCase()), call(q.aggregation.toUpperCase()), nullify);
             break;
         case "count":
-            [aggInt, aggFloat, aggBool, aggStr, aggBytes] = wrap(call("COUNT"), (col) => `COUNT(${col})::text`);
+            // Every value type's count goes in the float column, so query.go can show it as a number
+            [aggInt, aggFloat, aggBool, aggStr, aggBytes] = ["NULL", "COUNT(*)::double precision", "NULL", "NULL", "NULL"];
             break;
         case "first":
         case "last":
@@ -319,21 +324,21 @@ export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string):
     const telemetrySql = format(
         `SELECT
 	%s AS time_bucket,
-	d.component,
-	d.name,
-	t.source,
-	t.valueType,
-	t.key,
+	p.space_system,
+	p.name,
+	p.instance,
+	v.value_type,
+	v.member_path,
 	%s AS val_int,
 	%s AS val_float,
 	%s AS val_bool,
 	%s AS val_str,
 	%s AS val_bytes
-FROM telemetryDefs d
-JOIN telemetry t ON t.telemetryDefId = d.id
+FROM parameters p
+JOIN parameter_values v ON v.parameter_id = p.id
 WHERE (%s)
-  AND (%s::text[] = '{}' OR t.source = ANY(%s))
-  AND t.%s >= %s AND t.%s <= %s
+  AND (%s::text[] = '{}' OR p.instance = ANY(%s))
+  AND v.%s >= %s AND v.%s <= %s
 %s
 ORDER BY time_bucket ASC;`,
         intervalExpr, aggInt, aggFloat, aggBool, aggStr, aggBytes,
@@ -352,10 +357,12 @@ export function esc(v: string): string {
     return `'${v.replace(/'/g, "''")}'`;
 }
 
+// Inside a Postgres array literal, " and \ need a backslash. esc then handles '.
 export function escArr(arr: string[]): string {
-    return `'{${arr.map(v => `"${v}"`).join(",")}}'`;
+    return esc(`{${arr.map(v => `"${v.replace(/[\\"]/g, "\\$&")}"`).join(",")}}`);
 }
 
+// Keeps the trailing Z, so Postgres reads the bound as UTC rather than in the session's time zone
 export function escDate(d: string): string {
-    return `'${d.replace("T", " ").replace("Z", "")}'`;
+    return esc(d.replace("T", " "));
 }

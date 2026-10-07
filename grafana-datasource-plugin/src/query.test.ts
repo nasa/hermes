@@ -3,6 +3,8 @@ import {
   bindValueToken,
   buildTelemetryQuery,
   buildTransformCase,
+  escArr,
+  escDate,
   namePreview,
   normalizeTransform,
   resolveChannels,
@@ -21,7 +23,7 @@ function baseQuery(overrides: Partial<ResolvedQuery>): ResolvedQuery {
     channels: [],
     sources: [],
     keys: [],
-    timeField: 'ert',
+    timeField: 'generation_time',
     aggregation: 'avg',
     ...overrides,
   } as ResolvedQuery;
@@ -29,6 +31,8 @@ function baseQuery(overrides: Partial<ResolvedQuery>): ResolvedQuery {
 
 const FROM = '2024-01-01T00:00:00.000Z';
 const TO = '2024-01-01T01:00:00.000Z';
+const INT_COL =
+  "(CASE WHEN v.value_type = 'UINT64' AND v.int_value < 0 THEN v.int_value + 18446744073709551616 ELSE v.int_value END)::double precision";
 
 describe('buildTelemetryQuery — per-channel key scoping', () => {
   it('does not filter a scalar channel when a compound channel has keys selected', () => {
@@ -37,33 +41,33 @@ describe('buildTelemetryQuery — per-channel key scoping', () => {
         { component: 'CDH', name: 'Attitude' },
         { component: 'CDH', name: 'Temperature' },
       ],
-      keys: [{ component: 'CDH', channel: 'Attitude', key: 'value.x' }],
+      keys: [{ component: 'CDH', channel: 'Attitude', key: '.x' }],
     });
 
     const sql = buildTelemetryQuery(q, FROM, TO);
 
     // Compound channel is scoped to its selected key.
     expect(sql).toContain(
-      "(d.component = 'CDH' AND d.name = 'Attitude' AND t.key LIKE ANY('{\"value.x%\"}'))"
+      "(p.space_system = 'CDH' AND p.name = 'Attitude' AND v.member_path = ANY('{\".x\"}'))"
     );
     // Scalar channel has NO key restriction, so it is not filtered out.
-    expect(sql).toContain("(d.component = 'CDH' AND d.name = 'Temperature')");
-    // There is no global key filter anymore.
-    expect(sql).not.toMatch(/t\.key LIKE ANY\(\$\d+\)\)\s*\n\s*ORDER/);
+    expect(sql).toContain("(p.space_system = 'CDH' AND p.name = 'Temperature')");
+    // The member filter appears only in Attitude's clause, not across the whole query.
+    expect(sql.match(/v\.member_path = ANY\(/g)).toHaveLength(1);
   });
 
   it('restricts a compound channel to only its selected subkeys', () => {
     const q = baseQuery({
       channels: [{ component: 'CDH', name: 'Attitude' }],
-      keys: [{ component: 'CDH', channel: 'Attitude', key: 'value.x' }],
+      keys: [{ component: 'CDH', channel: 'Attitude', key: '.x' }],
     });
 
     const sql = buildTelemetryQuery(q, FROM, TO);
 
     expect(sql).toContain(
-      "(d.component = 'CDH' AND d.name = 'Attitude' AND t.key LIKE ANY('{\"value.x%\"}'))"
+      "(p.space_system = 'CDH' AND p.name = 'Attitude' AND v.member_path = ANY('{\".x\"}'))"
     );
-    expect(sql).not.toContain('value.y');
+    expect(sql).not.toContain('.y');
   });
 
   it('matches all keys for a compound channel when none are selected', () => {
@@ -74,8 +78,19 @@ describe('buildTelemetryQuery — per-channel key scoping', () => {
 
     const sql = buildTelemetryQuery(q, FROM, TO);
 
-    expect(sql).toContain("(d.component = 'CDH' AND d.name = 'Attitude')");
-    expect(sql).not.toContain('t.key LIKE ANY');
+    expect(sql).toContain("(p.space_system = 'CDH' AND p.name = 'Attitude')");
+    expect(sql).not.toContain('v.member_path = ANY');
+  });
+
+  it('matches the whole value of a scalar by its empty member path', () => {
+    const q = baseQuery({
+      channels: [{ component: 'CDH', name: 'Temperature' }],
+      keys: [{ component: 'CDH', channel: 'Temperature', key: '' }],
+    });
+
+    const sql = buildTelemetryQuery(q, FROM, TO);
+
+    expect(sql).toContain(`(p.space_system = 'CDH' AND p.name = 'Temperature' AND v.member_path = ANY('{""}'))`);
   });
 
   it('joins multiple channels with OR', () => {
@@ -89,8 +104,8 @@ describe('buildTelemetryQuery — per-channel key scoping', () => {
 
     const sql = buildTelemetryQuery(q, FROM, TO);
 
-    expect(sql).toContain("(d.component = 'CDH' AND d.name = 'Attitude')");
-    expect(sql).toContain("(d.component = 'Sensors' AND d.name = 'IMU')");
+    expect(sql).toContain("(p.space_system = 'CDH' AND p.name = 'Attitude')");
+    expect(sql).toContain("(p.space_system = 'Sensors' AND p.name = 'IMU')");
     expect(sql).toMatch(/OR/);
   });
 
@@ -103,23 +118,23 @@ describe('buildTelemetryQuery — per-channel key scoping', () => {
         { component: 'C4', name: 'N4' },
       ],
       keys: [
-        { component: 'C1', channel: 'N1', key: 'value.a' },
-        { component: 'C2', channel: 'N2', key: 'value.b' },
-        { component: 'C3', channel: 'N3', key: 'value.c' },
-        { component: 'C4', channel: 'N4', key: 'value.d' },
+        { component: 'C1', channel: 'N1', key: '.a' },
+        { component: 'C2', channel: 'N2', key: '.b' },
+        { component: 'C3', channel: 'N3', key: '.c' },
+        { component: 'C4', channel: 'N4', key: '.d' },
       ],
       sources: ['fsw-1'],
     });
 
     const sql = buildTelemetryQuery(q, FROM, TO);
 
-    // All channel components, names, and keys are inlined.
-    expect(sql).toContain("d.component = 'C4'");
-    expect(sql).toContain("d.name = 'N4'");
-    expect(sql).toContain('value.d');
-    // Source and time bounds are inlined.
-    expect(sql).toContain("t.source = ANY('{\"fsw-1\"}')");
-    expect(sql).toContain("2024-01-01 00:00:00.000");
+    // All channel space systems, names, and members are inlined.
+    expect(sql).toContain("p.space_system = 'C4'");
+    expect(sql).toContain("p.name = 'N4'");
+    expect(sql).toContain("'{\".d\"}'");
+    // Instance and time bounds are inlined.
+    expect(sql).toContain("p.instance = ANY('{\"fsw-1\"}')");
+    expect(sql).toContain("'2024-01-01 00:00:00.000Z'");
   });
 
   it('throws when no channels are provided', () => {
@@ -127,8 +142,18 @@ describe('buildTelemetryQuery — per-channel key scoping', () => {
   });
 });
 
+describe('escArr and escDate', () => {
+  it('escapes quotes and backslashes in array values', () => {
+    expect(escArr(['a"b', "c'd", 'e\\f'])).toBe(`'{"a\\"b","c''d","e\\\\f"}'`);
+  });
+
+  it('keeps the UTC zone on time bounds', () => {
+    expect(escDate('2024-01-01T00:00:00.000Z')).toBe("'2024-01-01 00:00:00.000Z'");
+  });
+});
+
 describe('buildTelemetryQuery — aggregations', () => {
-  const aggQuery = (aggregation: string, timeField = 'ert') =>
+  const aggQuery = (aggregation: string, timeField = 'generation_time') =>
     baseQuery({
       channels: [{ component: 'CDH', name: 'Temperature' }],
       aggregation: aggregation as MyQuery['aggregation'],
@@ -142,10 +167,10 @@ describe('buildTelemetryQuery — aggregations', () => {
     ['sum', 'SUM'],
   ])('wraps numeric columns with %s -> %s()', (agg, fn) => {
     const sql = buildTelemetryQuery(aggQuery(agg), FROM, TO);
-    expect(sql).toContain(`${fn}(t.integral::double precision) AS val_int`);
-    expect(sql).toContain(`${fn}(t.floating::double precision) AS val_float`);
-    expect(sql).toContain(`${fn}(t.boolval::int::double precision) AS val_bool`);
-    expect(sql).toContain('time_bucket($__interval, t.ert)');
+    expect(sql).toContain(`${fn}(${INT_COL}) AS val_int`);
+    expect(sql).toContain(`${fn}(v.float_value) AS val_float`);
+    expect(sql).toContain(`${fn}(v.bool_value::int::double precision) AS val_bool`);
+    expect(sql).toContain('time_bucket($__interval, v.generation_time)');
     expect(sql).toContain('GROUP BY time_bucket');
   });
 
@@ -163,46 +188,49 @@ describe('buildTelemetryQuery — aggregations', () => {
     ['max'],
   ])('applies %s to the string column and nulls bytes', (agg) => {
     const sql = buildTelemetryQuery(aggQuery(agg), FROM, TO);
-    expect(sql).toContain(`${agg.toUpperCase()}(t.string) AS val_str`);
+    expect(sql).toContain(`${agg.toUpperCase()}(v.string_value) AS val_str`);
     expect(sql).toContain('NULL AS val_bytes');
   });
 
-  it('casts count on the string column to text', () => {
+  it('puts count in the float column for every value type', () => {
     const sql = buildTelemetryQuery(aggQuery('count'), FROM, TO);
-    expect(sql).toContain('COUNT(t.integral::double precision) AS val_int');
-    expect(sql).toContain('COUNT(t.string)::text AS val_str');
-    expect(sql).toContain('COUNT(t.bytes)::text AS val_bytes');
+    expect(sql).toContain('NULL AS val_int');
+    expect(sql).toContain('COUNT(*)::double precision AS val_float');
+    expect(sql).toContain('NULL AS val_bool');
+    expect(sql).toContain('NULL AS val_str');
+    expect(sql).toContain('NULL AS val_bytes');
   });
 
   it.each([
     ['first'],
     ['last'],
   ])('uses two-argument %s(value, time) TimescaleDB syntax', (agg) => {
-    const sql = buildTelemetryQuery(aggQuery(agg, 'ert'), FROM, TO);
-    expect(sql).toContain(`${agg}(t.integral::double precision, t.ert) AS val_int`);
-    expect(sql).toContain(`${agg}(t.floating::double precision, t.ert) AS val_float`);
-    expect(sql).toContain(`${agg}(t.boolval::int::double precision, t.ert) AS val_bool`);
-    expect(sql).toContain(`${agg}(t.string, t.ert) AS val_str`);
-    expect(sql).toContain(`${agg}(t.bytes, t.ert) AS val_bytes`);
+    const sql = buildTelemetryQuery(aggQuery(agg, 'generation_time'), FROM, TO);
+    expect(sql).toContain(`${agg}(${INT_COL}, v.generation_time) AS val_int`);
+    expect(sql).toContain(`${agg}(v.float_value, v.generation_time) AS val_float`);
+    expect(sql).toContain(`${agg}(v.bool_value::int::double precision, v.generation_time) AS val_bool`);
+    expect(sql).toContain(`${agg}(v.string_value, v.generation_time) AS val_str`);
+    expect(sql).toContain(`${agg}(v.binary_value, v.generation_time) AS val_bytes`);
     expect(sql).toContain('GROUP BY time_bucket');
   });
 
   it('threads the selected timeField into first/last', () => {
-    const sql = buildTelemetryQuery(aggQuery('last', 'time'), FROM, TO);
-    expect(sql).toContain('last(t.integral::double precision, t.time) AS val_int');
+    const sql = buildTelemetryQuery(aggQuery('last', 'acquisition_time'), FROM, TO);
+    expect(sql).toContain(`last(${INT_COL}, v.acquisition_time) AS val_int`);
   });
 
   it.each([
     ['raw'],
     ['deriv'],
+    ['latest'],
   ])('does not aggregate or group for %s', (agg) => {
     const sql = buildTelemetryQuery(aggQuery(agg), FROM, TO);
-    expect(sql).toContain('t.integral::double precision AS val_int');
-    expect(sql).toContain('t.string AS val_str');
-    expect(sql).toContain('t.bytes AS val_bytes');
+    expect(sql).toContain(`${INT_COL} AS val_int`);
+    expect(sql).toContain('v.string_value AS val_str');
+    expect(sql).toContain('v.binary_value AS val_bytes');
     expect(sql).not.toContain('GROUP BY');
     expect(sql).not.toContain('time_bucket($__interval');
-    expect(sql).toContain('t.ert AS time_bucket');
+    expect(sql).toContain('v.generation_time AS time_bucket');
   });
 
   it('throws on an unknown aggregation', () => {
@@ -214,51 +242,50 @@ describe('buildTelemetryQuery — aggregations', () => {
 
 describe('resolveChannels', () => {
   const known: ChannelRef[] = [
-    { component: 'CDH', name: 'Temperature' },
-    { component: 'CDH', name: 'Attitude' },
-    // A component whose name legitimately contains a dot — positional
-    // splitting would get this wrong; channel-list matching gets it right.
-    { component: 'A.B', name: 'C.D' },
+    { component: '/CDH', name: 'Temperature' },
+    { component: '/CDH', name: 'Attitude' },
+    // A parameter in a nested space system, so its full name /A/B/C has three slashes.
+    { component: '/A/B', name: 'C' },
   ];
 
   const vars: Record<string, string> = {
-    $component: 'CDH',
+    $component: '/CDH',
     $channel: 'Temperature',
-    $full: 'CDH.Temperature',
-    $dotted: 'A.B.C.D',
+    $full: '/CDH/Temperature',
+    $nested: '/A/B/C',
   };
 
   const replace = (value: string) =>
     value.replace(/\$\w+/g, (m) => (m in vars ? vars[m] : m));
 
   it('passes through concrete channels unchanged', () => {
-    expect(resolveChannels([{ component: 'CDH', name: 'Attitude' }], replace, known)).toEqual([
-      { component: 'CDH', name: 'Attitude' },
+    expect(resolveChannels([{ component: '/CDH', name: 'Attitude' }], replace, known)).toEqual([
+      { component: '/CDH', name: 'Attitude' },
     ]);
   });
 
   it('resolves a single variable that expands to a full channel', () => {
     expect(resolveChannels([{ raw: '$full' }], replace, known)).toEqual([
-      { component: 'CDH', name: 'Temperature' },
+      { component: '/CDH', name: 'Temperature' },
     ]);
   });
 
-  it('resolves a $component.$channel combination', () => {
+  it('resolves a $component/$channel combination', () => {
     expect(
-      resolveChannels([{ raw: '$component.$channel' }], replace, known)
-    ).toEqual([{ component: 'CDH', name: 'Temperature' }]);
+      resolveChannels([{ raw: '$component/$channel' }], replace, known)
+    ).toEqual([{ component: '/CDH', name: 'Temperature' }]);
   });
 
-  it('splits at the boundary defined by the channel list, not by dots', () => {
-    // $dotted expands to "A.B.C.D"; the correct split is component "A.B" / name "C.D".
-    expect(resolveChannels([{ raw: '$dotted' }], replace, known)).toEqual([
-      { component: 'A.B', name: 'C.D' },
+  it('splits at the boundary defined by the channel list, not by slashes', () => {
+    // $nested expands to "/A/B/C"; the correct split is space system "/A/B" / name "C".
+    expect(resolveChannels([{ raw: '$nested' }], replace, known)).toEqual([
+      { component: '/A/B', name: 'C' },
     ]);
   });
 
   it('keeps an unmatched raw channel as a well-formed (empty-result) ref', () => {
-    expect(resolveChannels([{ raw: '$component.Missing' }], replace, known)).toEqual([
-      { component: 'CDH.Missing', name: '' },
+    expect(resolveChannels([{ raw: '$component/Missing' }], replace, known)).toEqual([
+      { component: '/CDH/Missing', name: '' },
     ]);
   });
 });
@@ -376,11 +403,11 @@ describe('transformPreview', () => {
 
 describe('bindValueToken', () => {
   it('parenthesizes the column so precedence is preserved', () => {
-    expect(bindValueToken('$__value * 2', 't.floating::double precision')).toBe(
-      '(t.floating::double precision) * 2'
+    expect(bindValueToken('$__value * 2', 'v.float_value')).toBe(
+      '(v.float_value) * 2'
     );
-    expect(bindValueToken('2 * $__value', 't.floating::double precision')).toBe(
-      '2 * (t.floating::double precision)'
+    expect(bindValueToken('2 * $__value', 'v.float_value')).toBe(
+      '2 * (v.float_value)'
     );
   });
 
@@ -390,7 +417,7 @@ describe('bindValueToken', () => {
 });
 
 describe('buildTransformCase', () => {
-  const col = 't.floating::double precision';
+  const col = 'v.float_value';
 
   it('returns the bare column when there are no transforms', () => {
     expect(buildTransformCase(baseQuery({ channels: [{ component: 'CDH', name: 'Temperature' }] }), col)).toBe(col);
@@ -417,11 +444,19 @@ describe('buildTransformCase', () => {
       channels: [{ component: 'CDH', name: 'Attitude' }],
       transforms: [
         { component: 'CDH', channel: 'Attitude', expr: '10' },
-        { component: 'CDH', channel: 'Attitude', targetKey: 'value.x', expr: '0.001' },
+        { component: 'CDH', channel: 'Attitude', targetKey: '.x', expr: '0.001' },
       ],
     });
     const sql = buildTransformCase(q, col);
-    expect(sql.indexOf("t.key = 'value.x'")).toBeLessThan(sql.indexOf('THEN (t.floating::double precision) * 10'));
+    expect(sql.indexOf("v.member_path = '.x'")).toBeLessThan(sql.indexOf('THEN (v.float_value) * 10'));
+  });
+
+  it('limits a transform on the empty member path to that member', () => {
+    const q = baseQuery({
+      channels: [{ component: 'CDH', name: 'Attitude' }],
+      transforms: [{ component: 'CDH', channel: 'Attitude', targetKey: '', expr: '2' }],
+    });
+    expect(buildTransformCase(q, col)).toContain("p.name = 'Attitude' AND v.member_path = '' THEN");
   });
 
   it('falls back to the bare column in the ELSE branch', () => {
@@ -430,7 +465,7 @@ describe('buildTransformCase', () => {
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2' }],
     });
     expect(buildTransformCase(q, col)).toBe(
-      `CASE WHEN d.component = 'CDH' AND d.name = 'Temperature' THEN (${col}) * 2 ELSE ${col} END`
+      `CASE WHEN p.space_system = 'CDH' AND p.name = 'Temperature' THEN (${col}) * 2 ELSE ${col} END`
     );
   });
 
@@ -439,8 +474,8 @@ describe('buildTransformCase', () => {
       channels: [{ component: "O'Brien", name: 'Temp' }],
       transforms: [{ component: "O'Brien", channel: 'Temp', targetKey: "a'b", expr: '2' }],
     });
-    expect(buildTransformCase(q, col)).toContain("d.component = 'O''Brien'");
-    expect(buildTransformCase(q, col)).toContain("t.key = 'a''b'");
+    expect(buildTransformCase(q, col)).toContain("p.space_system = 'O''Brien'");
+    expect(buildTransformCase(q, col)).toContain("v.member_path = 'a''b'");
   });
 });
 
@@ -453,31 +488,32 @@ describe('buildTelemetryQuery — value transforms', () => {
 
   it('leaves numeric columns untouched when no transform is set', () => {
     const sql = buildTelemetryQuery(baseQuery({ channels: [{ component: 'CDH', name: 'Temperature' }] }), FROM, TO);
-    expect(sql).toContain('AVG(t.integral::double precision) AS val_int');
-    expect(sql).toContain('AVG(t.floating::double precision) AS val_float');
-    expect(sql).not.toContain('CASE');
+    expect(sql).toContain(`AVG(${INT_COL}) AS val_int`);
+    expect(sql).toContain('AVG(v.float_value) AS val_float');
+    // The int column always has the UINT64 CASE, so only check that no transform CASE was added.
+    expect(sql).not.toContain('CASE WHEN p.');
   });
 
   it('binds the token to the matching column for each numeric output', () => {
     const sql = buildTelemetryQuery(withTransform('2'), FROM, TO);
-    expect(sql).toContain('THEN (t.integral::double precision) * 2 ELSE t.integral::double precision END) AS val_int');
-    expect(sql).toContain('THEN (t.floating::double precision) * 2 ELSE t.floating::double precision END) AS val_float');
+    expect(sql).toContain(`THEN (${INT_COL}) * 2 ELSE ${INT_COL} END) AS val_int`);
+    expect(sql).toContain('THEN (v.float_value) * 2 ELSE v.float_value END) AS val_float');
   });
 
   it('nests the transform inside the aggregate', () => {
     const sql = buildTelemetryQuery(withTransform('$__value - 273.15'), FROM, TO);
     expect(sql).toContain('AVG(CASE WHEN');
-    expect(sql).toContain('THEN (t.floating::double precision) - 273.15');
+    expect(sql).toContain('THEN (v.float_value) - 273.15');
   });
 
   it('scopes a key-specific transform with an exact key match', () => {
-    const sql = buildTelemetryQuery(withTransform('0.001', 'value.x'), FROM, TO);
-    expect(sql).toContain("d.component = 'CDH' AND d.name = 'Temperature' AND t.key = 'value.x'");
+    const sql = buildTelemetryQuery(withTransform('0.001', '.x'), FROM, TO);
+    expect(sql).toContain("p.space_system = 'CDH' AND p.name = 'Temperature' AND v.member_path = '.x'");
   });
 
   it('never transforms the bool, string, or bytes columns', () => {
     const sql = buildTelemetryQuery(withTransform('2'), FROM, TO);
-    expect(sql).toContain('AVG(t.boolval::int::double precision) AS val_bool');
+    expect(sql).toContain('AVG(v.bool_value::int::double precision) AS val_bool');
     expect(sql).toContain('NULL AS val_str');
     expect(sql).toContain('NULL AS val_bytes');
   });
@@ -506,8 +542,8 @@ describe('buildTelemetryQuery — value transforms', () => {
       ],
     });
     const sql = buildTelemetryQuery(q, FROM, TO);
-    expect(sql).toContain("WHEN d.component = 'CDH' AND d.name = 'Temperature' THEN (t.floating::double precision) - 273.15");
-    expect(sql).toContain("WHEN d.component = 'Sensors' AND d.name = 'Voltage' THEN (t.floating::double precision) * 0.001");
+    expect(sql).toContain("WHEN p.space_system = 'CDH' AND p.name = 'Temperature' THEN (v.float_value) - 273.15");
+    expect(sql).toContain("WHEN p.space_system = 'Sensors' AND p.name = 'Voltage' THEN (v.float_value) * 0.001");
   });
 });
 
@@ -534,7 +570,7 @@ describe('value token vs. Grafana template expansion', () => {
 });
 
 describe('aliasForLabels', () => {
-  const labels = (key = 'value') => ({ component: 'CDH', channel: 'Temperature', key });
+  const labels = (key = '') => ({ component: 'CDH', channel: 'Temperature', key });
 
   it('returns the name for a matching whole-channel transform', () => {
     const q = baseQuery({
@@ -571,10 +607,10 @@ describe('aliasForLabels', () => {
   it('matches a key-specific override only on the matching key', () => {
     const q = baseQuery({
       channels: [{ component: 'CDH', name: 'Temperature' }],
-      transforms: [{ component: 'CDH', channel: 'Temperature', targetKey: 'value.x', expr: '', name: 'X axis' }],
+      transforms: [{ component: 'CDH', channel: 'Temperature', targetKey: '.x', expr: '', name: 'X axis' }],
     });
-    expect(aliasForLabels(q, labels('value.x'))).toBe('X axis');
-    expect(aliasForLabels(q, labels('value.y'))).toBeUndefined();
+    expect(aliasForLabels(q, labels('.x'))).toBe('X axis');
+    expect(aliasForLabels(q, labels('.y'))).toBeUndefined();
   });
 
   it('prefers a key-specific override over a channel-wide one', () => {
@@ -582,11 +618,11 @@ describe('aliasForLabels', () => {
       channels: [{ component: 'CDH', name: 'Temperature' }],
       transforms: [
         { component: 'CDH', channel: 'Temperature', expr: '', name: 'Whole channel' },
-        { component: 'CDH', channel: 'Temperature', targetKey: 'value.x', expr: '', name: 'X axis' },
+        { component: 'CDH', channel: 'Temperature', targetKey: '.x', expr: '', name: 'X axis' },
       ],
     });
-    expect(aliasForLabels(q, labels('value.x'))).toBe('X axis');
-    expect(aliasForLabels(q, labels('value.y'))).toBe('Whole channel');
+    expect(aliasForLabels(q, labels('.x'))).toBe('X axis');
+    expect(aliasForLabels(q, labels('.y'))).toBe('Whole channel');
   });
 
   it('trims surrounding whitespace from the name', () => {
@@ -639,8 +675,8 @@ describe('name-only transforms', () => {
       channels: [{ component: 'CDH', name: 'Temperature' }],
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
     });
-    expect(buildTransformCase(q, 't.floating::double precision')).toBe('t.floating::double precision');
-    expect(buildTelemetryQuery(q, FROM, TO)).not.toContain('CASE');
+    expect(buildTransformCase(q, 'v.float_value')).toBe('v.float_value');
+    expect(buildTelemetryQuery(q, FROM, TO)).not.toContain('CASE WHEN p.');
   });
 
   it('still emits SQL when both an expression and a name are set', () => {
@@ -648,6 +684,6 @@ describe('name-only transforms', () => {
       channels: [{ component: 'CDH', name: 'Temperature' }],
       transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2', name: 'Reactor Temp' }],
     });
-    expect(buildTelemetryQuery(q, FROM, TO)).toContain('THEN (t.floating::double precision) * 2');
+    expect(buildTelemetryQuery(q, FROM, TO)).toContain('THEN (v.float_value) * 2');
   });
 });

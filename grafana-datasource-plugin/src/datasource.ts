@@ -89,9 +89,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     const templateSrv = getTemplateSrv();
     const known = channels.some((c) => c.raw !== undefined) ? await this.getKnownChannels() : [];
     const expanded = resolveChannels(channels, (value) => templateSrv.replace(value), known);
-    const components = [...new Set(expanded.map((ch) => ch.component))];
-    const names = expanded.map((ch) => ch.name);
-    return this.getResource('telemetry/keys', { components, channels: names });
+    return this.postResource('telemetry/keys', expanded);
   }
 
   async getEventSources(): Promise<string[]> {

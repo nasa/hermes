@@ -36,9 +36,9 @@ const MOCK_CHANNELS: ChannelRef[] = [
 ];
 
 const MOCK_KEYS: KeyRef[] = [
-  { component: 'CDH', channel: 'Temperature', key: 'value' },
-  { component: 'CDH', channel: 'Voltage', key: 'value' },
-  { component: 'PWR', channel: 'Current', key: 'value' },
+  { component: 'CDH', channel: 'Temperature', key: '' },
+  { component: 'CDH', channel: 'Voltage', key: '' },
+  { component: 'PWR', channel: 'Current', key: '' },
 ];
 
 const MOCK_SOURCES = ['FSW-A', 'FSW-B'];
@@ -162,7 +162,7 @@ describe('TelemetryFields — multi-key channels', () => {
 
   it('does not render key selector for channels with single keys', async () => {
     const SINGLE_KEY: KeyRef[] = [
-      { component: 'CDH', channel: 'Temperature', key: 'value' },
+      { component: 'CDH', channel: 'Temperature', key: '' },
     ];
 
     const ds = mockDatasource();
@@ -209,7 +209,7 @@ describe('TelemetryFields — displays existing values', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('CDH.Temperature')).toBeInTheDocument();
+      expect(screen.getByText('CDH/Temperature')).toBeInTheDocument();
     });
   });
 
@@ -235,6 +235,28 @@ describe('TelemetryFields — displays existing values', () => {
       {
         channels: [{ component: 'CDH', name: 'Status' }],
         keys: [{ component: 'CDH', channel: 'Status', key: 'enabled' }],
+      },
+      ds
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('enabled')).toBeInTheDocument();
+    });
+  });
+
+  it('displays a saved key whose fields come back in alphabetical order', async () => {
+    const MULTI_KEY_KEYS: KeyRef[] = [
+      { component: 'CDH', channel: 'Status', key: 'enabled' },
+      { component: 'CDH', channel: 'Status', key: 'mode' },
+    ];
+
+    const ds = mockDatasource();
+    (ds.getKeys as jest.Mock).mockResolvedValue(MULTI_KEY_KEYS);
+
+    renderFields(
+      {
+        channels: [{ component: 'CDH', name: 'Status' }],
+        keys: [{ channel: 'Status', component: 'CDH', key: 'enabled' }],
       },
       ds
     );
