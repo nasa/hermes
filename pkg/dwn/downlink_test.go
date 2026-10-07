@@ -15,6 +15,7 @@ import (
 	"github.com/nasa/hermes/pkg/log"
 	"github.com/nasa/hermes/pkg/pb"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
 )
 
 func AssertFileContents(t *testing.T, path string, expectedContents []byte) {
@@ -43,6 +44,20 @@ func AssertFileContents(t *testing.T, path string, expectedContents []byte) {
 	}
 
 	assert.EqualValues(t, expectedContents, contents, "file contents don't match expected", path)
+}
+
+func ReadDownlinkMetadata(t *testing.T, path string) *pb.FileDownlink {
+	t.Helper()
+	data, err := os.ReadFile(path + ".md.pb")
+	if !assert.NoError(t, err) {
+		return nil
+	}
+
+	metadata := &pb.FileDownlink{}
+	if !assert.NoError(t, proto.Unmarshal(data, metadata)) {
+		return nil
+	}
+	return metadata
 }
 
 func ClearFromSlice(s []byte, i, j int) {
@@ -114,6 +129,13 @@ func TestCompleteSuccess(t *testing.T) {
 	assert.Equal(t, "/root/test.dat", dl.SourcePath)
 	assert.Equal(t, pb.FileDownlinkCompletionStatus_DOWNLINK_COMPLETED, dl.Status)
 	AssertFileContents(t, dl.FilePath, fullFile)
+
+	metadata := ReadDownlinkMetadata(t, dl.FilePath)
+	if metadata != nil {
+		assert.Equal(t, dl.Status, metadata.Status)
+		assert.NotNil(t, metadata.TimeEnd)
+		assert.True(t, metadata.TimeEnd.AsTime().Equal(dl.TimeEnd.AsTime()))
+	}
 }
 
 func TestMissingChunkMiddle(t *testing.T) {

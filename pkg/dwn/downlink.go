@@ -292,7 +292,9 @@ func (s *DownlinkSession) eventLoop() {
 	// Make sure to clean up the tmp file once we finish
 	defer os.Remove(stagingFileName)
 	defer func() {
-		s.msg.TimeEnd = timestamppb.New(time.Now().UTC())
+		if s.msg.TimeEnd == nil {
+			s.msg.TimeEnd = timestamppb.New(time.Now().UTC())
+		}
 		s.span.AddEvent(
 			"finished",
 			trace.WithAttributes(
@@ -498,16 +500,7 @@ func (s *DownlinkSession) eventLoop() {
 
 	s.msg.Size = offset
 
-	s.span.AddEvent("writing metadata file")
-	mdData, err := proto.Marshal(s.msg)
-	if err != nil {
-		s.logger.Error("failed to encode downlink metadata", "path", metadataFilePath, "err", err)
-	} else {
-		_, err = metadataFile.Write(mdData)
-		if err != nil {
-			s.logger.Error("failed to write downlink metadata", "path", metadataFilePath, "err", err)
-		}
-	}
+	s.writeMetadataFile(metadataFile, metadataFilePath)
 
 	s.span.AddEvent("syncing filesystem")
 	outFile.Sync()
@@ -537,6 +530,31 @@ func (s *DownlinkSession) eventLoop() {
 				s.logger.Info("successfully validated file")
 			}
 		}
+	}
+
+	s.msg.TimeEnd = timestamppb.New(time.Now().UTC())
+	s.writeMetadataFile(metadataFile, metadataFilePath)
+	metadataFile.Sync()
+}
+
+func (s *DownlinkSession) writeMetadataFile(metadataFile *os.File, metadataFilePath string) {
+	s.span.AddEvent("writing metadata file")
+	mdData, err := proto.Marshal(s.msg)
+	if err != nil {
+		s.logger.Error("failed to encode downlink metadata", "path", metadataFilePath, "err", err)
+		return
+	}
+
+	if _, err = metadataFile.Seek(0, 0); err != nil {
+		s.logger.Error("failed to seek downlink metadata", "path", metadataFilePath, "err", err)
+		return
+	}
+	if err = metadataFile.Truncate(0); err != nil {
+		s.logger.Error("failed to truncate downlink metadata", "path", metadataFilePath, "err", err)
+		return
+	}
+	if _, err = metadataFile.Write(mdData); err != nil {
+		s.logger.Error("failed to write downlink metadata", "path", metadataFilePath, "err", err)
 	}
 }
 
