@@ -27,7 +27,7 @@ func scanStrings(rows *sql.Rows) ([]string, error) {
 }
 
 type channelEntry struct {
-	Component string `json:"component"`
+	Component string `json:"spaceSystem"`
 	Name      string `json:"name"`
 }
 
@@ -70,9 +70,9 @@ func (d *Datasource) handleGetTelemetrySources(w http.ResponseWriter, r *http.Re
 }
 
 type keyEntry struct {
-	Component string `json:"component"`
-	Channel   string `json:"channel"`
-	Key       string `json:"key"`
+	Component string `json:"spaceSystem"`
+	Channel   string `json:"parameter"`
+	Key       string `json:"member"`
 }
 
 func (d *Datasource) handleGetTelemetryKeys(w http.ResponseWriter, r *http.Request) {
@@ -98,8 +98,8 @@ func (d *Datasource) handleGetTelemetryKeys(w http.ResponseWriter, r *http.Reque
 	// repeats when a parameter exists in several instances.
 	query := `
 		SELECT DISTINCT p.space_system, p.name, m.member_path
-		FROM json_to_recordset($1::json) AS sel(component text, name text)
-		JOIN parameters p ON p.space_system = sel.component AND p.name = sel.name
+		FROM json_to_recordset($1::json) AS sel("spaceSystem" text, name text)
+		JOIN parameters p ON p.space_system = sel."spaceSystem" AND p.name = sel.name
 		CROSS JOIN LATERAL (
 			SELECT DISTINCT v.member_path
 			FROM parameter_values v

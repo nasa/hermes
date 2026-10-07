@@ -42,8 +42,8 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
       try {
         const filled = withDefaults(query);
         const templateSrv = getTemplateSrv();
-        const needsChannels = (filled.channels ?? []).some((c) => c.raw !== undefined);
-        const known = needsChannels ? await datasource.getChannels().catch(() => []) : [];
+        const needsParameters = (filled.parameters ?? []).some((p) => p.raw !== undefined);
+        const known = needsParameters ? await datasource.getParameters().catch(() => []) : [];
         const resolved: ResolvedQuery = resolveQuery(filled, (value) => templateSrv.replace(value), known);
         const from = range?.from ?? dateTime();
         const to = range?.to ?? dateTime();

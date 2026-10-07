@@ -7,22 +7,22 @@ import {
   escDate,
   namePreview,
   normalizeTransform,
-  resolveChannels,
+  resolveParameters,
   resolveQuery,
   transformPreview,
   validateExpression,
   validateTransformInput,
   VALUE_TOKEN,
 } from './query';
-import { ChannelRef, MyQuery, ResolvedQuery } from './types';
+import { ParameterRef, MyQuery, ResolvedQuery } from './types';
 
 function baseQuery(overrides: Partial<ResolvedQuery>): ResolvedQuery {
   return {
     refId: 'A',
     queryType: 'telemetry',
-    channels: [],
-    sources: [],
-    keys: [],
+    parameters: [],
+    instances: [],
+    members: [],
     timeField: 'generation_time',
     aggregation: 'avg',
     ...overrides,
@@ -34,32 +34,32 @@ const TO = '2024-01-01T01:00:00.000Z';
 const INT_COL =
   "(CASE WHEN v.value_type = 'UINT64' AND v.int_value < 0 THEN v.int_value + 18446744073709551616 ELSE v.int_value END)::double precision";
 
-describe('buildTelemetryQuery — per-channel key scoping', () => {
-  it('does not filter a scalar channel when a compound channel has keys selected', () => {
+describe('buildTelemetryQuery — per-parameter member scoping', () => {
+  it('does not filter a scalar parameter when a compound parameter has members selected', () => {
     const q = baseQuery({
-      channels: [
-        { component: 'CDH', name: 'Attitude' },
-        { component: 'CDH', name: 'Temperature' },
+      parameters: [
+        { spaceSystem: 'CDH', name: 'Attitude' },
+        { spaceSystem: 'CDH', name: 'Temperature' },
       ],
-      keys: [{ component: 'CDH', channel: 'Attitude', key: '.x' }],
+      members: [{ spaceSystem: 'CDH', parameter: 'Attitude', member: '.x' }],
     });
 
     const sql = buildTelemetryQuery(q, FROM, TO);
 
-    // Compound channel is scoped to its selected key.
+    // Compound parameter is scoped to its selected member.
     expect(sql).toContain(
       "(p.space_system = 'CDH' AND p.name = 'Attitude' AND v.member_path = ANY('{\".x\"}'))"
     );
-    // Scalar channel has NO key restriction, so it is not filtered out.
+    // Scalar parameter has NO member restriction, so it is not filtered out.
     expect(sql).toContain("(p.space_system = 'CDH' AND p.name = 'Temperature')");
     // The member filter appears only in Attitude's clause, not across the whole query.
     expect(sql.match(/v\.member_path = ANY\(/g)).toHaveLength(1);
   });
 
-  it('restricts a compound channel to only its selected subkeys', () => {
+  it('restricts a compound parameter to only its selected members', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Attitude' }],
-      keys: [{ component: 'CDH', channel: 'Attitude', key: '.x' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Attitude' }],
+      members: [{ spaceSystem: 'CDH', parameter: 'Attitude', member: '.x' }],
     });
 
     const sql = buildTelemetryQuery(q, FROM, TO);
@@ -70,10 +70,10 @@ describe('buildTelemetryQuery — per-channel key scoping', () => {
     expect(sql).not.toContain('.y');
   });
 
-  it('matches all keys for a compound channel when none are selected', () => {
+  it('matches all members for a compound parameter when none are selected', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Attitude' }],
-      keys: [],
+      parameters: [{ spaceSystem: 'CDH', name: 'Attitude' }],
+      members: [],
     });
 
     const sql = buildTelemetryQuery(q, FROM, TO);
@@ -84,8 +84,8 @@ describe('buildTelemetryQuery — per-channel key scoping', () => {
 
   it('matches the whole value of a scalar by its empty member path', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
-      keys: [{ component: 'CDH', channel: 'Temperature', key: '' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+      members: [{ spaceSystem: 'CDH', parameter: 'Temperature', member: '' }],
     });
 
     const sql = buildTelemetryQuery(q, FROM, TO);
@@ -93,13 +93,13 @@ describe('buildTelemetryQuery — per-channel key scoping', () => {
     expect(sql).toContain(`(p.space_system = 'CDH' AND p.name = 'Temperature' AND v.member_path = ANY('{""}'))`);
   });
 
-  it('joins multiple channels with OR', () => {
+  it('joins multiple parameters with OR', () => {
     const q = baseQuery({
-      channels: [
-        { component: 'CDH', name: 'Attitude' },
-        { component: 'Sensors', name: 'IMU' },
+      parameters: [
+        { spaceSystem: 'CDH', name: 'Attitude' },
+        { spaceSystem: 'Sensors', name: 'IMU' },
       ],
-      keys: [],
+      members: [],
     });
 
     const sql = buildTelemetryQuery(q, FROM, TO);
@@ -109,26 +109,26 @@ describe('buildTelemetryQuery — per-channel key scoping', () => {
     expect(sql).toMatch(/OR/);
   });
 
-  it('inlines all values correctly with many channels', () => {
+  it('inlines all values correctly with many parameters', () => {
     const q = baseQuery({
-      channels: [
-        { component: 'C1', name: 'N1' },
-        { component: 'C2', name: 'N2' },
-        { component: 'C3', name: 'N3' },
-        { component: 'C4', name: 'N4' },
+      parameters: [
+        { spaceSystem: 'C1', name: 'N1' },
+        { spaceSystem: 'C2', name: 'N2' },
+        { spaceSystem: 'C3', name: 'N3' },
+        { spaceSystem: 'C4', name: 'N4' },
       ],
-      keys: [
-        { component: 'C1', channel: 'N1', key: '.a' },
-        { component: 'C2', channel: 'N2', key: '.b' },
-        { component: 'C3', channel: 'N3', key: '.c' },
-        { component: 'C4', channel: 'N4', key: '.d' },
+      members: [
+        { spaceSystem: 'C1', parameter: 'N1', member: '.a' },
+        { spaceSystem: 'C2', parameter: 'N2', member: '.b' },
+        { spaceSystem: 'C3', parameter: 'N3', member: '.c' },
+        { spaceSystem: 'C4', parameter: 'N4', member: '.d' },
       ],
-      sources: ['fsw-1'],
+      instances: ['fsw-1'],
     });
 
     const sql = buildTelemetryQuery(q, FROM, TO);
 
-    // All channel space systems, names, and members are inlined.
+    // All parameter space systems, names, and members are inlined.
     expect(sql).toContain("p.space_system = 'C4'");
     expect(sql).toContain("p.name = 'N4'");
     expect(sql).toContain("'{\".d\"}'");
@@ -137,8 +137,8 @@ describe('buildTelemetryQuery — per-channel key scoping', () => {
     expect(sql).toContain("'2024-01-01 00:00:00.000Z'");
   });
 
-  it('throws when no channels are provided', () => {
-    expect(() => buildTelemetryQuery(baseQuery({ channels: [] }), FROM, TO)).toThrow();
+  it('throws when no parameters are provided', () => {
+    expect(() => buildTelemetryQuery(baseQuery({ parameters: [] }), FROM, TO)).toThrow();
   });
 });
 
@@ -155,7 +155,7 @@ describe('escArr and escDate', () => {
 describe('buildTelemetryQuery — aggregations', () => {
   const aggQuery = (aggregation: string, timeField = 'generation_time') =>
     baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
       aggregation: aggregation as MyQuery['aggregation'],
       timeField: timeField as MyQuery['timeField'],
     });
@@ -240,17 +240,17 @@ describe('buildTelemetryQuery — aggregations', () => {
   });
 });
 
-describe('resolveChannels', () => {
-  const known: ChannelRef[] = [
-    { component: '/CDH', name: 'Temperature' },
-    { component: '/CDH', name: 'Attitude' },
+describe('resolveParameters', () => {
+  const known: ParameterRef[] = [
+    { spaceSystem: '/CDH', name: 'Temperature' },
+    { spaceSystem: '/CDH', name: 'Attitude' },
     // A parameter in a nested space system, so its full name /A/B/C has three slashes.
-    { component: '/A/B', name: 'C' },
+    { spaceSystem: '/A/B', name: 'C' },
   ];
 
   const vars: Record<string, string> = {
-    $component: '/CDH',
-    $channel: 'Temperature',
+    $spaceSystem: '/CDH',
+    $parameter: 'Temperature',
     $full: '/CDH/Temperature',
     $nested: '/A/B/C',
   };
@@ -258,34 +258,34 @@ describe('resolveChannels', () => {
   const replace = (value: string) =>
     value.replace(/\$\w+/g, (m) => (m in vars ? vars[m] : m));
 
-  it('passes through concrete channels unchanged', () => {
-    expect(resolveChannels([{ component: '/CDH', name: 'Attitude' }], replace, known)).toEqual([
-      { component: '/CDH', name: 'Attitude' },
+  it('passes through concrete parameters unchanged', () => {
+    expect(resolveParameters([{ spaceSystem: '/CDH', name: 'Attitude' }], replace, known)).toEqual([
+      { spaceSystem: '/CDH', name: 'Attitude' },
     ]);
   });
 
-  it('resolves a single variable that expands to a full channel', () => {
-    expect(resolveChannels([{ raw: '$full' }], replace, known)).toEqual([
-      { component: '/CDH', name: 'Temperature' },
+  it('resolves a single variable that expands to a full parameter', () => {
+    expect(resolveParameters([{ raw: '$full' }], replace, known)).toEqual([
+      { spaceSystem: '/CDH', name: 'Temperature' },
     ]);
   });
 
-  it('resolves a $component/$channel combination', () => {
+  it('resolves a $spaceSystem/$parameter combination', () => {
     expect(
-      resolveChannels([{ raw: '$component/$channel' }], replace, known)
-    ).toEqual([{ component: '/CDH', name: 'Temperature' }]);
+      resolveParameters([{ raw: '$spaceSystem/$parameter' }], replace, known)
+    ).toEqual([{ spaceSystem: '/CDH', name: 'Temperature' }]);
   });
 
-  it('splits at the boundary defined by the channel list, not by slashes', () => {
+  it('splits at the boundary defined by the parameter list, not by slashes', () => {
     // $nested expands to "/A/B/C"; the correct split is space system "/A/B" / name "C".
-    expect(resolveChannels([{ raw: '$nested' }], replace, known)).toEqual([
-      { component: '/A/B', name: 'C' },
+    expect(resolveParameters([{ raw: '$nested' }], replace, known)).toEqual([
+      { spaceSystem: '/A/B', name: 'C' },
     ]);
   });
 
-  it('keeps an unmatched raw channel as a well-formed (empty-result) ref', () => {
-    expect(resolveChannels([{ raw: '$component/Missing' }], replace, known)).toEqual([
-      { component: '/CDH/Missing', name: '' },
+  it('keeps an unmatched raw parameter as a well-formed (empty-result) ref', () => {
+    expect(resolveParameters([{ raw: '$spaceSystem/Missing' }], replace, known)).toEqual([
+      { spaceSystem: '/CDH/Missing', name: '' },
     ]);
   });
 });
@@ -420,31 +420,31 @@ describe('buildTransformCase', () => {
   const col = 'v.float_value';
 
   it('returns the bare column when there are no transforms', () => {
-    expect(buildTransformCase(baseQuery({ channels: [{ component: 'CDH', name: 'Temperature' }] }), col)).toBe(col);
+    expect(buildTransformCase(baseQuery({ parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }] }), col)).toBe(col);
   });
 
-  it('ignores transforms for channels that are not selected', () => {
+  it('ignores transforms for parameters that are not selected', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
-      transforms: [{ component: 'Other', channel: 'Thing', expr: '2' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+      transforms: [{ spaceSystem: 'Other', parameter: 'Thing', expr: '2' }],
     });
     expect(buildTransformCase(q, col)).toBe(col);
   });
 
   it('ignores invalid transforms rather than emitting broken SQL', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$__value; DROP TABLE telemetry' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '$__value; DROP TABLE telemetry' }],
     });
     expect(buildTransformCase(q, col)).toBe(col);
   });
 
-  it('orders key-specific branches before channel-wide ones', () => {
+  it('orders member-specific branches before parameter-wide ones', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Attitude' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Attitude' }],
       transforms: [
-        { component: 'CDH', channel: 'Attitude', expr: '10' },
-        { component: 'CDH', channel: 'Attitude', targetKey: '.x', expr: '0.001' },
+        { spaceSystem: 'CDH', parameter: 'Attitude', expr: '10' },
+        { spaceSystem: 'CDH', parameter: 'Attitude', member: '.x', expr: '0.001' },
       ],
     });
     const sql = buildTransformCase(q, col);
@@ -453,26 +453,26 @@ describe('buildTransformCase', () => {
 
   it('limits a transform on the empty member path to that member', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Attitude' }],
-      transforms: [{ component: 'CDH', channel: 'Attitude', targetKey: '', expr: '2' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Attitude' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Attitude', member: '', expr: '2' }],
     });
     expect(buildTransformCase(q, col)).toContain("p.name = 'Attitude' AND v.member_path = '' THEN");
   });
 
   it('falls back to the bare column in the ELSE branch', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '2' }],
     });
     expect(buildTransformCase(q, col)).toBe(
       `CASE WHEN p.space_system = 'CDH' AND p.name = 'Temperature' THEN (${col}) * 2 ELSE ${col} END`
     );
   });
 
-  it('escapes quotes in component, channel, and key names', () => {
+  it('escapes quotes in space system, parameter, and member names', () => {
     const q = baseQuery({
-      channels: [{ component: "O'Brien", name: 'Temp' }],
-      transforms: [{ component: "O'Brien", channel: 'Temp', targetKey: "a'b", expr: '2' }],
+      parameters: [{ spaceSystem: "O'Brien", name: 'Temp' }],
+      transforms: [{ spaceSystem: "O'Brien", parameter: 'Temp', member: "a'b", expr: '2' }],
     });
     expect(buildTransformCase(q, col)).toContain("p.space_system = 'O''Brien'");
     expect(buildTransformCase(q, col)).toContain("v.member_path = 'a''b'");
@@ -480,14 +480,14 @@ describe('buildTransformCase', () => {
 });
 
 describe('buildTelemetryQuery — value transforms', () => {
-  const withTransform = (expr: string, targetKey?: string) =>
+  const withTransform = (expr: string, member?: string) =>
     baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
-      transforms: [{ component: 'CDH', channel: 'Temperature', targetKey, expr }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', member, expr }],
     });
 
   it('leaves numeric columns untouched when no transform is set', () => {
-    const sql = buildTelemetryQuery(baseQuery({ channels: [{ component: 'CDH', name: 'Temperature' }] }), FROM, TO);
+    const sql = buildTelemetryQuery(baseQuery({ parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }] }), FROM, TO);
     expect(sql).toContain(`AVG(${INT_COL}) AS val_int`);
     expect(sql).toContain('AVG(v.float_value) AS val_float');
     // The int column always has the UINT64 CASE, so only check that no transform CASE was added.
@@ -506,7 +506,7 @@ describe('buildTelemetryQuery — value transforms', () => {
     expect(sql).toContain('THEN (v.float_value) - 273.15');
   });
 
-  it('scopes a key-specific transform with an exact key match', () => {
+  it('scopes a member-specific transform with an exact member match', () => {
     const sql = buildTelemetryQuery(withTransform('0.001', '.x'), FROM, TO);
     expect(sql).toContain("p.space_system = 'CDH' AND p.name = 'Temperature' AND v.member_path = '.x'");
   });
@@ -520,9 +520,9 @@ describe('buildTelemetryQuery — value transforms', () => {
 
   it.each([['raw'], ['deriv']])('applies the transform without an aggregate wrapper for %s', (agg) => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
       aggregation: agg as MyQuery['aggregation'],
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '2' }],
     });
     const sql = buildTelemetryQuery(q, FROM, TO);
     expect(sql).toContain('END AS val_int');
@@ -530,15 +530,15 @@ describe('buildTelemetryQuery — value transforms', () => {
     expect(sql).not.toContain('GROUP BY');
   });
 
-  it('emits one branch per transformed channel', () => {
+  it('emits one branch per transformed parameter', () => {
     const q = baseQuery({
-      channels: [
-        { component: 'CDH', name: 'Temperature' },
-        { component: 'Sensors', name: 'Voltage' },
+      parameters: [
+        { spaceSystem: 'CDH', name: 'Temperature' },
+        { spaceSystem: 'Sensors', name: 'Voltage' },
       ],
       transforms: [
-        { component: 'CDH', channel: 'Temperature', expr: '$__value - 273.15' },
-        { component: 'Sensors', channel: 'Voltage', expr: '0.001' },
+        { spaceSystem: 'CDH', parameter: 'Temperature', expr: '$__value - 273.15' },
+        { spaceSystem: 'Sensors', parameter: 'Voltage', expr: '0.001' },
       ],
     });
     const sql = buildTelemetryQuery(q, FROM, TO);
@@ -572,63 +572,63 @@ describe('value token vs. Grafana template expansion', () => {
 describe('aliasForLabels', () => {
   const labels = (key = '') => ({ component: 'CDH', channel: 'Temperature', key });
 
-  it('returns the name for a matching whole-channel transform', () => {
+  it('returns the name for a matching whole-parameter transform', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '', name: 'Reactor Temp' }],
     });
     expect(aliasForLabels(q, labels())).toBe('Reactor Temp');
   });
 
-  it('returns undefined when the channel is not selected', () => {
+  it('returns undefined when the parameter is not selected', () => {
     const q = baseQuery({
-      channels: [{ component: 'Other', name: 'Thing' }],
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
+      parameters: [{ spaceSystem: 'Other', name: 'Thing' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '', name: 'Reactor Temp' }],
     });
     expect(aliasForLabels(q, labels())).toBeUndefined();
   });
 
   it('returns undefined when no transform carries a name', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '2' }],
     });
     expect(aliasForLabels(q, labels())).toBeUndefined();
   });
 
   it('treats a whitespace-only name as no override', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: '   ' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '', name: '   ' }],
     });
     expect(aliasForLabels(q, labels())).toBeUndefined();
   });
 
-  it('matches a key-specific override only on the matching key', () => {
+  it('matches a member-specific override only on the matching member', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
-      transforms: [{ component: 'CDH', channel: 'Temperature', targetKey: '.x', expr: '', name: 'X axis' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', member: '.x', expr: '', name: 'X axis' }],
     });
     expect(aliasForLabels(q, labels('.x'))).toBe('X axis');
     expect(aliasForLabels(q, labels('.y'))).toBeUndefined();
   });
 
-  it('prefers a key-specific override over a channel-wide one', () => {
+  it('prefers a member-specific override over a parameter-wide one', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
       transforms: [
-        { component: 'CDH', channel: 'Temperature', expr: '', name: 'Whole channel' },
-        { component: 'CDH', channel: 'Temperature', targetKey: '.x', expr: '', name: 'X axis' },
+        { spaceSystem: 'CDH', parameter: 'Temperature', expr: '', name: 'Whole parameter' },
+        { spaceSystem: 'CDH', parameter: 'Temperature', member: '.x', expr: '', name: 'X axis' },
       ],
     });
     expect(aliasForLabels(q, labels('.x'))).toBe('X axis');
-    expect(aliasForLabels(q, labels('.y'))).toBe('Whole channel');
+    expect(aliasForLabels(q, labels('.y'))).toBe('Whole parameter');
   });
 
   it('trims surrounding whitespace from the name', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: '  Reactor Temp  ' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '', name: '  Reactor Temp  ' }],
     });
     expect(aliasForLabels(q, labels())).toBe('Reactor Temp');
   });
@@ -662,8 +662,8 @@ describe('name-only transforms', () => {
   it('resolveQuery expands template variables in the name', () => {
     const resolved = resolveQuery(
       baseQuery({
-        channels: [{ component: 'CDH', name: 'Temperature' }],
-        transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: '$label Temp' }],
+        parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+        transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '', name: '$label Temp' }],
       }) as MyQuery,
       replaceWith({ label: 'Reactor' })
     );
@@ -672,8 +672,8 @@ describe('name-only transforms', () => {
 
   it('emits no CASE/SQL for a name-only transform', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '', name: 'Reactor Temp' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '', name: 'Reactor Temp' }],
     });
     expect(buildTransformCase(q, 'v.float_value')).toBe('v.float_value');
     expect(buildTelemetryQuery(q, FROM, TO)).not.toContain('CASE WHEN p.');
@@ -681,8 +681,8 @@ describe('name-only transforms', () => {
 
   it('still emits SQL when both an expression and a name are set', () => {
     const q = baseQuery({
-      channels: [{ component: 'CDH', name: 'Temperature' }],
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2', name: 'Reactor Temp' }],
+      parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '2', name: 'Reactor Temp' }],
     });
     expect(buildTelemetryQuery(q, FROM, TO)).toContain('THEN (v.float_value) * 2');
   });

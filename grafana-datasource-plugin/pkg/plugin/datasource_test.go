@@ -894,14 +894,14 @@ func TestResourceHandlerKeys(t *testing.T) {
 	ds := &Datasource{db: db}
 
 	mock.ExpectQuery(`(?s)SELECT DISTINCT p.space_system, p.name, m.member_path.*FROM parameter_values v`).
-		WithArgs(`[{"component":"/CDH","name":"Attitude"},{"component":"/Sensors","name":"Attitude"}]`).
+		WithArgs(`[{"spaceSystem":"/CDH","name":"Attitude"},{"spaceSystem":"/Sensors","name":"Attitude"}]`).
 		WillReturnRows(sqlmock.NewRows([]string{"space_system", "name", "member_path"}).
 			AddRow("/CDH", "Attitude", ".x").
 			AddRow("/CDH", "Attitude", ".y").
 			AddRow("/Sensors", "Attitude", ""),
 		)
 
-	body := `[{"component":"/CDH","name":"Attitude"},{"component":"/Sensors","name":"Attitude"}]`
+	body := `[{"spaceSystem":"/CDH","name":"Attitude"},{"spaceSystem":"/Sensors","name":"Attitude"}]`
 	req, _ := http.NewRequest("POST", "/telemetry/keys", strings.NewReader(body))
 	rr := &responseRecorder{header: http.Header{}}
 	ds.handleGetTelemetryKeys(rr, req)
