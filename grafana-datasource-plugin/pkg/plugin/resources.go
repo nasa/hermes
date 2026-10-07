@@ -42,12 +42,21 @@ func (d *Datasource) handleGetTelemetryComponents(w http.ResponseWriter, r *http
 }
 
 type channelEntry struct {
-	Component string `json:"component"`
-	Name      string `json:"name"`
+	Component string  `json:"component"`
+	Name      string  `json:"name"`
+	Source    *string `json:"source,omitempty"`
 }
 
 func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT component, name FROM telemetryDefs ORDER BY component, name;")
+	includeSources := r.URL.Query().Get("includeSources") == "true"
+	query := "SELECT component, name FROM telemetryDefs ORDER BY component, name;"
+	if includeSources {
+		query = `SELECT DISTINCT d.component, d.name, t.source
+			FROM telemetryDefs d
+			LEFT JOIN telemetry t ON t.telemetryDefId = d.id
+			ORDER BY d.component, d.name, t.source;`
+	}
+	rows, err := d.db.QueryContext(r.Context(), query)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -57,7 +66,11 @@ func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.R
 	items := []channelEntry{}
 	for rows.Next() {
 		var entry channelEntry
-		if err := rows.Scan(&entry.Component, &entry.Name); err != nil {
+		columns := []any{&entry.Component, &entry.Name}
+		if includeSources {
+			columns = append(columns, &entry.Source)
+		}
+		if err := rows.Scan(columns...); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
