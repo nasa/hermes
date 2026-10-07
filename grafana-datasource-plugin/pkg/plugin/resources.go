@@ -26,12 +26,12 @@ func scanStrings(rows *sql.Rows) ([]string, error) {
 	return items, nil
 }
 
-type channelEntry struct {
-	Component string `json:"spaceSystem"`
-	Name      string `json:"name"`
+type parameterEntry struct {
+	SpaceSystem string `json:"spaceSystem"`
+	Name        string `json:"name"`
 }
 
-func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.Request) {
+func (d *Datasource) handleGetTelemetryParameters(w http.ResponseWriter, r *http.Request) {
 	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT space_system, name FROM parameters ORDER BY space_system, name;")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -39,10 +39,10 @@ func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.R
 	}
 	defer func() { _ = rows.Close() }()
 
-	items := []channelEntry{}
+	items := []parameterEntry{}
 	for rows.Next() {
-		var entry channelEntry
-		if err := rows.Scan(&entry.Component, &entry.Name); err != nil {
+		var entry parameterEntry
+		if err := rows.Scan(&entry.SpaceSystem, &entry.Name); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -55,7 +55,7 @@ func (d *Datasource) handleGetTelemetryChannels(w http.ResponseWriter, r *http.R
 	writeJSONResponse(w, items)
 }
 
-func (d *Datasource) handleGetTelemetrySources(w http.ResponseWriter, r *http.Request) {
+func (d *Datasource) handleGetTelemetryInstances(w http.ResponseWriter, r *http.Request) {
 	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT instance FROM parameters ORDER BY instance;")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -69,25 +69,25 @@ func (d *Datasource) handleGetTelemetrySources(w http.ResponseWriter, r *http.Re
 	writeJSONResponse(w, items)
 }
 
-type keyEntry struct {
-	Component string `json:"spaceSystem"`
-	Channel   string `json:"parameter"`
-	Key       string `json:"member"`
+type memberEntry struct {
+	SpaceSystem string `json:"spaceSystem"`
+	Parameter   string `json:"parameter"`
+	Member      string `json:"member"`
 }
 
-func (d *Datasource) handleGetTelemetryKeys(w http.ResponseWriter, r *http.Request) {
+func (d *Datasource) handleTelemetryMembers(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	var selected []channelEntry
+	var selected []parameterEntry
 	if err := json.Unmarshal(body, &selected); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	if len(selected) == 0 {
-		writeJSONResponse(w, []keyEntry{})
+		writeJSONResponse(w, []memberEntry{})
 		return
 	}
 
@@ -114,10 +114,10 @@ func (d *Datasource) handleGetTelemetryKeys(w http.ResponseWriter, r *http.Reque
 	}
 	defer func() { _ = rows.Close() }()
 
-	items := []keyEntry{}
+	items := []memberEntry{}
 	for rows.Next() {
-		var entry keyEntry
-		if err := rows.Scan(&entry.Component, &entry.Channel, &entry.Key); err != nil {
+		var entry memberEntry
+		if err := rows.Scan(&entry.SpaceSystem, &entry.Parameter, &entry.Member); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

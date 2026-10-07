@@ -178,11 +178,11 @@ export function buildTransformCase(q: ResolvedQuery, column: string): string {
 // and a member-specific override wins over a parameter-wide one.
 export function aliasForLabels(
     q: ResolvedQuery,
-    labels: { component: string; channel: string; key: string }
+    labels: { space_system: string; parameter: string; member: string }
 ): string | undefined {
     const parameters = q.parameters ?? [];
     const onSelectedParameter = parameters.some(
-        (p) => p.spaceSystem === labels.component && p.name === labels.channel
+        (p) => p.spaceSystem === labels.space_system && p.name === labels.parameter
     );
     if (!onSelectedParameter) {
         return undefined;
@@ -190,10 +190,10 @@ export function aliasForLabels(
 
     const candidates = (q.transforms ?? []).filter(
         (t) =>
-            t.spaceSystem === labels.component &&
-            t.parameter === labels.channel &&
+            t.spaceSystem === labels.space_system &&
+            t.parameter === labels.parameter &&
             (t.name ?? '').trim() !== '' &&
-            (t.member === undefined || t.member === labels.key)
+            (t.member === undefined || t.member === labels.member)
     );
     // Prefer a member-specific override over a parameter-wide one.
     const match =

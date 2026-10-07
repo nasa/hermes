@@ -57,9 +57,9 @@ func NewDatasource(_ context.Context, settings backend.DataSourceInstanceSetting
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/telemetry/channels", ds.handleGetTelemetryChannels)
-	mux.HandleFunc("/telemetry/sources", ds.handleGetTelemetrySources)
-	mux.HandleFunc("/telemetry/keys", ds.handleGetTelemetryKeys)
+	mux.HandleFunc("/telemetry/parameters", ds.handleGetTelemetryParameters)
+	mux.HandleFunc("/telemetry/instances", ds.handleGetTelemetryInstances)
+	mux.HandleFunc("/telemetry/members", ds.handleTelemetryMembers)
 	mux.HandleFunc("/events/sources", ds.handleGetEventSources)
 	ds.CallResourceHandler = httpadapter.New(mux)
 

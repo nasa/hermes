@@ -76,7 +76,7 @@ pkg/
   plugin/
     datasource.go          # Instance lifecycle, health check
     query.go               # Telemetry & event query execution
-    resources.go           # REST resource handlers (channels, sources, keys)
+    resources.go           # REST resource handlers (parameters, instances, members)
 provisioning/
   datasources/
     datasources.yml        # Auto-provisioned datasource for local dev
