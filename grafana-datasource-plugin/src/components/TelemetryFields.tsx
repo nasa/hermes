@@ -66,13 +66,13 @@ function groupKeysByChannel(entries: KeyRef[]): Record<string, KeyRef[]> {
 }
 
 function channelToKey(ch: ChannelRef): string {
-  return JSON.stringify(ch);
+  return JSON.stringify({ component: ch.component, name: ch.name, source: ch.source });
 }
 
 function toChannelOptions(entries: ChannelRef[]): Array<ComboboxOption<string>> {
   return entries.map((e) => ({
-    label: `${e.component}.${e.name}`,
-    description: e.component,
+    label: channelLabel(e),
+    description: e.source ?? e.component,
     value: channelToKey(e),
   }));
 }
@@ -82,7 +82,8 @@ function channelLabel(ch: ChannelQuery): string {
     return ch.raw;
   }
   // Avoid rendering a stray trailing dot when a channel has no name.
-  return ch.name ? `${ch.component}.${ch.name}` : ch.component;
+  const label = ch.name ? `${ch.component}.${ch.name}` : ch.component;
+  return ch.source === undefined ? label : `${label} [${ch.source}]`;
 }
 
 function channelValue(ch: ChannelQuery): string {
@@ -159,12 +160,17 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
       .map(({ value, label }): ChannelQuery | null => {
         const valueStr = typeof value === 'string' ? value : String(value ?? '');
 
-        // Known-channel options encode a { component, name } object as JSON.
+        // Known-channel options encode component, name, and an optional source as JSON.
         if (valueStr.startsWith('{')) {
           try {
             const parsed = JSON.parse(valueStr) as ChannelRef;
-            if (typeof parsed.component === 'string' && typeof parsed.name === 'string') {
-              return { component: parsed.component, name: parsed.name };
+            if (typeof parsed.component === 'string' && typeof parsed.name === 'string'
+              && (parsed.source === undefined || typeof parsed.source === 'string')) {
+              return {
+                component: parsed.component,
+                name: parsed.name,
+                ...(parsed.source === undefined ? {} : { source: parsed.source }),
+              };
             }
           } catch {
             // Treat as raw text
