@@ -175,12 +175,12 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 
 	for rows.Next() {
 		var t time.Time
-		var component, channel, source, dbValueType string
-		var key string
+		var spaceSystem, parameter, instance, dbValueType string
+		var member string
 		var vInt, vFloat, vBool sql.NullFloat64
 		var vStr sql.NullString
 		var vBytes []byte
-		if err := rows.Scan(&t, &component, &channel, &source, &dbValueType, &key, &vInt, &vFloat, &vBool, &vStr, &vBytes); err != nil {
+		if err := rows.Scan(&t, &spaceSystem, &parameter, &instance, &dbValueType, &member, &vInt, &vFloat, &vBool, &vStr, &vBytes); err != nil {
 			return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("telemetry row scan failure: %v", err.Error()))
 		}
 
@@ -188,7 +188,7 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			return backend.ErrDataResponse(backend.StatusBadRequest, err.Error())
 		}
 
-		frameId := fmt.Sprintf("%s/%s%s/%s(%s)", component, channel, key, qm.TimeField, source)
+		frameId := fmt.Sprintf("%s/%s%s/%s(%s)", spaceSystem, parameter, member, qm.TimeField, instance)
 		frame, exists := frames[frameId]
 
 		// Create new frame
@@ -210,11 +210,11 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 				valueField = data.NewField("value", nil, []*string{})
 			}
 			valueField.Labels = map[string]string{
-				"component": component,
-				"channel":   channel,
-				"key":       key,
-				"source":    source,
-				"timeField": qm.TimeField,
+				"space_system": spaceSystem,
+				"parameter":    parameter,
+				"member":       member,
+				"instance":     instance,
+				"timeField":    qm.TimeField,
 			}
 			frame.Fields = append(frame.Fields, valueField)
 			frames[frameId] = frame
@@ -293,16 +293,16 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 	}
 
 	// Name the instance only when the result spans more than one.
-	sourceSet := make(map[string]struct{})
+	instanceSet := make(map[string]struct{})
 	for _, frame := range frames {
 		for _, field := range frame.Fields {
 			if field.Labels == nil {
 				continue
 			}
-			sourceSet[field.Labels["source"]] = struct{}{}
+			instanceSet[field.Labels["instance"]] = struct{}{}
 		}
 	}
-	multiSource := len(sourceSet) > 1
+	multiInstance := len(instanceSet) > 1
 
 	// Return all data frames with display names
 	var response backend.DataResponse
@@ -313,9 +313,9 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 				continue
 			}
 			// Matches how YAMCS writes the name, for example /CDH/Attitude.x or /CDH/Temps[0].
-			displayName := field.Labels["component"] + "/" + field.Labels["channel"] + field.Labels["key"]
-			if multiSource {
-				displayName += " (" + field.Labels["source"] + ")"
+			displayName := field.Labels["space_system"] + "/" + field.Labels["parameter"] + field.Labels["member"]
+			if multiInstance {
+				displayName += " (" + field.Labels["instance"] + ")"
 			}
 			field.Name = displayName
 			field.SetConfig(&data.FieldConfig{

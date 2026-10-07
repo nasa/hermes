@@ -78,18 +78,18 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
 
   // Telemetry resources
   async getParameters(): Promise<ParameterRef[]> {
-    return this.getResource('telemetry/channels');
+    return this.getResource('telemetry/parameters');
   }
 
   async getInstances(): Promise<string[]> {
-    return this.getResource('telemetry/sources');
+    return this.getResource('telemetry/instances');
   }
 
   async getMembers(parameters: ParameterQuery[]): Promise<MemberRef[]> {
     const templateSrv = getTemplateSrv();
     const known = parameters.some((p) => p.raw !== undefined) ? await this.getKnownParameters() : [];
     const expanded = resolveParameters(parameters, (value) => templateSrv.replace(value), known);
-    return this.postResource('telemetry/keys', expanded);
+    return this.postResource('telemetry/members', expanded);
   }
 
   async getEventSources(): Promise<string[]> {
@@ -106,9 +106,9 @@ function applySeriesAliases(frame: { fields: any[] }, query: ResolvedQuery): voi
       continue;
     }
     const alias = aliasForLabels(query, {
-      component: labels.component,
-      channel: labels.channel,
-      key: labels.key,
+      space_system: labels.space_system,
+      parameter: labels.parameter,
+      member: labels.member,
     });
     if (alias) {
       field.config = { ...(field.config ?? {}), displayNameFromDS: alias };

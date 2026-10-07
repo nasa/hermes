@@ -570,7 +570,7 @@ describe('value token vs. Grafana template expansion', () => {
 });
 
 describe('aliasForLabels', () => {
-  const labels = (key = '') => ({ component: 'CDH', channel: 'Temperature', key });
+  const labels = (member = '') => ({ space_system: 'CDH', parameter: 'Temperature', member });
 
   it('returns the name for a matching whole-parameter transform', () => {
     const q = baseQuery({
