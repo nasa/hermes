@@ -14,7 +14,7 @@ export class Offline implements Hermes.Api {
         readonly log: Hermes.Log,
     ) { }
 
-    private async _activate() {
+    protected async _activate() {
         if (!this.context.storageUri) {
             return;
         }

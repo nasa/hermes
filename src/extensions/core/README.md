@@ -11,7 +11,7 @@ Hermes F Prime [sub-extension](https://marketplace.visualstudio.com/items?itemNa
 - **Live Telemetry**: Real-time monitoring of spacecraft telemetry channels and events (EVRs)
 - **Command Uplink**: Send commands to flight software with validation and confirmation
 - **Dictionary Integration**: Automatic loading of F' dictionaries for command and telemetry definitions
-- **Multiple Backend Modes**: Work offline, run a local backend, or connect to remote ground systems
+- **Multiple Backend Modes**: Work offline, run a local backend, connect to remote ground systems, or show live telemetry from YAMCS
 - **Profile Management**: Configure and switch between different spacecraft configurations
 - **Connection Management**: Support for TCP/UDP connections to flight software
 
@@ -22,6 +22,7 @@ Hermes F Prime [sub-extension](https://marketplace.visualstudio.com/items?itemNa
 - Visual Studio Code 1.90.0 or higher
 - For local backend mode: The extension includes a bundled backend binary for your platform
 - For remote backend mode: Access to a running Hermes backend server
+- For YAMCS mode: A YAMCS server running the yamcs-grpc plugin
 
 ## Getting Started
 
@@ -34,7 +35,7 @@ Hermes F Prime [sub-extension](https://marketplace.visualstudio.com/items?itemNa
 
 ### Backend Modes
 
-The extension supports three backend modes:
+The extension supports four backend modes:
 
 #### Offline Mode
 Work with sequences and notebooks without connecting to flight software. Ideal for writing procedures and planning operations.
@@ -44,6 +45,9 @@ Runs a backend process managed by VSCode. Provides full telemetry, commanding, a
 
 #### Remote Mode
 Connect to an externally-managed backend server for shared testbed or operations environments. Configure the backend URL in settings.
+
+#### YAMCS Mode
+Show live telemetry from a YAMCS server in the telemetry table and plot. Like Offline mode, it can't send commands or show events. It needs the yamcs-grpc plugin, whose [README](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin) explains the setup.
 
 <!-- Add screenshot of connection status here -->
 

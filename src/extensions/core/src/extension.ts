@@ -12,6 +12,7 @@ import { VscodeApi } from './api';
 import { VSCTransport } from './log';
 import { LocalBackendProvider, LocalTaskProvider } from './api/Local';
 import { RemoteBackendProvider } from './api/Remote';
+import { YamcsBackendProvider } from './api/Yamcs';
 
 export async function activate(context: vscode.ExtensionContext): Promise<CoreApi> {
     context.subscriptions.push(
@@ -75,6 +76,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
         }),
         api.registerBackendProvider(new LocalBackendProvider(api)),
         api.registerBackendProvider(new RemoteBackendProvider(api)),
+        api.registerBackendProvider(new YamcsBackendProvider()),
         vscode.commands.registerCommand('hermes.host.set', async <T>(type: string, state: T | null) => {
             try {
                 await api.update(type, state);
