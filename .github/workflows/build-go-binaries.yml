@@ -27,7 +27,7 @@ jobs:
           cache: true
 
       - name: Run tests
-        run: go test ./pkg/...
+        run: go test ./pkg/... ./internal/... ./cmd/yamcs-recorder/...
 
   build:
     name: Build ${{ matrix.goos }}-${{ matrix.goarch }}

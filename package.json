@@ -29,6 +29,7 @@
         "proto-go-pb": "protoc -I=proto/pb --go_opt=paths=source_relative --go_out=pkg/pb proto/pb/*.proto",
         "proto-go-grpc": "protoc -I=proto/pb -Iproto/grpc --go_opt=paths=source_relative --go_out=pkg/grpc --go-grpc_opt=paths=source_relative --go-grpc_out=pkg/grpc proto/grpc/*.proto",
         "proto-go": "npm run proto-go-pb && npm run proto-go-grpc",
+        "proto-go-yamcs": "sh internal/yamcspb/generate.sh",
         "proto-js": "pbjs -t static-module -w commonjs -o src/modules/types/src/proto/index.js proto/pb/*.proto",
         "proto-ts": "pbjs -t static-module proto/pb/*.proto | pbts -o src/modules/types/src/proto/index.d.ts -",
         "proto-py": "cd lib/python && python3 -m grpc_tools.protoc --grpc_python_out=. ../../proto/grpc/hermes.proto --pyi_out=. -I ../../proto/pb/ -I ../../proto/grpc && python3 -m grpc_tools.protoc -I. --python_out=. --pyi_out=. ../../proto/pb/*.proto -I ../../proto/pb",
