@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
 import { CollapsableSection, Icon, InlineField, Input, Tooltip } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
-import { KeyRef, MyQuery, TransformRef } from '../types';
+import { MemberRef, MyQuery, TransformRef } from '../types';
 import { namePreview, transformPreview, validateTransformInput, VALUE_TOKEN } from '../query';
 
 interface TransformFieldsProps {
   query: MyQuery;
   onChange: (query: MyQuery) => void;
   onRunQuery: () => void;
-  keysByChannel: Record<string, KeyRef[]>;
+  membersByParameter: Record<string, MemberRef[]>;
 }
 
 interface TransformRow {
   id: string;
-  component: string;
-  channel: string;
-  targetKey?: string;
+  spaceSystem: string;
+  parameter: string;
+  member?: string;
   label: string;
 }
 
@@ -43,52 +43,52 @@ const NAME_HELP = (
   </div>
 );
 
-export function transformId(component: string, channel: string, targetKey?: string): string {
-  return `${component}\0${channel}\0${targetKey ?? ''}`;
+export function transformId(spaceSystem: string, parameter: string, member?: string): string {
+  return `${spaceSystem}\0${parameter}\0${member ?? ''}`;
 }
 
 function matchesRow(t: TransformRef, row: TransformRow): boolean {
-  return transformId(t.component, t.channel, t.targetKey) === row.id;
+  return transformId(t.spaceSystem, t.parameter, t.member) === row.id;
 }
 
 export function buildTransformRows(
-  keysByChannel: Record<string, KeyRef[]>,
-  selectedKeys: KeyRef[]
+  membersByParameter: Record<string, MemberRef[]>,
+  selectedMembers: MemberRef[]
 ): TransformRow[] {
   const rows: TransformRow[] = [];
-  for (const keys of Object.values(keysByChannel)) {
-    if (!keys.length) {
+  for (const members of Object.values(membersByParameter)) {
+    if (!members.length) {
       continue;
     }
-    const { component, channel } = keys[0];
-    if (keys.length <= 1) {
+    const { spaceSystem, parameter } = members[0];
+    if (members.length <= 1) {
       rows.push({
-        id: transformId(component, channel),
-        component,
-        channel,
-        label: `${component}/${channel}`,
+        id: transformId(spaceSystem, parameter),
+        spaceSystem,
+        parameter,
+        label: `${spaceSystem}/${parameter}`,
       });
       continue;
     }
-    const selectedForChannel = selectedKeys.filter(
-      (k) => k.component === component && k.channel === channel
+    const selectedForParameter = selectedMembers.filter(
+      (m) => m.spaceSystem === spaceSystem && m.parameter === parameter
     );
-    const forChannel = selectedForChannel.length ? selectedForChannel : keys;
-    for (const k of forChannel) {
+    const forParameter = selectedForParameter.length ? selectedForParameter : members;
+    for (const m of forParameter) {
       rows.push({
-        id: transformId(component, channel, k.key),
-        component,
-        channel,
-        targetKey: k.key,
-        label: `${component}/${channel}${k.key}`,
+        id: transformId(spaceSystem, parameter, m.member),
+        spaceSystem,
+        parameter,
+        member: m.member,
+        label: `${spaceSystem}/${parameter}${m.member}`,
       });
     }
   }
   return rows;
 }
 
-export function TransformFields({ query, onChange, onRunQuery, keysByChannel }: TransformFieldsProps) {
-  const rows = buildTransformRows(keysByChannel, query.keys ?? []);
+export function TransformFields({ query, onChange, onRunQuery, membersByParameter }: TransformFieldsProps) {
+  const rows = buildTransformRows(membersByParameter, query.members ?? []);
   const transforms = query.transforms ?? [];
   const [isOpen, setIsOpen] = useState(transforms.length > 0);
 
@@ -116,9 +116,9 @@ export function TransformFields({ query, onChange, onRunQuery, keysByChannel }: 
       ? [
           ...others,
           {
-            component: row.component,
-            channel: row.channel,
-            targetKey: row.targetKey,
+            spaceSystem: row.spaceSystem,
+            parameter: row.parameter,
+            member: row.member,
             expr,
             ...(name.trim() ? { name } : {}),
           },

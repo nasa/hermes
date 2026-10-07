@@ -31,9 +31,9 @@ export function BuilderEditor({ query, onChange, onRunQuery, datasource }: Build
     const updated: MyQuery = {
       ...query,
       queryType: value,
-      channels: [],
-      keys: [],
-      sources: [],
+      parameters: [],
+      members: [],
+      instances: [],
       transforms: [],
     };
     onChange(updated);

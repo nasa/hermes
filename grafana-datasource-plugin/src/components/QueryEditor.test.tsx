@@ -2,7 +2,7 @@ import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryEditor } from './QueryEditor';
 import { DataSource } from '../datasource';
-import { ChannelRef, DEFAULT_QUERY, MyDataSourceOptions, MyQuery, withDefaults } from '../types';
+import { ParameterRef, DEFAULT_QUERY, MyDataSourceOptions, MyQuery, withDefaults } from '../types';
 import { QueryEditorProps } from '@grafana/data';
 
 jest.mock('@grafana/runtime', () => ({
@@ -27,28 +27,38 @@ beforeAll(() => {
   })) as any;
 });
 
-function ch(component: string, name: string): ChannelRef {
-  return { component, name };
+function param(spaceSystem: string, name: string): ParameterRef {
+  return { spaceSystem, name };
 }
 
 function mockDatasource(overrides?: Partial<DataSource>): DataSource {
   return {
-    getChannels: jest.fn().mockResolvedValue([ch('CDH', 'Temperature'), ch('Sensors', 'Voltage')]),
-    getSources: jest.fn().mockResolvedValue(['fsw-1', 'fsw-2']),
-    getKeys: jest.fn().mockResolvedValue([
-      { component: 'CDH', channel: 'Temperature', key: '.x' },
-      { component: 'CDH', channel: 'Temperature', key: '.y' },
+    getParameters: jest.fn().mockResolvedValue([param('CDH', 'Temperature'), param('Sensors', 'Voltage')]),
+    getInstances: jest.fn().mockResolvedValue(['fsw-1', 'fsw-2']),
+    getMembers: jest.fn().mockResolvedValue([
+      { spaceSystem: 'CDH', parameter: 'Temperature', member: '.x' },
+      { spaceSystem: 'CDH', parameter: 'Temperature', member: '.y' },
     ]),
     getEventSources: jest.fn().mockResolvedValue(['fsw-1', 'fsw-2']),
     ...overrides,
   } as unknown as DataSource;
 }
 
+// A query saved before the query fields took their YAMCS names.
+const OLD_SAVED_QUERY = {
+  refId: 'A',
+  queryType: 'telemetry',
+  channels: [{ component: 'CDH', name: 'Temperature' }],
+  sources: ['fsw-1'],
+  keys: [{ component: 'CDH', channel: 'Temperature', key: '' }],
+  aggregation: 'avg',
+} as unknown as MyQuery;
+
 function buildProps(
   overrides?: Partial<QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>>
 ): QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions> {
   return {
-    query: { refId: 'A', queryType: 'telemetry', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+    query: { refId: 'A', queryType: 'telemetry', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
     onChange: jest.fn(),
     onRunQuery: jest.fn(),
     datasource: mockDatasource(),
@@ -67,18 +77,18 @@ describe('QueryEditor — Telemetry', () => {
     expect(screen.getByRole('combobox', { name: /Instance/ })).toBeInTheDocument();
   });
 
-  it('shows Key dropdown for compound channels', async () => {
+  it('shows Member dropdown for compound parameters', async () => {
     const ds = mockDatasource({
-      getKeys: jest.fn().mockResolvedValue([
-      { component: 'CDH', channel: 'Temperature', key: '.x' },
-      { component: 'CDH', channel: 'Temperature', key: '.y' },
+      getMembers: jest.fn().mockResolvedValue([
+      { spaceSystem: 'CDH', parameter: 'Temperature', member: '.x' },
+      { spaceSystem: 'CDH', parameter: 'Temperature', member: '.y' },
     ]),
     });
     render(
       <QueryEditor
         {...buildProps({
           datasource: ds,
-          query: { refId: 'A', queryType: 'telemetry', channels: [ch('CDH', 'Temperature')], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+          query: { refId: 'A', queryType: 'telemetry', parameters: [param('CDH', 'Temperature')], instances: [], members: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
@@ -88,76 +98,76 @@ describe('QueryEditor — Telemetry', () => {
     });
   });
 
-  it('hides Key dropdown for scalar channels', async () => {
+  it('hides Member dropdown for scalar parameters', async () => {
     const ds = mockDatasource({
-      getKeys: jest.fn().mockResolvedValue([{ component: 'CDH', channel: 'Temperature', key: '' }]),
+      getMembers: jest.fn().mockResolvedValue([{ spaceSystem: 'CDH', parameter: 'Temperature', member: '' }]),
     });
     render(
       <QueryEditor
         {...buildProps({
           datasource: ds,
-          query: { refId: 'A', queryType: 'telemetry', channels: [ch('CDH', 'Temperature')], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+          query: { refId: 'A', queryType: 'telemetry', parameters: [param('CDH', 'Temperature')], instances: [], members: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
 
     await waitFor(() => {
-      expect(ds.getKeys).toHaveBeenCalled();
+      expect(ds.getMembers).toHaveBeenCalled();
     });
 
     expect(screen.queryByRole('combobox', { name: /CDH\/Temperature/ })).not.toBeInTheDocument();
   });
 
-  it('loads source options on mount', async () => {
+  it('loads instance options on mount', async () => {
     const ds = mockDatasource();
     render(<QueryEditor {...buildProps({ datasource: ds })} />);
 
     await waitFor(() => {
-      expect(ds.getSources).toHaveBeenCalledTimes(1);
+      expect(ds.getInstances).toHaveBeenCalledTimes(1);
     });
   });
 
-  it('loads all channels on mount', async () => {
+  it('loads all parameters on mount', async () => {
     const ds = mockDatasource();
     render(<QueryEditor {...buildProps({ datasource: ds })} />);
 
     await waitFor(() => {
-      expect(ds.getChannels).toHaveBeenCalledTimes(1);
+      expect(ds.getParameters).toHaveBeenCalledTimes(1);
     });
   });
 
-  it('loads keys when channels are set', async () => {
+  it('loads members when parameters are set', async () => {
     const ds = mockDatasource();
     render(
       <QueryEditor
         {...buildProps({
           datasource: ds,
-          query: { refId: 'A', queryType: 'telemetry', channels: [ch('CDH', 'Temperature')], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+          query: { refId: 'A', queryType: 'telemetry', parameters: [param('CDH', 'Temperature')], instances: [], members: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
 
     await waitFor(() => {
-      expect(ds.getKeys).toHaveBeenCalledWith([ch('CDH', 'Temperature')]);
+      expect(ds.getMembers).toHaveBeenCalledWith([param('CDH', 'Temperature')]);
     });
   });
 
-  it('does not load keys when channel is not set', async () => {
+  it('does not load members when parameter is not set', async () => {
     const ds = mockDatasource();
     render(<QueryEditor {...buildProps({ datasource: ds })} />);
 
     await waitFor(() => {
-      expect(ds.getChannels).toHaveBeenCalled();
+      expect(ds.getParameters).toHaveBeenCalled();
     });
 
-    expect(ds.getKeys).not.toHaveBeenCalled();
+    expect(ds.getMembers).not.toHaveBeenCalled();
   });
 
   it('displays existing telemetry query values', async () => {
     const ds = mockDatasource({
-      getKeys: jest.fn().mockResolvedValue([
-      { component: 'CDH', channel: 'Attitude', key: '.x' },
-      { component: 'CDH', channel: 'Attitude', key: '.y' },
+      getMembers: jest.fn().mockResolvedValue([
+      { spaceSystem: 'CDH', parameter: 'Attitude', member: '.x' },
+      { spaceSystem: 'CDH', parameter: 'Attitude', member: '.y' },
     ]),
     });
     await act(async () => {
@@ -168,9 +178,9 @@ describe('QueryEditor — Telemetry', () => {
             query: {
               refId: 'A',
               queryType: 'telemetry',
-              channels: [ch('CDH', 'Attitude')],
-              sources: ['fsw-1'],
-              keys: [{ component: 'CDH', channel: 'Attitude', key: '.x' }],
+              parameters: [param('CDH', 'Attitude')],
+              instances: ['fsw-1'],
+              members: [{ spaceSystem: 'CDH', parameter: 'Attitude', member: '.x' }],
               aggregation: 'avg',
             } as MyQuery,
           })}
@@ -185,13 +195,13 @@ describe('QueryEditor — Telemetry', () => {
     });
   });
 
-  it('renders per-channel key dropdowns for two compound channels', async () => {
+  it('renders per-parameter member dropdowns for two compound parameters', async () => {
     const ds = mockDatasource({
-      getKeys: jest.fn().mockResolvedValue([
-        { component: 'CDH', channel: 'Attitude', key: '.x' },
-        { component: 'CDH', channel: 'Attitude', key: '.y' },
-        { component: 'Sensors', channel: 'IMU', key: '.pitch' },
-        { component: 'Sensors', channel: 'IMU', key: '.roll' },
+      getMembers: jest.fn().mockResolvedValue([
+        { spaceSystem: 'CDH', parameter: 'Attitude', member: '.x' },
+        { spaceSystem: 'CDH', parameter: 'Attitude', member: '.y' },
+        { spaceSystem: 'Sensors', parameter: 'IMU', member: '.pitch' },
+        { spaceSystem: 'Sensors', parameter: 'IMU', member: '.roll' },
       ]),
     });
     render(
@@ -201,9 +211,9 @@ describe('QueryEditor — Telemetry', () => {
           query: {
             refId: 'A',
             queryType: 'telemetry',
-            channels: [ch('CDH', 'Attitude'), ch('Sensors', 'IMU')],
-            sources: [],
-            keys: [],
+            parameters: [param('CDH', 'Attitude'), param('Sensors', 'IMU')],
+            instances: [],
+            members: [],
             aggregation: 'avg',
           } as MyQuery,
         })}
@@ -216,12 +226,12 @@ describe('QueryEditor — Telemetry', () => {
     });
   });
 
-  it('shows key dropdown only for compound channel when mixed with scalar', async () => {
+  it('shows member dropdown only for compound parameter when mixed with scalar', async () => {
     const ds = mockDatasource({
-      getKeys: jest.fn().mockResolvedValue([
-        { component: 'CDH', channel: 'Attitude', key: '.x' },
-        { component: 'CDH', channel: 'Attitude', key: '.y' },
-        { component: 'CDH', channel: 'Temperature', key: '' },
+      getMembers: jest.fn().mockResolvedValue([
+        { spaceSystem: 'CDH', parameter: 'Attitude', member: '.x' },
+        { spaceSystem: 'CDH', parameter: 'Attitude', member: '.y' },
+        { spaceSystem: 'CDH', parameter: 'Temperature', member: '' },
       ]),
     });
     render(
@@ -231,9 +241,9 @@ describe('QueryEditor — Telemetry', () => {
           query: {
             refId: 'A',
             queryType: 'telemetry',
-            channels: [ch('CDH', 'Attitude'), ch('CDH', 'Temperature')],
-            sources: [],
-            keys: [],
+            parameters: [param('CDH', 'Attitude'), param('CDH', 'Temperature')],
+            instances: [],
+            members: [],
             aggregation: 'avg',
           } as MyQuery,
         })}
@@ -248,16 +258,28 @@ describe('QueryEditor — Telemetry', () => {
 
   it('handles resource fetch errors gracefully', async () => {
     const ds = mockDatasource({
-      getChannels: jest.fn().mockRejectedValue(new Error('Network error')),
-      getSources: jest.fn().mockRejectedValue(new Error('Network error')),
+      getParameters: jest.fn().mockRejectedValue(new Error('Network error')),
+      getInstances: jest.fn().mockRejectedValue(new Error('Network error')),
     });
     render(<QueryEditor {...buildProps({ datasource: ds })} />);
 
     await waitFor(() => {
-      expect(ds.getChannels).toHaveBeenCalled();
+      expect(ds.getParameters).toHaveBeenCalled();
     });
 
     expect(screen.getByRole('combobox', { name: /Parameter/ })).toBeInTheDocument();
+  });
+
+  it('opens a query saved before the YAMCS names with nothing picked', async () => {
+    const ds = mockDatasource();
+    await act(async () => {
+      render(<QueryEditor {...buildProps({ datasource: ds, query: OLD_SAVED_QUERY })} />);
+    });
+
+    expect(screen.getByRole('combobox', { name: /Parameter/ })).toBeInTheDocument();
+    expect(screen.queryByText('CDH/Temperature')).not.toBeInTheDocument();
+    expect(screen.queryByText('fsw-1')).not.toBeInTheDocument();
+    expect(ds.getMembers).not.toHaveBeenCalled();
   });
 
   it('does not load event resources when in telemetry mode', async () => {
@@ -265,7 +287,7 @@ describe('QueryEditor — Telemetry', () => {
     render(<QueryEditor {...buildProps({ datasource: ds })} />);
 
     await waitFor(() => {
-      expect(ds.getChannels).toHaveBeenCalled();
+      expect(ds.getParameters).toHaveBeenCalled();
     });
 
     expect(ds.getEventSources).not.toHaveBeenCalled();
@@ -278,7 +300,7 @@ describe('QueryEditor — Events', () => {
       render(
         <QueryEditor
           {...buildProps({
-            query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+            query: { refId: 'A', queryType: 'events', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
           })}
         />
       );
@@ -294,7 +316,7 @@ describe('QueryEditor — Events', () => {
       render(
         <QueryEditor
           {...buildProps({
-            query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+            query: { refId: 'A', queryType: 'events', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
           })}
         />
       );
@@ -309,7 +331,7 @@ describe('QueryEditor — Events', () => {
       <QueryEditor
         {...buildProps({
           datasource: ds,
-          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+          query: { refId: 'A', queryType: 'events', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
@@ -325,7 +347,7 @@ describe('QueryEditor — Events', () => {
       <QueryEditor
         {...buildProps({
           datasource: ds,
-          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+          query: { refId: 'A', queryType: 'events', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
@@ -334,9 +356,9 @@ describe('QueryEditor — Events', () => {
       expect(ds.getEventSources).toHaveBeenCalled();
     });
 
-    expect(ds.getChannels).not.toHaveBeenCalled();
-    expect(ds.getSources).not.toHaveBeenCalled();
-    expect(ds.getKeys).not.toHaveBeenCalled();
+    expect(ds.getParameters).not.toHaveBeenCalled();
+    expect(ds.getInstances).not.toHaveBeenCalled();
+    expect(ds.getMembers).not.toHaveBeenCalled();
   });
 
   it('displays existing event source value', async () => {
@@ -347,9 +369,9 @@ describe('QueryEditor — Events', () => {
             query: {
               refId: 'A',
               queryType: 'events',
-              channels: [],
-              sources: ['fsw-1'],
-              keys: [],
+              parameters: [],
+              instances: ['fsw-1'],
+              members: [],
               aggregation: 'avg',
             } as MyQuery,
           })}
@@ -368,7 +390,7 @@ describe('QueryEditor — Events', () => {
       <QueryEditor
         {...buildProps({
           datasource: ds,
-          query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+          query: { refId: 'A', queryType: 'events', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
         })}
       />
     );
@@ -382,9 +404,9 @@ describe('QueryEditor — Events', () => {
 });
 
 describe('QueryEditor — Multi-select', () => {
-  it('renders multiple selected channels', async () => {
+  it('renders multiple selected parameters', async () => {
     const ds = mockDatasource({
-      getKeys: jest.fn().mockResolvedValue([{ component: 'CDH', channel: 'Temperature', key: '' }]),
+      getMembers: jest.fn().mockResolvedValue([{ spaceSystem: 'CDH', parameter: 'Temperature', member: '' }]),
     });
     render(
       <QueryEditor
@@ -393,9 +415,9 @@ describe('QueryEditor — Multi-select', () => {
           query: {
             refId: 'A',
             queryType: 'telemetry',
-            channels: [ch('CDH', 'Temperature'), ch('CDH', 'Voltage')],
-            sources: [],
-            keys: [],
+            parameters: [param('CDH', 'Temperature'), param('CDH', 'Voltage')],
+            instances: [],
+            members: [],
             aggregation: 'avg',
           } as MyQuery,
         })}
@@ -403,11 +425,11 @@ describe('QueryEditor — Multi-select', () => {
     );
 
     await waitFor(() => {
-      expect(ds.getKeys).toHaveBeenCalled();
+      expect(ds.getMembers).toHaveBeenCalled();
     });
   });
 
-  it('renders multiple selected sources', async () => {
+  it('renders multiple selected instances', async () => {
     const ds = mockDatasource();
     await act(async () => {
       render(
@@ -417,9 +439,9 @@ describe('QueryEditor — Multi-select', () => {
             query: {
               refId: 'A',
               queryType: 'telemetry',
-              channels: [ch('CDH', 'Temperature')],
-              sources: ['fsw-1', 'fsw-2'],
-              keys: [],
+              parameters: [param('CDH', 'Temperature')],
+              instances: ['fsw-1', 'fsw-2'],
+              members: [],
               aggregation: 'avg',
             } as MyQuery,
           })}
@@ -435,16 +457,16 @@ describe('QueryEditor — Multi-select', () => {
 describe('QueryEditor — Value transforms', () => {
   const scalarDs = () =>
     mockDatasource({
-      getKeys: jest.fn().mockResolvedValue([{ component: 'CDH', channel: 'Temperature', key: '' }]),
+      getMembers: jest.fn().mockResolvedValue([{ spaceSystem: 'CDH', parameter: 'Temperature', member: '' }]),
     });
 
   const telemetryQuery = (overrides?: Partial<MyQuery>): MyQuery =>
     ({
       refId: 'A',
       queryType: 'telemetry',
-      channels: [ch('CDH', 'Temperature')],
-      sources: [],
-      keys: [],
+      parameters: [param('CDH', 'Temperature')],
+      instances: [],
+      members: [],
       aggregation: 'avg',
       ...overrides,
     }) as MyQuery;
@@ -458,24 +480,24 @@ describe('QueryEditor — Value transforms', () => {
     });
   }
 
-  it('renders one transform input for a scalar channel', async () => {
+  it('renders one transform input for a scalar parameter', async () => {
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query: telemetryQuery() })} />);
     await expandSection();
 
     expect(screen.getByTestId('query-editor-transform-CDH/Temperature')).toBeInTheDocument();
   });
 
-  it('renders one transform input per key for a compound channel', async () => {
+  it('renders one transform input per member for a compound parameter', async () => {
     const ds = mockDatasource({
-      getKeys: jest.fn().mockResolvedValue([
-        { component: 'CDH', channel: 'Temperature', key: '.x' },
-        { component: 'CDH', channel: 'Temperature', key: '.y' },
+      getMembers: jest.fn().mockResolvedValue([
+        { spaceSystem: 'CDH', parameter: 'Temperature', member: '.x' },
+        { spaceSystem: 'CDH', parameter: 'Temperature', member: '.y' },
       ]),
     });
     const query = telemetryQuery({
-      keys: [
-        { component: 'CDH', channel: 'Temperature', key: '.x' },
-        { component: 'CDH', channel: 'Temperature', key: '.y' },
+      members: [
+        { spaceSystem: 'CDH', parameter: 'Temperature', member: '.x' },
+        { spaceSystem: 'CDH', parameter: 'Temperature', member: '.y' },
       ],
     });
     render(<QueryEditor {...buildProps({ datasource: ds, query })} />);
@@ -486,7 +508,7 @@ describe('QueryEditor — Value transforms', () => {
     expect(screen.queryByTestId('query-editor-transform-CDH/Temperature')).not.toBeInTheDocument();
   });
 
-  it('renders no transform section when no channel is selected', async () => {
+  it('renders no transform section when no parameter is selected', async () => {
     await act(async () => {
       render(<QueryEditor {...buildProps()} />);
     });
@@ -507,7 +529,7 @@ describe('QueryEditor — Value transforms', () => {
 
   it('starts expanded when the query already carries a transform', async () => {
     const query = telemetryQuery({
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '2' }],
     });
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query })} />);
 
@@ -526,14 +548,14 @@ describe('QueryEditor — Value transforms', () => {
 
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        transforms: [{ component: 'CDH', channel: 'Temperature', targetKey: undefined, expr: '2' }],
+        transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', member: undefined, expr: '2' }],
       })
     );
   });
 
   it('round-trips an expression back into the input', async () => {
     const query = telemetryQuery({
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '$__value - 273.15' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '$__value - 273.15' }],
     });
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query })} />);
 
@@ -544,7 +566,7 @@ describe('QueryEditor — Value transforms', () => {
   it('removes the entry when the input is cleared', async () => {
     const onChange = jest.fn();
     const query = telemetryQuery({
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '2' }],
     });
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query, onChange })} />);
 
@@ -559,7 +581,7 @@ describe('QueryEditor — Value transforms', () => {
   it('shows a validation message and does not run an invalid expression', async () => {
     const onRunQuery = jest.fn();
     const query = telemetryQuery({
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: 'twice' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: 'twice' }],
     });
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query, onRunQuery })} />);
 
@@ -576,7 +598,7 @@ describe('QueryEditor — Value transforms', () => {
   it('runs the query on blur when the expression is valid', async () => {
     const onRunQuery = jest.fn();
     const query = telemetryQuery({
-      transforms: [{ component: 'CDH', channel: 'Temperature', expr: '2' }],
+      transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '2' }],
     });
     render(<QueryEditor {...buildProps({ datasource: scalarDs(), query, onRunQuery })} />);
 
@@ -591,21 +613,29 @@ describe('QueryEditor — Value transforms', () => {
 
 describe('withDefaults', () => {
   it('fills in default timeField as generation_time (Generation Time)', () => {
-    const q = withDefaults({ refId: 'A', channels: [], sources: [], keys: [] } as unknown as MyQuery);
+    const q = withDefaults({ refId: 'A', parameters: [], instances: [], members: [] } as unknown as MyQuery);
     expect(q.timeField).toBe('generation_time');
   });
 
   it('fills in default queryType and aggregation', () => {
-    const q = withDefaults({ refId: 'A', channels: [], sources: [], keys: [] } as unknown as MyQuery);
+    const q = withDefaults({ refId: 'A', parameters: [], instances: [], members: [] } as unknown as MyQuery);
     expect(q.queryType).toBe('telemetry');
     expect(q.aggregation).toBe('avg');
   });
 
   it('preserves explicit values', () => {
-    const q = withDefaults({ refId: 'A', queryType: 'events', timeField: 'acquisition_time', aggregation: 'max', channels: [], sources: [], keys: [] } as MyQuery);
+    const q = withDefaults({ refId: 'A', queryType: 'events', timeField: 'acquisition_time', aggregation: 'max', parameters: [], instances: [], members: [] } as MyQuery);
     expect(q.queryType).toBe('events');
     expect(q.timeField).toBe('acquisition_time');
     expect(q.aggregation).toBe('max');
+  });
+
+  it('fills empty lists for a query saved before the YAMCS names', () => {
+    const q = withDefaults(OLD_SAVED_QUERY);
+    expect(q.parameters).toEqual([]);
+    expect(q.instances).toEqual([]);
+    expect(q.members).toEqual([]);
+    expect(q.transforms).toEqual([]);
   });
 
   it('DEFAULT_QUERY timeField matches UI default (generation_time)', () => {
@@ -635,9 +665,9 @@ describe('QueryEditor — Time field toggle', () => {
             query: {
               refId: 'A',
               queryType: 'telemetry',
-              channels: [],
-              sources: [],
-              keys: [],
+              parameters: [],
+              instances: [],
+              members: [],
               timeField: 'acquisition_time',
               aggregation: 'avg',
             } as MyQuery,
@@ -654,7 +684,7 @@ describe('QueryEditor — Time field toggle', () => {
       render(
         <QueryEditor
           {...buildProps({
-            query: { refId: 'A', queryType: 'events', channels: [], sources: [], keys: [], aggregation: 'avg' } as MyQuery,
+            query: { refId: 'A', queryType: 'events', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
           })}
         />
       );
