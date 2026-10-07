@@ -37,31 +37,11 @@ func (d *Datasource) QueryData(ctx context.Context, req *backend.QueryDataReques
 	return response, nil
 }
 
-// Component, Name, Channel, Key and Sources keep the JSON names from when the
-// plugin read the old Hermes tables, so saved queries keep the same keys.
-// Component is the YAMCS space system, Name and Channel the parameter name,
-// Key the member path and Sources the instances.
-type channelRef struct {
-	Component string `json:"component"`
-	Name      string `json:"name"`
-}
-
-type keyRef struct {
-	Component string `json:"component"`
-	Channel   string `json:"channel"`
-	Key       string `json:"key"`
-}
-
 type queryModel struct {
-	QueryType        string       `json:"queryType"`
-	Channels         []channelRef `json:"channels"`
-	Sources          []string     `json:"sources"`
-	Keys             []keyRef     `json:"keys,omitempty"`
-	TimeField        string       `json:"timeField"`
-	TimeOverrideFrom string       `json:"timeOverrideFrom,omitempty"`
-	TimeOverrideTo   string       `json:"timeOverrideTo,omitempty"`
-	Aggregation      string       `json:"aggregation"`
-	RawSql           *string      `json:"rawSql,omitempty"`
+	QueryType   string  `json:"queryType"`
+	TimeField   string  `json:"timeField"`
+	Aggregation string  `json:"aggregation"`
+	RawSql      *string `json:"rawSql,omitempty"`
 }
 
 func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, query backend.DataQuery) backend.DataResponse {
