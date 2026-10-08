@@ -15,6 +15,23 @@ export interface YamcsParameterSource {
     onYamcsParameters(handler: YamcsParameterHandler): vscode.Disposable;
 }
 
+export type YamcsEventHandler = (instance: string, events: Rpc.YamcsEvent[]) => void;
+
+/**
+ * A backend that, when its first handler subscribes, sends the newest YAMCS
+ * events in the archive, oldest first, then events as YAMCS raises them. An
+ * event raised while the archive is being listed can arrive twice, once
+ * archived and once live, so handlers have to drop repeats.
+ */
+export interface YamcsEventSource {
+    onYamcsEvents(handler: YamcsEventHandler): vscode.Disposable;
+}
+
+// How many archived events we send on connect. YAMCS's live subscription only
+// sends events raised after it starts, so without the archived events the
+// events panel would start empty.
+const RECENT_EVENTS = 100;
+
 /**
  * Whether a parameter sits directly in a top-level space system, YAMCS's
  * folder-like group of parameters, so its name has exactly two slashes, like
@@ -25,13 +42,21 @@ export function inTopLevelSpaceSystem(qualifiedName: string): boolean {
     return qualifiedName.split('/').length === 3;
 }
 
-// Telemetry straight from YAMCS through the yamcs-grpc plugin. Like Offline mode, dictionaries come
-// from workspace storage and there's no flight software connection, so no commands or events.
-export class Yamcs extends Offline implements YamcsParameterSource {
+// Telemetry and events straight from YAMCS through the yamcs-grpc plugin, named by YAMCS, so they
+// don't need a Hermes dictionary. Everything else behaves as in Offline mode, which has no flight
+// software connection and so no commands.
+export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSource {
     private readonly parameters = new vscode.EventEmitter<Rpc.YamcsParameterValue[]>();
     // Handlers share one YAMCS subscription, opened for the first handler and cancelled when the last one is disposed
     private listeners = 0;
     private cancel?: () => void;
+
+    private readonly events = new vscode.EventEmitter<Rpc.YamcsEvent[]>();
+    private eventListeners = 0;
+    private cancelEvents?: () => void;
+
+    // Losing YAMCS ends the parameter and event subscriptions together, so we only exit the backend for the first one
+    private exited = false;
 
     constructor(
         context: vscode.ExtensionContext,
@@ -95,7 +120,7 @@ export class Yamcs extends Offline implements YamcsParameterSource {
                 this.state.processor,
                 this.names,
                 (values) => this.parameters.fire(values),
-                (err) => vscode.commands.executeCommand('hermes.backend.exit', err.message),
+                (err) => this.exit(err),
             );
         }
 
@@ -110,9 +135,63 @@ export class Yamcs extends Offline implements YamcsParameterSource {
         };
     }
 
+    onYamcsEvents(handler: YamcsEventHandler): vscode.Disposable {
+        const subscription = this.events.event((events) => handler(this.state.instance, events));
+        if (this.eventListeners++ === 0) {
+            this.cancelEvents = this.subscribeEvents();
+        }
+
+        return {
+            dispose: () => {
+                subscription.dispose();
+                if (--this.eventListeners === 0) {
+                    this.cancelEvents?.();
+                    this.cancelEvents = undefined;
+                }
+            }
+        };
+    }
+
+    // We subscribe before calling listEvents so an event raised during the
+    // listing still arrives live. We hold live events back until we send the
+    // archived ones, so handlers get the archived events first.
+    private subscribeEvents(): () => void {
+        let held: Rpc.YamcsEvent[] | undefined = [];
+        let cancelled = false;
+        const cancel = this.client.subscribeEvents(
+            this.state.instance,
+            (event) => held ? held.push(event) : this.events.fire([event]),
+            (err) => this.exit(err),
+        );
+
+        this.client.listEvents(this.state.instance, RECENT_EVENTS).catch((err) => {
+            this.log.warn(`Could not list recent YAMCS events: ${err}`);
+            return [];
+        }).then((newest) => {
+            if (!cancelled) {
+                this.events.fire([...newest.reverse(), ...held!]);
+                held = undefined;
+            }
+        });
+
+        return () => {
+            cancelled = true;
+            cancel();
+        };
+    }
+
+    private exit(err: Error) {
+        if (!this.exited) {
+            this.exited = true;
+            vscode.commands.executeCommand('hermes.backend.exit', err.message);
+        }
+    }
+
     dispose(): void {
         this.cancel?.();
         this.parameters.dispose();
+        this.cancelEvents?.();
+        this.events.dispose();
         this.client.close();
         super.dispose();
     }
@@ -121,7 +200,7 @@ export class Yamcs extends Offline implements YamcsParameterSource {
 export class YamcsBackendProvider implements BackendProvider<Settings.Yamcs> {
     type = "yamcs";
     title = "YAMCS";
-    description = "Telemetry straight from YAMCS";
+    description = "Telemetry and events straight from YAMCS";
     detail = "Connect to a YAMCS server running the yamcs-grpc plugin";
     icon = "broadcast";
     priority = 30;

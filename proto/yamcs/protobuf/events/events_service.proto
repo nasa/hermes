@@ -1,0 +1,290 @@
+syntax="proto2";
+
+package yamcs.protobuf.events;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "EventsServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
+import "yamcs/protobuf/events/events.proto";
+
+
+service EventsApi {
+  option (yamcs.api.markdown) = true;
+
+  // List events
+  //
+  // Two alternative URI forms can be used. The `GET` method is convenient, while
+  // the `POST` method allows passing long filter expressions.  
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/events"
+      additional_bindings {
+        post: "/api/archive/{instance}/events:list"
+        body: "*"
+      }
+    };
+  }
+
+  // Create an event
+  rpc CreateEvent(CreateEventRequest) returns (Event) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/events"
+      body: "*"
+    };
+  }
+  
+  // List event sources
+  rpc ListEventSources(ListEventSourcesRequest) returns (ListEventSourcesResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/events/sources"
+    };
+  }
+  
+  // Streams back events
+  rpc StreamEvents(StreamEventsRequest) returns (stream Event) {
+    option (yamcs.api.route) = {
+      post: "/api/stream-archive/{instance}:streamEvents"
+      body: "*"
+    };
+  }
+  
+  // Export events in CSV format
+  rpc ExportEvents(ExportEventsRequest) returns (stream yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}:exportEvents"
+    };
+  }
+
+  // Receive event updates
+  rpc SubscribeEvents(stream SubscribeEventsRequest) returns (stream Event) {
+    option (yamcs.api.websocket) = {
+      topic: "events"
+    };
+  }
+}
+
+message ListEventsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+      
+  // The zero-based row number at which to start outputting results.
+  // Default: `0`
+  //
+  // This option is deprecated and will be removed in a later version.
+  // Use the returned continuationToken instead.
+  optional int64 pos = 2 [deprecated = true];
+  
+  // The maximum number of returned records per page. Choose this value too high
+  // and you risk hitting the maximum response size limit enforced by the server.
+  // Default: `100`
+  optional int32 limit = 3;
+  
+  // The order of the returned results. Can be either `asc` or `desc`.
+  // Default: `desc`
+  optional string order = 4;
+  
+  // The minimum severity level of the events. One of `info`, `watch`, `warning`,
+  // `distress`, `critical` or `severe`. Default: `info`
+  optional string severity = 5;
+  
+  // The source of the events. Names must match exactly.
+  repeated string source = 6;
+  
+  // Continuation token returned by a previous page response.
+  optional string next = 7;
+  
+  // Filter the lower bound of the event's generation time. Specify a date string in
+  // ISO 8601 format. This bound is inclusive.
+  optional google.protobuf.Timestamp start = 8;
+  
+  // Filter the upper bound of the event's generation time. Specify a date string in
+  // ISO 8601 format. This bound is exclusive.
+  optional google.protobuf.Timestamp stop = 9;
+  
+  // Text to search for in the message.
+  optional string q = 10;
+
+  // Filter query. See {doc}`../filtering` for how to write a filter query.
+  //
+  // Literal text search matches against the `message`, `source` and `type`
+  // fields. Field comparisons can use any of the following fields:
+  //
+  // | Field       | Type   | Description                        |
+  // | ----------- | ------ | ---------------------------------- |
+  // | `message`   | string | Filter by message text             |
+  // | `seqNumber` | number | Filter by archived sequence number |
+  // | `severity`  | enum   | Filter by event severity           |
+  // | `source`    | string | Filter by event source             |
+  // | `type`      | string | Filter by event type               |
+  //
+  // Possible severities: `info`, `watch`, `warning`, `distress`, `critical`
+  // or `severe`.
+  optional string filter = 11;
+}
+
+message ListEventsResponse {
+  // Deprecated, use `events` instead
+  repeated Event event = 1 [deprecated=true];
+
+  // Page with matching events
+  repeated Event events = 3;
+
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the `next` parameter to this token.
+  optional string continuationToken = 2;
+}
+
+message SubscribeEventsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Filter query. See {doc}`../filtering` for how to write a filter query.
+  //
+  // Literal text search matches against the `message`, `source` and `type`
+  // fields. Field comparisons can use any of the following fields:
+  //
+  // | Field       | Type   | Description                        |
+  // | ----------- | ------ | ---------------------------------- |
+  // | `message`   | string | Filter by message text             |
+  // | `seqNumber` | number | Filter by archived sequence number |
+  // | `severity`  | enum   | Filter by event severity           |
+  // | `source`    | string | Filter by event source             |
+  // | `type`      | string | Filter by event type               |
+  //
+  // Possible severities: `info`, `watch`, `warning`, `distress`, `critical`
+  // or `severe`.
+  optional string filter = 2;
+}
+
+message CreateEventRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Description of the type of the event. Useful for quick classification or filtering.
+  optional string type = 2;
+
+  // **Required.** Event message.
+  optional string message = 3;
+
+  // The severity level of the event. One of `info`, `watch`, `warning`,
+  // `distress`, `critical` or `severe`. Default is `info`
+  optional string severity = 4;
+
+  // Time associated with the event.
+  // If unspecified, this will default to the current mission time.
+  optional google.protobuf.Timestamp time = 5;
+
+  // Source of the event. Useful for grouping events in the archive. Default is
+  // `User`.
+  optional string source = 6;
+
+  // Sequence number of this event. This is primarily used to determine unicity of
+  // events coming from the same source. If not set Yamcs will automatically
+  // assign a sequential number as if every submitted event is unique.
+  optional int32 sequenceNumber = 7;
+
+  // Additional properties
+  map<string, string> extra = 8;
+}
+
+message StreamEventsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Filter the lower bound of the event's generation time. Specify a date
+  // string in ISO 8601 format.
+  optional google.protobuf.Timestamp start = 2;
+
+  // Filter the upper bound of the event's generation time. Specify a date
+  // string in ISO 8601 format.
+  optional google.protobuf.Timestamp stop = 3;
+
+  // Event sources to include. Leave unset, to include all.
+  repeated string source = 4;
+
+  // Filter on minimum severity level
+  optional string severity = 5;
+
+  // Search by text
+  optional string q = 6;
+
+  // Filter query. See {doc}`../filtering` for how to write a filter query.
+  //
+  // Literal text search matches against the `message`, `source` and `type`
+  // fields. Field comparisons can use any of the following fields:
+  //
+  // | Field       | Type   | Description                        |
+  // | ----------- | ------ | ---------------------------------- |
+  // | `message`   | string | Filter by message text             |
+  // | `seqNumber` | number | Filter by archived sequence number |
+  // | `severity`  | enum   | Filter by event severity           |
+  // | `source`    | string | Filter by event source             |
+  // | `type`      | string | Filter by event type               |
+  //
+  // Possible severities: `info`, `watch`, `warning`, `distress`, `critical`
+  // or `severe`.
+  optional string filter = 7;
+}
+
+message ListEventSourcesRequest {
+  // Yamcs instance name
+  optional string instance = 1; 
+}
+
+message ListEventSourcesResponse {
+  // Deprecated, use `sources` instead
+  repeated string source = 1 [deprecated=true];
+
+  // Known event sources
+  repeated string sources = 2;
+}
+
+message ExportEventsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+  
+  // Filter the lower bound of the event's generation time.
+  // Specify a date string in ISO 8601 format. This bound is inclusive.
+  optional google.protobuf.Timestamp start = 2;
+  
+  // Filter the upper bound of the event's generation time. Specify a date
+  // string in ISO 8601 format. This bound is exclusive.
+  optional google.protobuf.Timestamp stop = 3;
+  
+  // The source of the events. Names must match exactly.
+  repeated string source = 4;
+  
+  // The minimum severity level of the events. One of `info`, `watch`, 
+  // `warning`, `distress` or `severe`. Default: `info`
+  optional string severity = 5;
+  
+  // Text to search for in the message.
+  optional string q = 6;
+
+  // Filter query. See {doc}`../filtering` for how to write a filter query.
+  //
+  // Literal text search matches against the `message`, `source` and `type`
+  // fields. Field comparisons can use any of the following fields:
+  //
+  // | Field       | Type   | Description                        |
+  // | ----------- | ------ | ---------------------------------- |
+  // | `message`   | string | Filter by message text             |
+  // | `seqNumber` | number | Filter by archived sequence number |
+  // | `severity`  | enum   | Filter by event severity           |
+  // | `source`    | string | Filter by event source             |
+  // | `type`      | string | Filter by event type               |
+  //
+  // Possible severities: `info`, `watch`, `warning`, `distress`, `critical`
+  // or `severe`.
+  optional string filter = 8;
+
+  // Column delimiter. One of `TAB`, `COMMA` or `SEMICOLON`.
+  // Default: `TAB`.
+  optional string delimiter = 7;
+}

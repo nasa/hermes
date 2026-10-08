@@ -1,12 +1,14 @@
 import * as vscode from 'vscode';
 
-import { DisplayEvent, Event, Sourced } from '@gov.nasa.jpl.hermes/types';
+import { Event } from '@gov.nasa.jpl.hermes/types';
 import { Api } from '@gov.nasa.jpl.hermes/api';
 import { WebViewMessenger, WebViewPanelBase } from '@gov.nasa.jpl.hermes/vscode';
 
-import { FrontendMessage, BackendMessage } from '../../common/evrs';
+import { FrontendMessage, BackendMessage, EventRow } from '../../common/evrs';
 import { DebounceEmitter } from '../utils/DebounceEmitter';
 import { eventToDisplayEvent } from '@gov.nasa.jpl.hermes/types/src/conversion';
+import { YamcsEventSource } from '../api/Yamcs';
+import { yamcsEventRows } from './yamcsEvents';
 
 export class EventViewerBase extends WebViewPanelBase {
     static parse(text: string) {
@@ -88,13 +90,18 @@ export class EventViewer extends EventViewerBase implements vscode.CustomTextEdi
 
 
 export class EventPanel extends EventViewerBase implements vscode.WebviewViewProvider {
-    panelEvents: Sourced<Event>[];
-    debouncer: DebounceEmitter<DisplayEvent>;
+    panelEvents: EventRow[];
+    debouncer: DebounceEmitter<EventRow>;
 
-    constructor(readonly api: Api, extensionPath: string) {
+    // yamcsKeys holds the key of each YAMCS event in panelEvents, so we can drop
+    // repeats. The YAMCS backend can send an event raised during its archive listing
+    // twice, and sends the archived events again each time it connects.
+    private yamcsKeys = new Set<string>();
+
+    constructor(readonly api: Api & YamcsEventSource, extensionPath: string) {
         super(extensionPath, 'hermes.eventPanel');
         this.panelEvents = [];
-        this.debouncer = new DebounceEmitter<DisplayEvent>({
+        this.debouncer = new DebounceEmitter<EventRow>({
             merge: (evrs) => evrs
         });
 
@@ -107,11 +114,16 @@ export class EventPanel extends EventViewerBase implements vscode.WebviewViewPro
                     retainContextWhenHidden: true
                 }
             }),
-            this.api.onEvent((evr) => {
-                this.panelEvents.push(evr);
-                this.debouncer.fire(eventToDisplayEvent(evr));
+            this.api.onEvent((evr) => this.add(eventToDisplayEvent(evr))),
+            this.api.onYamcsEvents((instance, events) => {
+                yamcsEventRows(instance, events, this.yamcsKeys).forEach((row) => this.add(row));
             })
         );
+    }
+
+    private add(row: EventRow) {
+        this.panelEvents.push(row);
+        this.debouncer.fire(row);
     }
 
     async resolveWebviewView(webviewView: vscode.WebviewView): Promise<void> {
@@ -122,14 +134,15 @@ export class EventPanel extends EventViewerBase implements vscode.WebviewViewPro
                 case 'refresh':
                     messenger.postMessage({
                         type: 'update',
-                        events: this.panelEvents.map(eventToDisplayEvent)
+                        events: this.panelEvents
                     });
                     break;
                 case 'clear':
                     this.panelEvents = [];
+                    this.yamcsKeys.clear();
                     messenger.postMessage({
                         type: 'update',
-                        events: this.panelEvents.map(eventToDisplayEvent)
+                        events: this.panelEvents
                     });
             }
         }, webviewView.webview);

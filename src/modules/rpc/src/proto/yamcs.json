@@ -4253,6 +4253,410 @@
                   }
                 }
               }
+            },
+            "events": {
+              "options": {
+                "java_package": "org.yamcs.protobuf",
+                "java_outer_classname": "EventsProto",
+                "java_multiple_files": true
+              },
+              "nested": {
+                "EventsApi": {
+                  "edition": "proto2",
+                  "options": {
+                    "(yamcs.api.markdown)": true
+                  },
+                  "methods": {
+                    "ListEvents": {
+                      "requestType": "ListEventsRequest",
+                      "responseType": "ListEventsResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/archive/{instance}/events",
+                        "(yamcs.api.route).additional_bindings.post": "/api/archive/{instance}/events:list",
+                        "(yamcs.api.route).additional_bindings.body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/archive/{instance}/events",
+                            "additional_bindings": {
+                              "post": "/api/archive/{instance}/events:list",
+                              "body": "*"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "CreateEvent": {
+                      "requestType": "CreateEventRequest",
+                      "responseType": "Event",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/archive/{instance}/events",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/archive/{instance}/events",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "ListEventSources": {
+                      "requestType": "ListEventSourcesRequest",
+                      "responseType": "ListEventSourcesResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/archive/{instance}/events/sources"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/archive/{instance}/events/sources"
+                          }
+                        }
+                      ]
+                    },
+                    "StreamEvents": {
+                      "requestType": "StreamEventsRequest",
+                      "responseType": "Event",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.route).post": "/api/stream-archive/{instance}:streamEvents",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/stream-archive/{instance}:streamEvents",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "ExportEvents": {
+                      "requestType": "ExportEventsRequest",
+                      "responseType": "yamcs.api.HttpBody",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.route).get": "/api/archive/{instance}:exportEvents"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/archive/{instance}:exportEvents"
+                          }
+                        }
+                      ]
+                    },
+                    "SubscribeEvents": {
+                      "requestType": "SubscribeEventsRequest",
+                      "requestStream": true,
+                      "responseType": "Event",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.websocket).topic": "events"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.websocket)": {
+                            "topic": "events"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "ListEventsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "pos": {
+                      "type": "int64",
+                      "id": 2,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "limit": {
+                      "type": "int32",
+                      "id": 3
+                    },
+                    "order": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "severity": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "source": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 6
+                    },
+                    "next": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "start": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 8
+                    },
+                    "stop": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 9
+                    },
+                    "q": {
+                      "type": "string",
+                      "id": 10
+                    },
+                    "filter": {
+                      "type": "string",
+                      "id": 11
+                    }
+                  }
+                },
+                "ListEventsResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "event": {
+                      "rule": "repeated",
+                      "type": "Event",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "events": {
+                      "rule": "repeated",
+                      "type": "Event",
+                      "id": 3
+                    },
+                    "continuationToken": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "SubscribeEventsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "filter": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "CreateEventRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "type": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "message": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "severity": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "time": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 5
+                    },
+                    "source": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "sequenceNumber": {
+                      "type": "int32",
+                      "id": 7
+                    },
+                    "extra": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 8
+                    }
+                  }
+                },
+                "StreamEventsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "start": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 2
+                    },
+                    "stop": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 3
+                    },
+                    "source": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 4
+                    },
+                    "severity": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "q": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "filter": {
+                      "type": "string",
+                      "id": 7
+                    }
+                  }
+                },
+                "ListEventSourcesRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "ListEventSourcesResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "source": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "sources": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "ExportEventsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "start": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 2
+                    },
+                    "stop": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 3
+                    },
+                    "source": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 4
+                    },
+                    "severity": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "q": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "filter": {
+                      "type": "string",
+                      "id": 8
+                    },
+                    "delimiter": {
+                      "type": "string",
+                      "id": 7
+                    }
+                  }
+                },
+                "Event": {
+                  "edition": "proto2",
+                  "fields": {
+                    "source": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "generationTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 2
+                    },
+                    "receptionTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 3
+                    },
+                    "seqNumber": {
+                      "type": "int32",
+                      "id": 4
+                    },
+                    "type": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "message": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "severity": {
+                      "type": "EventSeverity",
+                      "id": 7,
+                      "options": {
+                        "default": "INFO"
+                      }
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "id": 10
+                    },
+                    "extra": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 11
+                    }
+                  },
+                  "nested": {
+                    "EventSeverity": {
+                      "valuesOptions": {
+                        "ERROR": {
+                          "deprecated": true
+                        }
+                      },
+                      "values": {
+                        "INFO": 0,
+                        "WARNING": 1,
+                        "ERROR": 2,
+                        "WATCH": 3,
+                        "WARNING_NEW": 4,
+                        "DISTRESS": 5,
+                        "CRITICAL": 6,
+                        "SEVERE": 7
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },

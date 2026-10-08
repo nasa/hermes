@@ -74,7 +74,11 @@ one row per member or element, such as `comQueueDepth[1]`, with member paths spe
 yamcs-recorder (`cmd/yamcs-recorder`) stores them. Rows are timed by when YAMCS received each
 value, its acquisition time. YAMCS values have no SCLK, so the SCLK column shows that time in UTC.
 
-YAMCS mode can't send commands or show events. It sends no credentials, so it fails with
+YAMCS events show up in the events panel with source `yamcs:<instance>`, YAMCS's source in the
+component column and its type in the name column. On connect the panel loads the newest 100 events
+from the archive, then adds live ones. It does not show an event's extra, reception time or createdBy.
+
+YAMCS mode can't send commands. It sends no credentials, so it fails with
 `UNAUTHENTICATED` when YAMCS security is on. When its subscription ends, for example because YAMCS
 or its instance stopped, the status bar turns red with the reason in its tooltip. To subscribe again,
 run **Hermes: Reconnect to Backend**.
@@ -91,6 +95,7 @@ node src/extensions/core/test/e2e/run.js   # downloads VS Code 1.138.0 on first 
 
 The live jest tests run only when `YAMCS_GRPC_ADDRESS` is set. `run.js` defaults to `localhost:8091`
 and writes `result.json` next to itself. Both read `YAMCS_INSTANCE`, default `fprime-project`.
+The two live event tests each raise one event with YAMCS's `CreateEvent`, which stays in that instance's archive.
 `VSCODE_TEST_CACHE` points `run.js` at an existing VS Code download. `E2E_HOLD_MS` holds the window
 open that many milliseconds with the telemetry table showing.
 

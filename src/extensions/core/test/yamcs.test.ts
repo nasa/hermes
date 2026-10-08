@@ -1,4 +1,4 @@
-import { describe, expect, jest, test } from '@jest/globals';
+import { afterEach, describe, expect, jest, test } from '@jest/globals';
 
 // Settings a test has set. Every other setting reads as unset and takes its default.
 const mockSettings: Record<string, unknown> = {};
@@ -31,10 +31,11 @@ jest.mock('vscode', () => {
 
 import * as vscode from 'vscode';
 import type * as Hermes from '@gov.nasa.jpl.hermes/api';
-import { YamcsClient, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
+import { YamcsClient, YamcsEvent, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
 
-import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsParameterHandler } from '../src/api/Yamcs';
+import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterHandler } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
+import { yamcsEventRows } from '../src/components/yamcsEvents';
 import { leaves, splitName } from '../src/components/yamcsRows';
 
 // Values as the live fprime-project instance sent them
@@ -262,6 +263,157 @@ describe('TelemetryDatabase with YAMCS parameters', () => {
     });
 });
 
+// Events as the live fprime-project instance sent them
+const opCodeDispatched: YamcsEvent = {
+    source: 'FPrimeEventProcessor',
+    generationTime: { seconds: '1790873434', nanos: 505000000 },
+    receptionTime: { seconds: '1790873434', nanos: 703000000 },
+    seqNumber: 4,
+    type: 'CdhCore.cmdDisp.OpCodeDispatched',
+    message: '[OpCodeDispatched] Opcode 0x10005001 dispatched to port 0',
+    severity: 'INFO',
+    createdBy: 'guest',
+    extra: { Opcode: '268455937', port: '0', fprime_severity: 'COMMAND', fprime_event_id: '16777217', fprime_event_name: 'CdhCore.cmdDisp.OpCodeDispatched' },
+};
+const seqCountJump: YamcsEvent = {
+    source: 'FprimePacketPreprocessor',
+    generationTime: { seconds: '1790722468', nanos: 95000000 },
+    receptionTime: { seconds: '1790722468', nanos: 95000000 },
+    seqNumber: 1,
+    type: 'SEQ_COUNT_JUMP',
+    message: 'Sequence count jump for APID: 4 old seq: 0 newseq: 0',
+    severity: 'WARNING',
+};
+
+describe('yamcsEventRows', () => {
+    test('keeps the YAMCS fields', () => {
+        expect(yamcsEventRows('fprime-project', [opCodeDispatched, seqCountJump], new Set())).toEqual([
+            {
+                time: 1790873434505,
+                sclk: NaN,
+                source: 'yamcs:fprime-project',
+                component: 'FPrimeEventProcessor',
+                name: 'CdhCore.cmdDisp.OpCodeDispatched',
+                severity: 'INFO',
+                message: '[OpCodeDispatched] Opcode 0x10005001 dispatched to port 0',
+            },
+            {
+                time: 1790722468095,
+                sclk: NaN,
+                source: 'yamcs:fprime-project',
+                component: 'FprimePacketPreprocessor',
+                name: 'SEQ_COUNT_JUMP',
+                severity: 'WARNING',
+                message: 'Sequence count jump for APID: 4 old seq: 0 newseq: 0',
+            },
+        ]);
+    });
+
+    test('shows WARNING_NEW as WARNING, ERROR as SEVERE and no severity as INFO', () => {
+        const rows = yamcsEventRows('fprime-project', [
+            { ...seqCountJump, seqNumber: 2, severity: 'WARNING_NEW' },
+            { ...seqCountJump, seqNumber: 3, severity: undefined },
+            { ...seqCountJump, seqNumber: 4, severity: 'SEVERE' },
+            { ...seqCountJump, seqNumber: 5, severity: 'ERROR' },
+        ], new Set());
+        expect(rows.map((r) => r.severity)).toEqual(['WARNING', 'INFO', 'SEVERE', 'SEVERE']);
+    });
+
+    test('drops an event seen before, by instance, generation time, source and sequence number', () => {
+        const seen = new Set<string>();
+        const t = opCodeDispatched.generationTime!;
+        expect(yamcsEventRows('fprime-project', [opCodeDispatched], seen)).toHaveLength(1);
+        expect(yamcsEventRows('fprime-project', [{ ...opCodeDispatched, receptionTime: undefined }], seen)).toEqual([]);
+        expect(yamcsEventRows('fprime-project', [
+            { ...opCodeDispatched, generationTime: { ...t, nanos: t.nanos! + 1 } },
+            { ...opCodeDispatched, source: 'FprimePacketPreprocessor' },
+            { ...opCodeDispatched, seqNumber: 5 },
+        ], seen)).toHaveLength(3);
+        expect(yamcsEventRows('other-instance', [opCodeDispatched], seen)).toHaveLength(1);
+    });
+
+    test('skips events without a generation time', () => {
+        expect(yamcsEventRows('fprime-project', [{ ...opCodeDispatched, generationTime: undefined }], new Set())).toEqual([]);
+    });
+});
+
+describe('YAMCS event source', () => {
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    // A YAMCS backend whose event subscriptions and listings the test drives
+    async function backend() {
+        const warn = jest.fn();
+        jest.spyOn(YamcsClient.prototype, 'waitForReady').mockResolvedValue(undefined);
+        jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
+        const raise: ((event: YamcsEvent) => void)[] = [];
+        const subscribe = jest.spyOn(YamcsClient.prototype, 'subscribeEvents').mockImplementation((_, onEvent) => {
+            raise.push(onEvent);
+            return () => { };
+        });
+        const lists: { resolve: (events: YamcsEvent[]) => void; reject: (err: Error) => void }[] = [];
+        const list = jest.spyOn(YamcsClient.prototype, 'listEvents').mockImplementation(() => new Promise((resolve, reject) => {
+            lists.push({ resolve, reject });
+        }));
+        const api = await new YamcsBackendProvider().provideBackendApi(
+            { address: 'localhost:1', instance: 'fprime-project', processor: 'realtime' },
+            {} as vscode.ExtensionContext,
+            { debug: () => { }, info: () => { }, warn, error: () => { } },
+        ) as Hermes.Api & YamcsEventSource;
+        return { api, raise, lists, subscribe, list, warn };
+    }
+
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+    const [first, second, third, fourth] = [4, 5, 6, 7].map((seqNumber) => ({ ...opCodeDispatched, seqNumber }));
+
+    test('sends the newest archived events oldest first, then live events', async () => {
+        const { api, raise, lists, subscribe, list } = await backend();
+        const batches: YamcsEvent[][] = [];
+        const sub = api.onYamcsEvents((_, events) => batches.push(events));
+        expect(subscribe.mock.invocationCallOrder[0]).toBeLessThan(list.mock.invocationCallOrder[0]);
+        expect(list).toHaveBeenCalledWith('fprime-project', 100);
+
+        // third is raised live while the archive is being listed, so the listing has it too.
+        raise[0](third);
+        expect(batches).toEqual([]);
+        lists[0].resolve([third, second, first]);
+        await settle();
+        expect(batches).toEqual([[first, second, third, third]]);
+
+        raise[0](fourth);
+        expect(batches[1]).toEqual([fourth]);
+        sub.dispose();
+        api.dispose();
+    });
+
+    test('sends live events when the archive cannot be listed', async () => {
+        const { api, raise, lists, warn } = await backend();
+        const batches: YamcsEvent[][] = [];
+        const sub = api.onYamcsEvents((_, events) => batches.push(events));
+        raise[0](first);
+        lists[0].reject(new Error('UNAVAILABLE'));
+        await settle();
+        expect(batches).toEqual([[first]]);
+        expect(warn).toHaveBeenCalledTimes(1);
+        sub.dispose();
+        api.dispose();
+    });
+
+    test('drops a listing that finishes after its listener left', async () => {
+        const { api, lists } = await backend();
+        const batches: YamcsEvent[][] = [];
+        api.onYamcsEvents(() => { }).dispose();
+        const sub = api.onYamcsEvents((_, events) => batches.push(events));
+        lists[0].resolve([first]);
+        lists[1].resolve([second]);
+        await settle();
+        expect(batches).toEqual([[second]]);
+        sub.dispose();
+        api.dispose();
+    });
+});
+
 // Live checks against a YAMCS server running the yamcs-grpc plugin, e.g.
 // YAMCS_GRPC_ADDRESS=localhost:8091 with an fprime-yamcs instance.
 const address = process.env.YAMCS_GRPC_ADDRESS;
@@ -371,6 +523,91 @@ async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<
         } finally {
             db.dispose();
             api.dispose();
+        }
+    }, 30000);
+
+    async function eventBatches() {
+        const api = await new YamcsBackendProvider().provideBackendApi(
+            { address: address!, instance, processor: 'realtime' },
+            {} as vscode.ExtensionContext,
+            log,
+        ) as Hermes.Api & YamcsEventSource;
+        const batches: YamcsEvent[][] = [];
+        const sub = api.onYamcsEvents((_, events) => batches.push(events));
+        return { batches, dispose: () => { sub.dispose(); api.dispose(); } };
+    }
+
+    // YamcsClient has no createEvent, so this uses its EventsApi client directly
+    function raiseEvent(client: YamcsClient, message: string) {
+        return new Promise<YamcsEvent>((resolve, reject) => {
+            client['events'].CreateEvent({ instance, source: 'hermes test', message }, (err, res) => err ? reject(err) : resolve(res!));
+        });
+    }
+
+    test('sends the newest archived events oldest first', async () => {
+        const { batches, dispose } = await eventBatches();
+        try {
+            const archived = await waitFor(() => batches[0], 5000);
+            const rows = yamcsEventRows(instance, archived, new Set());
+            console.log(JSON.stringify({ archived: archived.length, oldest: rows[0], newest: rows[rows.length - 1] }, null, 2));
+
+            expect(rows.length).toBeGreaterThan(0);
+            expect(rows.every((r, i) => i === 0 || rows[i - 1].time <= r.time)).toBe(true);
+        } finally {
+            dispose();
+        }
+    }, 30000);
+
+    // Raises one event with CreateEvent. It stays in the instance's archive.
+    test('an event raised with CreateEvent arrives live', async () => {
+        const { batches, dispose } = await eventBatches();
+        const client = new YamcsClient(address!);
+        try {
+            await waitFor(() => batches[0], 5000);
+
+            // YAMCS does not acknowledge the subscription, so give it time to start
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            const message = `yamcs.test.ts ${Date.now()}`;
+            const created = await raiseEvent(client, message);
+
+            // Other sources may raise events first
+            const event = await waitFor(() => batches.slice(1).flat().find((e) => e.message === message), 10000);
+            const [row] = yamcsEventRows(instance, [event], new Set());
+            console.log(JSON.stringify(row, null, 2));
+
+            expect(event).toMatchObject({ source: created.source, seqNumber: created.seqNumber });
+            expect(row).toMatchObject({ source: `yamcs:${instance}`, component: 'hermes test', severity: 'INFO', message });
+        } finally {
+            client.close();
+            dispose();
+        }
+    }, 30000);
+
+    // Raises one event with CreateEvent. It stays in the instance's archive.
+    test('an event raised while the archive is being listed shows once', async () => {
+        const client = new YamcsClient(address!);
+        const message = `yamcs.test.ts listing ${Date.now()}`;
+        // The backend subscribes before it lists the archive. We raise the event in between, so YAMCS
+        // sends it live and also returns it in the listing.
+        const listEvents = YamcsClient.prototype.listEvents;
+        jest.spyOn(YamcsClient.prototype, 'listEvents').mockImplementation(async function (this: YamcsClient, inst, limit) {
+            // YAMCS does not acknowledge the subscription, so give it time to start
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await raiseEvent(client, message);
+            return listEvents.call(this, inst, limit);
+        });
+        const { batches, dispose } = await eventBatches();
+        try {
+            const copies = () => batches.flat().filter((e) => e.message === message);
+            await waitFor(() => copies().length >= 2 || undefined, 10000);
+            const rows = yamcsEventRows(instance, batches.flat(), new Set()).filter((r) => r.message === message);
+
+            expect(copies()).toHaveLength(2);
+            expect(rows).toHaveLength(1);
+        } finally {
+            jest.restoreAllMocks();
+            client.close();
+            dispose();
         }
     }, 30000);
 });

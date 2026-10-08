@@ -4,7 +4,7 @@ import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { BackendProvider } from '@gov.nasa.jpl.hermes/vscode';
 import { Proto, Sourced, Event, Telemetry } from '@gov.nasa.jpl.hermes/types';
 import { Offline } from './Offline';
-import { Yamcs, YamcsParameterHandler, YamcsParameterSource } from './Yamcs';
+import { Yamcs, YamcsEventHandler, YamcsEventSource, YamcsParameterHandler, YamcsParameterSource } from './Yamcs';
 
 /**
  * VscodeApi wraps the actual API implementation and maintains stable
@@ -12,7 +12,7 @@ import { Yamcs, YamcsParameterHandler, YamcsParameterSource } from './Yamcs';
  * extension to change backend connections without requiring a window reload
  * or re-subscribing to events.
  */
-export class VscodeApi implements Hermes.Api, YamcsParameterSource {
+export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSource {
     private _onContextRefresh = new vscode.EventEmitter<void>();
     onContextRefresh = this._onContextRefresh.event;
 
@@ -29,11 +29,13 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource {
     private eventSubscribers = new Map<(pkt: Sourced<Event>) => void, Proto.IBusFilter | undefined>();
     private telemetrySubscribers = new Map<(pkt: Sourced<Telemetry>) => void, Proto.IBusFilter | undefined>();
     private yamcsSubscribers = new Set<YamcsParameterHandler>();
+    private yamcsEventSubscribers = new Set<YamcsEventHandler>();
 
     private apiSubscriptions: vscode.Disposable[] = [];
     private eventSubscriptions = new Map<(pkt: Sourced<Event>) => void, vscode.Disposable>();
     private telemetrySubscriptions = new Map<(pkt: Sourced<Telemetry>) => void, vscode.Disposable>();
     private yamcsSubscriptions = new Map<YamcsParameterHandler, vscode.Disposable>();
+    private yamcsEventSubscriptions = new Map<YamcsEventHandler, vscode.Disposable>();
 
     onFswChange = this._onFswChange.event;
     onProvidersChange = this._onProvidersChange.event;
@@ -272,11 +274,16 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource {
             this.apiSubscriptions.push(subscription);
         }
 
-        // Resubscribe all tracked YAMCS parameter handlers
+        // Resubscribe all tracked YAMCS parameter and event handlers
         if (this.currentApi instanceof Yamcs) {
             for (const handler of this.yamcsSubscribers) {
                 const subscription = this.currentApi.onYamcsParameters(handler);
                 this.yamcsSubscriptions.set(handler, subscription);
+                this.apiSubscriptions.push(subscription);
+            }
+            for (const handler of this.yamcsEventSubscribers) {
+                const subscription = this.currentApi.onYamcsEvents(handler);
+                this.yamcsEventSubscriptions.set(handler, subscription);
                 this.apiSubscriptions.push(subscription);
             }
         }
@@ -410,6 +417,22 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource {
                 this.yamcsSubscribers.delete(handler);
                 this.yamcsSubscriptions.get(handler)?.dispose();
                 this.yamcsSubscriptions.delete(handler);
+            }
+        };
+    }
+
+    onYamcsEvents(handler: YamcsEventHandler): vscode.Disposable {
+        this.yamcsEventSubscribers.add(handler);
+
+        if (this.currentApi instanceof Yamcs) {
+            this.yamcsEventSubscriptions.set(handler, this.currentApi.onYamcsEvents(handler));
+        }
+
+        return {
+            dispose: () => {
+                this.yamcsEventSubscribers.delete(handler);
+                this.yamcsEventSubscriptions.get(handler)?.dispose();
+                this.yamcsEventSubscriptions.delete(handler);
             }
         };
     }
@@ -549,9 +572,11 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource {
         this.eventSubscribers.clear();
         this.telemetrySubscribers.clear();
         this.yamcsSubscribers.clear();
+        this.yamcsEventSubscribers.clear();
         this.eventSubscriptions.clear();
         this.telemetrySubscriptions.clear();
         this.yamcsSubscriptions.clear();
+        this.yamcsEventSubscriptions.clear();
 
         for (const disposable of this.disposables) {
             disposable.dispose();
