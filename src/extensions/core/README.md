@@ -47,7 +47,7 @@ Runs a backend process managed by VSCode. Provides full telemetry, commanding, a
 Connect to an externally-managed backend server for shared testbed or operations environments. Configure the backend URL in settings.
 
 #### YAMCS Mode
-Show live telemetry from a YAMCS server in the telemetry table and plot. Like Offline mode, it can't send commands or show events. It needs the yamcs-grpc plugin, whose [README](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin) explains the setup.
+Show live telemetry from a YAMCS server in the telemetry table and plot, and YAMCS events in the events panel. Like Offline mode, it can't send commands. It needs the yamcs-grpc plugin, whose [README](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin) explains the setup.
 
 <!-- Add screenshot of connection status here -->
 
