@@ -1,4 +1,4 @@
-import { ChannelQuery, ChannelRef, MyQuery, ResolvedQuery, TransformRef } from "types";
+import { MyQuery, ParameterQuery, ParameterRef, ResolvedQuery, TransformRef } from "types";
 import { DataQueryRequest } from "@grafana/data";
 
 // token for user transforms
@@ -11,22 +11,22 @@ const TRAILING_OP_PATTERN = /[-+*/%^<>=~|&]$/;
 const LEADING_OP_PATTERN = /^[*/%^<>=|&]/;
 
 
-// Resolve channel references to concrete { component, name } pairs.
-export function resolveChannels(
-    channels: ChannelQuery[],
+// Resolve parameter references to concrete { spaceSystem, name } pairs.
+export function resolveParameters(
+    parameters: ParameterQuery[],
     replace: (value: string) => string,
-    known: ChannelRef[]
-): ChannelRef[] {
-    return channels.map((ch) => {
-        if (ch.raw === undefined) {
-            return { component: replace(ch.component), name: replace(ch.name) };
+    known: ParameterRef[]
+): ParameterRef[] {
+    return parameters.map((p) => {
+        if (p.raw === undefined) {
+            return { spaceSystem: replace(p.spaceSystem), name: replace(p.name) };
         }
-        const expanded = replace(ch.raw);
-        const match = known.find((k) => `${k.component}/${k.name}` === expanded);
+        const expanded = replace(p.raw);
+        const match = known.find((k) => `${k.spaceSystem}/${k.name}` === expanded);
         if (match) {
-            return { component: match.component, name: match.name };
+            return { spaceSystem: match.spaceSystem, name: match.name };
         }
-        return { component: expanded, name: '' };
+        return { spaceSystem: expanded, name: '' };
     });
 }
 
@@ -34,21 +34,21 @@ export function resolveChannels(
 export function resolveQuery(
     query: MyQuery,
     replace: (value: string) => string,
-    known: ChannelRef[] = []
+    known: ParameterRef[] = []
 ): ResolvedQuery {
     return {
         ...query,
-        channels: resolveChannels(query.channels ?? [], replace, known),
-        sources: query.sources?.map(replace) ?? [],
-        keys: query.keys?.map((k) => ({
-            component: replace(k.component),
-            channel: replace(k.channel),
-            key: replace(k.key),
+        parameters: resolveParameters(query.parameters ?? [], replace, known),
+        instances: query.instances?.map(replace) ?? [],
+        members: query.members?.map((m) => ({
+            spaceSystem: replace(m.spaceSystem),
+            parameter: replace(m.parameter),
+            member: replace(m.member),
         })) ?? [],
         transforms: query.transforms?.map((t) => ({
-            component: replace(t.component),
-            channel: replace(t.channel),
-            targetKey: t.targetKey === undefined ? undefined : replace(t.targetKey),
+            spaceSystem: replace(t.spaceSystem),
+            parameter: replace(t.parameter),
+            member: t.member === undefined ? undefined : replace(t.member),
             expr: replace(t.expr),
             name: t.name === undefined ? undefined : replace(t.name),
         })) ?? [],
@@ -140,19 +140,19 @@ export function bindValueToken(expr: string, column: string): string {
 }
 
 function applicableTransforms(q: ResolvedQuery): Array<{ t: TransformRef; expr: string }> {
-    const channels = q.channels ?? [];
-    const matchesSelectedChannel = (t: TransformRef) =>
-        channels.some((ch) => t.component === ch.component && t.channel === ch.name);
+    const parameters = q.parameters ?? [];
+    const matchesSelectedParameter = (t: TransformRef) =>
+        parameters.some((p) => t.spaceSystem === p.spaceSystem && t.parameter === p.name);
 
     const usable = (q.transforms ?? [])
         .map((t) => ({ t, expr: normalizeTransform(t.expr) }))
         .filter((e): e is { t: TransformRef; expr: string } => e.expr !== undefined)
         .filter(({ expr }) => validateExpression(expr) === undefined)
-        .filter(({ t }) => matchesSelectedChannel(t));
+        .filter(({ t }) => matchesSelectedParameter(t));
 
     return [
-        ...usable.filter(({ t }) => t.targetKey !== undefined),
-        ...usable.filter(({ t }) => t.targetKey === undefined),
+        ...usable.filter(({ t }) => t.member !== undefined),
+        ...usable.filter(({ t }) => t.member === undefined),
     ];
 }
 
@@ -162,10 +162,10 @@ export function buildTransformCase(q: ResolvedQuery, column: string): string {
         return column;
     }
     const branches = entries.map(({ t, expr }) => {
-        const conditions = [`p.space_system = ${esc(t.component)}`, `p.name = ${esc(t.channel)}`];
+        const conditions = [`p.space_system = ${esc(t.spaceSystem)}`, `p.name = ${esc(t.parameter)}`];
         // A scalar's member path is '', so only undefined means the whole parameter.
-        if (t.targetKey !== undefined) {
-            conditions.push(`v.member_path = ${esc(t.targetKey)}`);
+        if (t.member !== undefined) {
+            conditions.push(`v.member_path = ${esc(t.member)}`);
         }
         return `WHEN ${conditions.join(' AND ')} THEN ${bindValueToken(expr, column)}`;
     });
@@ -174,31 +174,31 @@ export function buildTransformCase(q: ResolvedQuery, column: string): string {
 
 // Resolve the display-name override for a series identified by its labels, or
 // undefined when no matching transform carries a (non-empty) name. Matching
-// mirrors applicableTransforms: only transforms on a selected channel apply,
-// and a key-specific override wins over a channel-wide one.
+// mirrors applicableTransforms: only transforms on a selected parameter apply,
+// and a member-specific override wins over a parameter-wide one.
 export function aliasForLabels(
     q: ResolvedQuery,
-    labels: { component: string; channel: string; key: string }
+    labels: { space_system: string; parameter: string; member: string }
 ): string | undefined {
-    const channels = q.channels ?? [];
-    const onSelectedChannel = channels.some(
-        (ch) => ch.component === labels.component && ch.name === labels.channel
+    const parameters = q.parameters ?? [];
+    const onSelectedParameter = parameters.some(
+        (p) => p.spaceSystem === labels.space_system && p.name === labels.parameter
     );
-    if (!onSelectedChannel) {
+    if (!onSelectedParameter) {
         return undefined;
     }
 
     const candidates = (q.transforms ?? []).filter(
         (t) =>
-            t.component === labels.component &&
-            t.channel === labels.channel &&
+            t.spaceSystem === labels.space_system &&
+            t.parameter === labels.parameter &&
             (t.name ?? '').trim() !== '' &&
-            (t.targetKey === undefined || t.targetKey === labels.key)
+            (t.member === undefined || t.member === labels.member)
     );
-    // Prefer a key-specific override over a channel-wide one.
+    // Prefer a member-specific override over a parameter-wide one.
     const match =
-        candidates.find((t) => t.targetKey !== undefined) ??
-        candidates.find((t) => t.targetKey === undefined);
+        candidates.find((t) => t.member !== undefined) ??
+        candidates.find((t) => t.member === undefined);
     return match ? match.name!.trim() : undefined;
 }
 
@@ -243,28 +243,28 @@ WHERE (%s::text[] = '{}' OR e.source = ANY(%s))
   AND e.%s >= %s
   AND e.%s <= %s
 ORDER BY e.%s ASC;`,
-        q.timeField, escArr(q.sources), escArr(q.sources),
+        q.timeField, escArr(q.instances), escArr(q.instances),
         q.timeField, escDate(from), q.timeField, escDate(to), q.timeField);
 }
 
 export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string): string {
-    if (!q.channels || q.channels.length === 0) {
+    if (!q.parameters || q.parameters.length === 0) {
         throw new Error("No parameters specified for query");
     }
 
-    // Each channel gets its own clause so members picked for one channel don't
-    // filter out another channel's rows. A channel with none picked matches all
+    // Each parameter gets its own clause so members picked for one parameter don't
+    // filter out another parameter's rows. A parameter with none picked matches all
     // of its members.
-    const channelClauses = q.channels.map((ch) => {
-        const chKeys = q.keys.filter(
-            (k) => k.component === ch.component && k.channel === ch.name
+    const parameterClauses = q.parameters.map((param) => {
+        const members = q.members.filter(
+            (m) => m.spaceSystem === param.spaceSystem && m.parameter === param.name
         );
-        if (chKeys.length) {
-            return `(p.space_system = ${esc(ch.component)} AND p.name = ${esc(ch.name)} AND v.member_path = ANY(${escArr(chKeys.map(k => k.key))}))`;
+        if (members.length) {
+            return `(p.space_system = ${esc(param.spaceSystem)} AND p.name = ${esc(param.name)} AND v.member_path = ANY(${escArr(members.map(m => m.member))}))`;
         }
-        return `(p.space_system = ${esc(ch.component)} AND p.name = ${esc(ch.name)})`;
+        return `(p.space_system = ${esc(param.spaceSystem)} AND p.name = ${esc(param.name)})`;
     });
-    const channelPredicate = channelClauses.join("\n\t\t       OR ");
+    const parameterPredicate = parameterClauses.join("\n\t\t       OR ");
 
     let intervalExpr;
     if (q.aggregation !== "raw" && q.aggregation !== "deriv" && q.aggregation !== "latest") {
@@ -342,7 +342,7 @@ WHERE (%s)
 %s
 ORDER BY time_bucket ASC;`,
         intervalExpr, aggInt, aggFloat, aggBool, aggStr, aggBytes,
-        channelPredicate, escArr(q.sources), escArr(q.sources),
+        parameterPredicate, escArr(q.instances), escArr(q.instances),
         q.timeField, escDate(from), q.timeField, escDate(to), groupByExpr);
 
     return telemetrySql;

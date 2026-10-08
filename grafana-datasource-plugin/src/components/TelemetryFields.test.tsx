@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { TelemetryFields } from './TelemetryFields';
+import { parameterToKey, TelemetryFields } from './TelemetryFields';
 import { DataSource } from '../datasource';
-import { ChannelRef, KeyRef, MyQuery } from '../types';
+import { MemberRef, MyQuery, ParameterRef } from '../types';
 
 let vars: Record<string, string> = {};
 jest.mock('@grafana/runtime', () => ({
@@ -29,25 +29,25 @@ beforeAll(() => {
   })) as any;
 });
 
-const MOCK_CHANNELS: ChannelRef[] = [
-  { component: 'CDH', name: 'Temperature' },
-  { component: 'CDH', name: 'Voltage' },
-  { component: 'PWR', name: 'Current' },
+const MOCK_PARAMETERS: ParameterRef[] = [
+  { spaceSystem: 'CDH', name: 'Temperature' },
+  { spaceSystem: 'CDH', name: 'Voltage' },
+  { spaceSystem: 'PWR', name: 'Current' },
 ];
 
-const MOCK_KEYS: KeyRef[] = [
-  { component: 'CDH', channel: 'Temperature', key: '' },
-  { component: 'CDH', channel: 'Voltage', key: '' },
-  { component: 'PWR', channel: 'Current', key: '' },
+const MOCK_MEMBERS: MemberRef[] = [
+  { spaceSystem: 'CDH', parameter: 'Temperature', member: '' },
+  { spaceSystem: 'CDH', parameter: 'Voltage', member: '' },
+  { spaceSystem: 'PWR', parameter: 'Current', member: '' },
 ];
 
-const MOCK_SOURCES = ['FSW-A', 'FSW-B'];
+const MOCK_INSTANCES = ['FSW-A', 'FSW-B'];
 
 function mockDatasource(): DataSource {
   return {
-    getChannels: jest.fn().mockResolvedValue(MOCK_CHANNELS),
-    getSources: jest.fn().mockResolvedValue(MOCK_SOURCES),
-    getKeys: jest.fn().mockResolvedValue(MOCK_KEYS),
+    getParameters: jest.fn().mockResolvedValue(MOCK_PARAMETERS),
+    getInstances: jest.fn().mockResolvedValue(MOCK_INSTANCES),
+    getMembers: jest.fn().mockResolvedValue(MOCK_MEMBERS),
   } as unknown as DataSource;
 }
 
@@ -55,9 +55,9 @@ function query(overrides?: Partial<MyQuery>): MyQuery {
   return {
     refId: 'A',
     queryType: 'telemetry',
-    channels: [],
-    sources: [],
-    keys: [],
+    parameters: [],
+    instances: [],
+    members: [],
     aggregation: 'avg',
     ...overrides,
   } as MyQuery;
@@ -85,10 +85,10 @@ beforeEach(() => {
 });
 
 describe('TelemetryFields — rendering', () => {
-  it('renders the channel multicombobox', async () => {
+  it('renders the parameter multicombobox', async () => {
     renderFields();
     await waitFor(() => {
-      expect(screen.getByTestId('query-editor-channel')).toBeInTheDocument();
+      expect(screen.getByTestId('query-editor-parameter')).toBeInTheDocument();
     });
   });
 
@@ -99,100 +99,100 @@ describe('TelemetryFields — rendering', () => {
     });
   });
 
-  it('renders the source multicombobox', async () => {
+  it('renders the instance multicombobox', async () => {
     renderFields();
     await waitFor(() => {
-      expect(screen.getByTestId('query-editor-source')).toBeInTheDocument();
+      expect(screen.getByTestId('query-editor-instance')).toBeInTheDocument();
     });
   });
 });
 
 describe('TelemetryFields — data loading', () => {
-  it('loads channel options from datasource on mount', async () => {
+  it('loads parameter options from datasource on mount', async () => {
     const ds = mockDatasource();
     renderFields({}, ds);
     await waitFor(() => {
-      expect(ds.getChannels).toHaveBeenCalled();
+      expect(ds.getParameters).toHaveBeenCalled();
     });
   });
 
-  it('loads source options from datasource on mount', async () => {
+  it('loads instance options from datasource on mount', async () => {
     const ds = mockDatasource();
     renderFields({}, ds);
     await waitFor(() => {
-      expect(ds.getSources).toHaveBeenCalled();
+      expect(ds.getInstances).toHaveBeenCalled();
     });
   });
 
-  it('loads keys when channels are selected', async () => {
+  it('loads members when parameters are selected', async () => {
     const ds = mockDatasource();
-    renderFields({ channels: [{ component: 'CDH', name: 'Temperature' }] }, ds);
+    renderFields({ parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }] }, ds);
     await waitFor(() => {
-      expect(ds.getKeys).toHaveBeenCalledWith([{ component: 'CDH', name: 'Temperature' }]);
+      expect(ds.getMembers).toHaveBeenCalledWith([{ spaceSystem: 'CDH', name: 'Temperature' }]);
     });
   });
 
-  it('does not load keys when no channels are selected', async () => {
+  it('does not load members when no parameters are selected', async () => {
     const ds = mockDatasource();
     renderFields({}, ds);
     await waitFor(() => {
-      expect(ds.getChannels).toHaveBeenCalled();
+      expect(ds.getParameters).toHaveBeenCalled();
     });
-    expect(ds.getKeys).not.toHaveBeenCalled();
+    expect(ds.getMembers).not.toHaveBeenCalled();
   });
 });
 
-describe('TelemetryFields — multi-key channels', () => {
-  it('renders key selector for channels with multiple keys', async () => {
-    const MULTI_KEY_KEYS: KeyRef[] = [
-      { component: 'CDH', channel: 'Status', key: 'enabled' },
-      { component: 'CDH', channel: 'Status', key: 'mode' },
-      { component: 'CDH', channel: 'Status', key: 'health' },
+describe('TelemetryFields — multi-member parameters', () => {
+  it('renders member selector for parameters with multiple members', async () => {
+    const MULTI_MEMBERS: MemberRef[] = [
+      { spaceSystem: 'CDH', parameter: 'Status', member: 'enabled' },
+      { spaceSystem: 'CDH', parameter: 'Status', member: 'mode' },
+      { spaceSystem: 'CDH', parameter: 'Status', member: 'health' },
     ];
 
     const ds = mockDatasource();
-    (ds.getKeys as jest.Mock).mockResolvedValue(MULTI_KEY_KEYS);
+    (ds.getMembers as jest.Mock).mockResolvedValue(MULTI_MEMBERS);
 
-    renderFields({ channels: [{ component: 'CDH', name: 'Status' }] }, ds);
+    renderFields({ parameters: [{ spaceSystem: 'CDH', name: 'Status' }] }, ds);
 
     await waitFor(() => {
-      expect(screen.getByTestId('query-editor-key-CDH\x00Status')).toBeInTheDocument();
+      expect(screen.getByTestId('query-editor-member-CDH\x00Status')).toBeInTheDocument();
     });
   });
 
-  it('does not render key selector for channels with single keys', async () => {
-    const SINGLE_KEY: KeyRef[] = [
-      { component: 'CDH', channel: 'Temperature', key: '' },
+  it('does not render member selector for parameters with a single member', async () => {
+    const SINGLE_MEMBER: MemberRef[] = [
+      { spaceSystem: 'CDH', parameter: 'Temperature', member: '' },
     ];
 
     const ds = mockDatasource();
-    (ds.getKeys as jest.Mock).mockResolvedValue(SINGLE_KEY);
+    (ds.getMembers as jest.Mock).mockResolvedValue(SINGLE_MEMBER);
 
-    renderFields({ channels: [{ component: 'CDH', name: 'Temperature' }] }, ds);
+    renderFields({ parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }] }, ds);
 
     await waitFor(() => {
-      expect(ds.getKeys).toHaveBeenCalled();
+      expect(ds.getMembers).toHaveBeenCalled();
     });
 
-    expect(screen.queryByTestId('query-editor-key-CDH\x00Temperature')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('query-editor-member-CDH\x00Temperature')).not.toBeInTheDocument();
   });
 
-  it('auto-selects all keys when a multi-key channel is added', async () => {
-    const MULTI_KEY_KEYS: KeyRef[] = [
-      { component: 'CDH', channel: 'Status', key: 'enabled' },
-      { component: 'CDH', channel: 'Status', key: 'mode' },
+  it('auto-selects all members when a multi-member parameter is added', async () => {
+    const MULTI_MEMBERS: MemberRef[] = [
+      { spaceSystem: 'CDH', parameter: 'Status', member: 'enabled' },
+      { spaceSystem: 'CDH', parameter: 'Status', member: 'mode' },
     ];
 
     const ds = mockDatasource();
-    (ds.getKeys as jest.Mock).mockResolvedValue(MULTI_KEY_KEYS);
-    const { onChange } = renderFields({ channels: [{ component: 'CDH', name: 'Status' }] }, ds);
+    (ds.getMembers as jest.Mock).mockResolvedValue(MULTI_MEMBERS);
+    const { onChange } = renderFields({ parameters: [{ spaceSystem: 'CDH', name: 'Status' }] }, ds);
 
     await waitFor(() => {
       expect(onChange).toHaveBeenCalledWith(
         expect.objectContaining({
-          keys: expect.arrayContaining([
-            expect.objectContaining({ key: 'enabled' }),
-            expect.objectContaining({ key: 'mode' }),
+          members: expect.arrayContaining([
+            expect.objectContaining({ member: 'enabled' }),
+            expect.objectContaining({ member: 'mode' }),
           ]),
         })
       );
@@ -201,10 +201,10 @@ describe('TelemetryFields — multi-key channels', () => {
 });
 
 describe('TelemetryFields — displays existing values', () => {
-  it('displays existing channel selections', async () => {
+  it('displays existing parameter selections', async () => {
     const ds = mockDatasource();
     renderFields(
-      { channels: [{ component: 'CDH', name: 'Temperature' }] },
+      { parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }] },
       ds
     );
 
@@ -213,28 +213,28 @@ describe('TelemetryFields — displays existing values', () => {
     });
   });
 
-  it('displays existing source selections', async () => {
+  it('displays existing instance selections', async () => {
     const ds = mockDatasource();
-    renderFields({ sources: ['FSW-A'] }, ds);
+    renderFields({ instances: ['FSW-A'] }, ds);
 
     await waitFor(() => {
       expect(screen.getByText('FSW-A')).toBeInTheDocument();
     });
   });
 
-  it('displays existing key selections for multi-key channels', async () => {
-    const MULTI_KEY_KEYS: KeyRef[] = [
-      { component: 'CDH', channel: 'Status', key: 'enabled' },
-      { component: 'CDH', channel: 'Status', key: 'mode' },
+  it('displays existing member selections for multi-member parameters', async () => {
+    const MULTI_MEMBERS: MemberRef[] = [
+      { spaceSystem: 'CDH', parameter: 'Status', member: 'enabled' },
+      { spaceSystem: 'CDH', parameter: 'Status', member: 'mode' },
     ];
 
     const ds = mockDatasource();
-    (ds.getKeys as jest.Mock).mockResolvedValue(MULTI_KEY_KEYS);
+    (ds.getMembers as jest.Mock).mockResolvedValue(MULTI_MEMBERS);
 
     renderFields(
       {
-        channels: [{ component: 'CDH', name: 'Status' }],
-        keys: [{ component: 'CDH', channel: 'Status', key: 'enabled' }],
+        parameters: [{ spaceSystem: 'CDH', name: 'Status' }],
+        members: [{ spaceSystem: 'CDH', parameter: 'Status', member: 'enabled' }],
       },
       ds
     );
@@ -244,19 +244,27 @@ describe('TelemetryFields — displays existing values', () => {
     });
   });
 
-  it('displays a saved key whose fields come back in alphabetical order', async () => {
-    const MULTI_KEY_KEYS: KeyRef[] = [
-      { component: 'CDH', channel: 'Status', key: 'enabled' },
-      { component: 'CDH', channel: 'Status', key: 'mode' },
+  it('gives a saved parameter the same key whatever order its fields come back in', () => {
+    // Grafana saves the parameter with its fields sorted, and the picker marks an option
+    // as picked by comparing these keys, so a mismatch would let it be picked twice.
+    expect(parameterToKey({ name: 'Voltage', spaceSystem: 'CDH' })).toBe(
+      parameterToKey({ spaceSystem: 'CDH', name: 'Voltage' })
+    );
+  });
+
+  it('displays a saved member whose fields come back in alphabetical order', async () => {
+    const MULTI_MEMBERS: MemberRef[] = [
+      { spaceSystem: 'CDH', parameter: 'Status', member: 'enabled' },
+      { spaceSystem: 'CDH', parameter: 'Status', member: 'mode' },
     ];
 
     const ds = mockDatasource();
-    (ds.getKeys as jest.Mock).mockResolvedValue(MULTI_KEY_KEYS);
+    (ds.getMembers as jest.Mock).mockResolvedValue(MULTI_MEMBERS);
 
     renderFields(
       {
-        channels: [{ component: 'CDH', name: 'Status' }],
-        keys: [{ channel: 'Status', component: 'CDH', key: 'enabled' }],
+        parameters: [{ spaceSystem: 'CDH', name: 'Status' }],
+        members: [{ member: 'enabled', parameter: 'Status', spaceSystem: 'CDH' }],
       },
       ds
     );

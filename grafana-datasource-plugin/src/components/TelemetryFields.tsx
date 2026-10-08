@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import { Combobox, ComboboxOption, InlineField, MultiCombobox } from '@grafana/ui';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataSource } from '../datasource';
-import { Aggregation, ChannelQuery, ChannelRef, KeyRef, MyQuery } from '../types';
+import { Aggregation, MemberRef, MyQuery, ParameterQuery, ParameterRef } from '../types';
 import { TransformFields } from './TransformFields';
 
 interface TelemetryFieldsProps {
@@ -30,35 +30,35 @@ function toOptions(values: string[]): Array<ComboboxOption<string>> {
   return values.map((v) => ({ label: v, value: v }));
 }
 
-// Grafana returns saved keys with their fields sorted alphabetically, so we
-// stringify in a fixed order or a saved key won't match its picker option.
-function keyRefToValue(k: KeyRef): string {
-  return JSON.stringify({ component: k.component, channel: k.channel, key: k.key });
+// Grafana returns saved members with their fields sorted alphabetically, so we
+// stringify in a fixed order or a saved member won't match its picker option.
+function memberRefToValue(m: MemberRef): string {
+  return JSON.stringify({ spaceSystem: m.spaceSystem, parameter: m.parameter, member: m.member });
 }
 
-function valueToKeyRef(v: string): KeyRef {
-  return JSON.parse(v) as KeyRef;
+function valueToMemberRef(v: string): MemberRef {
+  return JSON.parse(v) as MemberRef;
 }
 
-function toKeyOptions(entries: KeyRef[]): Array<ComboboxOption<string>> {
+function toMemberOptions(entries: MemberRef[]): Array<ComboboxOption<string>> {
   return entries.map((e) => ({
-    label: e.key,
-    value: keyRefToValue(e),
+    label: e.member,
+    value: memberRefToValue(e),
   }));
 }
 
-function keyValues(keys: KeyRef[]): string[] {
-  return keys.map(keyRefToValue);
+function memberValues(members: MemberRef[]): string[] {
+  return members.map(memberRefToValue);
 }
 
-function channelKeyId(component: string, channel: string): string {
-  return `${component}\0${channel}`;
+function parameterId(spaceSystem: string, parameter: string): string {
+  return `${spaceSystem}\0${parameter}`;
 }
 
-function groupKeysByChannel(entries: KeyRef[]): Record<string, KeyRef[]> {
-  const grouped: Record<string, KeyRef[]> = {};
+function groupMembersByParameter(entries: MemberRef[]): Record<string, MemberRef[]> {
+  const grouped: Record<string, MemberRef[]> = {};
   for (const e of entries) {
-    const id = channelKeyId(e.component, e.channel);
+    const id = parameterId(e.spaceSystem, e.parameter);
     if (!grouped[id]) {
       grouped[id] = [];
     }
@@ -67,34 +67,36 @@ function groupKeysByChannel(entries: KeyRef[]): Record<string, KeyRef[]> {
   return grouped;
 }
 
-function channelToKey(ch: ChannelRef): string {
-  return JSON.stringify(ch);
+// Grafana returns saved parameters with their fields sorted alphabetically, so we
+// stringify in a fixed order or a saved parameter won't match its picker option.
+export function parameterToKey(p: ParameterRef): string {
+  return JSON.stringify({ spaceSystem: p.spaceSystem, name: p.name });
 }
 
-function toChannelOptions(entries: ChannelRef[]): Array<ComboboxOption<string>> {
+function toParameterOptions(entries: ParameterRef[]): Array<ComboboxOption<string>> {
   return entries.map((e) => ({
-    label: `${e.component}/${e.name}`,
-    description: e.component,
-    value: channelToKey(e),
+    label: `${e.spaceSystem}/${e.name}`,
+    description: e.spaceSystem,
+    value: parameterToKey(e),
   }));
 }
 
-function channelLabel(ch: ChannelQuery): string {
-  if (ch.raw !== undefined) {
-    return ch.raw;
+function parameterLabel(p: ParameterQuery): string {
+  if (p.raw !== undefined) {
+    return p.raw;
   }
-  // Avoid rendering a stray trailing slash when a channel has no name.
-  return ch.name ? `${ch.component}/${ch.name}` : ch.component;
+  // Avoid rendering a stray trailing slash when a parameter has no name.
+  return p.name ? `${p.spaceSystem}/${p.name}` : p.spaceSystem;
 }
 
-function channelValue(ch: ChannelQuery): string {
-  return ch.raw !== undefined ? ch.raw : channelToKey(ch);
+function parameterValue(p: ParameterQuery): string {
+  return p.raw !== undefined ? p.raw : parameterToKey(p);
 }
 
-function channelValuesOrOptions(channels: ChannelQuery[]): Array<ComboboxOption<string>> {
-  return channels.map(ch => ({
-    label: channelLabel(ch),
-    value: channelValue(ch),
+function parameterValuesOrOptions(parameters: ParameterQuery[]): Array<ComboboxOption<string>> {
+  return parameters.map(p => ({
+    label: parameterLabel(p),
+    value: parameterValue(p),
   }));
 }
 
@@ -112,17 +114,17 @@ function isVariableReference(input: string): boolean {
 }
 
 export function TelemetryFields({ query, onChange, onRunQuery, datasource, sharedOptions }: TelemetryFieldsProps) {
-  const [channelOptions, setChannelOptions] = useState<Array<ComboboxOption<string>>>([]);
-  const [sourceOptions, setSourceOptions] = useState<Array<ComboboxOption<string>>>([]);
-  const [keysByChannel, setKeysByChannel] = useState<Record<string, KeyRef[]>>({});
+  const [parameterOptions, setParameterOptions] = useState<Array<ComboboxOption<string>>>([]);
+  const [instanceOptions, setInstanceOptions] = useState<Array<ComboboxOption<string>>>([]);
+  const [membersByParameter, setMembersByParameter] = useState<Record<string, MemberRef[]>>({});
 
-  const [channelLoading, setChannelLoading] = useState(false);
-  const [sourceLoading, setSourceLoading] = useState(false);
-  const [keyLoading, setKeyLoading] = useState(false);
+  const [parameterLoading, setParameterLoading] = useState(false);
+  const [instanceLoading, setInstanceLoading] = useState(false);
+  const [memberLoading, setMemberLoading] = useState(false);
 
   // --- Helpers ---
 
-  const getChannelOptionsWithVariables = async (inputValue: string): Promise<Array<ComboboxOption<string>>> => {
+  const getParameterOptionsWithVariables = async (inputValue: string): Promise<Array<ComboboxOption<string>>> => {
     const options: Array<ComboboxOption<string>> = [];
 
     if (isVariableReference(inputValue)) {
@@ -147,7 +149,7 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
       return options;
     }
 
-    const matches = channelOptions.filter(opt =>
+    const matches = parameterOptions.filter(opt =>
       opt.label?.toLowerCase().includes(inputValue.toLowerCase())
     );
     options.push(...matches);
@@ -156,17 +158,17 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
 
   // --- Handlers ---
 
-  const onChannelChange = (options: Array<ComboboxOption<string>>) => {
-    const channels = options
-      .map(({ value, label }): ChannelQuery | null => {
+  const onParameterChange = (options: Array<ComboboxOption<string>>) => {
+    const parameters = options
+      .map(({ value, label }): ParameterQuery | null => {
         const valueStr = typeof value === 'string' ? value : String(value ?? '');
 
-        // Known-channel options encode a { component, name } object as JSON.
+        // Known-parameter options encode a { spaceSystem, name } object as JSON.
         if (valueStr.startsWith('{')) {
           try {
-            const parsed = JSON.parse(valueStr) as ChannelRef;
-            if (typeof parsed.component === 'string' && typeof parsed.name === 'string') {
-              return { component: parsed.component, name: parsed.name };
+            const parsed = JSON.parse(valueStr) as ParameterRef;
+            if (typeof parsed.spaceSystem === 'string' && typeof parsed.name === 'string') {
+              return { spaceSystem: parsed.spaceSystem, name: parsed.name };
             }
           } catch {
             // Treat as raw text
@@ -181,53 +183,53 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
 
         return { raw };
       })
-      .filter((ch): ch is ChannelQuery => ch !== null);
+      .filter((p): p is ParameterQuery => p !== null);
 
-    const stillExists = (component: string, channel: string) =>
-      channels.some((ch) => ch.raw === undefined && ch.component === component && ch.name === channel);
-    const keys = (query.keys ?? []).filter((k) => stillExists(k.component, k.channel));
-    const transforms = (query.transforms ?? []).filter((t) => stillExists(t.component, t.channel));
+    const stillExists = (spaceSystem: string, parameter: string) =>
+      parameters.some((p) => p.raw === undefined && p.spaceSystem === spaceSystem && p.name === parameter);
+    const members = (query.members ?? []).filter((m) => stillExists(m.spaceSystem, m.parameter));
+    const transforms = (query.transforms ?? []).filter((t) => stillExists(t.spaceSystem, t.parameter));
 
-    const updated: MyQuery = { ...query, channels, keys, transforms };
+    const updated: MyQuery = { ...query, parameters, members, transforms };
     onChange(updated);
-    if (channels.length) {
+    if (parameters.length) {
       onRunQuery();
     }
   };
 
-  const onSourceChange = (options: Array<ComboboxOption<string>>) => {
-    const updated: MyQuery = { ...query, sources: options.map(({ value }) => value) };
+  const onInstanceChange = (options: Array<ComboboxOption<string>>) => {
+    const updated: MyQuery = { ...query, instances: options.map(({ value }) => value) };
     onChange(updated);
-    if (updated.channels && updated.channels.length) {
+    if (updated.parameters && updated.parameters.length) {
       onRunQuery();
     }
   };
 
-  const onChannelKeyChange = (chComponent: string, chName: string, options: Array<ComboboxOption<string>>) => {
-    const id = channelKeyId(chComponent, chName);
-    const newKeys = options.map(({ value }) => valueToKeyRef(value));
-    const otherKeys = (query.keys ?? []).filter(
-      (k) => channelKeyId(k.component, k.channel) !== id
+  const onMemberChange = (spaceSystem: string, parameter: string, options: Array<ComboboxOption<string>>) => {
+    const id = parameterId(spaceSystem, parameter);
+    const newMembers = options.map(({ value }) => valueToMemberRef(value));
+    const otherMembers = (query.members ?? []).filter(
+      (m) => parameterId(m.spaceSystem, m.parameter) !== id
     );
 
-    const channels = newKeys.length === 0
-      ? (query.channels ?? []).filter((ch) => !(ch.component === chComponent && ch.name === chName))
-      : query.channels;
+    const parameters = newMembers.length === 0
+      ? (query.parameters ?? []).filter((p) => !(p.spaceSystem === spaceSystem && p.name === parameter))
+      : query.parameters;
 
-    const keptKeys = new Set(newKeys.map((k) => k.key));
+    const keptMembers = new Set(newMembers.map((m) => m.member));
     const transforms = (query.transforms ?? []).filter((t) => {
-      if (t.component !== chComponent || t.channel !== chName) {
+      if (t.spaceSystem !== spaceSystem || t.parameter !== parameter) {
         return true;
       }
-      if (newKeys.length === 0) {
+      if (newMembers.length === 0) {
         return false;
       }
-      return t.targetKey === undefined || keptKeys.has(t.targetKey);
+      return t.member === undefined || keptMembers.has(t.member);
     });
 
-    const updated: MyQuery = { ...query, channels, keys: [...otherKeys, ...newKeys], transforms };
+    const updated: MyQuery = { ...query, parameters, members: [...otherMembers, ...newMembers], transforms };
     onChange(updated);
-    if (updated.channels.length) {
+    if (updated.parameters.length) {
       onRunQuery();
     }
   };
@@ -240,86 +242,86 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
   // --- Data loading ---
 
   useEffect(() => {
-    const loadChannels = async () => {
-      setChannelLoading(true);
+    const loadParameters = async () => {
+      setParameterLoading(true);
       datasource
-        .getChannels()
-        .then((entries) => setChannelOptions(toChannelOptions(entries)))
-        .catch(() => setChannelOptions([]))
-        .finally(() => setChannelLoading(false));
+        .getParameters()
+        .then((entries) => setParameterOptions(toParameterOptions(entries)))
+        .catch(() => setParameterOptions([]))
+        .finally(() => setParameterLoading(false));
     };
-    loadChannels();
+    loadParameters();
   }, [datasource]);
 
   useEffect(() => {
-    const loadSources = async () => {
-      setSourceLoading(true);
+    const loadInstances = async () => {
+      setInstanceLoading(true);
       datasource
-        .getSources()
-        .then((values) => setSourceOptions(toOptions(values)))
-        .catch(() => setSourceOptions([]))
-        .finally(() => setSourceLoading(false));
+        .getInstances()
+        .then((values) => setInstanceOptions(toOptions(values)))
+        .catch(() => setInstanceOptions([]))
+        .finally(() => setInstanceLoading(false));
     };
-    loadSources();
+    loadInstances();
   }, [datasource]);
 
-  // Update keys when vars change
+  // Update members when vars change
   const templateSrv = getTemplateSrv();
-  const resolvedChannelsKey = JSON.stringify(
-    (query.channels ?? []).map((ch) =>
-      ch.raw !== undefined
-        ? templateSrv.replace(ch.raw)
-        : `${templateSrv.replace(ch.component)}\u0000${templateSrv.replace(ch.name)}`
+  const resolvedParametersKey = JSON.stringify(
+    (query.parameters ?? []).map((p) =>
+      p.raw !== undefined
+        ? templateSrv.replace(p.raw)
+        : `${templateSrv.replace(p.spaceSystem)}\u0000${templateSrv.replace(p.name)}`
     )
   );
 
   useEffect(() => {
-    if (!query.channels || !query.channels.length) {
-      setTimeout(() => setKeysByChannel({}), 0);
+    if (!query.parameters || !query.parameters.length) {
+      setTimeout(() => setMembersByParameter({}), 0);
       return;
     }
-    const loadKeys = async () => {
-      setKeyLoading(true);
+    const loadMembers = async () => {
+      setMemberLoading(true);
       datasource
-        .getKeys(query.channels)
-        .then((entries) => setKeysByChannel(groupKeysByChannel(entries)))
-        .catch(() => setKeysByChannel({}))
-        .finally(() => setKeyLoading(false));
+        .getMembers(query.parameters)
+        .then((entries) => setMembersByParameter(groupMembersByParameter(entries)))
+        .catch(() => setMembersByParameter({}))
+        .finally(() => setMemberLoading(false));
     }
-    loadKeys();
-  }, [datasource, query.channels, resolvedChannelsKey]);
+    loadMembers();
+  }, [datasource, query.parameters, resolvedParametersKey]);
 
   useEffect(() => {
-    const currentKeys = query.keys ?? [];
+    const currentMembers = query.members ?? [];
     let added = false;
-    const newKeys = [...currentKeys];
-    for (const [id, chKeys] of Object.entries(keysByChannel)) {
-      if (chKeys.length <= 1) {
+    const newMembers = [...currentMembers];
+    for (const [id, members] of Object.entries(membersByParameter)) {
+      if (members.length <= 1) {
         continue;
       }
-      const hasSelection = currentKeys.some(
-        (k) => channelKeyId(k.component, k.channel) === id
+      const hasSelection = currentMembers.some(
+        (m) => parameterId(m.spaceSystem, m.parameter) === id
       );
       if (!hasSelection) {
-        newKeys.push(...chKeys);
+        newMembers.push(...members);
         added = true;
       }
     }
     if (added) {
-      onChange({ ...query, keys: newKeys });
+      onChange({ ...query, members: newMembers });
     }
-  }, [keysByChannel, query, onChange]);
+  }, [membersByParameter, query, onChange]);
 
   return (
     <>
       <InlineField label="Parameter" labelWidth={16} tooltip="YAMCS parameter, shown as /space_system/name" grow shrink required>
         <MultiCombobox
-          id="query-editor-channel"
-          data-testid="query-editor-channel"
-          options={getChannelOptionsWithVariables}
-          value={channelValuesOrOptions(query.channels ?? [])}
-          onChange={onChannelChange}
-          loading={channelLoading}
+          id="query-editor-parameter"
+          data-testid="query-editor-parameter"
+          options={getParameterOptionsWithVariables}
+          value={parameterValuesOrOptions(query.parameters ?? [])}
+          onChange={onParameterChange}
+          loading={parameterLoading}
           placeholder="Select parameter"
           prefixIcon="channel-add"
           enableAllOption
@@ -336,41 +338,41 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
       </InlineField>
       <InlineField label="Instance" labelWidth={16} tooltip="YAMCS instance (optional)" grow shrink>
         <MultiCombobox
-          id="query-editor-source"
-          data-testid="query-editor-source"
-          options={sourceOptions}
-          value={query.sources}
-          onChange={onSourceChange}
+          id="query-editor-instance"
+          data-testid="query-editor-instance"
+          options={instanceOptions}
+          value={query.instances}
+          onChange={onInstanceChange}
           isClearable
-          loading={sourceLoading}
+          loading={instanceLoading}
           placeholder="All instances"
           prefixIcon="rocket"
         />
       </InlineField>
-      {Object.entries(keysByChannel)
-        .filter(([, keys]) => keys.length > 1)
-        .map(([id, keys]) => {
-          const { component: chComp, channel: chName } = keys[0];
-          const chLabel = `${chComp}/${chName}`;
-          const selectedForChannel = (query.keys ?? []).filter(
-            (k) => channelKeyId(k.component, k.channel) === id
+      {Object.entries(membersByParameter)
+        .filter(([, members]) => members.length > 1)
+        .map(([id, members]) => {
+          const { spaceSystem, parameter } = members[0];
+          const paramLabel = `${spaceSystem}/${parameter}`;
+          const selectedForParameter = (query.members ?? []).filter(
+            (m) => parameterId(m.spaceSystem, m.parameter) === id
           );
           return (
             <InlineField
               key={id}
-              label={chLabel}
-              tooltip={`Members of ${chLabel}`}
+              label={paramLabel}
+              tooltip={`Members of ${paramLabel}`}
               grow
               shrink
             >
               <MultiCombobox
-                id={`query-editor-key-${id}`}
-                data-testid={`query-editor-key-${id}`}
-                options={toKeyOptions(keys)}
-                value={keyValues(selectedForChannel)}
-                onChange={(opts) => onChannelKeyChange(chComp, chName, opts)}
+                id={`query-editor-member-${id}`}
+                data-testid={`query-editor-member-${id}`}
+                options={toMemberOptions(members)}
+                value={memberValues(selectedForParameter)}
+                onChange={(opts) => onMemberChange(spaceSystem, parameter, opts)}
                 isClearable
-                loading={keyLoading}
+                loading={memberLoading}
                 placeholder="All members"
                 prefixIcon="key-skeleton-alt"
               />
@@ -382,7 +384,7 @@ export function TelemetryFields({ query, onChange, onRunQuery, datasource, share
         query={query}
         onChange={onChange}
         onRunQuery={onRunQuery}
-        keysByChannel={keysByChannel}
+        membersByParameter={membersByParameter}
       />
     </>
   );

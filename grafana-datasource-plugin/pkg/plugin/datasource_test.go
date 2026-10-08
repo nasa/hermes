@@ -618,7 +618,7 @@ func TestCheckHealth(t *testing.T) {
 	})
 }
 
-func TestBuildResponseMultiComponentChannel(t *testing.T) {
+func TestBuildResponseMultiSpaceSystem(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("sqlmock: %v", err)
@@ -638,7 +638,7 @@ func TestBuildResponseMultiComponentChannel(t *testing.T) {
 	resp := buildResponse(qm, resultRows)
 
 	if len(resp.Frames) != 2 {
-		t.Fatalf("expected 2 frames for multi-component, got %d", len(resp.Frames))
+		t.Fatalf("expected 2 frames for two space systems, got %d", len(resp.Frames))
 	}
 
 	frameNames := map[string]bool{}
@@ -671,7 +671,7 @@ func TestBuildResponseOneFramePerMember(t *testing.T) {
 	resp := buildResponse(qm, resultRows)
 
 	if len(resp.Frames) != 2 {
-		t.Fatalf("expected 2 frames (one per key), got %d", len(resp.Frames))
+		t.Fatalf("expected 2 frames (one per member), got %d", len(resp.Frames))
 	}
 
 	frameNames := map[string]bool{}
@@ -794,7 +794,7 @@ func (r *responseRecorder) Write(b []byte) (int, error) {
 }
 func (r *responseRecorder) WriteHeader(code int) { r.code = code }
 
-func TestResourceHandlerChannels(t *testing.T) {
+func TestResourceHandlerParameters(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("sqlmock: %v", err)
@@ -807,24 +807,24 @@ func TestResourceHandlerChannels(t *testing.T) {
 		sqlmock.NewRows([]string{"space_system", "name"}).AddRow("/CDH", "Temperature").AddRow("/Sensors", "Voltage"),
 	)
 
-	req, _ := http.NewRequest("GET", "/telemetry/channels?components=CDH&components=Sensors", nil)
+	req, _ := http.NewRequest("GET", "/telemetry/parameters", nil)
 	rr := &responseRecorder{header: http.Header{}}
-	ds.handleGetTelemetryChannels(rr, req)
+	ds.handleGetTelemetryParameters(rr, req)
 
 	if rr.code != http.StatusOK {
 		t.Fatalf("expected 200, got %d; body: %s", rr.code, string(rr.body))
 	}
 
-	var result []channelEntry
+	var result []parameterEntry
 	if err := json.Unmarshal(rr.body, &result); err != nil {
 		t.Fatalf("json unmarshal: %v", err)
 	}
-	if len(result) != 2 || result[0].Name != "Temperature" || result[0].Component != "/CDH" {
-		t.Errorf("unexpected channels: %v", result)
+	if len(result) != 2 || result[0].Name != "Temperature" || result[0].SpaceSystem != "/CDH" {
+		t.Errorf("unexpected parameters: %v", result)
 	}
 }
 
-func TestResourceHandlerChannelsAll(t *testing.T) {
+func TestResourceHandlerParametersAll(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("sqlmock: %v", err)
@@ -837,24 +837,24 @@ func TestResourceHandlerChannelsAll(t *testing.T) {
 		sqlmock.NewRows([]string{"space_system", "name"}).AddRow("/CDH", "Temperature").AddRow("/Sensors", "Voltage"),
 	)
 
-	req, _ := http.NewRequest("GET", "/telemetry/channels", nil)
+	req, _ := http.NewRequest("GET", "/telemetry/parameters", nil)
 	rr := &responseRecorder{header: http.Header{}}
-	ds.handleGetTelemetryChannels(rr, req)
+	ds.handleGetTelemetryParameters(rr, req)
 
 	if rr.code != http.StatusOK {
 		t.Fatalf("expected 200, got %d; body: %s", rr.code, string(rr.body))
 	}
 
-	var result []channelEntry
+	var result []parameterEntry
 	if err := json.Unmarshal(rr.body, &result); err != nil {
 		t.Fatalf("json unmarshal: %v", err)
 	}
 	if len(result) != 2 {
-		t.Errorf("expected 2 channels, got %v", result)
+		t.Errorf("expected 2 parameters, got %v", result)
 	}
 }
 
-func TestResourceHandlerSources(t *testing.T) {
+func TestResourceHandlerInstances(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("sqlmock: %v", err)
@@ -867,9 +867,9 @@ func TestResourceHandlerSources(t *testing.T) {
 		sqlmock.NewRows([]string{"instance"}).AddRow("fsw-1").AddRow("fsw-2"),
 	)
 
-	req, _ := http.NewRequest("GET", "/telemetry/sources", nil)
+	req, _ := http.NewRequest("GET", "/telemetry/instances", nil)
 	rr := &responseRecorder{header: http.Header{}}
-	ds.handleGetTelemetrySources(rr, req)
+	ds.handleGetTelemetryInstances(rr, req)
 
 	if rr.code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rr.code)
@@ -880,11 +880,11 @@ func TestResourceHandlerSources(t *testing.T) {
 		t.Fatalf("json unmarshal: %v", err)
 	}
 	if len(result) != 2 {
-		t.Errorf("expected 2 sources, got %v", result)
+		t.Errorf("expected 2 instances, got %v", result)
 	}
 }
 
-func TestResourceHandlerKeys(t *testing.T) {
+func TestResourceHandlerMembers(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("sqlmock: %v", err)
@@ -894,60 +894,60 @@ func TestResourceHandlerKeys(t *testing.T) {
 	ds := &Datasource{db: db}
 
 	mock.ExpectQuery(`(?s)SELECT DISTINCT p.space_system, p.name, m.member_path.*FROM parameter_values v`).
-		WithArgs(`[{"component":"/CDH","name":"Attitude"},{"component":"/Sensors","name":"Attitude"}]`).
+		WithArgs(`[{"spaceSystem":"/CDH","name":"Attitude"},{"spaceSystem":"/Sensors","name":"Attitude"}]`).
 		WillReturnRows(sqlmock.NewRows([]string{"space_system", "name", "member_path"}).
 			AddRow("/CDH", "Attitude", ".x").
 			AddRow("/CDH", "Attitude", ".y").
 			AddRow("/Sensors", "Attitude", ""),
 		)
 
-	body := `[{"component":"/CDH","name":"Attitude"},{"component":"/Sensors","name":"Attitude"}]`
-	req, _ := http.NewRequest("POST", "/telemetry/keys", strings.NewReader(body))
+	body := `[{"spaceSystem":"/CDH","name":"Attitude"},{"spaceSystem":"/Sensors","name":"Attitude"}]`
+	req, _ := http.NewRequest("POST", "/telemetry/members", strings.NewReader(body))
 	rr := &responseRecorder{header: http.Header{}}
-	ds.handleGetTelemetryKeys(rr, req)
+	ds.handleTelemetryMembers(rr, req)
 
 	if rr.code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rr.code)
 	}
 
-	var result []keyEntry
+	var result []memberEntry
 	if err := json.Unmarshal(rr.body, &result); err != nil {
 		t.Fatalf("json unmarshal: %v", err)
 	}
 	if len(result) != 3 {
-		t.Errorf("expected 3 keys, got %v", result)
+		t.Errorf("expected 3 members, got %v", result)
 	}
-	if result[0].Component != "/CDH" || result[0].Channel != "Attitude" || result[0].Key != ".x" {
-		t.Errorf("unexpected first key entry: %v", result[0])
+	if result[0].SpaceSystem != "/CDH" || result[0].Parameter != "Attitude" || result[0].Member != ".x" {
+		t.Errorf("unexpected first member entry: %v", result[0])
 	}
 }
 
-func TestResourceHandlerKeysEmpty(t *testing.T) {
+func TestResourceHandlerMembersEmpty(t *testing.T) {
 	ds := &Datasource{}
 
-	req, _ := http.NewRequest("POST", "/telemetry/keys", strings.NewReader("[]"))
+	req, _ := http.NewRequest("POST", "/telemetry/members", strings.NewReader("[]"))
 	rr := &responseRecorder{header: http.Header{}}
-	ds.handleGetTelemetryKeys(rr, req)
+	ds.handleTelemetryMembers(rr, req)
 
 	if rr.code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rr.code)
 	}
 
-	var result []keyEntry
+	var result []memberEntry
 	if err := json.Unmarshal(rr.body, &result); err != nil {
 		t.Fatalf("json unmarshal: %v", err)
 	}
 	if len(result) != 0 {
-		t.Errorf("expected empty keys for missing params, got %v", result)
+		t.Errorf("expected empty members for missing params, got %v", result)
 	}
 }
 
-func TestResourceHandlerKeysBadBody(t *testing.T) {
+func TestResourceHandlerMembersBadBody(t *testing.T) {
 	ds := &Datasource{}
 
-	req, _ := http.NewRequest("POST", "/telemetry/keys", strings.NewReader("components=/CDH"))
+	req, _ := http.NewRequest("POST", "/telemetry/members", strings.NewReader("spaceSystems=/CDH"))
 	rr := &responseRecorder{header: http.Header{}}
-	ds.handleGetTelemetryKeys(rr, req)
+	ds.handleTelemetryMembers(rr, req)
 
 	if rr.code != http.StatusBadRequest {
 		t.Fatalf("expected 400, got %d", rr.code)

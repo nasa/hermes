@@ -2,29 +2,29 @@ import { DataQueryRequest, DataSourceInstanceSettings, CoreApp, ScopedVars } fro
 import { DataSourceWithBackend, getTemplateSrv } from '@grafana/runtime';
 import { from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, ChannelQuery, ChannelRef, KeyRef, ResolvedQuery, withDefaults } from './types';
-import { aliasForLabels, buildQuery, resolveChannels, resolveQuery } from 'query';
+import { MyQuery, MyDataSourceOptions, DEFAULT_QUERY, MemberRef, ParameterQuery, ParameterRef, ResolvedQuery, withDefaults } from './types';
+import { aliasForLabels, buildQuery, resolveParameters, resolveQuery } from 'query';
 
 export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptions> {
-  private knownChannels?: Promise<ChannelRef[]>;
+  private knownParameters?: Promise<ParameterRef[]>;
 
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings);
   }
 
-  // Fetch (and cache) the known channel list.
-  private getKnownChannels(): Promise<ChannelRef[]> {
-    if (!this.knownChannels) {
-      this.knownChannels = this.getChannels().catch(() => []);
+  // Fetch (and cache) the known parameter list.
+  private getKnownParameters(): Promise<ParameterRef[]> {
+    if (!this.knownParameters) {
+      this.knownParameters = this.getParameters().catch(() => []);
     }
-    return this.knownChannels;
+    return this.knownParameters;
   }
 
   query(request: DataQueryRequest<MyQuery>) {
-    const needsChannels = request.targets.some((t) =>
-      (t.channels ?? []).some((c) => c.raw !== undefined)
+    const needsParameters = request.targets.some((t) =>
+      (t.parameters ?? []).some((p) => p.raw !== undefined)
     );
-    const known$ = from(needsChannels ? this.getKnownChannels() : Promise.resolve<ChannelRef[]>([]));
+    const known$ = from(needsParameters ? this.getKnownParameters() : Promise.resolve<ParameterRef[]>([]));
 
     return known$.pipe(
       switchMap((known) => {
@@ -42,7 +42,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       map((response) => {
         for (const result of response.data) {
           const query = request.targets.find((t) => t.refId === result.refId);
-          if (query?.queryType === 'events' && query.sources?.length) {
+          if (query?.queryType === 'events' && query.instances?.length) {
             result.fields = result.fields.filter((f: { name: string }) => f.name !== 'source');
           }
           if (query?.queryType === 'telemetry' && query.transforms?.some((t) => t.name)) {
@@ -58,7 +58,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     return DEFAULT_QUERY;
   }
 
-  private resolveTargetVariables(query: MyQuery, scopedVars: ScopedVars, known: ChannelRef[] = []): ResolvedQuery {
+  private resolveTargetVariables(query: MyQuery, scopedVars: ScopedVars, known: ParameterRef[] = []): ResolvedQuery {
     const templateSrv = getTemplateSrv();
     const replace = (value: string) => templateSrv.replace(value, scopedVars);
     return resolveQuery(query, replace, known);
@@ -73,23 +73,23 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       return true;
     }
 
-    return !!(query.channels && query.channels.length);
+    return !!(query.parameters && query.parameters.length);
   }
 
   // Telemetry resources
-  async getChannels(): Promise<ChannelRef[]> {
-    return this.getResource('telemetry/channels');
+  async getParameters(): Promise<ParameterRef[]> {
+    return this.getResource('telemetry/parameters');
   }
 
-  async getSources(): Promise<string[]> {
-    return this.getResource('telemetry/sources');
+  async getInstances(): Promise<string[]> {
+    return this.getResource('telemetry/instances');
   }
 
-  async getKeys(channels: ChannelQuery[]): Promise<KeyRef[]> {
+  async getMembers(parameters: ParameterQuery[]): Promise<MemberRef[]> {
     const templateSrv = getTemplateSrv();
-    const known = channels.some((c) => c.raw !== undefined) ? await this.getKnownChannels() : [];
-    const expanded = resolveChannels(channels, (value) => templateSrv.replace(value), known);
-    return this.postResource('telemetry/keys', expanded);
+    const known = parameters.some((p) => p.raw !== undefined) ? await this.getKnownParameters() : [];
+    const expanded = resolveParameters(parameters, (value) => templateSrv.replace(value), known);
+    return this.postResource('telemetry/members', expanded);
   }
 
   async getEventSources(): Promise<string[]> {
@@ -106,9 +106,9 @@ function applySeriesAliases(frame: { fields: any[] }, query: ResolvedQuery): voi
       continue;
     }
     const alias = aliasForLabels(query, {
-      component: labels.component,
-      channel: labels.channel,
-      key: labels.key,
+      space_system: labels.space_system,
+      parameter: labels.parameter,
+      member: labels.member,
     });
     if (alias) {
       field.config = { ...(field.config ?? {}), displayNameFromDS: alias };

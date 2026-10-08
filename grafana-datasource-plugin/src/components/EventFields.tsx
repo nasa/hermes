@@ -19,7 +19,7 @@ export function EventFields({ query, onChange, onRunQuery, datasource }: EventFi
   const [eventSourceLoading, setEventSourceLoading] = useState(false);
 
   const onSourceChange = (options: Array<ComboboxOption<string>>) => {
-    const updated: MyQuery = { ...query, sources: options.map(({ value }) => value) };
+    const updated: MyQuery = { ...query, instances: options.map(({ value }) => value) };
     onChange(updated);
     onRunQuery();
   };
@@ -42,7 +42,7 @@ export function EventFields({ query, onChange, onRunQuery, datasource }: EventFi
         id="query-editor-event-source"
         data-testid="query-editor-event-source"
         options={eventSourceOptions}
-        value={query.sources}
+        value={query.instances}
         onChange={onSourceChange}
         isClearable
         loading={eventSourceLoading}
