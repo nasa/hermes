@@ -10,6 +10,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
+
+	"github.com/nasa/hermes/internal/yamcspb/protobuf/events"
 )
 
 // Runs against a YAMCS server with the yamcs-grpc plugin and live telemetry,
@@ -51,4 +54,40 @@ func TestSubscribeTelemetered(t *testing.T) {
 		}
 	}
 	assert.Len(t, mapped, len(names))
+}
+
+// Raises one event with CreateEvent. It stays in the instance's archive.
+func TestSubscribeEvents(t *testing.T) {
+	addr := os.Getenv("YAMCS_GRPC_ADDRESS")
+	if addr == "" {
+		t.Skip("YAMCS_GRPC_ADDRESS not set")
+	}
+	conn, err := Dial(addr)
+	require.NoError(t, err)
+	defer conn.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	instance := cmp.Or(os.Getenv("YAMCS_INSTANCE"), "fprime-project")
+
+	stream, err := SubscribeEvents(ctx, conn, instance)
+	require.NoError(t, err)
+	// YAMCS does not acknowledge the subscription, so give it time to start.
+	time.Sleep(time.Second)
+	created, err := events.NewEventsApiClient(conn).CreateEvent(ctx, &events.CreateEventRequest{
+		Instance: proto.String(instance),
+		Source:   proto.String("yamcs-recorder test"),
+		Message:  proto.String(t.Name()),
+	})
+	require.NoError(t, err)
+
+	// Other sources may raise events first.
+	for {
+		e, err := stream.Recv()
+		require.NoError(t, err)
+		if e.GetSource() == created.GetSource() && e.GetSeqNumber() == created.GetSeqNumber() {
+			t.Logf("received %s #%d: %s", e.GetSource(), e.GetSeqNumber(), e.GetMessage())
+			assert.Equal(t, t.Name(), e.GetMessage())
+			return
+		}
+	}
 }

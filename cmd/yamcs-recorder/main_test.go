@@ -67,9 +67,10 @@ func TestDropStoredKeepsNewerRows(t *testing.T) {
 
 func TestStatsLineNamesEachCount(t *testing.T) {
 	var st stats
+	st.events.Add(4)
 	st.incomplete.Add(3)
 	st.alreadyStored.Add(2)
 	var logs bytes.Buffer
 	st.log(slog.New(slog.NewTextHandler(&logs, nil)))
-	assert.Contains(t, logs.String(), "unmapped=0 incomplete=3 already_stored=2 insert_errors=0")
+	assert.Contains(t, logs.String(), "rows=0 events=4 unmapped=0 incomplete=3 already_stored=2 insert_errors=0")
 }
