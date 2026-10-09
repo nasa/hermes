@@ -51,6 +51,9 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
 
     runningProfileRequests = new Map<string, vscode.CancellationTokenSource>();
 
+    // The number of list changes the backend has reported to us
+    private changes = 0;
+
     constructor(
         extensionPath: string,
         readonly api: Api,
@@ -84,6 +87,7 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
             }),
 
             this.api.onProvidersChange((e) => {
+                this.changes++;
                 this.msg?.postMessage({
                     profileProviders: e,
                 });
@@ -94,12 +98,14 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
             }),
 
             this.api.onProfilesChange((e) => {
+                this.changes++;
                 this.msg?.postMessage({
                     profiles: e
                 });
             }),
 
             this.api.onDictionaryChange((e) => {
+                this.changes++;
                 this.msg?.postMessage({
                     dictionaries: e
                 });
@@ -119,7 +125,8 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
         ).map(([key, prov]) => ({ key, title: prov.title })));
     }
 
-    async refresh() {
+    async refresh(): Promise<void> {
+        const changes = this.changes;
         // Request the entire state and wait for it all to return back
         const [
             profileProviders,
@@ -132,6 +139,12 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
             this.api.allFsw(),
             this.api.allDictionaries(),
         ]);
+
+        // If the backend reported a change while we waited on the lookups, its listener posted a newer list,
+        // and posting the lists we read would replace it. We read everything again.
+        if (changes !== this.changes) {
+            return this.refresh();
+        }
 
         this.msg?.postMessage({
             dictionaryProviders: this.getDictionaryProvider(),
