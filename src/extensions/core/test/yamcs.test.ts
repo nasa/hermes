@@ -31,8 +31,9 @@ jest.mock('vscode', () => {
 
 import { EventEmitter } from 'events';
 import * as vscode from 'vscode';
+import Long from 'long';
 import type * as Hermes from '@gov.nasa.jpl.hermes/api';
-import { YamcsClient, YamcsCommandInfo, YamcsEvent, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
+import { YamcsClient, YamcsCommandHistoryEntry, YamcsCommandInfo, YamcsEvent, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
 import { Def, Dictionary } from '@gov.nasa.jpl.hermes/types';
 
@@ -40,7 +41,7 @@ import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsPar
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
 import { yamcsEventRows } from '../src/components/yamcsEvents';
 import { leaves, splitName } from '../src/components/yamcsRows';
-import { yamcsDictionary } from '../src/api/yamcsCommands';
+import { argumentValue, commandSent, yamcsDictionary } from '../src/api/yamcsCommands';
 
 // Values as the live fprime-project instance sent them
 const packetSequence: YamcsValue = {
@@ -574,6 +575,200 @@ describe('yamcsDictionary', () => {
     });
 });
 
+describe('argumentValue', () => {
+    test('converts scalars', () => {
+        expect(argumentValue('hello')).toEqual({ stringValue: 'hello' });
+        expect(argumentValue(6.5)).toEqual({ numberValue: 6.5 });
+        expect(argumentValue(true)).toEqual({ boolValue: true });
+        expect(argumentValue(Long.MAX_UNSIGNED_VALUE)).toEqual({ stringValue: '18446744073709551615' });
+    });
+
+    test('converts arrays and structs', () => {
+        expect(argumentValue([{ enabled: 1, min: 0 }])).toEqual({
+            listValue: { values: [{ structValue: { fields: { enabled: { numberValue: 1 }, min: { numberValue: 0 } } } }] },
+        });
+        expect(argumentValue(new Uint8Array([1, 2]))).toEqual({ listValue: { values: [{ numberValue: 1 }, { numberValue: 2 }] } });
+    });
+});
+
+// A command history attribute as YAMCS records it
+const attr = (name: string, value: string) => ({ name, value: { type: 'STRING' as const, stringValue: value } });
+const queued = [attr('Acknowledge_Queued_Status', 'OK'), attr('TransmissionConstraints_Status', 'NA'), attr('Acknowledge_Released_Status', 'OK')];
+const history = (...attrs: ReturnType<typeof attr>[]): YamcsCommandHistoryEntry => ({
+    commandName: '/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING',
+    attr: attrs,
+});
+
+describe('commandSent', () => {
+    test('waits for Acknowledge_Sent', () => {
+        expect(commandSent(history(...queued))).toBe(false);
+        expect(commandSent(history(...queued, attr('Acknowledge_Sent_Status', 'OK')))).toBe(true);
+    });
+
+    test('throws the reason a step failed', () => {
+        // What YAMCS records when no link is up to send the command
+        const noLink = history(...queued, attr('Acknowledge_Sent_Status', 'NOK'), attr('Acknowledge_Sent_Message', 'no link available'));
+        expect(() => commandSent(noLink)).toThrow(
+            'YAMCS did not send /BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING: Acknowledge_Sent NOK, no link available');
+    });
+
+    test('counts a sent command as sent whatever later steps record', () => {
+        // YAMCS cancels the verifiers it no longer needs once another one has completed the command
+        expect(commandSent(history(...queued, attr('Acknowledge_Sent_Status', 'OK'), attr('Verifier_Failed_Status', 'CANCELLED')))).toBe(true);
+    });
+});
+
+describe('YAMCS commands', () => {
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    // Hermes's YAMCS backend with its client stubbed, so a test sees each command the backend issues. Every look at
+    // a command's history shows YAMCS sent it. The processor isn't realtime, so a test can tell that the backend
+    // issues commands on the processor we give it, not on realtime.
+    async function backend() {
+        jest.spyOn(YamcsClient.prototype, 'waitForReady').mockResolvedValue(undefined);
+        jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
+        jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([noOpString]);
+        const issue = jest.spyOn(YamcsClient.prototype, 'issueCommand')
+            .mockImplementation(async (_instance, _processor, _name, _args, sequenceNumber) => `id-${sequenceNumber}`);
+        const get = jest.spyOn(YamcsClient.prototype, 'getCommand')
+            .mockResolvedValue(history(...queued, attr('Acknowledge_Sent_Status', 'OK')));
+        const api = await new YamcsBackendProvider().provideBackendApi(
+            { address: 'localhost:1', instance: 'fprime-project', processor: 'other-processor' },
+            {} as vscode.ExtensionContext,
+            { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } },
+        );
+        return { api, fsw: (await api.allFsw())[0], issue, get };
+    }
+
+    // A cancellation token the test cancels by hand. Like VS Code's, it then reports itself
+    // cancelled and calls the listener the code under test registered.
+    function tokenSource() {
+        let listener = () => { };
+        const token = {
+            isCancellationRequested: false,
+            onCancellationRequested: (l: () => void) => {
+                listener = l;
+                return { dispose: () => { } };
+            },
+        };
+        const cancel = () => {
+            token.isCancellationRequested = true;
+            listener();
+        };
+        return { token: token as unknown as vscode.CancellationToken, cancel };
+    }
+
+    test('offers one connection, with the dictionary built from YAMCS', async () => {
+        const { api, fsw } = await backend();
+        expect(fsw).toMatchObject({ id: 'yamcs:fprime-project', type: 'yamcs', dictionary: 'yamcs:fprime-project' });
+        expect(await api.getFsw('yamcs:fprime-project')).toBe(fsw);
+        expect((await api.allDictionaries())['yamcs:fprime-project']).toMatchObject({ name: 'fprime-project', type: 'yamcs' });
+        const lists: Hermes.Fsw[][] = [];
+        api.onFswChange((fsws) => lists.push(fsws));
+        expect(lists).toEqual([[fsw]]);
+        api.dispose();
+    });
+
+    test('issues each command by its qualified name once YAMCS has sent the one before', async () => {
+        const { api, fsw, issue, get } = await backend();
+        // YAMCS has only queued the first command when the backend first looks
+        get.mockResolvedValueOnce(history(...queued));
+        const sent = await fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a']), command(noOpString, ['b'])] });
+
+        expect(sent).toBe(true);
+        const name = '/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING';
+        expect(issue.mock.calls).toEqual([
+            ['fprime-project', 'other-processor', name, { arg1: { stringValue: 'a' } }, 0],
+            ['fprime-project', 'other-processor', name, { arg1: { stringValue: 'b' } }, 1],
+        ]);
+        // Both looks at the first command's history come before the second command
+        expect(get.mock.calls.map(([, id]) => id)).toEqual(['id-0', 'id-0', 'id-1']);
+        expect(get.mock.invocationCallOrder[1]).toBeLessThan(issue.mock.invocationCallOrder[1]);
+        api.dispose();
+    });
+
+    test('refuses a command from a dictionary that did not come from YAMCS', async () => {
+        const { api, fsw, issue } = await backend();
+        const fromJson = { opcode: 0x1000001, component: 'CdhCore.cmdDisp', mnemonic: 'CMD_NO_OP_STRING', arguments: [] };
+        await expect(fsw.command!({ def: fromJson, args: [] })).rejects.toThrow(
+            'CdhCore.cmdDisp.CMD_NO_OP_STRING has no YAMCS qualified name. Select a dictionary built from YAMCS as this cell language\'s dictionary.');
+        expect(issue).not.toHaveBeenCalled();
+        api.dispose();
+    });
+
+    test('names the command YAMCS refuses, and sends nothing after it', async () => {
+        const { api, fsw, issue } = await backend();
+        // YAMCS limits a string's encoded bytes, while a notebook language may count characters
+        const reason = 'Error when encoding command: String size + tag is greater that max size: 62>42';
+        issue.mockImplementationOnce(async () => {
+            throw Object.assign(new Error(`3 INVALID_ARGUMENT: ${reason}`), { details: reason });
+        });
+        await expect(fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['é'.repeat(30)]), command(noOpString, ['b'])] }))
+            .rejects.toThrow(`Could not issue /BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING: ${reason}`);
+        expect(issue).toHaveBeenCalledTimes(1);
+        api.dispose();
+    });
+
+    test('stops at a command YAMCS did not send', async () => {
+        const { api, fsw, issue, get } = await backend();
+        get.mockResolvedValue(history(...queued, attr('Acknowledge_Sent_Status', 'NOK')));
+        await expect(fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a']), command(noOpString, ['b'])] }))
+            .rejects.toThrow('Acknowledge_Sent NOK');
+        expect(issue).toHaveBeenCalledTimes(1);
+        api.dispose();
+    });
+
+    test('says when a cancelled cell leaves a command with YAMCS', async () => {
+        const { api, fsw, get } = await backend();
+        get.mockResolvedValue(history(...queued));
+        const { token, cancel } = tokenSource();
+        const waiting = fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a'])] }, token);
+        await waitFor(() => get.mock.calls.length >= 2 || undefined, 1000);
+        cancel();
+        await expect(waiting).rejects.toThrow(
+            'Cancelled before Hermes saw YAMCS send /BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING. YAMCS may already have sent it, or may send it later.');
+        api.dispose();
+    });
+
+    // A call on a connection that dropped without closing waits until grpc-js's keepalive notices, which
+    // can take minutes. The next two tests stand in for that with an issueCommand, then a getCommand,
+    // that never answers.
+    test('lets the user stop a cell while YAMCS never answers the command', async () => {
+        const { api, fsw, issue } = await backend();
+        issue.mockImplementation(() => new Promise<string>(() => { }));
+        const { token, cancel } = tokenSource();
+        const waiting = fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a'])] }, token);
+        await waitFor(() => issue.mock.calls.length >= 1 || undefined, 1000);
+        cancel();
+        await expect(waiting).rejects.toThrow(
+            'Cancelled before Hermes saw YAMCS send /BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING. YAMCS may already have sent it, or may send it later.');
+        api.dispose();
+    });
+
+    test('lets the user stop a cell while YAMCS never answers about its history', async () => {
+        const { api, fsw, get } = await backend();
+        get.mockImplementation(() => new Promise<YamcsCommandHistoryEntry>(() => { }));
+        const { token, cancel } = tokenSource();
+        const waiting = fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a'])] }, token);
+        await waitFor(() => get.mock.calls.length >= 1 || undefined, 1000);
+        cancel();
+        await expect(waiting).rejects.toThrow(
+            'Cancelled before Hermes saw YAMCS send /BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING. YAMCS may already have sent it, or may send it later.');
+        api.dispose();
+    });
+
+    test('issues nothing once the cell is cancelled', async () => {
+        const { api, fsw, issue } = await backend();
+        const { token, cancel } = tokenSource();
+        cancel();
+        await expect(fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a'])] }, token)).rejects.toThrow('Cancelled');
+        expect(issue).not.toHaveBeenCalled();
+        api.dispose();
+    });
+});
+
 // Live checks against a YAMCS server running the yamcs-grpc plugin, e.g.
 // YAMCS_GRPC_ADDRESS=localhost:8091 with an fprime-yamcs instance.
 const address = process.env.YAMCS_GRPC_ADDRESS;
@@ -785,6 +980,49 @@ async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<
             expect(commands.filter((c) => c.abstract)).toEqual([]);
         } finally {
             client.close();
+        }
+    });
+
+    // Sends one CMD_NO_OP_STRING to the flight software. It stays in the instance's command history.
+    test('a command from the YAMCS dictionary reaches YAMCS and gets sent', async () => {
+        const issue = jest.spyOn(YamcsClient.prototype, 'issueCommand');
+        const api = await new YamcsBackendProvider().provideBackendApi(
+            { address: address!, instance, processor: 'realtime' },
+            {} as vscode.ExtensionContext,
+            log,
+        );
+        const client = new YamcsClient(address!);
+        const text = `hermes live test ${Date.now()}`;
+        try {
+            const [fsw] = await api.allFsw();
+            const commands = Dictionary.fromProto(await api.getDictionary(fsw.dictionary!)).get('');
+            const def = [...commands.getCommands()].find((c) => c.mnemonic === 'CMD_NO_OP_STRING')!;
+            expect(def.arguments.map((a) => a.name)).toEqual(['arg1']);
+            expect(await fsw.sequence!({ language: 'yamcs', commands: [{ def, args: [text] }] })).toBe(true);
+
+            const entry = await client.getCommand(instance, await issue.mock.results[0].value as string);
+            expect(entry.assignments?.find((a) => a.name === 'arg1')?.value?.stringValue).toBe(text);
+        } finally {
+            issue.mockRestore();
+            client.close();
+            api.dispose();
+        }
+    });
+
+    test('YAMCS refuses a bad argument before sending anything', async () => {
+        const api = await new YamcsBackendProvider().provideBackendApi(
+            { address: address!, instance, processor: 'realtime' },
+            {} as vscode.ExtensionContext,
+            log,
+        );
+        try {
+            const [fsw] = await api.allFsw();
+            const commands = Dictionary.fromProto(await api.getDictionary(fsw.dictionary!)).get('');
+            const def = [...commands.getCommands()].find((c) => c.mnemonic === 'CMD_NO_OP_STRING')!;
+            // CMD_NO_OP_STRING's argument holds at most 40 bytes
+            await expect(fsw.sequence!({ language: 'yamcs', commands: [{ def, args: ['x'.repeat(100)] }] })).rejects.toThrow('String size');
+        } finally {
+            api.dispose();
         }
     });
 });

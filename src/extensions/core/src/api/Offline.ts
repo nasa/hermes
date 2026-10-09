@@ -169,7 +169,7 @@ export class Offline implements Hermes.Api {
         }
     }
 
-    onFswChange = () => { return nullDisposable; };
+    onFswChange: vscode.Event<Hermes.Fsw[]> = () => { return nullDisposable; };
     onProvidersChange = () => { return nullDisposable; };
     onProfilesChange = () => { return nullDisposable; };
 

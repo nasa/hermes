@@ -96,6 +96,7 @@ node src/extensions/core/test/e2e/run.js   # downloads VS Code 1.138.0 on first 
 The live jest tests run only when `YAMCS_GRPC_ADDRESS` is set. `run.js` defaults to `localhost:8091`
 and writes `result.json` next to itself. Both read `YAMCS_INSTANCE`, default `fprime-project`.
 The two live event tests each raise one event with YAMCS's `CreateEvent`, which stays in that instance's archive.
+One live command test and `run.js` each send a `CMD_NO_OP_STRING` to the flight software.
 `VSCODE_TEST_CACHE` points `run.js` at an existing VS Code download. `E2E_HOLD_MS` holds the window
 open that many milliseconds with the telemetry table showing.
 
