@@ -1,0 +1,7 @@
+**/*
+.*/**
+!package.json
+!out/*
+!syntax/*
+!LICENSE.txt
+!README.md

@@ -283,7 +283,7 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
 export class YamcsBackendProvider implements BackendProvider<Settings.Yamcs> {
     type = "yamcs";
     title = "YAMCS";
-    description = "Telemetry and events straight from YAMCS";
+    description = "Telemetry, events and commands straight from YAMCS";
     detail = "Connect to a YAMCS server running the yamcs-grpc plugin";
     icon = "broadcast";
     priority = 30;

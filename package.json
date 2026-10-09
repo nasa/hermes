@@ -40,7 +40,7 @@
         "proto": "npm run proto-go && npm run proto-js && npm run proto-ts && npm run proto-ts-grpc && npm run proto-json-grpc && npm run proto-py && npm run proto-ts-yamcs && npm run proto-json-yamcs",
         "leap-seconds": "curl https://data.iana.org/time-zones/data/leap-seconds.list | tee ./pkg/timeconv/leap-seconds.list | ./src/internal/out/leap-seconds go > ./pkg/timeconv/leap.go",
         "package": "sh -c 'cd src/extensions/${0} && yarn package'",
-        "package-all": "yarn package core && yarn package fprime",
+        "package-all": "yarn package core && yarn package fprime && yarn package yamcs",
         "install-cli": "install -g root -o root out/* /usr/bin",
         "postinstall": "patch-package"
     },

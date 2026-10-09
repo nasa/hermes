@@ -1,0 +1,42 @@
+{
+    "name": "hermes-yamcs",
+    "displayName": "Hermes YAMCS",
+    "description": "Send YAMCS commands from Hermes notebooks",
+    "version": "0.1.0",
+    "publisher": "jet-propulsion-laboratory",
+    "license": "Apache-2.0",
+    "repository": {
+        "url": "https://github.com/nasa/hermes",
+        "type": "git"
+    },
+    "categories": [
+        "Other"
+    ],
+    "engines": {
+        "vscode": "^1.76.0"
+    },
+    "main": "./out/extension.js",
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "extensionDependencies": [
+        "jet-propulsion-laboratory.hermes"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "yamcs",
+                "aliases": [
+                    "YAMCS"
+                ],
+                "configuration": "./syntax/yamcs.language.json"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn clean && yarn compile",
+        "clean": "rm -rf ./out",
+        "compile": "cd ../../../ && node build src/extensions/yamcs",
+        "package": "vsce package"
+    }
+}

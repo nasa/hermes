@@ -343,7 +343,7 @@
                             },
                             "processor": {
                                 "type": "string",
-                                "description": "YAMCS processor to subscribe on, usually realtime for live telemetry",
+                                "description": "YAMCS processor to subscribe on and send commands to, usually realtime",
                                 "default": "realtime"
                             },
                             "includeTopLevel": {

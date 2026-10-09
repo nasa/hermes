@@ -41,10 +41,12 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}/src/extensions/core",
                 "--extensionDevelopmentPath=${workspaceFolder}/src/extensions/fprime",
+                "--extensionDevelopmentPath=${workspaceFolder}/src/extensions/yamcs",
             ],
             "outFiles": [
                 "${workspaceFolder}/src/extensions/core/out/*.js",
                 "${workspaceFolder}/src/extensions/fprime/out/*.js",
+                "${workspaceFolder}/src/extensions/yamcs/out/*.js",
             ],
             "preLaunchTask": "${defaultBuildTask}",
             "sourceMaps": true
