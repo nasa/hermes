@@ -84,18 +84,10 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
 
         // If the user cancels while we wait on YAMCS, we reject right away rather than
         // waiting out the 5 s. Closing the client wouldn't do it, because grpc-js reopens
-        // the channel until waitForReady's deadline. So each wait below races this promise.
-        let onCancel: vscode.Disposable | undefined;
-        const cancelled = new Promise<never>((_, reject) => {
-            onCancel = token?.onCancellationRequested(() => reject('cancelled'));
-        });
-        // We don't race the last step, loading dictionaries, so a cancel during it rejects
-        // cancelled with nothing awaiting it. Catching here keeps Node from reporting that.
-        cancelled.catch(() => { });
-
+        // the channel until waitForReady's deadline. So we make each wait below cancellable.
         try {
-            await Promise.race([client.waitForReady(5000), cancelled]);
-            const all = await Promise.race([client.listTelemetered(state.instance), cancelled]);
+            await cancellable(client.waitForReady(5000), token);
+            const all = await cancellable(client.listTelemetered(state.instance), token);
             // Parameters directly in a top-level space system are packet header fields in fprime-yamcs, not channels
             const names = state.includeTopLevel ? all : all.filter((name) => !inTopLevelSpaceSystem(name));
             log.info(`Found ${all.length} TELEMETERED parameters in YAMCS instance ${state.instance}, subscribing to ${names.length}`);
@@ -107,8 +99,6 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
             // A cancel or any failure above ends here, and we close the client so its channel doesn't linger
             client.close();
             throw new Error(`Could not connect to YAMCS at ${state.address}: ${err}`, { cause: err });
-        } finally {
-            onCancel?.dispose();
         }
     }
 
@@ -244,6 +234,17 @@ export class YamcsBackendProvider implements BackendProvider<Settings.Yamcs> {
         // Leave the tooltip alone, since VscodeApi.invalidate already put the error there
         showServer(item, state);
     }
+}
+
+// Settles as promise does, or rejects as soon as token is cancelled
+function cancellable<T>(promise: Promise<T>, token?: vscode.CancellationToken): Promise<T> {
+    return new Promise((resolve, reject) => {
+        const onCancel = token?.onCancellationRequested(() => reject(new Error('Cancelled')));
+        if (token?.isCancellationRequested) {
+            reject(new Error('Cancelled'));
+        }
+        promise.then(resolve, reject).finally(() => onCancel?.dispose());
+    });
 }
 
 function showServer(item: vscode.StatusBarItem, state: Settings.Yamcs) {

@@ -118,7 +118,7 @@ describe('YamcsBackendProvider', () => {
             token,
         );
         setTimeout(() => cancel(), 100);
-        await expect(connecting).rejects.toThrow('Could not connect to YAMCS at 127.0.0.1:1: cancelled');
+        await expect(connecting).rejects.toThrow('Could not connect to YAMCS at 127.0.0.1:1: Error: Cancelled');
         expect(Date.now() - started).toBeLessThan(2000);
     });
 
