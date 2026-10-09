@@ -76,7 +76,9 @@ F Prime event type, and the errors and worse:
 The store tests need `HERMES_TEST_TIMESCALE_DSN`, a `postgres://` URL whose user can create databases. The live
 subscription tests, which run against a real YAMCS, need `YAMCS_GRPC_ADDRESS` and read `YAMCS_INSTANCE` (default
 `fprime-project`). Without them, those tests skip. The live event subscription test raises one event through
-YAMCS's `CreateEvent` call, and the event stays in that instance's archive.
+YAMCS's `CreateEvent` call, and the event stays in that instance's archive. The end-to-end recorder test needs both
+`HERMES_TEST_TIMESCALE_DSN` and `YAMCS_GRPC_ADDRESS` and raises one event the same way. It waits for a parameter
+value, so the instance must be receiving telemetry or have a cached value from earlier telemetry.
 
 ```sh
 HERMES_TEST_TIMESCALE_DSN='postgres://postgres:password@localhost:5432/postgres?sslmode=disable' \
