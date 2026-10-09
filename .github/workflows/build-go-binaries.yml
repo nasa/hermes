@@ -16,6 +16,20 @@ jobs:
   test:
     name: Run Go Tests
     runs-on: ubuntu-latest
+    services:
+      timescaledb:
+        image: timescale/timescaledb:latest-pg16
+        env:
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        # The image runs its init scripts on a temporary Postgres that listens
+        # only on the Unix socket, then restarts it. A plain pg_isready checks
+        # the socket and can pass before that restart, so we check over TCP,
+        # which only answers once the real server is up.
+        options: >-
+          --health-cmd "pg_isready -h localhost -U postgres"
+          --health-interval 2s --health-timeout 5s --health-retries 30
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -27,6 +41,9 @@ jobs:
           cache: true
 
       - name: Run tests
+        # The recorder store and pkg/timescaledb database tests skip without this.
+        env:
+          HERMES_TEST_TIMESCALE_DSN: postgres://postgres:password@localhost:5432/postgres?sslmode=disable
         run: go test ./pkg/... ./internal/... ./cmd/yamcs-recorder/...
 
   build:
