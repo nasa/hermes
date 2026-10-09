@@ -124,8 +124,9 @@ exports.run = async function () {
             await sleep(hold);
         }
 
-        // Connecting only lists the instance's parameters and never uses the processor. So with an unknown processor
-        // we connect fine and the subscription fails, which should put the status bar in its error state
+        // Connecting only lists the instance's parameters and commands and never uses the processor. So with an
+        // unknown processor we connect fine and the parameter subscription fails, which should put the status bar
+        // in its error state
         await vscode.commands.executeCommand('hermes.host.set', 'yamcs', { ...state, processor: 'no-such-processor' });
         await waitFor('error status', () => core.api.primaryItem.backgroundColor?.id === 'statusBarItem.errorBackground', 10000);
         result.errorStatus = { text: core.api.secondaryItem.text, tooltip: core.api.secondaryItem.tooltip };

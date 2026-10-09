@@ -32,12 +32,15 @@ jest.mock('vscode', () => {
 import { EventEmitter } from 'events';
 import * as vscode from 'vscode';
 import type * as Hermes from '@gov.nasa.jpl.hermes/api';
-import { YamcsClient, YamcsEvent, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
+import { YamcsClient, YamcsCommandInfo, YamcsEvent, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
+import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
+import { Def, Dictionary } from '@gov.nasa.jpl.hermes/types';
 
 import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterHandler } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
 import { yamcsEventRows } from '../src/components/yamcsEvents';
 import { leaves, splitName } from '../src/components/yamcsRows';
+import { yamcsDictionary } from '../src/api/yamcsCommands';
 
 // Values as the live fprime-project instance sent them
 const packetSequence: YamcsValue = {
@@ -348,6 +351,7 @@ describe('YAMCS event source', () => {
         const warn = jest.fn();
         jest.spyOn(YamcsClient.prototype, 'waitForReady').mockResolvedValue(undefined);
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
+        jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([]);
         const raise: ((event: YamcsEvent) => void)[] = [];
         const subscribe = jest.spyOn(YamcsClient.prototype, 'subscribeEvents').mockImplementation((_, onEvent) => {
             raise.push(onEvent);
@@ -451,6 +455,122 @@ describe('YamcsClient.subscribeParameters', () => {
         expect(onEnd.mock.calls).toEqual([[new Error(`YAMCS processor realtime is ${state}`)]]);
         expect(call.cancel).toHaveBeenCalled();
         expect(watch.cancel).toHaveBeenCalled();
+    });
+});
+
+// Commands as the live fprime-project instance describes them, trimmed to the fields Hermes reads.
+// Every F Prime command builds on FPrimeCommand, which builds on CCSDSPacket.
+const unsigned = (sizeInBits: number) => ({ engType: 'integer', signed: false, dataEncoding: { sizeInBits } });
+const ccsdsPacket: YamcsCommandInfo = {
+    name: 'CCSDSPacket',
+    qualifiedName: '/BigData_YamcsDeployment/CCSDSPacket',
+    argument: [{ name: 'CCSDS_APID', type: unsigned(11) }],
+};
+const fprimeCommand: YamcsCommandInfo = {
+    name: 'FPrimeCommand',
+    qualifiedName: '/BigData_YamcsDeployment/FPrimeCommand',
+    baseCommand: ccsdsPacket,
+    argument: [{ name: 'OpCode', type: unsigned(32) }],
+    argumentAssignment: [{ name: 'CCSDS_APID', value: '0' }],
+};
+const noOpString: YamcsCommandInfo = {
+    name: 'CMD_NO_OP_STRING',
+    qualifiedName: '/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING',
+    baseCommand: fprimeCommand,
+    argument: [{ name: 'arg1', type: { engType: 'string', name: 'string40' } }],
+    argumentAssignment: [{ name: 'OpCode', value: '16777217' }],
+};
+const enabled = { engType: 'enumeration', name: 'Enabled', enumValue: [{ value: '0', label: 'DISABLED' }, { value: '1', label: 'ENABLED' }] };
+const groupConfig = { engType: 'aggregate', name: 'GroupConfig', member: [{ name: 'enabled', type: enabled }, { name: 'min', type: unsigned(32) }] };
+const sectionConfigs: YamcsCommandInfo = {
+    name: 'SECTION_CONFIGS_PRM_SET',
+    qualifiedName: '/BigData_YamcsDeployment/CdhCore/tlmSend/SECTION_CONFIGS_PRM_SET',
+    baseCommand: fprimeCommand,
+    argument: [{
+        name: 'val',
+        type: {
+            engType: 'aggregate[]', name: 'SectionConfigs', dimensions: [{ fixedValue: '2' }],
+            elementType: { engType: 'aggregate[]', name: 'GroupConfigs', dimensions: [{ fixedValue: '4' }], elementType: groupConfig },
+        },
+    }],
+    argumentAssignment: [{ name: 'OpCode', value: '16801800' }],
+};
+
+// A YAMCS command as a notebook cell passes it to YAMCS mode, with its definition from the YAMCS dictionary
+function command(info: YamcsCommandInfo, args: CommandValue['args']): CommandValue {
+    const def = Dictionary.fromProto(yamcsDictionary('fprime-project', [info])).get('').getCommand(info.qualifiedName!)!;
+    return { def, args };
+}
+
+describe('yamcsDictionary', () => {
+    test('keys commands by qualified name and leaves out assigned arguments', () => {
+        const proto = yamcsDictionary('fprime-project', [noOpString]);
+        expect(proto.id).toBe('yamcs:fprime-project');
+        expect(proto.head?.type).toBe('yamcs');
+
+        const def = Dictionary.fromProto(proto).get('').getCommand('/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING');
+        expect(def).toMatchObject({
+            component: '/BigData_YamcsDeployment/CdhCore/cmdDisp',
+            mnemonic: 'CMD_NO_OP_STRING',
+            arguments: [{ name: 'arg1', type: { kind: Def.TypeKind.string } }],
+            metadata: {
+                qualifiedName: '/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING',
+                assignments: { CCSDS_APID: '0', OpCode: '16777217' },
+            },
+        });
+        expect(def?.opcode).toBeUndefined();
+    });
+
+    test('converts nested arrays, structs, enums, floats and odd-width integers', () => {
+        const def = command(sectionConfigs, []).def;
+        const outer = def.arguments[0].type as Def.ArrayType;
+        const inner = outer.type as Def.ArrayType;
+        const fields = (inner.type as Def.ObjectType).fields;
+        expect([outer.size, inner.size]).toEqual([2, 4]);
+        expect(fields.map((f) => f.name)).toEqual(['enabled', 'min']);
+        expect([...(fields[0].type as Def.EnumType).values.keys()]).toEqual(['DISABLED', 'ENABLED']);
+
+        // An 11-bit unsigned integer fits a u16, limited to 11 bits
+        const apid = command(ccsdsPacket, []).def.arguments[0].type;
+        expect(apid).toEqual({ kind: Def.TypeKind.u16, min: 0, max: 2047 });
+
+        const float = { ...noOpString, argument: [{ name: 'seed', type: { engType: 'float', dataEncoding: { sizeInBits: 32 } } }] };
+        expect(command(float, []).def.arguments[0].type).toEqual({ kind: Def.TypeKind.f32 });
+    });
+
+    test('keeps a range with one end, taking the other from the width', () => {
+        const ranged = { ...noOpString, argument: [{ name: 'count', type: { ...unsigned(32), rangeMin: 5 } }] };
+        expect(command(ranged, []).def.arguments[0].type).toEqual({ kind: Def.TypeKind.u32, min: 5, max: 2 ** 32 - 1 });
+        const signedRanged = { ...noOpString, argument: [{ name: 'count', type: { engType: 'integer', signed: true, dataEncoding: { sizeInBits: 16 }, rangeMax: 10 } }] };
+        expect(command(signedRanged, []).def.arguments[0].type).toEqual({ kind: Def.TypeKind.i16, min: -32768, max: 10 });
+    });
+
+    test('keeps descriptions and string limits when the mission database has them', () => {
+        // fprime-yamcs gives commands no descriptions, and gives a string's limit only as its encoded
+        // size, which ListCommands doesn't report. So we add them as another mission database could.
+        const described = {
+            ...noOpString,
+            shortDescription: 'No-op string command',
+            argument: [{ name: 'arg1', description: 'The String command argument', type: { engType: 'string', name: 'string40', maxChars: 40 } }],
+        };
+        const def = command(described, []).def;
+        expect(def.metadata?.description).toBe('No-op string command');
+        expect(def.arguments[0]).toEqual({
+            name: 'arg1',
+            type: { kind: Def.TypeKind.string, maxLength: 40 },
+            metadata: { description: 'The String command argument' },
+        });
+    });
+
+    test('puts a base command\'s arguments before the command\'s own, as YAMCS does', () => {
+        const base: YamcsCommandInfo = { name: 'BASE', qualifiedName: '/S/BASE', argument: [{ name: 'first', type: unsigned(8) }] };
+        const def = command({ name: 'C', qualifiedName: '/S/C', baseCommand: base, argument: [{ name: 'second', type: unsigned(8) }] }, []).def;
+        expect(def.arguments.map((a) => a.name)).toEqual(['first', 'second']);
+    });
+
+    test('marks a command whose arguments it cannot convert', () => {
+        const timed = { ...noOpString, argument: [{ name: 'at', type: { engType: 'time', name: 'Time' } }] };
+        expect(command(timed, []).def.metadata?.error).toBe('Time has engType time, which isn\'t supported');
     });
 });
 
@@ -650,4 +770,21 @@ async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<
             dispose();
         }
     }, 30000);
+
+    test('lists the commands that can be issued, with the commands they build on', async () => {
+        const client = new YamcsClient(address!);
+        try {
+            await client.waitForReady(5000);
+            const commands = await client.listCommands(instance);
+            console.log(`${commands.length} commands in ${instance}`);
+            const noOp = commands.filter((c) => c.qualifiedName?.endsWith('/CdhCore/cmdDisp/CMD_NO_OP_STRING'));
+            expect(noOp).toHaveLength(1);
+            // fprime-yamcs builds every command on two abstract ones
+            expect(noOp[0].baseCommand?.name).toBe('FPrimeCommand');
+            expect(noOp[0].baseCommand?.baseCommand?.name).toBe('CCSDSPacket');
+            expect(commands.filter((c) => c.abstract)).toEqual([]);
+        } finally {
+            client.close();
+        }
+    });
 });

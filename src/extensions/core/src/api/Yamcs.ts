@@ -5,6 +5,7 @@ import * as Rpc from '@gov.nasa.jpl.hermes/rpc';
 import { BackendProvider, Settings } from '@gov.nasa.jpl.hermes/vscode';
 
 import { Offline } from './Offline';
+import { yamcsDictionary } from './yamcsCommands';
 
 export type YamcsParameterHandler = (instance: string, values: Rpc.YamcsParameterValue[]) => void;
 
@@ -70,9 +71,10 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
 
     /**
      * Connects to the yamcs-grpc plugin at state.address. We wait up to 5 s for the
-     * plugin to answer, then list the instance's parameters, then load the workspace's
-     * dictionaries as Offline mode does. The parameter subscription itself opens later,
-     * when the first handler calls onYamcsParameters.
+     * plugin to answer, then list the instance's parameters and commands, then load the
+     * workspace's dictionaries as Offline mode does, plus one built from the commands.
+     * The parameter subscription itself opens later, when the first handler calls
+     * onYamcsParameters.
      */
     static async connect(
         state: Settings.Yamcs,
@@ -92,8 +94,16 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
             const names = state.includeTopLevel ? all : all.filter((name) => !inTopLevelSpaceSystem(name));
             log.info(`Found ${all.length} TELEMETERED parameters in YAMCS instance ${state.instance}, subscribing to ${names.length}`);
 
+            const commands = await cancellable(client.listCommands(state.instance), token);
+            log.info(`Found ${commands.length} commands in YAMCS instance ${state.instance}`);
+            const dictionary = yamcsDictionary(state.instance, commands);
+
             const api = new Yamcs(context, log, client, state, names);
             await api._activate();
+            // The dictionary has an id, so Offline keeps it in memory rather than saving it to workspace storage.
+            // Its commands have no opcodes, and a saved copy would load back with every opcode 0, which
+            // Dictionary rejects as duplicates.
+            await api.addDictionary(dictionary);
             return api;
         } catch (err) {
             // A cancel or any failure above ends here, and we close the client so its channel doesn't linger
