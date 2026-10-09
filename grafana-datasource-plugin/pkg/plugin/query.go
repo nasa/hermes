@@ -341,9 +341,6 @@ func computeDerivatives(frames *map[string]*data.Frame) {
 		timeField := frame.Fields[0]
 		valueField := frame.Fields[1]
 		size := valueField.Len()
-		if size < 2 {
-			continue
-		}
 		if _, ok := valueField.At(0).(*float64); !ok {
 			continue
 		}
