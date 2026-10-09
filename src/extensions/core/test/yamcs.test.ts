@@ -29,6 +29,7 @@ jest.mock('vscode', () => {
     };
 });
 
+import { EventEmitter } from 'events';
 import * as vscode from 'vscode';
 import type * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { YamcsClient, YamcsEvent, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
@@ -411,6 +412,45 @@ describe('YAMCS event source', () => {
         expect(batches).toEqual([[second]]);
         sub.dispose();
         api.dispose();
+    });
+});
+
+describe('YamcsClient.subscribeParameters', () => {
+    // Subscribes a real YamcsClient whose two gRPC streams are fakes the test controls
+    function subscribe() {
+        // Like grpc-js streams, the fakes are EventEmitters, with mock cancel and write methods for the client to call
+        const stream = () => Object.assign(new EventEmitter(), { cancel: jest.fn(), write: jest.fn() });
+        const call = stream();
+        const watch = stream();
+        const client = new YamcsClient('localhost:1');
+        // The client's gRPC stub is private and readonly, so we swap it for the fakes with Object.assign
+        Object.assign(client, { processing: { SubscribeParameters: () => call, SubscribeProcessors: () => watch } });
+        const batches: string[][] = [];
+        const onValues = (values: YamcsParameterValue[]) => batches.push(values.map((v) => v.id!.name!));
+        const onEnd = jest.fn();
+        client.subscribeParameters('fprime-project', 'realtime', ['/A/x'], onValues, onEnd);
+        return { call, watch, batches, onEnd };
+    }
+
+    test('names values by the mapping YAMCS sent in an earlier message', () => {
+        const { call, batches } = subscribe();
+        // Values carry only a numeric id. YAMCS sends the names once, in its first message.
+        // Id 2 is not in the mapping, so we expect it dropped. toEqual would ignore an undefined
+        // name left in its place, so we use toStrictEqual.
+        call.emit('data', { mapping: { 1: { name: '/A/x' } }, values: [{ numericId: 1 }, { numericId: 2 }] });
+        call.emit('data', { values: [{ numericId: 1 }] });
+        expect(batches).toStrictEqual([['/A/x'], ['/A/x']]);
+    });
+
+    test.each(['STOPPING', 'TERMINATED', 'FAILED'])('ends when the processor is %s, cancelling both streams', (state) => {
+        const { call, watch, onEnd } = subscribe();
+        // YAMCS leaves a parameter subscription open but silent when its processor stops, so the watch has to end it
+        watch.emit('data', { state: 'RUNNING' });
+        expect(onEnd).not.toHaveBeenCalled();
+        watch.emit('data', { state });
+        expect(onEnd.mock.calls).toEqual([[new Error(`YAMCS processor realtime is ${state}`)]]);
+        expect(call.cancel).toHaveBeenCalled();
+        expect(watch.cancel).toHaveBeenCalled();
     });
 });
 
