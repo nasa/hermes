@@ -18,7 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     services:
       timescaledb:
-        image: timescale/timescaledb:latest-pg16
+        # Docker Hub limits anonymous pulls, which GitHub's shared runners often
+        # hit, so we pull the same image through Google's Docker Hub mirror.
+        image: mirror.gcr.io/timescale/timescaledb:latest-pg16
         env:
           POSTGRES_PASSWORD: password
         ports:
