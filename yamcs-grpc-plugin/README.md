@@ -101,6 +101,15 @@ software ran it. Hermes doesn't wait for YAMCS's command verifiers, and fprime-y
 When YAMCS refuses or fails to send a command, the cell fails with YAMCS's reason, and the commands
 after it aren't sent. Stopping a cell doesn't withdraw a command YAMCS already holds.
 
+F Prime cells run in YAMCS mode too, when fprime-yamcs runs the instance. The Hermes F Prime extension
+builds an F Prime dictionary from YAMCS mode's dictionary, listed as `<instance> (F Prime)`. It names
+each command as F Prime does, for example `CdhCore.cmdDisp.CMD_NO_OP` for
+`/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP`, and takes its opcode from fprime-yamcs's
+`OpCode` argument assignment. Each command waits out its relative time tag, then goes out as a YAMCS
+cell's command does, so an F Prime cell passes and fails as a YAMCS cell does. Unlike Local and Remote
+modes, it doesn't wait for the flight software to complete a command, and it doesn't list the events
+its commands raise. They show in the events panel.
+
 YAMCS mode sends no credentials, so it fails with `UNAUTHENTICATED` when YAMCS security is on. When
 its subscription ends, for example because YAMCS or its instance stopped, the status bar turns red
 with the reason in its tooltip. To subscribe again, run **Hermes: Reconnect to Backend**.
