@@ -73,10 +73,10 @@ F Prime event type, and the errors and worse:
 
 ## Tests
 
-The store tests need `HERMES_TEST_TIMESCALE_DSN`, a `postgres://` URL whose user can create databases. The
-subscription tests need `YAMCS_GRPC_ADDRESS` and read `YAMCS_INSTANCE` (default `fprime-project`). Without them,
-those tests skip. The event subscription test raises one event through YAMCS's `CreateEvent` call, and the event
-stays in that instance's archive.
+The store tests need `HERMES_TEST_TIMESCALE_DSN`, a `postgres://` URL whose user can create databases. The live
+subscription tests, which run against a real YAMCS, need `YAMCS_GRPC_ADDRESS` and read `YAMCS_INSTANCE` (default
+`fprime-project`). Without them, those tests skip. The live event subscription test raises one event through
+YAMCS's `CreateEvent` call, and the event stays in that instance's archive.
 
 ```sh
 HERMES_TEST_TIMESCALE_DSN='postgres://postgres:password@localhost:5432/postgres?sslmode=disable' \
