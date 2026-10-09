@@ -47,7 +47,7 @@ Runs a backend process managed by VSCode. Provides full telemetry, commanding, a
 Connect to an externally-managed backend server for shared testbed or operations environments. Configure the backend URL in settings.
 
 #### YAMCS Mode
-Show live telemetry and events from a YAMCS server, and send it commands from notebook cells written in the YAMCS language, which the Hermes YAMCS extension adds. It needs the yamcs-grpc plugin, whose [README](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin) explains the setup.
+Show live telemetry and events from a YAMCS server, and send it commands from notebook cells written in the YAMCS language, which the Hermes YAMCS extension adds. F Prime cells can send commands too when fprime-yamcs runs the YAMCS instance. It needs the yamcs-grpc plugin, whose [README](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin) explains the setup.
 
 <!-- Add screenshot of connection status here -->
 
