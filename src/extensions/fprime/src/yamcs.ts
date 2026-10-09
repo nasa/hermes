@@ -1,4 +1,8 @@
-import { Def, Dictionary, Proto } from '@gov.nasa.jpl.hermes/types';
+import * as vscode from 'vscode';
+
+import * as Hermes from '@gov.nasa.jpl.hermes/api';
+import type { YamcsEvent } from '@gov.nasa.jpl.hermes/rpc';
+import { Def, Dictionary, Proto, Value } from '@gov.nasa.jpl.hermes/types';
 
 /**
  * Builds an F Prime dictionary from YAMCS mode's dictionary for a YAMCS instance
@@ -50,4 +54,133 @@ function fprimeType(type: Def.Type): Def.Type {
         default:
             return type;
     }
+}
+
+// fprime-yamcs's bool enumeration takes its label, True or False, but YAMCS refuses a protobuf
+// boolean for it, so we send each boolean as its label. Cells parse U64 and I64 arguments into
+// Long objects, so we look inside plain objects only, which are structs.
+function yamcsValue(value: Value): Value {
+    if (typeof value === 'boolean') {
+        return value ? 'True' : 'False';
+    } else if (Array.isArray(value)) {
+        return value.map(yamcsValue);
+    } else if (typeof value === 'object' && value.constructor === Object) {
+        return Object.fromEntries(Object.entries(value).map(([name, member]) => [name, yamcsValue(member)]));
+    }
+    return value;
+}
+
+// Core's API, VscodeApi, raises YAMCS mode's events through onYamcsEvents, which Hermes.Api doesn't declare
+interface YamcsEventSource {
+    onYamcsEvents(handler: (instance: string, events: YamcsEvent[]) => void): vscode.Disposable;
+}
+
+// F Prime's command dispatcher reports how each command ended with one of these events.
+// fprime-yamcs gives each event a type like CdhCore.cmdDisp.OpCodeCompleted, and puts the
+// event's arguments, such as the command's Opcode, in its extra map, keyed by name.
+const completionEvents = ['OpCodeCompleted', 'OpCodeError', 'InvalidCommand'];
+
+// The event's name without its component instance, like OpCodeCompleted
+function eventName(event: YamcsEvent): string {
+    return event.type?.split('.').pop() ?? '';
+}
+
+interface Waiter {
+    opcode?: number;
+    // Takes the command's completion event, or undefined when Hermes drops YAMCS mode's connection
+    done: (event: YamcsEvent | undefined) => void;
+}
+
+/**
+ * Runs F Prime cells on YAMCS mode's connection. Each command waits out its relative
+ * time tag, goes out through YAMCS, and then waits for the flight software's completion
+ * event with its opcode. The cell stops at the first command that fails, with the event
+ * that says why. Each completion event completes the oldest command waiting on its
+ * opcode.
+ *
+ * When the first handler subscribes to YAMCS mode's events, YAMCS mode sends the
+ * newest events in YAMCS's archive, which can include an old completion with the
+ * opcode of a command we send. So we subscribe once, for as long as the extension
+ * runs, and the archived events arrive right after YAMCS mode connects, normally
+ * before any cell runs. A reconnect sends them again, so on any connection change
+ * we stop waiting for every command.
+ */
+export class YamcsRunner implements vscode.Disposable {
+    private readonly waiting: Waiter[] = [];
+    private readonly subscription: vscode.Disposable;
+    private readonly connectionChanges: vscode.Disposable;
+
+    constructor(api: Hermes.Api) {
+        this.connectionChanges = api.onFswChange(() => this.waiting.splice(0).forEach((w) => w.done(undefined)));
+        this.subscription = (api as Hermes.Api & YamcsEventSource).onYamcsEvents((_, events) => {
+            for (const event of events) {
+                if (!completionEvents.includes(eventName(event))) {
+                    continue;
+                }
+                const i = this.waiting.findIndex((w) => w.opcode === Number(event.extra?.Opcode));
+                if (i >= 0) {
+                    this.waiting.splice(i, 1)[0].done(event);
+                }
+            }
+        });
+    }
+
+    async run(fsw: Hermes.Fsw, seq: Hermes.CommandSequence, token: vscode.CancellationToken): Promise<boolean> {
+        if (!fsw.command) {
+            throw new Error(`${fsw.id} can't run F Prime commands`);
+        }
+
+        for (const cmd of seq.commands) {
+            await cancellable(delay(Number(cmd.metadata?.relativeTimeDelayMs ?? 0)), token);
+
+            const name = `${cmd.def.component}.${cmd.def.mnemonic}`;
+            // fsw.command resolves once YAMCS has sent the command, and the flight software's completion
+            // event can reach us before then. We drop events no command is waiting for, so we start waiting first.
+            let waiter!: Waiter;
+            const completion = new Promise<YamcsEvent | undefined>((done) => {
+                waiter = { opcode: cmd.def.opcode, done };
+            });
+            this.waiting.push(waiter);
+
+            try {
+                await fsw.command({ ...cmd, args: cmd.args.map(yamcsValue) }, token);
+                const event = await cancellable(completion, token);
+                if (!event) {
+                    throw new Error(`Hermes lost YAMCS mode's connection before ${name} completed, so its result is unknown`);
+                }
+                if (eventName(event) !== 'OpCodeCompleted') {
+                    throw new Error(`${name} failed: ${event.message}`);
+                }
+            } finally {
+                // If sending failed or the cell was cancelled, this waiter is still listed. Such a command may never
+                // report back, so we drop its waiter rather than let it take the completion of a later command with
+                // the same opcode.
+                const i = this.waiting.indexOf(waiter);
+                if (i >= 0) {
+                    this.waiting.splice(i, 1);
+                }
+            }
+        }
+        return true;
+    }
+
+    dispose() {
+        this.subscription.dispose();
+        this.connectionChanges.dispose();
+    }
+}
+
+function delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Settles as promise does, or rejects as soon as token is cancelled
+function cancellable<T>(promise: Promise<T>, token: vscode.CancellationToken): Promise<T> {
+    return new Promise((resolve, reject) => {
+        const onCancel = token.onCancellationRequested(() => reject(new Error('Cancelled')));
+        if (token.isCancellationRequested) {
+            reject(new Error('Cancelled'));
+        }
+        promise.then(resolve, reject).finally(() => onCancel.dispose());
+    });
 }

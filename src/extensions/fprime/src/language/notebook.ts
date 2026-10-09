@@ -1,17 +1,32 @@
 import * as vscode from "vscode";
 
-import { Api } from "@gov.nasa.jpl.hermes/api";
+import * as Hermes from "@gov.nasa.jpl.hermes/api";
 import { CommandValue, range } from "@gov.nasa.jpl.hermes/sequence";
 import { FswNotebookLanguageProvider } from "@gov.nasa.jpl.hermes/vscode";
+import { YamcsRunner } from "../yamcs";
 import { FPrimeExtension } from "./vsc";
 
 export class FprimeNotebookLanguageProvider extends FswNotebookLanguageProvider {
-    constructor(api: Api, readonly language: FPrimeExtension) {
+    private readonly yamcs: YamcsRunner;
+
+    constructor(api: Hermes.Api, readonly language: FPrimeExtension) {
         super(
             "fprime",
-            (fsw) => fsw.type === "fprime",
+            // YAMCS mode's connection takes F Prime commands when fprime-yamcs runs its instance
+            (fsw) => fsw.type === "fprime" || fsw.type === "yamcs",
             api
         );
+        this.yamcs = new YamcsRunner(api);
+        this.subscriptions.push(this.yamcs);
+    }
+
+    async executeSequence(
+        cell: vscode.NotebookCell,
+        fsw: Hermes.Fsw,
+        seq: Hermes.CommandSequence,
+        token: vscode.CancellationToken
+    ): Promise<boolean> {
+        return fsw.type === "yamcs" ? this.yamcs.run(fsw, seq, token) : super.executeSequence(cell, fsw, seq, token);
     }
 
     async *parse(
