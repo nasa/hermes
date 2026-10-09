@@ -2,39 +2,7 @@ import * as vscode from 'vscode';
 
 import { TerminalToken, Token, Expression, SemanticTokenType } from '../common';
 import { Def, DictionaryNamespace } from '@gov.nasa.jpl.hermes/types';
-import { fieldsSignatureHelp, isInvalidRange, isNextRange } from '../util';
-
-function getCommandMarkdown(def: Def.Command) {
-    const content = new vscode.MarkdownString(
-        `${def.component}.**${def.mnemonic}** = \`0x${def.opcode.toString(16)}\`\n\n`,
-        true
-    );
-
-    const signature = fieldsSignatureHelp(def.arguments);
-    if (signature.length > 0) {
-        content.appendCodeblock(signature, "typescript");
-    }
-
-    if (def.metadata?.description) {
-        content.appendMarkdown(def.metadata?.description);
-    }
-
-    const extra: string[] = [];
-    if (def.metadata?.author) {
-        extra.push(`$(person) ${def.metadata.author}`);
-    }
-
-    if (def.metadata?.file) {
-        extra.push(`$(file-code) ${def.metadata.file}`);
-    }
-
-    if (extra.length > 0) {
-        content.appendMarkdown('\n\n');
-        content.appendMarkdown(extra.join('\n'));
-    }
-
-    return content;
-}
+import { commandMarkdown, fieldsSignatureHelp, isInvalidRange, isNextRange } from '../util';
 
 export class MnemonicToken extends TerminalToken<
     [DictionaryNamespace | undefined, Def.Command | undefined],
@@ -65,7 +33,7 @@ export class MnemonicToken extends TerminalToken<
             return [new vscode.MarkdownString("No dictionary definition")];
         }
 
-        return [getCommandMarkdown(this.def)];
+        return [commandMarkdown(this.def)];
     }
 
     commandCompletionItem(cmd: Def.Command): vscode.CompletionItem {
@@ -86,7 +54,7 @@ export class MnemonicToken extends TerminalToken<
 
             item.kind = vscode.CompletionItemKind.Function;
             item.detail = fieldsSignatureHelp(cmd.arguments);
-            item.documentation = getCommandMarkdown(cmd);
+            item.documentation = commandMarkdown(cmd);
 
             if (!isInvalidRange(this.token.range) && !isNextRange(this.token.range)) {
                 item.range = this.token.range;

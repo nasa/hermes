@@ -720,7 +720,11 @@ export interface Command extends Item<{
      */
     error: string;
 }> {
-    opcode: number;
+    /**
+     * Number the flight software identifies this command by. Commands from YAMCS have
+     * none, since YAMCS identifies commands by name.
+     */
+    opcode?: number;
 
     /**
      * Mnemonic command used to identify this command.

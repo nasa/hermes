@@ -93,8 +93,9 @@ export function commandSignature(cmd: Def.Command): vscode.SignatureInformation 
 }
 
 export function commandMarkdown(cmd: Def.Command): vscode.MarkdownString {
+    const opcode = cmd.opcode === undefined ? '' : ` = \`0x${cmd.opcode.toString(16)}\``;
     const content = new vscode.MarkdownString(
-        `${cmd.component}.**${cmd.mnemonic}** = \`0x${cmd.opcode.toString(16)}\`\n\n`,
+        `${cmd.component}.**${cmd.mnemonic}**${opcode}\n\n`,
         true
     );
 

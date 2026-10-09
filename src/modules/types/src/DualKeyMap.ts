@@ -65,12 +65,16 @@ export class DualKeyMap<
             throw new Error(`Overlapping keys (1): ${k1}`);
         }
 
-        if (this.hasK2(item[this.k2])) {
-            throw new Error(`Overlapping keys (2): ${item[this.k2]}`);
+        // An item without a second key, such as a command without an opcode, is only found by its first key
+        const k2 = item[this.k2];
+        if (k2 !== undefined && this.hasK2(k2)) {
+            throw new Error(`Overlapping keys (2): ${k2}`);
         }
 
         this.byK1.set(k1, item);
-        this.byK2.set(item[this.k2], item);
+        if (k2 !== undefined) {
+            this.byK2.set(k2, item);
+        }
     }
 
     keys() {

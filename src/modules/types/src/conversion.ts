@@ -371,7 +371,7 @@ export function commandFromProto(
     ctx: ConversionContext
 ): Def.Command {
     return {
-        opcode: ctx.value(proto, 'opcode'),
+        opcode: proto.opcode ?? undefined,
         mnemonic: ctx.value(proto, 'mnemonic'),
         component: proto.component ?? "",
         arguments: proto.arguments?.map((field) => fieldFromProto(
