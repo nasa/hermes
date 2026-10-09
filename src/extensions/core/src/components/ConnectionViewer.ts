@@ -125,13 +125,17 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
             profileProviders,
             profiles,
             connections,
-            dictionaries
         ] = await Promise.all([
             this.api.allProviders(),
             this.api.allProfiles(),
             this.api.allFsw(),
-            this.api.allDictionaries(),
         ]);
+
+        // An extension can add a dictionary in response to the same connection change that started this
+        // refresh, as hermes-fprime does when YAMCS mode connects, and its dictionary change reaches the
+        // panel while we wait above. So we read the dictionaries last, right before posting, or an older
+        // list would replace the newer one.
+        const dictionaries = await this.api.allDictionaries();
 
         this.msg?.postMessage({
             dictionaryProviders: this.getDictionaryProvider(),
