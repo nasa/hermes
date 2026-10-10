@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 
+import { Fsw } from '@gov.nasa.jpl.hermes/api';
 import {
     getApi,
     DictionaryLanguageItem
@@ -10,6 +11,7 @@ import { FPrimeExtension } from './language';
 import { FprimeNotebookLanguageProvider } from './language/notebook';
 import { FprimeDeploymentProvider } from './task';
 import { FprimeJsonDictionaryProvider, FprimeXmlDictionaryProvider } from './dictionary';
+import { fprimeDictionary } from './yamcs';
 
 export async function activate(context: vscode.ExtensionContext) {
     const hermesVSCode = getApi();
@@ -19,6 +21,31 @@ export async function activate(context: vscode.ExtensionContext) {
         'fprime',
         (head) => head.type === "fprime",
     );
+
+    // Automatically select the proper dictionary when an FSW connects
+    // Only do it when there is a single F Prime connection, or YAMCS mode's connection
+    const selectDictionary = async (fsws: Fsw[]) => {
+        const fprimeFsws = fsws.filter(f => f.type === "fprime");
+        const yamcsDictionaryId = fsws.find(f => f.type === "yamcs")?.dictionary;
+        if (fprimeFsws.length === 1 && fprimeFsws[0].dictionary) {
+            dictionaryItem.set(fprimeFsws[0].dictionary);
+        } else if (yamcsDictionaryId) {
+            // YAMCS mode's connection names a dictionary of its YAMCS instance's commands, which we turn
+            // into an F Prime one when fprime-yamcs runs that instance
+            try {
+                const dictionary = fprimeDictionary(await hermesVSCode.api.getDictionary(yamcsDictionaryId));
+                if (dictionary) {
+                    dictionaryItem.set(await hermesVSCode.api.addDictionary(dictionary));
+                }
+            } catch (err) {
+                hermesVSCode.log.error(`Failed to build an F Prime dictionary from ${yamcsDictionaryId}: ${err}`);
+            }
+        }
+    };
+    // A connection may be up before we activate, and then no change tells us about it. Only Local and
+    // Remote modes can fail to list the connections, and their client logs the error, so we ignore it
+    // and wait for the next onFswChange.
+    hermesVSCode.api.allFsw().then(selectDictionary, () => { });
 
     const ext = new FPrimeExtension(dictionaryItem);
     const nbLanguage = new FprimeNotebookLanguageProvider(hermesVSCode.api, ext);
@@ -34,17 +61,7 @@ export async function activate(context: vscode.ExtensionContext) {
         hermesVSCode.registerNotebookLanguageProvider("fprime", nbLanguage),
         jsonProvider.startWatching(),
 
-        hermesVSCode.api.onFswChange((fsws) => {
-            // Automatically select the proper dictionary when an FSW connects
-            // Only do it when there is a single F Prime connection
-            const fprimeFsws = fsws.filter(f => f.type === "fprime");
-            if (fprimeFsws.length === 1) {
-                const dictionary = fprimeFsws[0].dictionary;
-                if (dictionary) {
-                    dictionaryItem.set(dictionary);
-                }
-            }
-        }),
+        hermesVSCode.api.onFswChange(selectDictionary),
 
         // Register task provider for F Prime deployment auto-discovery
         vscode.tasks.registerTaskProvider(
