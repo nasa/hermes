@@ -1,0 +1,24 @@
+name: Test YAMCS gRPC Plugin
+
+on:
+  pull_request:
+    paths:
+      - 'yamcs-grpc-plugin/**'
+      - '.github/workflows/yamcs-grpc-plugin.yml'
+
+jobs:
+  test:
+    name: Run Plugin Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Run tests
+        run: mvn -B -f yamcs-grpc-plugin/pom.xml test
