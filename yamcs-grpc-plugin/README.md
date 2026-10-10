@@ -20,6 +20,14 @@ holds the plugin jar and the grpc-java jars.
 resolve YAMCS and gRPC without a Maven install. `build.sh` builds the jar YAMCS loads, so keep the
 versions in both files in sync.
 
+## Test
+
+```sh
+mvn test
+```
+
+Needs Maven 3.9 or newer and Java 17 or newer. The tests in `test/` run without a YAMCS server.
+
 ## Run
 
 The plugin loads into an existing YAMCS; it is not a separate server. gRPC listens on 8091. To

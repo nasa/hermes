@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Declares the plugin's dependencies so IDEs (and mvn) can resolve them.
+  Declares the plugin's dependencies so IDEs can resolve them and "mvn test" can run the unit tests.
   build.sh builds the jar YAMCS loads; keep the versions in both files in sync.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -45,10 +45,18 @@
             <version>${grpc.version}</version>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.14.4</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <sourceDirectory>src</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
         <resources>
             <resource>
                 <directory>resources</directory>
