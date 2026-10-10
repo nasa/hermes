@@ -4657,6 +4657,763 @@
                   }
                 }
               }
+            },
+            "commanding": {
+              "options": {
+                "java_package": "org.yamcs.protobuf",
+                "java_outer_classname": "CommandsServiceProto",
+                "java_multiple_files": true
+              },
+              "nested": {
+                "CommandsApi": {
+                  "edition": "proto2",
+                  "options": {
+                    "(yamcs.api.markdown)": true
+                  },
+                  "methods": {
+                    "IssueCommand": {
+                      "requestType": "IssueCommandRequest",
+                      "responseType": "IssueCommandResponse",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/processors/{instance}/{processor}/commands/{name*}",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/processors/{instance}/{processor}/commands/{name*}",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "UpdateCommandHistory": {
+                      "requestType": "UpdateCommandHistoryRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/processors/{instance}/{processor}/commandhistory/{name*}",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/processors/{instance}/{processor}/commandhistory/{name*}",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "ListCommands": {
+                      "requestType": "ListCommandsRequest",
+                      "responseType": "ListCommandsResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/archive/{instance}/commands"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/archive/{instance}/commands"
+                          }
+                        }
+                      ]
+                    },
+                    "GetCommand": {
+                      "requestType": "GetCommandRequest",
+                      "responseType": "CommandHistoryEntry",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/archive/{instance}/commands/{id}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/archive/{instance}/commands/{id}"
+                          }
+                        }
+                      ]
+                    },
+                    "StreamCommands": {
+                      "requestType": "StreamCommandsRequest",
+                      "responseType": "CommandHistoryEntry",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.route).post": "/api/stream-archive/{instance}:streamCommands",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/stream-archive/{instance}:streamCommands",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "SubscribeCommands": {
+                      "requestType": "SubscribeCommandsRequest",
+                      "responseType": "CommandHistoryEntry",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.websocket).topic": "commands"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.websocket)": {
+                            "topic": "commands"
+                          }
+                        }
+                      ]
+                    },
+                    "ExportCommand": {
+                      "requestType": "ExportCommandRequest",
+                      "responseType": "yamcs.api.HttpBody",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/archive/{instance}/commands/{id}:export"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/archive/{instance}/commands/{id}:export"
+                          }
+                        }
+                      ]
+                    },
+                    "ExportCommands": {
+                      "requestType": "ExportCommandsRequest",
+                      "responseType": "yamcs.api.HttpBody",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.route).get": "/api/archive/{instance}:exportCommands"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/archive/{instance}:exportCommands"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "ListCommandsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "pos": {
+                      "type": "int64",
+                      "id": 2,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "limit": {
+                      "type": "int32",
+                      "id": 3
+                    },
+                    "order": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "q": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "next": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "start": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 7
+                    },
+                    "stop": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 8
+                    },
+                    "queue": {
+                      "type": "string",
+                      "id": 9
+                    }
+                  }
+                },
+                "IssueCommandRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 8
+                    },
+                    "args": {
+                      "type": "google.protobuf.Struct",
+                      "id": 16
+                    },
+                    "origin": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "sequenceNumber": {
+                      "type": "int32",
+                      "id": 3
+                    },
+                    "dryRun": {
+                      "type": "bool",
+                      "id": 4
+                    },
+                    "comment": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "stream": {
+                      "type": "string",
+                      "id": 11
+                    },
+                    "disableTransmissionConstraints": {
+                      "type": "bool",
+                      "id": 12
+                    },
+                    "disableVerifiers": {
+                      "type": "bool",
+                      "id": 13
+                    },
+                    "verifierConfig": {
+                      "keyType": "string",
+                      "type": "commanding.VerifierConfig",
+                      "id": 14
+                    },
+                    "extra": {
+                      "keyType": "string",
+                      "type": "Value",
+                      "id": 15
+                    }
+                  },
+                  "nested": {
+                    "Assignment": {
+                      "fields": {
+                        "name": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "value": {
+                          "type": "string",
+                          "id": 2
+                        }
+                      }
+                    }
+                  }
+                },
+                "IssueCommandResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "id": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "generationTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 6
+                    },
+                    "origin": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "sequenceNumber": {
+                      "type": "int32",
+                      "id": 8
+                    },
+                    "commandName": {
+                      "type": "string",
+                      "id": 9
+                    },
+                    "aliases": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 14
+                    },
+                    "assignments": {
+                      "rule": "repeated",
+                      "type": "CommandAssignment",
+                      "id": 12
+                    },
+                    "unprocessedBinary": {
+                      "type": "bytes",
+                      "id": 13
+                    },
+                    "binary": {
+                      "type": "bytes",
+                      "id": 4
+                    },
+                    "username": {
+                      "type": "string",
+                      "id": 11
+                    },
+                    "queue": {
+                      "type": "string",
+                      "id": 10
+                    }
+                  }
+                },
+                "UpdateCommandHistoryRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "id": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "attributes": {
+                      "rule": "repeated",
+                      "type": "commanding.CommandHistoryAttribute",
+                      "id": 5
+                    }
+                  }
+                },
+                "ListCommandsResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "entry": {
+                      "rule": "repeated",
+                      "type": "CommandHistoryEntry",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "commands": {
+                      "rule": "repeated",
+                      "type": "CommandHistoryEntry",
+                      "id": 3
+                    },
+                    "continuationToken": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "GetCommandRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "id": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "ExportCommandRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "id": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "StreamCommandsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "start": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 2
+                    },
+                    "stop": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 3
+                    },
+                    "name": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 4
+                    }
+                  }
+                },
+                "SubscribeCommandsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processor": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "ignorePastCommands": {
+                      "type": "bool",
+                      "id": 3
+                    }
+                  }
+                },
+                "ExportCommandsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "start": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 2
+                    },
+                    "stop": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 3
+                    },
+                    "name": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 4
+                    },
+                    "delimiter": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "includeAliases": {
+                      "type": "bool",
+                      "id": 6
+                    }
+                  }
+                },
+                "CommandId": {
+                  "edition": "proto2",
+                  "fields": {
+                    "generationTime": {
+                      "rule": "required",
+                      "type": "int64",
+                      "id": 1
+                    },
+                    "origin": {
+                      "rule": "required",
+                      "type": "string",
+                      "id": 2
+                    },
+                    "sequenceNumber": {
+                      "rule": "required",
+                      "type": "int32",
+                      "id": 3
+                    },
+                    "commandName": {
+                      "type": "string",
+                      "id": 4
+                    }
+                  }
+                },
+                "QueueState": {
+                  "edition": "proto2",
+                  "values": {
+                    "BLOCKED": 1,
+                    "DISABLED": 2,
+                    "ENABLED": 3
+                  }
+                },
+                "CommandQueueInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processorName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "state": {
+                      "type": "QueueState",
+                      "id": 4
+                    },
+                    "order": {
+                      "type": "int32",
+                      "id": 9
+                    },
+                    "users": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 10
+                    },
+                    "groups": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 11
+                    },
+                    "minLevel": {
+                      "type": "mdb.SignificanceInfo.SignificanceLevelType",
+                      "id": 12
+                    },
+                    "tcPatterns": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 13
+                    },
+                    "entries": {
+                      "rule": "repeated",
+                      "type": "CommandQueueEntry",
+                      "id": 14
+                    },
+                    "acceptedCommandsCount": {
+                      "type": "int32",
+                      "id": 15
+                    },
+                    "rejectedCommandsCount": {
+                      "type": "int32",
+                      "id": 16
+                    }
+                  }
+                },
+                "CommandQueueEntry": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "processorName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "queueName": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "id": {
+                      "type": "string",
+                      "id": 14
+                    },
+                    "origin": {
+                      "type": "string",
+                      "id": 15
+                    },
+                    "sequenceNumber": {
+                      "type": "int32",
+                      "id": 16
+                    },
+                    "commandName": {
+                      "type": "string",
+                      "id": 17
+                    },
+                    "assignments": {
+                      "rule": "repeated",
+                      "type": "CommandAssignment",
+                      "id": 18
+                    },
+                    "binary": {
+                      "type": "bytes",
+                      "id": 6
+                    },
+                    "username": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "comment": {
+                      "type": "string",
+                      "id": 11
+                    },
+                    "generationTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 12
+                    },
+                    "pendingTransmissionConstraints": {
+                      "type": "bool",
+                      "id": 13
+                    }
+                  }
+                },
+                "CommandQueueEvent": {
+                  "edition": "proto2",
+                  "fields": {
+                    "type": {
+                      "type": "Type",
+                      "id": 1
+                    },
+                    "data": {
+                      "type": "CommandQueueEntry",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "Type": {
+                      "values": {
+                        "COMMAND_ADDED": 1,
+                        "COMMAND_REJECTED": 2,
+                        "COMMAND_SENT": 3,
+                        "COMMAND_UPDATED": 4
+                      }
+                    }
+                  }
+                },
+                "CommandQueueRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "queueInfo": {
+                      "type": "CommandQueueInfo",
+                      "id": 1
+                    },
+                    "queueEntry": {
+                      "type": "CommandQueueEntry",
+                      "id": 2
+                    },
+                    "rebuild": {
+                      "type": "bool",
+                      "id": 3,
+                      "options": {
+                        "default": false
+                      }
+                    }
+                  }
+                },
+                "CommandSignificance": {
+                  "edition": "proto2",
+                  "fields": {
+                    "sequenceNumber": {
+                      "type": "int32",
+                      "id": 1
+                    },
+                    "significance": {
+                      "type": "mdb.SignificanceInfo",
+                      "id": 2
+                    }
+                  }
+                },
+                "VerifierConfig": {
+                  "edition": "proto2",
+                  "fields": {
+                    "disable": {
+                      "type": "bool",
+                      "id": 2
+                    },
+                    "checkWindow": {
+                      "type": "CheckWindow",
+                      "id": 3
+                    }
+                  },
+                  "nested": {
+                    "CheckWindow": {
+                      "fields": {
+                        "timeToStartChecking": {
+                          "type": "int64",
+                          "id": 1
+                        },
+                        "timeToStopChecking": {
+                          "type": "int64",
+                          "id": 2
+                        }
+                      }
+                    }
+                  }
+                },
+                "CommandHistoryAttribute": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "value": {
+                      "type": "Value",
+                      "id": 2
+                    },
+                    "time": {
+                      "type": "int64",
+                      "id": 3
+                    }
+                  }
+                },
+                "CommandAssignment": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "value": {
+                      "type": "Value",
+                      "id": 2
+                    },
+                    "userInput": {
+                      "type": "bool",
+                      "id": 3
+                    }
+                  }
+                },
+                "CommandHistoryEntry": {
+                  "edition": "proto2",
+                  "fields": {
+                    "id": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "commandName": {
+                      "type": "string",
+                      "id": 8
+                    },
+                    "aliases": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 12
+                    },
+                    "origin": {
+                      "type": "string",
+                      "id": 9
+                    },
+                    "sequenceNumber": {
+                      "type": "int32",
+                      "id": 10
+                    },
+                    "commandId": {
+                      "type": "CommandId",
+                      "id": 1
+                    },
+                    "attr": {
+                      "rule": "repeated",
+                      "type": "CommandHistoryAttribute",
+                      "id": 3
+                    },
+                    "generationTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 6
+                    },
+                    "assignments": {
+                      "rule": "repeated",
+                      "type": "CommandAssignment",
+                      "id": 11
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -6209,6 +6966,69 @@
                 "VISIBILITY_UNSET": 0,
                 "VISIBILITY_LOCAL": 1,
                 "VISIBILITY_EXPORT": 2
+              }
+            },
+            "Struct": {
+              "fields": {
+                "fields": {
+                  "keyType": "string",
+                  "type": "Value",
+                  "id": 1
+                }
+              }
+            },
+            "Value": {
+              "oneofs": {
+                "kind": {
+                  "oneof": [
+                    "nullValue",
+                    "numberValue",
+                    "stringValue",
+                    "boolValue",
+                    "structValue",
+                    "listValue"
+                  ]
+                }
+              },
+              "fields": {
+                "nullValue": {
+                  "type": "NullValue",
+                  "id": 1
+                },
+                "numberValue": {
+                  "type": "double",
+                  "id": 2
+                },
+                "stringValue": {
+                  "type": "string",
+                  "id": 3
+                },
+                "boolValue": {
+                  "type": "bool",
+                  "id": 4
+                },
+                "structValue": {
+                  "type": "Struct",
+                  "id": 5
+                },
+                "listValue": {
+                  "type": "ListValue",
+                  "id": 6
+                }
+              }
+            },
+            "NullValue": {
+              "values": {
+                "NULL_VALUE": 0
+              }
+            },
+            "ListValue": {
+              "fields": {
+                "values": {
+                  "rule": "repeated",
+                  "type": "Value",
+                  "id": 1
+                }
               }
             }
           }

@@ -1,0 +1,165 @@
+syntax="proto2";
+
+package yamcs.protobuf.commanding;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
+import "google/protobuf/timestamp.proto";
+
+
+message CommandId {
+  required int64 generationTime = 1;
+  required string origin = 2;
+  required int32 sequenceNumber = 3; //unique in relation to generationTime and origin
+  optional string commandName = 4;
+}
+
+enum QueueState {
+  BLOCKED = 1;
+  DISABLED = 2;
+  ENABLED = 3;
+}
+
+message CommandQueueInfo {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Processor name
+  optional string processorName = 2;
+
+  // Command queue name
+  optional string name = 3;
+
+  // Current queue state
+  optional QueueState state = 4;
+
+  // Submitted commands are matches to the first queue that
+  // whose filter criteria (if any) match the command's
+  // features. Queues are considered in the order specified by
+  // this field, going from lowest to highest.
+  optional int32 order = 9;
+
+  // This queue only considers commands that are issued
+  // by one of the users in this list.
+  //
+  // If the list is empty, all commands are considered.
+  //
+  // Note that users/groups are considered at the same time
+  // (a match with any of the two is sufficient).
+  repeated string users = 10;
+
+  // This queue only considers commands that are issued
+  // by one of the users who belongs to any of these groups.
+  //
+  // If the list is empty, all commands are considered.
+  //
+  // Note that users/groups are considered at the same time
+  // (a match with any of the two is sufficient).
+  repeated string groups = 11;
+
+  // This queue only considers commands that are at least
+  // as significant as this level.
+  optional mdb.SignificanceInfo.SignificanceLevelType minLevel = 12;
+
+  // This queue only considers commands whose qualified name
+  // matches any of the regular expressions in this list.
+  //
+  // If the list is empty, all commands are considered.
+  repeated string tcPatterns = 13;
+
+  // Currently pending (queued) commands
+  repeated CommandQueueEntry entries = 14;
+
+  // Number of commands that successfully passed through this queue.
+  optional int32 acceptedCommandsCount = 15;
+
+  // Number of commands that were rejected by this queue.
+  optional int32 rejectedCommandsCount = 16;
+}
+
+/*One entry (command) in the command queue*/
+message CommandQueueEntry {
+  optional string instance = 1;
+  optional string processorName = 2;
+  optional string queueName = 3;
+  optional string id = 14;
+  optional string origin = 15;
+  optional int32 sequenceNumber = 16;
+  optional string commandName = 17;
+
+  repeated CommandAssignment assignments = 18;
+  optional bytes binary = 6;
+  optional string username = 7;
+
+  optional string comment = 11;
+  optional google.protobuf.Timestamp generationTime = 12;
+  
+  // If true, the command has been accepted and is due for release
+  // as soon as transmission constraints are satisfied.
+  optional bool pendingTransmissionConstraints = 13;
+}
+
+message CommandQueueEvent {
+  enum Type {
+    COMMAND_ADDED = 1;
+    COMMAND_REJECTED = 2;
+    COMMAND_SENT = 3;
+    COMMAND_UPDATED = 4;
+  }
+  optional Type type = 1;
+  optional CommandQueueEntry data = 2;
+}
+
+message CommandQueueRequest {
+  optional CommandQueueInfo queueInfo = 1; // for SetQueueState
+  optional CommandQueueEntry queueEntry = 2; //for SendCommand and RejectCommand
+  optional bool rebuild = 3[default=false]; //if rebuild is true, the binary packet will be recreated to include new time and sequence count
+}
+
+/* this message is sent as response to validate, in case the significance is defined for a commands*/
+message CommandSignificance {
+  optional int32 sequenceNumber = 1; //the sequence number of the command sent
+  optional mdb.SignificanceInfo significance = 2;
+}
+
+//can be used when sending commands to affect the way post transmission verifiers are running
+message VerifierConfig {
+  message CheckWindow {
+    optional int64 timeToStartChecking = 1;
+    optional int64 timeToStopChecking = 2;
+  }
+
+  optional bool disable = 2; //disable the verifier
+  optional CheckWindow checkWindow = 3;
+}
+
+message CommandHistoryAttribute {
+  optional string name = 1;
+  optional Value value = 2;
+  optional int64 time = 3;
+}
+
+message CommandAssignment {
+  optional string name = 1;
+  optional Value value = 2;
+  optional bool userInput = 3;
+}
+
+message CommandHistoryEntry {
+  optional string id = 7;
+
+  // Qualified name
+  optional string commandName = 8;
+
+  // Name aliases keyed by namespace.
+  // (as currently present in Mission Database)
+  map<string, string> aliases = 12;
+
+  optional string origin = 9;
+  optional int32 sequenceNumber = 10;
+  optional CommandId commandId = 1;
+  repeated CommandHistoryAttribute attr = 3;
+  optional google.protobuf.Timestamp generationTime = 6;
+  repeated CommandAssignment assignments = 11;
+}

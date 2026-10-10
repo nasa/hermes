@@ -78,10 +78,24 @@ YAMCS events show up in the events panel with source `yamcs:<instance>`, YAMCS's
 component column and its type in the name column. On connect the panel loads the newest 100 events
 from the archive, then adds live ones. It does not show an event's extra, reception time or createdBy.
 
-YAMCS mode can't send commands. It sends no credentials, so it fails with
-`UNAUTHENTICATED` when YAMCS security is on. When its subscription ends, for example because YAMCS
-or its instance stopped, the status bar turns red with the reason in its tooltip. To subscribe again,
-run **Hermes: Reconnect to Backend**.
+YAMCS mode lists the instance's commands when it connects and builds a Hermes dictionary from them,
+listed under the instance's name with type `yamcs`. The Hermes YAMCS extension
+(`src/extensions/yamcs`) adds a YAMCS cell language for Hermes notebooks: one command per line, its
+qualified name and then its arguments, for example
+`/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING "hello"`. Completion, hovers and argument
+checks come from that dictionary. fprime-yamcs gives commands no descriptions, so hovers show only
+names and types. It gives a string's limit only as its encoded size, which YAMCS's `ListCommands`
+doesn't report, so YAMCS rather than the editor refuses a string that is too long.
+
+YAMCS cells run on the connection `yamcs:<instance>`, on the processor from `hermes.host.yamcs`, one
+command at a time. A YAMCS cell passes once YAMCS has sent each command, which doesn't mean the flight
+software ran it. Hermes doesn't wait for YAMCS's command verifiers, and fprime-yamcs defines none.
+When YAMCS refuses or fails to send a command, the cell fails with YAMCS's reason, and the commands
+after it aren't sent. Stopping a cell doesn't withdraw a command YAMCS already holds.
+
+YAMCS mode sends no credentials, so it fails with `UNAUTHENTICATED` when YAMCS security is on. When
+its subscription ends, for example because YAMCS or its instance stopped, the status bar turns red
+with the reason in its tooltip. To subscribe again, run **Hermes: Reconnect to Backend**.
 
 Checks against fprime-yamcs with the plugin and a running F Prime deployment, from the repo root.
 They wait for FrameworkVersion, which F Prime sends only at boot, so the deployment must have booted
@@ -96,6 +110,7 @@ node src/extensions/core/test/e2e/run.js   # downloads VS Code 1.138.0 on first 
 The live jest tests run only when `YAMCS_GRPC_ADDRESS` is set. `run.js` defaults to `localhost:8091`
 and writes `result.json` next to itself. Both read `YAMCS_INSTANCE`, default `fprime-project`.
 The two live event tests each raise one event with YAMCS's `CreateEvent`, which stays in that instance's archive.
+One live command test and `run.js` each send a `CMD_NO_OP_STRING` to the flight software.
 `VSCODE_TEST_CACHE` points `run.js` at an existing VS Code download. `E2E_HOLD_MS` holds the window
 open that many milliseconds with the telemetry table showing.
 
