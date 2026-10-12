@@ -112,8 +112,13 @@ command only by its opcode, so, as in the other modes, the same command sent mea
 client or an onboard sequence can end the wait. fprime-yamcs's event processor, `fprime-yamcs-events`,
 puts those events into YAMCS, and fprime-yamcs starts it with the instance. If `fprime-yamcs-events`
 isn't running, a cell waits on its first command until you stop it. If Hermes loses YAMCS mode's
-connection while a command waits, the cell fails, since the command's result is unknown. Unlike Local
-and Remote modes, the cell doesn't list the events its commands raise. They show in the events panel.
+connection while a command waits, the cell fails, since the command's result is unknown.
+
+A cell's output lists the events YAMCS reports for the instance while the cell runs. An F Prime
+event shows its F Prime severity, and the `hermes.notebook.evr*` settings hide severities as in the
+other modes. An event YAMCS raises itself shows YAMCS's severity and is always listed. An F Prime cell
+runs until each command's completion event, so it lists its commands' events. A YAMCS cell ends once
+YAMCS has sent the cell's last command, so its list can be empty. The events panel shows every event.
 
 YAMCS mode sends no credentials, so it fails with `UNAUTHENTICATED` when YAMCS security is on. When
 its subscription ends, for example because YAMCS or its instance stopped, the status bar turns red

@@ -30,6 +30,11 @@ jest.mock('vscode', () => {
         EventEmitter,
         window: { showInputBox: jest.fn() },
         workspace: { getConfiguration: () => ({ get: (key: string) => mockSettings[key] }) },
+        // FswNotebookLanguageProvider calls the three entries below
+        NotebookCellOutput: class { },
+        // As in VS Code, an output item holds its text as bytes
+        NotebookCellOutputItem: { text: (value: string) => ({ data: Buffer.from(value) }) },
+        commands: { registerCommand: () => ({ dispose: () => { } }) },
     };
 });
 
@@ -40,6 +45,7 @@ import type * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { YamcsClient, YamcsCommandHistoryEntry, YamcsCommandInfo, YamcsEvent, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
 import { Def, Dictionary } from '@gov.nasa.jpl.hermes/types';
+import { FswNotebookLanguageProvider } from '@gov.nasa.jpl.hermes/vscode';
 
 import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterSource } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
@@ -420,6 +426,56 @@ describe('YAMCS event source', () => {
         await settle();
         expect(batches).toEqual([[second]]);
         sub.dispose();
+        api.dispose();
+    });
+
+    test('a cell lists the events YAMCS raises while the cell runs, except ones whose F Prime severity the notebook settings turn off', async () => {
+        const { api, raise, listings } = await backend();
+        // A cell language whose cells send no commands
+        class Cells extends FswNotebookLanguageProvider {
+            async *parse(): AsyncIterable<CommandValue> { }
+            async executeSequence() {
+                // YAMCS raises two events while the cell runs
+                raise(opCodeDispatched);
+                raise(seqCountJump);
+                return true;
+            }
+        }
+        const cells = new Cells('test', () => true, api);
+        // The backend also asked YAMCS for its archive, and holds live events back until it has sent the
+        // archived ones. We answer with an empty archive.
+        const [archive] = listings;
+        archive.resolve([]);
+        await settle();
+
+        // Every version of its event list that the cell writes
+        const written: string[] = [];
+        const execution: Partial<vscode.NotebookCellExecution> = {
+            appendOutput: async () => { },
+            replaceOutputItems: async (items) => {
+                const [item] = [items].flat();
+                written.push(Buffer.from(item.data).toString());
+            },
+        };
+        const document: Partial<vscode.TextDocument> = {};
+        const cell: Partial<vscode.NotebookCell> = { metadata: {}, document: document as vscode.TextDocument };
+        mockSettings['hermes.notebook.evrCommand'] = false;
+        await cells.execute(cell as vscode.NotebookCell, execution as vscode.NotebookCellExecution, tokenSource().token);
+        // The cell has ended, so it doesn't list this one
+        raise(seqCountJump);
+
+        // evrCommand is off, which hides events of severity COMMAND. opCodeDispatched's F Prime severity
+        // is COMMAND and its YAMCS severity is INFO, which no setting hides.
+        expect(written.at(-1)!.split('\n').map((row) => JSON.parse(row))).toEqual([{
+            time: 1790722468095,
+            // The row has NaN here, which JSON writes as null
+            sclk: null,
+            source: 'yamcs:fprime-project',
+            component: 'FprimePacketPreprocessor',
+            name: 'SEQ_COUNT_JUMP',
+            severity: 'WARNING',
+            message: 'Sequence count jump for APID: 4 old seq: 0 newseq: 0',
+        }]);
         api.dispose();
     });
 });

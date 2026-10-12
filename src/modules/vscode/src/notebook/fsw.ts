@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
+import type { YamcsEvent } from '@gov.nasa.jpl.hermes/rpc';
 import {
+    DisplayEvent,
     Proto,
 } from '@gov.nasa.jpl.hermes/types';
 import { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
@@ -79,6 +81,31 @@ export function evrOutput(
     }
 }
 
+// The part of Core's API that raises YAMCS mode's events. Hermes.Api doesn't declare it.
+interface YamcsEventSource {
+    onYamcsEvents(handler: (instance: string, events: YamcsEvent[]) => void): vscode.Disposable;
+}
+
+// A YAMCS event as a row of a cell's event list
+function yamcsDisplayEvent(source: string, event: YamcsEvent): Omit<DisplayEvent, 'severity'> & { severity: string } {
+    const time = event.generationTime;
+    return {
+        time: Number(time?.seconds ?? 0) * 1000 + (time?.nanos ?? 0) / 1e6,
+        // YAMCS has no SCLK
+        sclk: NaN,
+        source,
+        // As in the events panel, YAMCS's source goes in the component column and its type in the name column
+        component: event.source ?? '',
+        name: event.type ?? '',
+        // fprime-yamcs puts an F Prime event's own severity in extra.fprime_severity. We show that one, because
+        // the notebook's severity settings and the renderer's row colors use F Prime's severity names. An event
+        // YAMCS raised itself has no extra.fprime_severity, so we show YAMCS's severity, which is INFO when
+        // YAMCS leaves it out.
+        severity: event.extra?.fprime_severity ?? event.severity ?? 'INFO',
+        message: event.message ?? '',
+    };
+}
+
 export abstract class FswNotebookLanguageProvider implements NotebookLanguageProvider {
     didChangeCellStatusBarItems = new vscode.EventEmitter<void>();
     onDidChangeCellStatusBarItems = this.didChangeCellStatusBarItems.event;
@@ -87,6 +114,9 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
     private statusBarItems: vscode.NotebookCellStatusBarItem[] = [];
 
     protected subscriptions: vscode.Disposable[];
+
+    // One listener for each cell that is running on YAMCS mode's connection
+    private readonly yamcsListeners = new Set<(events: YamcsEvent[]) => void>();
 
     private async validFsws(token?: vscode.CancellationToken): Promise<Hermes.Fsw[]> {
         return (await this.api.allFsw(token))
@@ -105,6 +135,15 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
             this.api.onFswChange(() => {
                 this.didFswStatusChange = true;
                 this.didChangeCellStatusBarItems.fire();
+                // This listener runs when YAMCS mode connects, before YAMCS mode sends its subscribers the
+                // newest events in YAMCS's archive. A cell lists only the events raised while it runs, so the
+                // cells that are running now stop listing events.
+                this.yamcsListeners.clear();
+            }),
+
+            // One subscription passes YAMCS mode's events to every running cell
+            (this.api as Hermes.Api & YamcsEventSource).onYamcsEvents((_, events) => {
+                this.yamcsListeners.forEach((listener) => listener(events));
             }),
 
             vscode.commands.registerCommand(`hermes.notebook.${this.id}.select`, (
@@ -227,6 +266,27 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
         }
     }
 
+    // Adds YAMCS mode's events to the cell's output until the returned disposable is disposed
+    private yamcsEvrOutput(output: vscode.NotebookCellExecution, fsw: Hermes.Fsw): vscode.Disposable {
+        const out = new vscode.NotebookCellOutput([
+            vscode.NotebookCellOutputItem.text('', 'hermes.notebook/evr')
+        ]);
+        const evrs: string[] = [];
+
+        output.appendOutput(out);
+
+        const listener = (events: YamcsEvent[]) => {
+            const shown = events.map((event) => yamcsDisplayEvent(fsw.id, event)).filter((evr) => showEvr(evr.severity));
+            evrs.push(...shown.map((evr) => JSON.stringify(evr)));
+            output.replaceOutputItems(
+                vscode.NotebookCellOutputItem.text(evrs.join('\n'), 'hermes.notebook/evr'),
+                out
+            );
+        };
+        this.yamcsListeners.add(listener);
+        return { dispose: () => this.yamcsListeners.delete(listener) };
+    }
+
     async execute(
         cell: vscode.NotebookCell,
         execution: vscode.NotebookCellExecution,
@@ -237,7 +297,8 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
             throw new Error("No target FSW set on this cell (or connected)");
         }
 
-        const output = evrOutput(execution, this.api, fsw);
+        // In YAMCS mode Hermes decodes no events itself, so we list the ones YAMCS raises
+        const output = fsw.type === 'yamcs' ? this.yamcsEvrOutput(execution, fsw) : evrOutput(execution, this.api, fsw);
 
         try {
             const commands: CommandValue[] = [];
