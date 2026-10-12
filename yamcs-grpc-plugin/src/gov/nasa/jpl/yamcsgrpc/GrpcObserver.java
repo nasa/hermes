@@ -31,7 +31,7 @@ final class GrpcObserver implements Observer<Message> {
     private static final Log log = new Log(GrpcObserver.class);
 
     // How far a client may fall behind before we end its call. YAMCS's WebSocket path allows 128 KiB. We allow more
-    // because clients such as yamcs-recorder stop reading while they write each message to a database.
+    // because clients such as yamcs-recorder stop reading while the database they write to cannot keep up.
     private static final long MAX_BACKLOG_BYTES = 8 * 1024 * 1024;
 
     private final ServerCallStreamObserver<Message> out;
