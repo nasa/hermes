@@ -19,6 +19,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -162,9 +163,11 @@ func run(ctx context.Context, cfg config, logger *slog.Logger) error {
 		logger.Info("exporting events", "otlp", cfg.otlp)
 	}
 
+	ids := store.NewResolver()
 	r := &recorder{
-		db:     db,
-		ids:    store.NewResolver(),
+		insert: func(ctx context.Context, rows []store.Row) error {
+			return store.Insert(ctx, db, ids, rows)
+		},
 		conv:   convert.New(cfg.instance, logger),
 		stored: stored,
 		logger: logger,
@@ -275,14 +278,36 @@ func newLoggerProvider(ctx context.Context, addr, instance string) (*sdklog.Logg
 	), nil
 }
 
+// maxQueuedMessages is how many messages can wait for the database before we
+// stop reading from YAMCS.
+const maxQueuedMessages = 1024
+
 // recordParameters stores the values that stream delivers until it ends.
 func recordParameters(ctx context.Context, stream processing.ProcessingApi_SubscribeParametersClient, r *recorder) error {
+	ctx, cancel := context.WithCancel(ctx)
+	// A second goroutine writes to the database, so we keep reading from YAMCS
+	// while an insert is in flight.
+	queue := make(chan []store.Row, maxQueuedMessages)
+	var writer sync.WaitGroup
+	writer.Go(func() { r.write(ctx, queue) })
+	// Before we return, we wait for that goroutine to store the rows still in
+	// queue. Cancelling ctx first stops it from waiting for a database that is
+	// down.
+	defer func() {
+		cancel()
+		close(queue)
+		writer.Wait()
+	}()
 	for ctx.Err() == nil {
 		data, err := stream.Recv()
 		if err != nil {
 			return fmt.Errorf("parameter subscription ended: %w", err)
 		}
-		r.record(ctx, data)
+		if rows := r.rows(data); len(rows) > 0 {
+			// When queue is full, this waits until the writer finishes its
+			// current insert, retries included.
+			queue <- rows
+		}
 	}
 	return ctx.Err()
 }
@@ -303,9 +328,10 @@ func exportEvents(ctx context.Context, stream events.EventsApi_SubscribeEventsCl
 
 // recorder stores the values that arrive on one parameter subscription.
 type recorder struct {
-	db   *sql.DB
-	ids  *store.Resolver
-	conv *convert.Converter
+	// insert writes rows to the database in one transaction. It is a field so
+	// tests can stand in for the database.
+	insert func(ctx context.Context, rows []store.Row) error
+	conv   *convert.Converter
 	// stored holds the newest generation time each parameter had in the
 	// database when we started. dropStored uses it to skip the values YAMCS
 	// re-sends when the subscription opens.
@@ -314,10 +340,8 @@ type recorder struct {
 	logger *slog.Logger
 }
 
-// record stores the values in one message from YAMCS. If the insert fails, we
-// count the error and drop the message's rows rather than exit, so the YAMCS
-// subscription stays open and we record again once the database is back.
-func (r *recorder) record(ctx context.Context, data *processing.SubscribeParametersData) {
+// rows returns the rows to store for one message from YAMCS.
+func (r *recorder) rows(data *processing.SubscribeParametersData) []store.Row {
 	if invalid := data.GetInvalid(); len(invalid) > 0 {
 		r.logger.Warn("YAMCS rejected parameters", "count", len(invalid), "first", invalid[0].GetName())
 	}
@@ -327,17 +351,81 @@ func (r *recorder) record(ctx context.Context, data *processing.SubscribeParamet
 	r.stats.unmapped.Add(int64(unmapped))
 	r.stats.incomplete.Add(int64(incomplete))
 	r.stats.alreadyStored.Add(int64(alreadyStored))
-	if len(rows) == 0 {
-		return
+	return rows
+}
+
+// write stores the rows of each message on queue until queue is closed.
+func (r *recorder) write(ctx context.Context, queue <-chan []store.Row) {
+	for rows := range queue {
+		// One insert for many messages takes far less time than an insert for
+		// each, so we add every message already on queue. If queue is empty,
+		// we store this message alone rather than wait for more.
+		messages := [][]store.Row{rows}
+		for range len(queue) {
+			messages = append(messages, <-queue)
+		}
+		r.writeBatch(ctx, messages)
 	}
-	// Finish this insert even if a signal arrives, so its rows aren't lost.
-	if err := store.Insert(context.WithoutCancel(ctx), r.db, r.ids, rows); err != nil {
+}
+
+// writeBatch inserts the rows of messages. While the database is unreachable,
+// we keep the rows and try again, so a short outage loses nothing. We drop the
+// messages the database rejects, and all of them if it is still unreachable
+// after ctx is cancelled.
+func (r *recorder) writeBatch(ctx context.Context, messages [][]store.Row) {
+	rows := slices.Concat(messages...)
+	// We wait 100 ms before the first retry and double the wait each time, up
+	// to 5 seconds.
+	for delay := 100 * time.Millisecond; ; delay = min(2*delay, 5*time.Second) {
+		// We insert even after ctx is cancelled, so the rows we have already
+		// read aren't lost.
+		err := r.insert(context.WithoutCancel(ctx), rows)
+		if err == nil {
+			r.stats.rows.Add(int64(len(rows)))
+			return
+		}
 		r.stats.insertErrors.Add(1)
 		msg := err.Error()
 		r.stats.lastInsertError.Store(&msg)
-		return
+		if !unreachable(err) && len(messages) > 1 {
+			// We insert each message on its own, so we drop only the messages
+			// the database rejects.
+			for _, m := range messages {
+				r.writeBatch(ctx, [][]store.Row{m})
+			}
+			return
+		}
+		if !unreachable(err) || ctx.Err() != nil {
+			r.stats.droppedRows.Add(int64(len(rows)))
+			return
+		}
+		// A cancelled ctx ends the wait, so we try once more before we give up.
+		select {
+		case <-ctx.Done():
+		case <-time.After(delay):
+		}
 	}
-	r.stats.rows.Add(int64(len(rows)))
+}
+
+// unreachable reports whether err means we could not reach the database, rather
+// than that it rejected the rows.
+func unreachable(err error) bool {
+	var pqErr *pq.Error
+	if !errors.As(err, &pqErr) {
+		// The error came from the network or the driver, for example a
+		// refused connection.
+		return true
+	}
+	// Postgres error codes that start with these two characters mean a lost
+	// connection, a lack of resources such as disk space, or a server that is
+	// shutting down or starting up.
+	switch pqErr.Code.Class() {
+	case "08", "53", "57":
+		// 57014 means statement_timeout cancelled the insert, which would
+		// happen again on a retry.
+		return pqErr.Code != "57014"
+	}
+	return false
 }
 
 // dropStored removes rows generated at or before the newest time stored for
@@ -373,7 +461,8 @@ type stats struct {
 	unmapped      atomic.Int64 // values dropped because YAMCS never sent their parameter's name
 	incomplete    atomic.Int64 // values and members dropped for having no generation time or no value
 	alreadyStored atomic.Int64 // rows dropped by dropStored
-	insertErrors  atomic.Int64 // failed inserts, each dropping one message's rows
+	insertErrors  atomic.Int64 // failed inserts, counting each retry
+	droppedRows   atomic.Int64 // rows dropped by writeBatch
 
 	lastInsertError atomic.Pointer[string]
 }
@@ -382,6 +471,7 @@ func (s *stats) log(logger *slog.Logger) {
 	attrs := []any{
 		"values", s.values.Load(), "rows", s.rows.Load(), "events", s.events.Load(), "unmapped", s.unmapped.Load(),
 		"incomplete", s.incomplete.Load(), "already_stored", s.alreadyStored.Load(), "insert_errors", s.insertErrors.Load(),
+		"dropped_rows", s.droppedRows.Load(),
 	}
 	// Swap clears the error, so each line shows only the newest one since the previous line.
 	if msg := s.lastInsertError.Swap(nil); msg != nil {
