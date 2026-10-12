@@ -42,8 +42,8 @@ test('says the connections are gone when it drops a backend, before the next bac
     const fsw: Hermes.Fsw = { id: 'yamcs:fprime-project', type: 'yamcs', profileId: '' };
     // A backend with one connection, which it reports as soon as someone listens and still lists after it's
     // disposed, as YAMCS mode does
-    const backend = {
-        onFswChange: (listener: (fsws: Hermes.Fsw[]) => void) => { listener([fsw]); return none(); },
+    const backend: Partial<Hermes.Api> = {
+        onFswChange: (listener) => { listener([fsw]); return none(); },
         allFsw: async () => [fsw],
         onProvidersChange: none,
         onProfilesChange: none,
@@ -52,21 +52,19 @@ test('says the connections are gone when it drops a backend, before the next bac
         onFileUplink: none,
         onFileTransfer: none,
         dispose: () => { },
-    } as unknown as Hermes.Api;
+    };
     const log = { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } };
 
     const api = new VscodeApi({} as vscode.ExtensionContext, log);
-    api.registerBackendProvider({ type: 'test', title: 'Test', icon: 'beaker', promptForState: async () => ({}), provideBackendApi: async () => backend });
-    // We record each list onFswChange reports, and what allFsw returns at that moment
-    const lists: Hermes.Fsw[][] = [];
-    const listed: Promise<Hermes.Fsw[]>[] = [];
-    api.onFswChange((fsws) => {
-        lists.push(fsws);
-        listed.push(api.allFsw());
-    });
+    api.registerBackendProvider({ type: 'test', title: 'Test', icon: 'beaker', promptForState: async () => ({}), provideBackendApi: async () => backend as Hermes.Api });
+    // We record each list onFswChange reports, with what allFsw returns at that moment
+    const reports: { reported: Hermes.Fsw[]; listed: Promise<Hermes.Fsw[]> }[] = [];
+    api.onFswChange((reported) => reports.push({ reported, listed: api.allFsw() }));
 
     await api.update('test', {});
     await api.update('test', {});
-    expect(lists).toEqual([[fsw], [], [fsw]]);
-    expect(await Promise.all(listed)).toEqual(lists);
+    expect(reports.map((report) => report.reported)).toEqual([[fsw], [], [fsw]]);
+    for (const { reported, listed } of reports) {
+        expect(await listed).toEqual(reported);
+    }
 });

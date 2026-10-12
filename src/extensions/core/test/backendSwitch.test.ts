@@ -12,9 +12,9 @@ jest.mock('vscode', () => ({
     ...jest.requireActual<object>('vscode'),
     ThemeColor: class { },
     CancellationTokenSource: class {
-        listener = () => { };
-        token = { onCancellationRequested: (listener: () => void) => { this.listener = listener; } };
-        cancel() { this.listener(); }
+        listeners: (() => void)[] = [];
+        token = { onCancellationRequested: (listener: () => void) => { this.listeners.push(listener); } };
+        cancel() { this.listeners.forEach((listener) => listener()); }
         dispose() { }
     },
     StatusBarAlignment: { Left: 1 },
@@ -33,7 +33,7 @@ import { Offline } from '../src/api/Offline';
 const log = { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } };
 
 const none = () => ({ dispose: () => { } });
-const yamcsBackend = {
+const yamcsBackend: Partial<Hermes.Api> = {
     onFswChange: none,
     onProvidersChange: none,
     onProfilesChange: none,
@@ -42,17 +42,17 @@ const yamcsBackend = {
     onFileUplink: none,
     onFileTransfer: none,
     dispose: () => { },
-} as unknown as Hermes.Api;
+};
 
 // A provider whose connect resolves to `backend` after 50 ms, or never when no backend is given. It rejects as
 // soon as it's cancelled.
-function provider(type: string, backend?: Hermes.Api): BackendProvider<object> {
+function provider(type: string, backend?: Partial<Hermes.Api>): BackendProvider<object> {
     return {
         type, title: type, icon: 'beaker', promptForState: async () => ({}),
         provideBackendApi: (_state, _context, _log, token) => new Promise((resolve, reject) => {
             token?.onCancellationRequested(() => reject('cancelled'));
             if (backend) {
-                setTimeout(() => resolve(backend), 50);
+                setTimeout(() => resolve(backend as Hermes.Api), 50);
             }
         }),
     };

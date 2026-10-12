@@ -2,6 +2,10 @@ import { afterEach, describe, expect, jest, test } from '@jest/globals';
 
 // Settings a test has set. Every other setting reads as unset and takes its default.
 const mockSettings: Record<string, unknown> = {};
+afterEach(() => {
+    Object.keys(mockSettings).forEach((key) => delete mockSettings[key]);
+    jest.restoreAllMocks();
+});
 
 // Jest swaps 'vscode' for the stub in src/fallback/vscode, whose EventEmitter never calls
 // its listeners. These tests need events to fire, so we mock one that does.
@@ -29,7 +33,7 @@ jest.mock('vscode', () => {
     };
 });
 
-import { EventEmitter } from 'events';
+import { EventEmitter as NodeEventEmitter } from 'events';
 import * as vscode from 'vscode';
 import Long from 'long';
 import type * as Hermes from '@gov.nasa.jpl.hermes/api';
@@ -37,7 +41,7 @@ import { YamcsClient, YamcsCommandHistoryEntry, YamcsCommandInfo, YamcsEvent, Ya
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
 import { Def, Dictionary } from '@gov.nasa.jpl.hermes/types';
 
-import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterHandler } from '../src/api/Yamcs';
+import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterSource } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
 import { yamcsEventRows } from '../src/components/yamcsEvents';
 import { leaves, splitName } from '../src/components/yamcsRows';
@@ -79,6 +83,17 @@ function pv(name: string, ms: number, engValue: YamcsValue): YamcsParameterValue
     };
 }
 
+function tokenSource() {
+    const cancelled = new vscode.EventEmitter<void>();
+    const token: vscode.CancellationToken = { isCancellationRequested: false, onCancellationRequested: cancelled.event };
+    // As VS Code's CancellationTokenSource does, cancel marks the token cancelled and then calls every listener
+    const cancel = () => {
+        token.isCancellationRequested = true;
+        cancelled.fire();
+    };
+    return { token, cancel };
+}
+
 describe('splitName', () => {
     test('splits at the last slash', () => {
         expect(splitName('/Ref_Ref/Ref/systemResources/CPU'))
@@ -104,14 +119,7 @@ describe('inTopLevelSpaceSystem', () => {
 
 describe('YamcsBackendProvider', () => {
     test('stops connecting as soon as it is cancelled', async () => {
-        let cancel = () => { };
-        const token = {
-            isCancellationRequested: false,
-            onCancellationRequested: (listener: () => void) => {
-                cancel = listener;
-                return { dispose: () => { } };
-            },
-        } as unknown as vscode.CancellationToken;
+        const { token, cancel } = tokenSource();
 
         // Nothing listens on port 1, so without the cancel this would wait out the 5 s connect deadline
         const started = Date.now();
@@ -121,7 +129,7 @@ describe('YamcsBackendProvider', () => {
             { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } },
             token,
         );
-        setTimeout(() => cancel(), 100);
+        setTimeout(cancel, 100);
         await expect(connecting).rejects.toThrow('Could not connect to YAMCS at 127.0.0.1:1: Error: Cancelled');
         expect(Date.now() - started).toBeLessThan(2000);
     });
@@ -144,7 +152,6 @@ describe('YamcsBackendProvider', () => {
         showInputBox.mockResolvedValueOnce('yamcs-server:8095').mockResolvedValueOnce(undefined);
         expect(await provider.promptForState()).toBeNull();
         expect(prefilled()).toEqual(['yamcs-server:8095', 'other-instance']);
-        delete mockSettings['hermes.host.yamcs'];
     });
 });
 
@@ -194,16 +201,13 @@ describe('leaves', () => {
 
 describe('TelemetryDatabase with YAMCS parameters', () => {
     function database() {
-        let handler: YamcsParameterHandler | undefined;
-        const api = {
+        const parameters = new vscode.EventEmitter<YamcsParameterValue[]>();
+        const api: Partial<Hermes.Api & YamcsParameterSource> = {
             onTelemetry: () => ({ dispose: () => { } }),
-            onYamcsParameters: (h: YamcsParameterHandler) => {
-                handler = h;
-                return { dispose: () => { handler = undefined; } };
-            },
-        } as unknown as Hermes.Api;
-        const db = new TelemetryDatabase(api);
-        return { db, send: (values: YamcsParameterValue[]) => handler!('fprime-project', values) };
+            onYamcsParameters: (handler) => parameters.event((values) => handler('fprime-project', values)),
+        };
+        const db = new TelemetryDatabase(api as Hermes.Api);
+        return { db, send: (values: YamcsParameterValue[]) => parameters.fire(values) };
     }
 
     test('stores one channel per leaf at its acquisition time', () => {
@@ -343,62 +347,61 @@ describe('yamcsEventRows', () => {
 });
 
 describe('YAMCS event source', () => {
-    afterEach(() => {
-        jest.restoreAllMocks();
-    });
-
     // A YAMCS backend whose event subscriptions and listings the test drives
     async function backend() {
         const warn = jest.fn();
         jest.spyOn(YamcsClient.prototype, 'waitForReady').mockResolvedValue(undefined);
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([]);
-        const raise: ((event: YamcsEvent) => void)[] = [];
+        const live = new vscode.EventEmitter<YamcsEvent>();
         const subscribe = jest.spyOn(YamcsClient.prototype, 'subscribeEvents').mockImplementation((_, onEvent) => {
-            raise.push(onEvent);
-            return () => { };
+            const subscription = live.event(onEvent);
+            return () => subscription.dispose();
         });
-        const lists: { resolve: (events: YamcsEvent[]) => void; reject: (err: Error) => void }[] = [];
+        // Each time the backend lists the archive, the listing waits here until the test resolves or rejects it
+        const listings: { resolve: (events: YamcsEvent[]) => void; reject: (err: Error) => void }[] = [];
         const list = jest.spyOn(YamcsClient.prototype, 'listEvents').mockImplementation(() => new Promise((resolve, reject) => {
-            lists.push({ resolve, reject });
+            listings.push({ resolve, reject });
         }));
         const api = await new YamcsBackendProvider().provideBackendApi(
             { address: 'localhost:1', instance: 'fprime-project', processor: 'realtime' },
             {} as vscode.ExtensionContext,
             { debug: () => { }, info: () => { }, warn, error: () => { } },
         ) as Hermes.Api & YamcsEventSource;
-        return { api, raise, lists, subscribe, list, warn };
+        return { api, raise: (event: YamcsEvent) => live.fire(event), listings, subscribe, list, warn };
     }
 
     const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
     const [first, second, third, fourth] = [4, 5, 6, 7].map((seqNumber) => ({ ...opCodeDispatched, seqNumber }));
 
     test('sends the newest archived events oldest first, then live events', async () => {
-        const { api, raise, lists, subscribe, list } = await backend();
+        const { api, raise, listings, subscribe, list } = await backend();
         const batches: YamcsEvent[][] = [];
         const sub = api.onYamcsEvents((_, events) => batches.push(events));
+        const [archive] = listings;
         expect(subscribe.mock.invocationCallOrder[0]).toBeLessThan(list.mock.invocationCallOrder[0]);
         expect(list).toHaveBeenCalledWith('fprime-project', 100);
 
         // third is raised live while the archive is being listed, so the listing has it too.
-        raise[0](third);
+        raise(third);
         expect(batches).toEqual([]);
-        lists[0].resolve([third, second, first]);
+        archive.resolve([third, second, first]);
         await settle();
         expect(batches).toEqual([[first, second, third, third]]);
 
-        raise[0](fourth);
+        raise(fourth);
         expect(batches[1]).toEqual([fourth]);
         sub.dispose();
         api.dispose();
     });
 
     test('sends live events when the archive cannot be listed', async () => {
-        const { api, raise, lists, warn } = await backend();
+        const { api, raise, listings, warn } = await backend();
         const batches: YamcsEvent[][] = [];
         const sub = api.onYamcsEvents((_, events) => batches.push(events));
-        raise[0](first);
-        lists[0].reject(new Error('UNAVAILABLE'));
+        const [archive] = listings;
+        raise(first);
+        archive.reject(new Error('UNAVAILABLE'));
         await settle();
         expect(batches).toEqual([[first]]);
         expect(warn).toHaveBeenCalledTimes(1);
@@ -407,12 +410,13 @@ describe('YAMCS event source', () => {
     });
 
     test('drops a listing that finishes after its listener left', async () => {
-        const { api, lists } = await backend();
+        const { api, listings } = await backend();
         const batches: YamcsEvent[][] = [];
         api.onYamcsEvents(() => { }).dispose();
         const sub = api.onYamcsEvents((_, events) => batches.push(events));
-        lists[0].resolve([first]);
-        lists[1].resolve([second]);
+        const [abandoned, current] = listings;
+        abandoned.resolve([first]);
+        current.resolve([second]);
         await settle();
         expect(batches).toEqual([[second]]);
         sub.dispose();
@@ -424,7 +428,7 @@ describe('YamcsClient.subscribeParameters', () => {
     // Subscribes a real YamcsClient whose two gRPC streams are fakes the test controls
     function subscribe() {
         // Like grpc-js streams, the fakes are EventEmitters, with mock cancel and write methods for the client to call
-        const stream = () => Object.assign(new EventEmitter(), { cancel: jest.fn(), write: jest.fn() });
+        const stream = () => Object.assign(new NodeEventEmitter(), { cancel: jest.fn(), write: jest.fn() });
         const call = stream();
         const watch = stream();
         const client = new YamcsClient('localhost:1');
@@ -616,10 +620,6 @@ describe('commandSent', () => {
 });
 
 describe('YAMCS commands', () => {
-    afterEach(() => {
-        jest.restoreAllMocks();
-    });
-
     // Hermes's YAMCS backend with its client stubbed, so a test sees each command the backend issues. Every look at
     // a command's history shows YAMCS sent it.
     async function backend() {
@@ -636,24 +636,6 @@ describe('YAMCS commands', () => {
             { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } },
         );
         return { api, fsw: (await api.allFsw())[0], issue, get };
-    }
-
-    // A cancellation token the test cancels by hand. Like VS Code's, it then reports itself
-    // cancelled and calls the listener the code under test registered.
-    function tokenSource() {
-        let listener = () => { };
-        const token = {
-            isCancellationRequested: false,
-            onCancellationRequested: (l: () => void) => {
-                listener = l;
-                return { dispose: () => { } };
-            },
-        };
-        const cancel = () => {
-            token.isCancellationRequested = true;
-            listener();
-        };
-        return { token: token as unknown as vscode.CancellationToken, cancel };
     }
 
     test('offers one connection, with the dictionary built from YAMCS', async () => {
@@ -720,7 +702,7 @@ describe('YAMCS commands', () => {
         get.mockResolvedValue(history(...queued));
         const { token, cancel } = tokenSource();
         const waiting = fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a'])] }, token);
-        await waitFor(() => get.mock.calls.length >= 2 || undefined, 1000);
+        await waitFor(() => get.mock.calls.length >= 2, 1000);
         cancel();
         await expect(waiting).rejects.toThrow(
             'Cancelled before Hermes saw YAMCS send /BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING. YAMCS may already have sent it, or may send it later.');
@@ -732,7 +714,7 @@ describe('YAMCS commands', () => {
         issue.mockImplementation(() => new Promise<string>(() => { }));
         const { token, cancel } = tokenSource();
         const waiting = fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a'])] }, token);
-        await waitFor(() => issue.mock.calls.length >= 1 || undefined, 1000);
+        await waitFor(() => issue.mock.calls.length >= 1, 1000);
         cancel();
         await expect(waiting).rejects.toThrow(
             'Cancelled before Hermes saw YAMCS send /BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING. YAMCS may already have sent it, or may send it later.');
@@ -744,7 +726,7 @@ describe('YAMCS commands', () => {
         get.mockImplementation(() => new Promise<YamcsCommandHistoryEntry>(() => { }));
         const { token, cancel } = tokenSource();
         const waiting = fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a'])] }, token);
-        await waitFor(() => get.mock.calls.length >= 1 || undefined, 1000);
+        await waitFor(() => get.mock.calls.length >= 1, 1000);
         cancel();
         await expect(waiting).rejects.toThrow(
             'Cancelled before Hermes saw YAMCS send /BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING. YAMCS may already have sent it, or may send it later.');
@@ -773,11 +755,11 @@ const log: Hermes.Log = {
     error: (m) => console.error(m),
 };
 
-async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<T> {
+async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): Promise<T> {
     const deadline = Date.now() + timeoutMs;
     for (; ;) {
         const value = get();
-        if (value !== undefined) {
+        if (value) {
             return value;
         }
         if (Date.now() > deadline) {
@@ -828,7 +810,7 @@ async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<
             const version = db.get(versionKey)!;
 
             const cpuKey = await waitFor(keyEndingWith('/systemResources/CPU'), 10000);
-            await waitFor(() => db.get(cpuKey)!.time.length >= 3 || undefined, 15000);
+            await waitFor(() => db.get(cpuKey)!.time.length >= 3, 15000);
             const depthKey = await waitFor(keyEndingWith('/comQueue/comQueueDepth[1]'), 10000);
             const buffKey = await waitFor(keyEndingWith('/comQueue/buffQueueDepth[0]'), 10000);
             const headers = [...db.series.values()].filter((s) => headerFields.includes(s.name.split(/[.[]/)[0]));
@@ -910,6 +892,7 @@ async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<
         const { batches, dispose } = await eventBatches();
         const client = new YamcsClient(address!);
         try {
+            // The first batch holds the archive, then any live events that arrived while it was being listed
             await waitFor(() => batches[0], 5000);
 
             // YAMCS does not acknowledge the subscription, so give it time to start
@@ -917,7 +900,7 @@ async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<
             const message = `yamcs.test.ts ${Date.now()}`;
             const created = await raiseEvent(client, message);
 
-            // Other sources may raise events first
+            // Every batch after the first is live. Other sources may raise events first.
             const event = await waitFor(() => batches.slice(1).flat().find((e) => e.message === message), 10000);
             const [row] = yamcsEventRows(instance, [event], new Set());
             console.log(JSON.stringify(row, null, 2));
@@ -946,13 +929,12 @@ async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<
         const { batches, dispose } = await eventBatches();
         try {
             const copies = () => batches.flat().filter((e) => e.message === message);
-            await waitFor(() => copies().length >= 2 || undefined, 10000);
+            await waitFor(() => copies().length >= 2, 10000);
             const rows = yamcsEventRows(instance, batches.flat(), new Set()).filter((r) => r.message === message);
 
             expect(copies()).toHaveLength(2);
             expect(rows).toHaveLength(1);
         } finally {
-            jest.restoreAllMocks();
             client.close();
             dispose();
         }
@@ -992,10 +974,11 @@ async function waitFor<T>(get: () => T | undefined, timeoutMs: number): Promise<
             expect(def.arguments.map((a) => a.name)).toEqual(['arg1']);
             expect(await fsw.sequence!({ language: 'yamcs', commands: [{ def, args: [text] }] })).toBe(true);
 
-            const entry = await client.getCommand(instance, await issue.mock.results[0].value as string);
+            // fsw.sequence does not return the id YAMCS gave the command, so we read it from the spy on issueCommand
+            const id = await issue.mock.results[0].value as string;
+            const entry = await client.getCommand(instance, id);
             expect(entry.assignments?.find((a) => a.name === 'arg1')?.value?.stringValue).toBe(text);
         } finally {
-            issue.mockRestore();
             client.close();
             api.dispose();
         }
