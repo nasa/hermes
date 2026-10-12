@@ -5414,6 +5414,407 @@
                   }
                 }
               }
+            },
+            "instances": {
+              "options": {
+                "java_package": "org.yamcs.protobuf",
+                "java_outer_classname": "InstancesProto",
+                "java_multiple_files": true
+              },
+              "nested": {
+                "InstancesApi": {
+                  "edition": "proto2",
+                  "options": {
+                    "(yamcs.api.markdown)": true
+                  },
+                  "methods": {
+                    "ListInstanceTemplates": {
+                      "requestType": "google.protobuf.Empty",
+                      "responseType": "ListInstanceTemplatesResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/instance-templates"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/instance-templates"
+                          }
+                        }
+                      ]
+                    },
+                    "GetInstanceTemplate": {
+                      "requestType": "GetInstanceTemplateRequest",
+                      "responseType": "InstanceTemplate",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/instance-templates/{template}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/instance-templates/{template}"
+                          }
+                        }
+                      ]
+                    },
+                    "ListInstances": {
+                      "requestType": "ListInstancesRequest",
+                      "responseType": "ListInstancesResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/instances"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/instances"
+                          }
+                        }
+                      ]
+                    },
+                    "SubscribeInstances": {
+                      "requestType": "google.protobuf.Empty",
+                      "responseType": "YamcsInstance",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.websocket).topic": "instances"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.websocket)": {
+                            "topic": "instances"
+                          }
+                        }
+                      ]
+                    },
+                    "GetInstance": {
+                      "requestType": "GetInstanceRequest",
+                      "responseType": "YamcsInstance",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/instances/{instance}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/instances/{instance}"
+                          }
+                        }
+                      ]
+                    },
+                    "CreateInstance": {
+                      "requestType": "CreateInstanceRequest",
+                      "responseType": "YamcsInstance",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/instances",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/instances",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "ReconfigureInstance": {
+                      "requestType": "ReconfigureInstanceRequest",
+                      "responseType": "YamcsInstance",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/instances/{instance}:reconfigure",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/instances/{instance}:reconfigure",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "StartInstance": {
+                      "requestType": "StartInstanceRequest",
+                      "responseType": "YamcsInstance",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/instances/{instance}:start"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/instances/{instance}:start"
+                          }
+                        }
+                      ]
+                    },
+                    "StopInstance": {
+                      "requestType": "StopInstanceRequest",
+                      "responseType": "YamcsInstance",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/instances/{instance}:stop"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/instances/{instance}:stop"
+                          }
+                        }
+                      ]
+                    },
+                    "RestartInstance": {
+                      "requestType": "RestartInstanceRequest",
+                      "responseType": "YamcsInstance",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/instances/{instance}:restart"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/instances/{instance}:restart"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "ListInstancesRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "filter": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "ListInstancesResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instances": {
+                      "rule": "repeated",
+                      "type": "YamcsInstance",
+                      "id": 1
+                    }
+                  }
+                },
+                "CreateInstanceRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "template": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "templateArgs": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 3
+                    },
+                    "labels": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 4
+                    }
+                  }
+                },
+                "ReconfigureInstanceRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "templateArgs": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 2
+                    },
+                    "labels": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "ListInstanceTemplatesResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "templates": {
+                      "rule": "repeated",
+                      "type": "InstanceTemplate",
+                      "id": 1
+                    }
+                  }
+                },
+                "GetInstanceTemplateRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "template": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "GetInstanceRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "StartInstanceRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "StopInstanceRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "RestartInstanceRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "YamcsInstance": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "missionDatabase": {
+                      "type": "mdb.MissionDatabase",
+                      "id": 3
+                    },
+                    "processors": {
+                      "rule": "repeated",
+                      "type": "yamcsManagement.ProcessorInfo",
+                      "id": 4
+                    },
+                    "state": {
+                      "type": "InstanceState",
+                      "id": 11
+                    },
+                    "failureCause": {
+                      "type": "string",
+                      "id": 9
+                    },
+                    "missionTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 10
+                    },
+                    "labels": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 12
+                    },
+                    "capabilities": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 13
+                    },
+                    "template": {
+                      "type": "string",
+                      "id": 14
+                    },
+                    "templateArgs": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 15
+                    },
+                    "templateAvailable": {
+                      "type": "bool",
+                      "id": 16
+                    },
+                    "templateChanged": {
+                      "type": "bool",
+                      "id": 17
+                    }
+                  },
+                  "nested": {
+                    "InstanceState": {
+                      "values": {
+                        "OFFLINE": 0,
+                        "INITIALIZING": 1,
+                        "INITIALIZED": 2,
+                        "STARTING": 3,
+                        "RUNNING": 4,
+                        "STOPPING": 5,
+                        "FAILED": 6
+                      }
+                    }
+                  }
+                },
+                "InstanceTemplate": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "description": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "variables": {
+                      "rule": "repeated",
+                      "type": "TemplateVariable",
+                      "id": 2
+                    }
+                  }
+                },
+                "TemplateVariable": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "label": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "type": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "help": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "required": {
+                      "type": "bool",
+                      "id": 3
+                    },
+                    "choices": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 5
+                    },
+                    "initial": {
+                      "type": "string",
+                      "id": 7
+                    }
+                  }
+                }
+              }
             }
           }
         },
