@@ -31,6 +31,62 @@ pub fn float_kind(size: Option<f64>) -> Result<FloatKind, DictionaryError> {
     }
 }
 
+/// Width of the length prefix F Prime serializes in front of strings.
+///
+/// Read from the dictionary's `FwSizeStoreType` alias. Older dictionaries
+/// that don't define it use the historical 16-bit prefix.
+pub fn string_length_kind(
+    type_defs: Option<&[crate::fprime::TypeDefinition]>,
+) -> Result<UIntKind, DictionaryError> {
+    use crate::fprime::{TypeDefinition, TypeKind};
+
+    let underlying = type_defs.and_then(|defs| {
+        defs.iter().find_map(|d| match d {
+            TypeDefinition::Alias {
+                qualified_name,
+                underlying_type,
+                ..
+            } if qualified_name == "FwSizeStoreType" => Some(underlying_type),
+            _ => None,
+        })
+    });
+
+    let Some(t) = underlying else {
+        return Ok(UIntKind::UintU16);
+    };
+    if !matches!(t.kind, TypeKind::Integer) || t.signed == Some(true) {
+        return Err(DictionaryError::InvalidStringLengthType(t.name.clone()));
+    }
+    match t.size.map(|s| s as i32) {
+        Some(8) => Ok(UIntKind::UintU8),
+        Some(16) => Ok(UIntKind::UintU16),
+        Some(32) => Ok(UIntKind::UintU32),
+        Some(64) => Ok(UIntKind::UintU64),
+        _ => Err(DictionaryError::InvalidStringLengthType(t.name.clone())),
+    }
+}
+
+/// Recursively set the length prefix kind of every string in `t`.
+pub fn set_string_length_kind(t: &mut Type, kind: UIntKind) {
+    use hermes_pb::r#type::Value;
+    match &mut t.value {
+        Some(Value::String(s)) => s.length_type = kind as i32,
+        Some(Value::Array(a)) => {
+            if let Some(el) = a.el_type.as_mut() {
+                set_string_length_kind(el, kind);
+            }
+        }
+        Some(Value::Object(o)) => {
+            for f in &mut o.fields {
+                if let Some(ft) = f.r#type.as_mut() {
+                    set_string_length_kind(ft, kind);
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
 /// Convert TypeDescriptor to protobuf Type
 pub fn parse_type(type_desc: &TypeDescriptor) -> Result<Type, DictionaryError> {
     use crate::fprime::TypeKind;
@@ -130,5 +186,41 @@ mod tests {
         assert_eq!(name, "Name");
 
         assert!(parse_name("NoDotsHere").is_err());
+    }
+
+    fn alias_defs(json: &str) -> Vec<crate::fprime::TypeDefinition> {
+        serde_json::from_str(json).unwrap()
+    }
+
+    fn size_store(name: &str, size: u32) -> Vec<crate::fprime::TypeDefinition> {
+        alias_defs(&format!(
+            r#"[{{"kind":"alias","qualifiedName":"FwSizeStoreType",
+                "type":{{"name":"FwSizeType","kind":"qualifiedIdentifier"}},
+                "underlyingType":{{"name":"{name}","kind":"integer","size":{size},"signed":false}}}}]"#
+        ))
+    }
+
+    #[test]
+    fn test_string_length_kind_fallback() {
+        // Older dictionaries without FwSizeStoreType keep the 16-bit prefix
+        assert_eq!(string_length_kind(None).unwrap(), UIntKind::UintU16);
+        assert_eq!(string_length_kind(Some(&[])).unwrap(), UIntKind::UintU16);
+    }
+
+    #[test]
+    fn test_string_length_kind_from_dictionary() {
+        assert_eq!(
+            string_length_kind(Some(&size_store("U16", 16))).unwrap(),
+            UIntKind::UintU16
+        );
+        assert_eq!(
+            string_length_kind(Some(&size_store("U32", 32))).unwrap(),
+            UIntKind::UintU32
+        );
+        assert_eq!(
+            string_length_kind(Some(&size_store("U64", 64))).unwrap(),
+            UIntKind::UintU64
+        );
+        assert!(string_length_kind(Some(&size_store("U128", 128))).is_err());
     }
 }

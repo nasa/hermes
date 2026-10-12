@@ -349,6 +349,20 @@ pub fn parse_fprime_json_dictionary(raw_json: &str) -> Result<Dictionary, Dictio
         }
     }
 
+    // Apply the dictionary's string length prefix width (FwSizeStoreType)
+    let str_len = common::string_length_kind(json.type_definitions.as_deref())?;
+    for n in [&mut ns, &mut tlm_pkts] {
+        let types = n.types.values_mut();
+        let cmds = n.commands.values_mut().flat_map(|c| c.arguments.iter_mut());
+        let evrs = n.events.values_mut().flat_map(|e| e.arguments.iter_mut());
+        let args = cmds.chain(evrs).filter_map(|f| f.r#type.as_mut());
+        let tlm = n.telemetry.values_mut().filter_map(|t| t.r#type.as_mut());
+        let prm = n.parameters.values_mut().filter_map(|p| p.r#type.as_mut());
+        for t in types.chain(args).chain(tlm).chain(prm) {
+            common::set_string_length_kind(t, str_len);
+        }
+    }
+
     // Add namespaces to dictionary
     out.content.insert(String::new(), ns);
     if json.telemetry_packet_sets.is_some() {
@@ -545,5 +559,50 @@ mod tests {
         assert_eq!(param.id, 1);
         assert_eq!(param.name, "TestParam");
         assert_eq!(param.component, "TestComponent");
+    }
+
+    fn string_cmd_dict(type_defs: &str) -> String {
+        format!(
+            r#"{{
+            "metadata": {{}},
+            "typeDefinitions": [{type_defs}],
+            "commands": [{{
+                "name": "Ref.cmdDisp.CMD_NO_OP_STRING",
+                "commandKind": "async",
+                "opcode": 1,
+                "formalParams": [{{
+                    "name": "arg1",
+                    "type": {{"name": "string", "kind": "string", "size": 40}},
+                    "ref": false
+                }}]
+            }}]
+        }}"#
+        )
+    }
+
+    fn string_arg_length_type(dict: &Dictionary) -> i32 {
+        let cmd = &dict.content[""].commands["Ref.cmdDisp.CMD_NO_OP_STRING"];
+        match &cmd.arguments[0].r#type.as_ref().unwrap().value {
+            Some(hermes_pb::r#type::Value::String(s)) => s.length_type,
+            v => panic!("expected string, got {v:?}"),
+        }
+    }
+
+    #[test]
+    fn test_string_length_without_fw_size_store_type() {
+        let dict = parse_fprime_json_dictionary(&string_cmd_dict("")).unwrap();
+        assert_eq!(string_arg_length_type(&dict), UIntKind::UintU16 as i32);
+    }
+
+    #[test]
+    fn test_string_length_from_fw_size_store_type() {
+        let alias = r#"{
+            "kind": "alias",
+            "qualifiedName": "FwSizeStoreType",
+            "type": {"name": "FwSizeType", "kind": "qualifiedIdentifier"},
+            "underlyingType": {"name": "U64", "kind": "integer", "size": 64, "signed": false}
+        }"#;
+        let dict = parse_fprime_json_dictionary(&string_cmd_dict(alias)).unwrap();
+        assert_eq!(string_arg_length_type(&dict), UIntKind::UintU64 as i32);
     }
 }

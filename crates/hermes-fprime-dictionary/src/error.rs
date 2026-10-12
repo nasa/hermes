@@ -5,6 +5,9 @@ pub enum DictionaryError {
     #[error("Invalid integer size: {0} (must be 8, 16, 32, or 64)")]
     InvalidIntegerSize(i32),
 
+    #[error("Invalid FwSizeStoreType: {0} (must be an unsigned 8, 16, 32, or 64 bit integer)")]
+    InvalidStringLengthType(String),
+
     #[error("Invalid float size: {0} (must be 32 or 64)")]
     InvalidFloatSize(i32),
 

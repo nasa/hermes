@@ -227,13 +227,46 @@ function floatKind(size?: number): Def.FloatTypeKind {
     }
 }
 
-function parseType(type: TypeDescriptor): Def.Type {
+/**
+ * Width of the length prefix F Prime serializes in front of strings.
+ * Read from the dictionary's FwSizeStoreType alias; older dictionaries
+ * that don't define it use the historical 16-bit prefix.
+ */
+function stringLengthType(json: FppJsonDictionary): Def.UintTypeKind {
+    const alias = json.typeDefinitions?.find(
+        (t) => t.kind === 'alias' && t.qualifiedName === 'FwSizeStoreType'
+    );
+    if (alias?.kind !== 'alias') {
+        return Def.TypeKind.u16;
+    }
+
+    const t = alias.underlyingType;
+    if (t.kind === 'integer' && !t.signed) {
+        switch (t.size) {
+            case 8:
+                return Def.TypeKind.u8;
+            case 16:
+                return Def.TypeKind.u16;
+            case 32:
+                return Def.TypeKind.u32;
+            case 64:
+                return Def.TypeKind.u64;
+        }
+    }
+
+    throw new Error(`Invalid FwSizeStoreType: ${t.name} must be an unsigned 8,16,32,64 bit integer`);
+}
+
+function parseType(
+    type: TypeDescriptor,
+    strLengthType: Def.UintTypeKind = Def.TypeKind.u16,
+): Def.Type {
     switch (type.kind) {
         case 'string':
             return {
                 kind: Def.TypeKind.string,
                 maxLength: type.size,
-                lengthType: Def.TypeKind.u16,
+                lengthType: strLengthType,
             };
         case 'integer':
             return {
@@ -319,6 +352,7 @@ export function parseFprimeJsonDictionary(rawJson: string): Dictionary {
 
     const ns = out.get("");
     const tlmPkts = out.get("telemetry-packets");
+    const strLengthType = stringLengthType(json);
 
     for (const type of json.typeDefinitions ?? []) {
         switch (type.kind) {
@@ -328,14 +362,14 @@ export function parseFprimeJsonDictionary(rawJson: string): Dictionary {
                     name: type.qualifiedName,
                     size: type.size,
                     lengthType: Def.TypeKind.u32,
-                    type: parseType(type.elementType),
+                    type: parseType(type.elementType, strLengthType),
                     metadata: {
                         description: type.annotation
                     }
                 });
                 break;
             case 'enum': {
-                const encodeType = parseType(type.representationType);
+                const encodeType = parseType(type.representationType, strLengthType);
                 switch (encodeType.kind) {
                     case Def.TypeKind.u8:
                     case Def.TypeKind.i8:
@@ -377,9 +411,9 @@ export function parseFprimeJsonDictionary(rawJson: string): Dictionary {
                         name,
                         type: field.size !== undefined ? {
                             kind: Def.TypeKind.array,
-                            type: parseType(field.type),
+                            type: parseType(field.type, strLengthType),
                             size: field.size
-                        } : parseType(field.type),
+                        } : parseType(field.type, strLengthType),
                         metadata: {
                             description: field.annotation
                         },
@@ -389,7 +423,7 @@ export function parseFprimeJsonDictionary(rawJson: string): Dictionary {
             case 'alias':
                 ns.addType(
                     type.qualifiedName,
-                    parseType(type.underlyingType),
+                    parseType(type.underlyingType, strLengthType),
                 );
                 break;
         }
@@ -409,7 +443,7 @@ export function parseFprimeJsonDictionary(rawJson: string): Dictionary {
             },
             arguments: e.formalParams.map((param) => ({
                 name: param.name,
-                type: parseType(param.type),
+                type: parseType(param.type, strLengthType),
                 metadata: {
                     description: param.annotation
                 }
@@ -423,7 +457,7 @@ export function parseFprimeJsonDictionary(rawJson: string): Dictionary {
             id: c.id,
             name,
             component,
-            type: parseType(c.type),
+            type: parseType(c.type, strLengthType),
             metadata: {
                 description: c.annotation,
             },
@@ -438,7 +472,7 @@ export function parseFprimeJsonDictionary(rawJson: string): Dictionary {
             component,
             arguments: c.formalParams.map((param) => ({
                 name: param.name,
-                type: parseType(param.type),
+                type: parseType(param.type, strLengthType),
                 metadata: {
                     description: param.annotation
                 }
@@ -455,7 +489,7 @@ export function parseFprimeJsonDictionary(rawJson: string): Dictionary {
             id: p.id,
             name,
             component,
-            type: parseType(p.type),
+            type: parseType(p.type, strLengthType),
             metadata: {
                 description: p.annotation,
                 default: p.default !== undefined ? JSON.stringify(p.default) : undefined,
