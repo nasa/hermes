@@ -1271,6 +1271,18 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
         'FPrimePacketId', 'FPrimeTime',
     ];
 
+    test('lists the server\'s instances with their states', async () => {
+        const client = new YamcsClient(address!);
+        try {
+            await client.waitForReady(5000);
+            const instances = await client.listInstances();
+            console.log(instances.map((i) => `${i.name} ${i.state}`).join(', '));
+            expect(instances).toContainEqual(expect.objectContaining({ name: instance, state: 'RUNNING' }));
+        } finally {
+            client.close();
+        }
+    });
+
     test('lists every TELEMETERED parameter across pages', async () => {
         const client = new YamcsClient(address!);
         try {
