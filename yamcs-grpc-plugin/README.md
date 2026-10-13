@@ -96,19 +96,29 @@ names and types. It gives a string's limit only as its encoded size, which YAMCS
 doesn't report, so YAMCS rather than the editor refuses a string that is too long.
 
 YAMCS cells run on the connection `yamcs:<instance>`, on the processor from `hermes.host.yamcs`, one
-command at a time. A YAMCS cell passes once YAMCS has sent each command, which doesn't mean the flight
-software ran it. Hermes doesn't wait for YAMCS's command verifiers, and fprime-yamcs defines none.
-When YAMCS refuses or fails to send a command, the cell fails with YAMCS's reason, and the commands
-after it aren't sent. Stopping a cell doesn't withdraw a command YAMCS already holds.
+command at a time. YAMCS's mission database, which defines the instance's commands, can give a command
+verifiers. These are checks YAMCS runs on the telemetry that comes back, to decide whether the command
+succeeded or failed. For a command with verifiers, Hermes waits for YAMCS's verdict before it issues
+the next command. The command passes when YAMCS records `CommandComplete` as `OK`, and the cell fails
+with YAMCS's reason when it records `NOK`. The database decides which results of a verifier give a
+verdict. If a verifier fails or times out and the database gives that result no verdict, the cell
+fails and says the command's result is unknown. If every verifier passes and none gives a verdict, the
+command passes. Hermes sets no time limit of its own, so a cell waits as long as the database lets a
+command's verifiers wait, or until you stop it. A command without verifiers passes once YAMCS has sent
+it, which doesn't mean the flight software ran it. When YAMCS refuses or fails to send a command, the
+cell fails with YAMCS's reason. Commands after a failed one aren't sent. Stopping a cell doesn't
+withdraw a command YAMCS already holds.
 
 F Prime cells run in YAMCS mode too, when fprime-yamcs runs the instance. The Hermes F Prime extension
 builds an F Prime dictionary from YAMCS mode's dictionary, listed as `<instance> (F Prime)`. It names
 each command as F Prime does, for example `CdhCore.cmdDisp.CMD_NO_OP` for
 `/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP`, and takes its opcode from fprime-yamcs's
 `OpCode` argument assignment. Each command waits out its relative time tag, then goes out as a YAMCS
-cell's command does, so an F Prime cell passes and fails as a YAMCS cell does. Unlike Local and Remote
-modes, it doesn't wait for the flight software to complete a command, and it doesn't list the events
-its commands raise. They show in the events panel.
+cell's command does, so an F Prime cell passes and fails as a YAMCS cell does. The cell waits for the
+flight software only when the mission database gives a command verifiers. fprime-yamcs builds its
+database with fprime-xtce, which as of version 0.1.5 defines none, so with that database an F Prime
+cell passes once YAMCS has sent its commands, even when the flight software rejects one. Unlike Local
+and Remote modes, the cell doesn't list the events its commands raise. They show in the events panel.
 
 YAMCS mode sends no credentials, so it fails with `UNAUTHENTICATED` when YAMCS security is on. When
 its subscription ends, for example because YAMCS or its instance stopped, the status bar turns red

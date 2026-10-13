@@ -6,7 +6,7 @@ import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
 import { BackendProvider, Settings } from '@gov.nasa.jpl.hermes/vscode';
 
 import { Offline } from './Offline';
-import { commandSent, yamcsArguments, yamcsDictionary } from './yamcsCommands';
+import { commandComplete, commandSent, Verifier, yamcsArguments, yamcsDictionary } from './yamcsCommands';
 
 export type YamcsParameterHandler = (instance: string, values: Rpc.YamcsParameterValue[]) => void;
 
@@ -218,10 +218,10 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
 
     /**
      * Issues a command on state.processor by the qualified name in its metadata, then
-     * checks its history every 50 ms and resolves once YAMCS has sent it. We poll because
+     * checks its history every 50 ms and resolves once YAMCS has sent it and, if the
+     * mission database gives it verifiers, has finished verifying it. We poll because
      * SubscribeCommands streams every command on the processor, with no way to ask for
-     * one. We don't wait for the flight software to run it, since YAMCS learns that only
-     * from verifiers, which a mission database may not define.
+     * one.
      *
      * grpc-js can leave a call waiting for minutes on a dead connection, so we make each
      * wait cancellable to let the user stop the cell.
@@ -237,26 +237,35 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
         if (token?.isCancellationRequested) {
             throw new Error('Cancelled');
         }
+        const verifiers: Verifier[] = value.def.metadata?.verifiers ?? [];
         const issued = this.client.issueCommand(this.state.instance, this.state.processor, name, yamcsArguments(value), this.sequenceNumber++);
+        let sent = false;
         try {
             const id = await cancellable(issued, token).catch((err) => {
                 // grpc-js puts YAMCS's reason in details, without the status code in front
                 throw new Error(`Could not issue ${name}: ${err.details ?? err.message}`, { cause: err });
             });
-            while (!commandSent(await cancellable(this.client.getCommand(this.state.instance, id), token))) {
+            for (; ;) {
+                const entry = await cancellable(this.client.getCommand(this.state.instance, id), token);
+                sent = commandSent(entry);
+                if (sent && commandComplete(entry, verifiers)) {
+                    return true;
+                }
                 await cancellable(delay(50), token);
             }
         } catch (err) {
             if (token?.isCancellationRequested) {
-                // Stopping the cell doesn't take the command back from YAMCS, where it may wait in a blocked queue
-                throw new Error(`Cancelled before Hermes saw YAMCS send ${name}. YAMCS may already have sent it, or may send it later.`, { cause: err });
+                // Stopping the cell doesn't withdraw the command from YAMCS. A command YAMCS hasn't sent may still
+                // wait there in a blocked queue.
+                throw new Error(sent
+                    ? `Cancelled before ${name} completed. YAMCS already sent it.`
+                    : `Cancelled before Hermes saw YAMCS send ${name}. YAMCS may already have sent it, or may send it later.`, { cause: err });
             }
             throw err;
         }
-        return true;
     }
 
-    // Issues a cell's commands one at a time, each once YAMCS has sent the one before
+    // Issues a cell's commands one at a time, each once the one before has completed
     private async sequence(value: Hermes.CommandSequence, token?: vscode.CancellationToken): Promise<boolean> {
         for (const cmd of value.commands) {
             await this.command(cmd, token);

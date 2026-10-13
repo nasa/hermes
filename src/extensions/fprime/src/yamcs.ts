@@ -20,7 +20,8 @@ export function fprimeDictionary(yamcsDictionary: Proto.IDictionary): Proto.IDic
         // /BigData_YamcsDeployment/CdhCore/cmdDisp, so we drop its leading slash and the deployment.
         const component = cmd.component.split('/').slice(2).join('.');
         out.get('').addCommand(`${component}.${cmd.mnemonic}`, {
-            // cmd's metadata has the qualified name, which YAMCS mode uses to issue the command
+            // cmd's metadata has the command's qualified name and verifiers. YAMCS mode uses the name to issue the
+            // command, and the verifiers to tell when the command has completed.
             ...cmd,
             component,
             opcode: Number(cmd.metadata?.assignments?.OpCode),
@@ -72,7 +73,8 @@ export async function runOnYamcs(
     for (const cmd of seq.commands) {
         // We wait for the command's relative time tag to pass
         await cancellable(delay(Number(cmd.metadata?.relativeTimeDelayMs ?? 0)), token);
-        // YAMCS mode's fsw.command returns once YAMCS has sent the command, not once the flight software has run it
+        // YAMCS mode's fsw.command waits for YAMCS's verdict on the command and throws if the command failed.
+        // A command without verifiers gets no verdict, so fsw.command returns once YAMCS has sent it.
         await fsw.command({ ...cmd, args: cmd.args.map(yamcsValue) }, token);
     }
     return true;

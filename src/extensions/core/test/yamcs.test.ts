@@ -45,7 +45,7 @@ import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsPar
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
 import { yamcsEventRows } from '../src/components/yamcsEvents';
 import { leaves, splitName } from '../src/components/yamcsRows';
-import { argumentValue, commandSent, yamcsDictionary } from '../src/api/yamcsCommands';
+import { argumentValue, commandComplete, commandSent, Verifier, yamcsDictionary } from '../src/api/yamcsCommands';
 
 // Values as the live fprime-project instance sent them
 const packetSequence: YamcsValue = {
@@ -570,6 +570,17 @@ describe('yamcsDictionary', () => {
         expect(def.arguments.map((a) => a.name)).toEqual(['first', 'second']);
     });
 
+    test('keeps the verifiers YAMCS runs for a command', () => {
+        // Both commands have a verifier with the stage Complete, and YAMCS runs the one from the base command
+        const base: YamcsCommandInfo = {
+            name: 'BASE', qualifiedName: '/S/BASE',
+            verifier: [{ stage: 'Complete', onSuccess: 'SUCCESS', onFail: 'FAIL', onTimeout: 'FAIL', checkWindow: { timeToStopChecking: '60000' } }],
+        };
+        const own: YamcsCommandInfo['verifier'] = [{ stage: 'Complete' }, { stage: 'Failed', onSuccess: 'FAIL' }];
+        const def = command({ name: 'C', qualifiedName: '/S/C', baseCommand: base, verifier: own }, []).def;
+        expect(def.metadata?.verifiers).toEqual([{ stage: 'Complete', onSuccess: 'SUCCESS', onFail: 'FAIL', onTimeout: 'FAIL' }, { stage: 'Failed', onSuccess: 'FAIL' }]);
+    });
+
     test('marks a command whose arguments it cannot convert', () => {
         const timed = { ...noOpString, argument: [{ name: 'at', type: { engType: 'time', name: 'Time' } }] };
         expect(command(timed, []).def.metadata?.error).toBe('Time has engType time, which isn\'t supported');
@@ -600,6 +611,23 @@ const history = (...attrs: ReturnType<typeof attr>[]): YamcsCommandHistoryEntry 
     attr: attrs,
 });
 
+// The history entry of a command that YAMCS has sent. verifiers has the status of each verifier YAMCS has started,
+// keyed by stage. verdict and reason are the status and message of CommandComplete, when YAMCS has recorded it.
+function sentCommand(verifiers: Record<string, string> = {}, verdict?: string, reason?: string) {
+    const steps = Object.entries(verifiers).map(([stage, status]) => attr(`Verifier_${stage}_Status`, status));
+    const complete = verdict ? [attr('CommandComplete_Status', verdict)] : [];
+    const message = reason ? [attr('CommandComplete_Message', reason)] : [];
+    return history(...queued, ...steps, attr('Acknowledge_Sent_Status', 'OK'), ...complete, ...message);
+}
+
+// The verifiers that three mission databases give a command. In fprime, Complete completes the command when it
+// passes and Failed fails the command when it passes.
+const fprime: Verifier[] = [{ stage: 'Dispatched', onFail: 'FAIL' }, { stage: 'Complete', onSuccess: 'SUCCESS', onFail: 'FAIL' }, { stage: 'Failed', onSuccess: 'FAIL' }];
+const one: Verifier[] = [{ stage: 'Complete', onSuccess: 'SUCCESS' }];
+const plain: Verifier[] = [{ stage: 'Accepted' }];
+// CMD_NO_OP_STRING with a verifier that completes the command when it passes
+const verified: YamcsCommandInfo = { ...noOpString, verifier: [{ stage: 'Complete', onSuccess: 'SUCCESS' }] };
+
 describe('commandSent', () => {
     test('waits for Acknowledge_Sent', () => {
         expect(commandSent(history(...queued))).toBe(false);
@@ -607,21 +635,58 @@ describe('commandSent', () => {
     });
 
     test('throws the reason a step failed', () => {
-        // What YAMCS records when no link is up to send the command
-        const noLink = history(...queued, attr('Acknowledge_Sent_Status', 'NOK'), attr('Acknowledge_Sent_Message', 'no link available'));
+        // What YAMCS records when no link is up to send the command. It fails the command, which cancels the verifiers it had started.
+        const cancelled = [attr('Verifier_Complete_Status', 'CANCELLED'), attr('Verifier_Failed_Status', 'CANCELLED')];
+        const failed = [attr('CommandComplete_Status', 'NOK'), attr('CommandComplete_Message', 'no link available')];
+        const noLink = history(...queued, ...cancelled, attr('Acknowledge_Sent_Status', 'NOK'), attr('Acknowledge_Sent_Message', 'no link available'), ...failed);
         expect(() => commandSent(noLink)).toThrow(
             'YAMCS did not send /BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING: Acknowledge_Sent NOK, no link available');
     });
 
     test('counts a sent command as sent whatever later steps record', () => {
-        // YAMCS cancels the verifiers it no longer needs once another one has completed the command
-        expect(commandSent(history(...queued, attr('Acknowledge_Sent_Status', 'OK'), attr('Verifier_Failed_Status', 'CANCELLED')))).toBe(true);
+        // A verifier failed the command after YAMCS sent it
+        expect(commandSent(sentCommand({ Complete: 'CANCELLED', Failed: 'OK' }, 'NOK', 'EXECUTION_ERROR'))).toBe(true);
+    });
+});
+
+describe('commandComplete', () => {
+    test('waits while a verifier is waiting, or has ended with an action and the verdict is still to come', () => {
+        expect(commandComplete(sentCommand({ Dispatched: 'PENDING', Complete: 'PENDING', Failed: 'PENDING' }), fprime)).toBe(false);
+        // A verifier whose check window has not opened yet
+        expect(commandComplete(sentCommand({ Accepted: 'SCHEDULED' }), plain)).toBe(false);
+        // YAMCS has not recorded Received yet, which it does once Accepted has passed
+        expect(commandComplete(sentCommand({ Accepted: 'OK' }), [...plain, { stage: 'Received' }])).toBe(false);
+        // A verifier ended with an action, and YAMCS has not recorded the verdict that follows
+        expect(commandComplete(sentCommand({ Complete: 'OK' }), one)).toBe(false);
+        expect(commandComplete(sentCommand({ Dispatched: 'NOK' }), fprime)).toBe(false);
+        expect(commandComplete(sentCommand({ Complete: 'TIMEOUT' }), [{ stage: 'Complete', onTimeout: 'FAIL' }])).toBe(false);
+    });
+
+    test('completes on an OK verdict and throws YAMCS\'s reason on any other', () => {
+        // Dispatched, which has no action for a timeout, timed out before the verdict
+        expect(commandComplete(sentCommand({ Dispatched: 'TIMEOUT', Complete: 'OK', Failed: 'CANCELLED' }, 'OK'), fprime)).toBe(true);
+        expect(() => commandComplete(sentCommand({ Dispatched: 'OK', Complete: 'CANCELLED', Failed: 'OK' }, 'NOK', 'EXECUTION_ERROR'), fprime)).toThrow(
+            '/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING failed: CommandComplete NOK, EXECUTION_ERROR');
+    });
+
+    test('says the result is unknown when a verifier fails or times out with no action', () => {
+        // The other two verifiers are still waiting
+        expect(() => commandComplete(sentCommand({ Dispatched: 'TIMEOUT', Complete: 'PENDING', Failed: 'PENDING' }), fprime)).toThrow(
+            '/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING: Verifier_Dispatched TIMEOUT. '
+            + 'YAMCS has no verdict for the command, so its result is unknown.');
+        // A verifier that comes before the failed one is still waiting
+        expect(() => commandComplete(sentCommand({ Complete: 'PENDING', Accepted: 'NOK' }), [...one, ...plain])).toThrow('Verifier_Accepted NOK. YAMCS has no verdict');
+    });
+
+    test('counts a command as complete once no verifier is waiting and no verdict is to come', () => {
+        expect(commandComplete(sentCommand(), [])).toBe(true);
+        expect(commandComplete(sentCommand({ Accepted: 'OK' }), plain)).toBe(true);
     });
 });
 
 describe('YAMCS commands', () => {
     // Hermes's YAMCS backend with its client stubbed, so a test sees each command the backend issues. Every look at
-    // a command's history shows YAMCS sent it.
+    // a command's history shows that YAMCS sent it and recorded no verifier, which completes a command without verifiers.
     async function backend() {
         jest.spyOn(YamcsClient.prototype, 'waitForReady').mockResolvedValue(undefined);
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
@@ -649,11 +714,14 @@ describe('YAMCS commands', () => {
         api.dispose();
     });
 
-    test('issues each command by its qualified name once YAMCS has sent the one before', async () => {
+    test('issues each command by its qualified name once the one before has completed', async () => {
         const { api, fsw, issue, get } = await backend();
-        // YAMCS has only queued the first command when the backend first looks
-        get.mockResolvedValueOnce(history(...queued));
-        const sent = await fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a']), command(noOpString, ['b'])] });
+        // YAMCS has only queued the first command when the backend first looks. At the second look YAMCS has sent
+        // it and its verifier is waiting, and at the third it has its verdict.
+        get.mockResolvedValueOnce(history(...queued))
+            .mockResolvedValueOnce(sentCommand({ Complete: 'PENDING' }))
+            .mockResolvedValueOnce(sentCommand({ Complete: 'OK' }, 'OK'));
+        const sent = await fsw.sequence!({ language: 'yamcs', commands: [command(verified, ['a']), command(noOpString, ['b'])] });
 
         expect(sent).toBe(true);
         const name = '/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING';
@@ -661,9 +729,9 @@ describe('YAMCS commands', () => {
             ['fprime-project', 'other-processor', name, { arg1: { stringValue: 'a' } }, 0],
             ['fprime-project', 'other-processor', name, { arg1: { stringValue: 'b' } }, 1],
         ]);
-        // Both looks at the first command's history come before the second command
-        expect(get.mock.calls.map(([, id]) => id)).toEqual(['id-0', 'id-0', 'id-1']);
-        expect(get.mock.invocationCallOrder[1]).toBeLessThan(issue.mock.invocationCallOrder[1]);
+        // All three looks at the first command's history come before the second command
+        expect(get.mock.calls.map(([, id]) => id)).toEqual(['id-0', 'id-0', 'id-0', 'id-1']);
+        expect(get.mock.invocationCallOrder[2]).toBeLessThan(issue.mock.invocationCallOrder[1]);
         api.dispose();
     });
 
@@ -694,6 +762,18 @@ describe('YAMCS commands', () => {
         await expect(fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a']), command(noOpString, ['b'])] }))
             .rejects.toThrow('Acknowledge_Sent NOK');
         expect(issue).toHaveBeenCalledTimes(1);
+        api.dispose();
+    });
+
+    test('says YAMCS already sent the command when a cell is cancelled before the command completes', async () => {
+        const { api, fsw, get } = await backend();
+        get.mockResolvedValue(sentCommand({ Complete: 'PENDING' }));
+        const { token, cancel } = tokenSource();
+        const waiting = fsw.sequence!({ language: 'yamcs', commands: [command(verified, ['a'])] }, token);
+        await waitFor(() => get.mock.calls.length >= 2, 1000);
+        cancel();
+        await expect(waiting).rejects.toThrow(
+            'Cancelled before /BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING completed. YAMCS already sent it.');
         api.dispose();
     });
 

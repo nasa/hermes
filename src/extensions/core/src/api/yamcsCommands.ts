@@ -13,6 +13,10 @@ import { Def, Dictionary, DualKeyMap, Proto, Value } from '@gov.nasa.jpl.hermes/
  * command in that chain can assign an argument a value, as fprime-yamcs does for
  * OpCode. We leave the assigned arguments out of the command, and keep their
  * values in metadata.assignments.
+ *
+ * A mission database can give a command verifiers, which are checks YAMCS runs on
+ * telemetry to decide whether the command succeeded or failed. We keep them in
+ * metadata.verifiers.
  */
 export function yamcsDictionary(instance: string, commands: readonly Rpc.YamcsCommandInfo[]): Proto.IDictionary {
     const dictionary = new Dictionary({ name: instance, type: 'yamcs' });
@@ -37,7 +41,7 @@ function yamcsCommand(info: Rpc.YamcsCommandInfo): Def.Command {
         mnemonic: info.name!,
         component: qualifiedName.substring(0, qualifiedName.lastIndexOf('/')),
         arguments: [],
-        metadata: { description: info.shortDescription || info.longDescription, qualifiedName, assignments },
+        metadata: { description: info.shortDescription || info.longDescription, qualifiedName, assignments, verifiers: commandVerifiers(chain) },
     };
 
     try {
@@ -49,6 +53,29 @@ function yamcsCommand(info: Rpc.YamcsCommandInfo): Def.Command {
         command.metadata!.error = (err as Error).message;
     }
     return command;
+}
+
+/**
+ * A verifier from a command's definition
+ */
+export interface Verifier {
+    // The verifier's name in the mission database. YAMCS records the verifier in the command's history
+    // as Verifier_<stage>.
+    stage: string;
+    // What YAMCS does with the command when the verifier passes, fails or times out. SUCCESS completes the
+    // command and FAIL fails it. An action is unset when the mission database gives the verifier none.
+    onSuccess?: string;
+    onFail?: string;
+    onTimeout?: string;
+}
+
+// The verifiers YAMCS runs for a command. chain lists the command's base commands, then the command itself.
+// YAMCS runs the verifiers of every command in chain, and when two have the same stage it runs the one that
+// comes first in chain.
+function commandVerifiers(chain: readonly Rpc.YamcsCommandInfo[]): Verifier[] {
+    const all = chain.flatMap((c) => c.verifier ?? []);
+    return all.filter((v, i) => all.findIndex((first) => first.stage === v.stage) === i)
+        .map(({ stage, onSuccess, onFail, onTimeout }) => ({ stage: stage!, onSuccess, onFail, onTimeout }));
 }
 
 /**
@@ -157,29 +184,94 @@ export function argumentValue(value: Value): Rpc.YamcsArgumentValue {
     }
 }
 
-const failedStatuses = ['NOK', 'TIMEOUT', 'CANCELLED'];
+// CANCELLED is not a failure. YAMCS cancels a command's verifiers once the command has a verdict, so a
+// cancelled verifier is never why a command failed.
+const failedStatuses = ['NOK', 'TIMEOUT'];
+// YAMCS runs a verifier only inside its check window. The verifier is SCHEDULED until the window opens, then
+// PENDING until it has a result.
+const waitingStatuses = ['SCHEDULED', 'PENDING'];
+
+// A step YAMCS has recorded for a command, such as Acknowledge_Sent
+interface CommandStep {
+    name: string;
+    status: string;
+    // Why the step has its status, when YAMCS gives a reason
+    message?: string;
+}
 
 /**
- * Whether YAMCS has sent the command in entry. YAMCS records each step of sending
- * a command in its history as <step>_Status, for example Acknowledge_Queued_Status,
- * and why a step failed as <step>_Message. We return true once Acknowledge_Sent_Status
+ * The steps YAMCS has recorded for the command in entry. YAMCS records each step of a
+ * command in its history as <step>_Status, for example Acknowledge_Queued_Status, and
+ * the reason for that status, when it gives one, as <step>_Message.
+ */
+function commandSteps(entry: Rpc.YamcsCommandHistoryEntry): CommandStep[] {
+    const attributes = new Map((entry.attr ?? []).map((a) => [a.name ?? '', a.value?.stringValue ?? '']));
+    return [...attributes].filter(([attribute]) => attribute.endsWith('_Status')).map(([attribute, status]) => {
+        const name = attribute.slice(0, -'_Status'.length);
+        return { name, status, message: attributes.get(`${name}_Message`) };
+    });
+}
+
+// A step as text, like Acknowledge_Sent NOK, no link available
+function stepText(step: CommandStep): string {
+    return `${step.name} ${step.status}${step.message ? `, ${step.message}` : ''}`;
+}
+
+/**
+ * Whether YAMCS has sent the command in entry. We return true once Acknowledge_Sent
  * is OK, false while YAMCS is still working on it, and throw YAMCS's reason if a step
  * failed first.
- *
- * We check for sent first, because YAMCS can record a failure status afterwards, such
- * as CANCELLED for a verifier it stops waiting on.
  */
 export function commandSent(entry: Rpc.YamcsCommandHistoryEntry): boolean {
-    const attributes = new Map((entry.attr ?? []).map((a) => [a.name, a.value?.stringValue]));
-    if (attributes.get('Acknowledge_Sent_Status') === 'OK') {
+    const steps = commandSteps(entry);
+    // We check for sent first, because YAMCS can record a failure status afterwards, such as NOK for
+    // CommandComplete when a verifier fails the command
+    if (steps.some((s) => s.name === 'Acknowledge_Sent' && s.status === 'OK')) {
         return true;
     }
-    for (const [name, status] of attributes) {
-        if (name?.endsWith('_Status') && status && failedStatuses.includes(status)) {
-            const step = name.slice(0, -'_Status'.length);
-            const reason = attributes.get(`${step}_Message`);
-            throw new Error(`YAMCS did not send ${entry.commandName}: ${step} ${status}${reason ? `, ${reason}` : ''}`);
-        }
+    const failed = steps.find((s) => failedStatuses.includes(s.status));
+    if (failed) {
+        throw new Error(`YAMCS did not send ${entry.commandName}: ${stepText(failed)}`);
     }
     return false;
+}
+
+/**
+ * Whether the command in entry, which YAMCS has sent, has completed. verifiers are the
+ * verifiers in the command's definition. We return false while a verifier is waiting, or
+ * has ended with an action and YAMCS has not recorded the verdict yet. We throw when the
+ * command failed, or when a verifier failed or timed out and YAMCS gives no verdict.
+ */
+export function commandComplete(entry: Rpc.YamcsCommandHistoryEntry, verifiers: Verifier[]): boolean {
+    const steps = commandSteps(entry);
+    // YAMCS records its verdict on a command as the step CommandComplete
+    const verdict = steps.find((s) => s.name === 'CommandComplete');
+    if (verdict) {
+        if (verdict.status === 'OK') {
+            return true;
+        }
+        throw new Error(`${entry.commandName} failed: ${stepText(verdict)}`);
+    }
+
+    let waiting = false;
+    for (const verifier of verifiers) {
+        const step = steps.find((s) => s.name === `Verifier_${verifier.stage}`);
+        // A verifier's check window can open when the verifier before it passes. YAMCS records such a verifier
+        // only then, so until then the entry has no step for it, and we count it as waiting.
+        const status = step?.status ?? 'PENDING';
+        const actions: Record<string, string | undefined> = { OK: verifier.onSuccess, NOK: verifier.onFail, TIMEOUT: verifier.onTimeout };
+        // YAMCS records a verifier's result first, and then the verdict that the verifier's action gives. So when a
+        // verifier has ended with an action, we keep waiting for the verdict.
+        if (actions[status] || waitingStatuses.includes(status)) {
+            waiting = true;
+        } else if (failedStatuses.includes(status)) {
+            // The verifier failed or timed out, and YAMCS gives no verdict for that. We stop waiting, even if other
+            // verifiers are still waiting, because a database can give those a far longer window and the cell would
+            // hold its next command for all of it.
+            throw new Error(`${entry.commandName}: ${stepText(step!)}. YAMCS has no verdict for the command, so its result is unknown.`);
+        }
+    }
+    // The command is complete when nothing is waiting. For a command without verifiers, that is as soon as
+    // YAMCS has sent it.
+    return !waiting;
 }
