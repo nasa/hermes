@@ -126,8 +126,15 @@ does. While a command waits out its time tag, its line counts down the wait in p
 for example `◷ sends in 12.3 s`. The cell waits for the flight software only when the mission database
 gives a command verifiers. fprime-yamcs builds its database with fprime-xtce, which as of version
 0.1.5 defines none, so with that database an F Prime cell passes once YAMCS has sent its commands,
-even when the flight software rejects one. Unlike Local and Remote modes, the cell doesn't list the
-events its commands raise. They show in the events panel.
+even when the flight software rejects one.
+
+A cell's output lists the events YAMCS reports for the instance while the cell runs, whichever command
+or client caused them. An F Prime event shows its F Prime severity, and the `hermes.notebook.evr*`
+settings hide severities as in the other modes. Any other event shows YAMCS's severity and is always
+listed. A cell stops listing 50 ms after its last command ends, so its list lacks any event that
+reaches Hermes later. A command without verifiers ends once YAMCS has sent it, often before the flight
+software's events for it reach YAMCS, so a cell of such commands can list none. The events panel shows
+every event.
 
 YAMCS mode sends no credentials, so it fails with `UNAUTHENTICATED` when YAMCS security is on. When
 its subscription ends, for example because YAMCS or its instance stopped, the status bar turns red

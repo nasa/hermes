@@ -22,7 +22,8 @@ tr {
     border: 1px solid rgba(0, 0, 0, 0);
 }
 
-.fatal {
+.fatal,
+.critical {
     background-color: #ff5e66 !important;
     color: #f1f1f2;
 }
@@ -31,11 +32,13 @@ tr {
     background-color: #f7000c !important;
 }
 
-.fatal:hover {
+.fatal:hover,
+.critical:hover {
     background-color: #ff2b36 !important;
 }
 
-.warning_hi {
+.warning_hi,
+.warning {
     background-color: #FEA500 !important;
 }
 
@@ -43,11 +46,13 @@ tr {
     background-color: #986300 !important;
 }
 
-.warning_hi:hover {
+.warning_hi:hover,
+.warning:hover {
     background-color: #cb8400 !important;
 }
 
-.warning_lo {
+.warning_lo,
+.watch {
     background-color: #F0F001 !important;
 }
 
@@ -55,7 +60,8 @@ tr {
     background-color: #8a8a01 !important;
 }
 
-.warning_lo:hover {
+.warning_lo:hover,
+.watch:hover {
     background-color: #bdbd01 !important;
 }
 
@@ -72,7 +78,8 @@ tr {
     background-color: #4d4d4d !important;
 }
 
-.activity_lo {
+.activity_lo,
+.info {
     background-color: #D3D3D3 !important;
 }
 
@@ -80,7 +87,8 @@ tr {
     background-color: #a0a0a0 !important;
 }
 
-.activity_lo:hover {
+.activity_lo:hover,
+.info:hover {
     background-color: #bababa !important;
 }
 
@@ -107,4 +115,23 @@ tr {
 
 .diagnostic:hover {
     background-color: #64e666 !important;
+}
+
+/* YAMCS severities. INFO, WATCH, WARNING and CRITICAL share the rules above. */
+
+.distress {
+    background-color: #FF6A00 !important;
+}
+
+.distress:hover {
+    background-color: #cc5500 !important;
+}
+
+.severe {
+    background-color: #b3000c !important;
+    color: #f1f1f2;
+}
+
+.severe:hover {
+    background-color: #8f000a !important;
 }
