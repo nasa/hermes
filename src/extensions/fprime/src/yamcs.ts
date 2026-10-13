@@ -66,14 +66,19 @@ export async function runOnYamcs(
     seq: Hermes.CommandSequence,
     token: vscode.CancellationToken,
     onState?: Hermes.CommandStateHandler,
+    onWait?: (ms: number) => void,
 ): Promise<boolean> {
     if (!fsw.command) {
         throw new Error(`${fsw.id} can't run F Prime commands`);
     }
 
     for (const cmd of seq.commands) {
-        // We wait for the command's relative time tag to pass
-        await cancellable(delay(Number(cmd.metadata?.relativeTimeDelayMs ?? 0)), token);
+        // We wait for the command's relative time tag to pass. If that takes any time, we tell the cell how long the wait is.
+        const wait = Number(cmd.metadata?.relativeTimeDelayMs ?? 0);
+        if (wait > 0) {
+            onWait?.(wait);
+        }
+        await cancellable(delay(wait), token);
         // YAMCS mode's fsw.command waits for YAMCS's verdict on the command and throws if the command failed.
         // A command without verifiers gets no verdict, so fsw.command returns once YAMCS has sent it.
         await fsw.command({ ...cmd, args: cmd.args.map(yamcsValue) }, token, onState);

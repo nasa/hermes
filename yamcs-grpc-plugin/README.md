@@ -122,11 +122,12 @@ each command as F Prime does, for example `CdhCore.cmdDisp.CMD_NO_OP` for
 `/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP`, and takes its opcode from fprime-yamcs's
 `OpCode` argument assignment. Each command waits out its relative time tag, then goes out as a YAMCS
 cell's command does, so an F Prime cell passes, fails and shows its commands' statuses as a YAMCS cell
-does. The cell waits for the flight software only when the mission database gives a command verifiers.
-fprime-yamcs builds its database with fprime-xtce, which as of version 0.1.5 defines none, so with
-that database an F Prime cell passes once YAMCS has sent its commands, even when the flight software
-rejects one. Unlike Local and Remote modes, the cell doesn't list the events its commands raise. They
-show in the events panel.
+does. While a command waits out its time tag, its line counts down the wait in place of `○ not sent`,
+for example `◷ sends in 12.3 s`. The cell waits for the flight software only when the mission database
+gives a command verifiers. fprime-yamcs builds its database with fprime-xtce, which as of version
+0.1.5 defines none, so with that database an F Prime cell passes once YAMCS has sent its commands,
+even when the flight software rejects one. Unlike Local and Remote modes, the cell doesn't list the
+events its commands raise. They show in the events panel.
 
 YAMCS mode sends no credentials, so it fails with `UNAUTHENTICATED` when YAMCS security is on. When
 its subscription ends, for example because YAMCS or its instance stopped, the status bar turns red

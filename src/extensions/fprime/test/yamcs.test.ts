@@ -145,6 +145,19 @@ test('stops waiting out a time tag when the cell is stopped', async () => {
     expect(sent).toHaveLength(0);
 });
 
+test('tells the cell how long a time tag makes it wait, and tells it nothing for a command without a time tag', async () => {
+    jest.useFakeTimers();
+    const { fsw } = yamcs();
+    const onWait = jest.fn();
+    const untagged = { def: removeFile, args: ['/tmp/a', true] };
+    const run = runOnYamcs(fsw, cell(untagged, { ...untagged, metadata: { relativeTimeDelayMs: '200' } }), token, undefined, onWait);
+    await jest.advanceTimersByTimeAsync(199);
+    // The wait is not over yet, and the cell has already been told how long it is
+    expect(onWait.mock.calls).toEqual([[200]]);
+    await jest.advanceTimersByTimeAsync(1);
+    await run;
+});
+
 test('sends commands in order, and none after one that YAMCS refuses', async () => {
     const { fsw, sent } = yamcs('/tmp/c');
     const remove = (fileName: string): CommandValue => ({ def: removeFile, args: [fileName, true] });

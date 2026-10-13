@@ -206,6 +206,8 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
      * @param seq Parsed command sequence
      * @param token Cancellation token
      * @param onState Shows each command's status in the cell
+     * @param _onWait Shows in the cell how long the next command waits before it is issued, in milliseconds. The cell finds
+     * the next command from the states that onState receives, so call this only on a connection that reports states.
      * @returns Promise to boolean indicated success/failure
      */
     async executeSequence(
@@ -213,7 +215,8 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
         fsw: Hermes.Fsw,
         seq: Hermes.CommandSequence,
         token: vscode.CancellationToken,
-        onState?: Hermes.CommandStateHandler
+        onState?: Hermes.CommandStateHandler,
+        _onWait?: (ms: number) => void
     ): Promise<boolean> {
         if (!fsw.sequence) {
             throw new Error(`FSW connection ${fsw.id} does not support commanding`);
@@ -253,7 +256,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
                 run.add(range);
             }
 
-            return await this.executeSequence(cell, fsw, this.sequence(cell, commands), token, run.report);
+            return await this.executeSequence(cell, fsw, this.sequence(cell, commands), token, run.report, run.wait);
         } finally {
             run.stop();
             // Wait for a short amount of time to flush the EVRs through

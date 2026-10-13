@@ -21,11 +21,12 @@ export class FprimeNotebookLanguageProvider extends FswNotebookLanguageProvider 
         fsw: Hermes.Fsw,
         seq: Hermes.CommandSequence,
         token: vscode.CancellationToken,
-        onState?: Hermes.CommandStateHandler
+        onState?: Hermes.CommandStateHandler,
+        onWait?: (ms: number) => void
     ): Promise<boolean> {
         // For YAMCS mode's connection we send the commands ourselves. super.executeSequence calls YAMCS mode's
         // fsw.sequence, which doesn't wait out time tags or send booleans as fprime-yamcs's labels.
-        return fsw.type === "yamcs" ? runOnYamcs(fsw, seq, token, onState) : super.executeSequence(cell, fsw, seq, token, onState);
+        return fsw.type === "yamcs" ? runOnYamcs(fsw, seq, token, onState, onWait) : super.executeSequence(cell, fsw, seq, token, onState);
     }
 
     async *parse(
