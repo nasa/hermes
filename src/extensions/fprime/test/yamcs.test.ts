@@ -153,6 +153,14 @@ test('sends commands in order, and none after one that YAMCS refuses', async () 
     expect(sent.map((command) => command.args[0])).toEqual(['/tmp/a', '/tmp/b']);
 });
 
+test('passes the handler for command states on to the connection', async () => {
+    const { fsw } = yamcs();
+    const command = jest.spyOn(fsw, 'command');
+    const onState = () => { };
+    await runOnYamcs(fsw, cell({ def: removeFile, args: ['/tmp/a', true] }), token, onState);
+    expect(command.mock.calls[0][2]).toBe(onState);
+});
+
 test('sends booleans as labels, including inside structs and arrays', async () => {
     const { fsw, sent } = yamcs();
     await runOnYamcs(fsw, cell({ def: fprimeCommand('Demo.switches.SET'), args: [{ on: true, flags: [false, true] }] }), token);

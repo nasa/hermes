@@ -68,10 +68,10 @@ export class YamcsNotebookLanguageProvider extends FswNotebookLanguageProvider {
         super('yamcs', (fsw) => fsw.type === 'yamcs', api);
     }
 
-    async *parse(cell: vscode.NotebookCell, token: vscode.CancellationToken): AsyncIterable<Seq.CommandValue> {
+    async *parse(cell: vscode.NotebookCell, token: vscode.CancellationToken): AsyncIterable<[Seq.CommandValue, vscode.Range]> {
         for (const expr of await this.language.provideDocumentExpressions(cell.document, token)) {
             try {
-                yield expr.parse();
+                yield [expr.parse(), Seq.range(expr)!];
             } catch (err) {
                 const r = Seq.range(expr);
                 throw r ? new Error(`line: ${r.start.line + 1}: ${err}`, { cause: err }) : err;

@@ -109,16 +109,36 @@ it, which doesn't mean the flight software ran it. When YAMCS refuses or fails t
 cell fails with YAMCS's reason. Commands after a failed one aren't sent. Stopping a cell doesn't
 withdraw a command YAMCS already holds.
 
+While a cell runs, the editor shows each command's status at the end of the command's line. When a
+line is longer than the cell is wide, its status is past the cell's right edge, and you scroll the
+cell sideways to see it. A command in flight shows the newest step YAMCS has recorded as `OK` and the
+seconds since Hermes first read its history, for example `● Sent · 0.4 s`, then
+`● Dispatched · 3.2 s`. The status shows the step's name as YAMCS records it, without the
+`Acknowledge_` or `Verifier_` prefix, so a verifier's step shows the stage name the mission database
+gives it. When YAMCS records its verdict, the status becomes `✓ completed` with the time the command
+took, or `✗ failed` with YAMCS's reason, for example `✗ failed · EXECUTION_ERROR`. A command without
+verifiers ends at `✓ Sent`. Once a cell shows its first status, each command it has not issued shows
+`○ not sent`. So does a command that Hermes has issued, if you stop the cell before YAMCS answers
+Hermes about that command. YAMCS may still send it, as the cell's error says. If you stop the cell
+while a command is in flight, or the command's result is unknown, the command shows `?` with the
+newest step that passed. Hover over a status to see the steps YAMCS has recorded for the command,
+earliest first, with the time since the first step, and the command's qualified name. Steps that YAMCS
+skipped or cancelled have no row. A verifier that ends the command when it passes has a row of its own
+only when it fails or times out. Otherwise the row `Completed` or `Failed` shows its result. The
+statuses disappear when you edit the cell, run it again or close the notebook. A command that passed
+also leaves a line in the cell's output, with the command's text and its status.
+
 F Prime cells run in YAMCS mode too, when fprime-yamcs runs the instance. The Hermes F Prime extension
 builds an F Prime dictionary from YAMCS mode's dictionary, listed as `<instance> (F Prime)`. It names
 each command as F Prime does, for example `CdhCore.cmdDisp.CMD_NO_OP` for
 `/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP`, and takes its opcode from fprime-yamcs's
 `OpCode` argument assignment. Each command waits out its relative time tag, then goes out as a YAMCS
-cell's command does, so an F Prime cell passes and fails as a YAMCS cell does. The cell waits for the
-flight software only when the mission database gives a command verifiers. fprime-yamcs builds its
-database with fprime-xtce, which as of version 0.1.5 defines none, so with that database an F Prime
-cell passes once YAMCS has sent its commands, even when the flight software rejects one. Unlike Local
-and Remote modes, the cell doesn't list the events its commands raise. They show in the events panel.
+cell's command does, so an F Prime cell passes, fails and shows its commands' statuses as a YAMCS cell
+does. The cell waits for the flight software only when the mission database gives a command verifiers.
+fprime-yamcs builds its database with fprime-xtce, which as of version 0.1.5 defines none, so with
+that database an F Prime cell passes once YAMCS has sent its commands, even when the flight software
+rejects one. Unlike Local and Remote modes, the cell doesn't list the events its commands raise. They
+show in the events panel.
 
 YAMCS mode sends no credentials, so it fails with `UNAUTHENTICATED` when YAMCS security is on. When
 its subscription ends, for example because YAMCS or its instance stopped, the status bar turns red

@@ -6,6 +6,7 @@ import {
 } from '@gov.nasa.jpl.hermes/types';
 import { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
 import { showEvr } from '../settings';
+import { CommandStatuses } from './commandStatus';
 import { NotebookLanguageProvider } from './common';
 import { eventToDisplayEvent } from '@gov.nasa.jpl.hermes/types/src/conversion';
 
@@ -85,6 +86,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
 
     private didFswStatusChange = true;
     private statusBarItems: vscode.NotebookCellStatusBarItem[] = [];
+    private readonly commandStatuses = new CommandStatuses();
 
     protected subscriptions: vscode.Disposable[];
 
@@ -102,6 +104,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
     ) {
 
         this.subscriptions = [
+            this.commandStatuses,
             this.api.onFswChange(() => {
                 this.didFswStatusChange = true;
                 this.didChangeCellStatusBarItems.fire();
@@ -162,14 +165,15 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
     }
 
     /**
-     * Parse the document and yield out each parsed command to send to the FSW connection
+     * Parse the document and yield out each parsed command to send to the FSW connection,
+     * with the range of the command's text in the cell
      * @param code Code cell to parse
      * @param token cancellation token
      */
     abstract parse(
         cell: vscode.NotebookCell,
         token: vscode.CancellationToken,
-    ): AsyncIterable<CommandValue>;
+    ): AsyncIterable<[CommandValue, vscode.Range]>;
 
     /**
      * Convert a set of commands to a sequence object
@@ -201,19 +205,21 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
      * @param fsw Flight software to command
      * @param seq Parsed command sequence
      * @param token Cancellation token
+     * @param onState Shows each command's status in the cell
      * @returns Promise to boolean indicated success/failure
      */
     async executeSequence(
         cell: vscode.NotebookCell,
         fsw: Hermes.Fsw,
         seq: Hermes.CommandSequence,
-        token: vscode.CancellationToken
+        token: vscode.CancellationToken,
+        onState?: Hermes.CommandStateHandler
     ): Promise<boolean> {
         if (!fsw.sequence) {
             throw new Error(`FSW connection ${fsw.id} does not support commanding`);
         }
 
-        return await fsw.sequence(seq, token);
+        return await fsw.sequence(seq, token, onState);
     }
 
     private async getFsw(cell: vscode.NotebookCell, token?: vscode.CancellationToken): Promise<Hermes.Fsw | undefined> {
@@ -232,6 +238,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
         execution: vscode.NotebookCellExecution,
         token: vscode.CancellationToken,
     ): Promise<boolean> {
+        const run = this.commandStatuses.run(cell, execution);
         const fsw = await this.getFsw(cell, token);
         if (!fsw) {
             throw new Error("No target FSW set on this cell (or connected)");
@@ -241,12 +248,14 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
 
         try {
             const commands: CommandValue[] = [];
-            for await (const cmd of this.parse(cell, token)) {
+            for await (const [cmd, range] of this.parse(cell, token)) {
                 commands.push(cmd);
+                run.add(range);
             }
 
-            return await this.executeSequence(cell, fsw, this.sequence(cell, commands), token);
+            return await this.executeSequence(cell, fsw, this.sequence(cell, commands), token, run.report);
         } finally {
+            run.stop();
             // Wait for a short amount of time to flush the EVRs through
             await new Promise((resolve) => setTimeout(resolve, 50));
             output.dispose();
