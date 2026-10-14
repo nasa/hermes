@@ -512,7 +512,8 @@ describe('YAMCS event source', () => {
             connections.fire([fsw]);
             raise(seqCountJump);
             raise(opCodeDispatched);
-            raise(seqCountJump);
+            // YAMCS raises this one half a second after the command ends
+            setTimeout(() => raise(seqCountJump), 500);
             return true;
         });
         // As the events panel does, a handler subscribes before any cell runs. The backend lists YAMCS's archive
