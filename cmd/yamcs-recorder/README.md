@@ -36,7 +36,9 @@ Each event becomes one log record:
 - The service name is the YAMCS instance, and the instrumentation scope is `yamcs-recorder`.
 - The timestamp is the event's generation time (when its source raised it) and the observed timestamp its reception
   time (when YAMCS received it). When YAMCS sends no reception time, the OpenTelemetry SDK uses the time the recorder
-  handed it the event.
+  handed it the event. YAMCS gives the generation time to the millisecond, so the recorder adds the last six digits of
+  the event's sequence number to it as nanoseconds, which keeps events from the same millisecond in sequence order in
+  Grafana.
 - The body is the event's message.
 - The severity number places the YAMCS severity in an OpenTelemetry band, and Loki gives the record that band's
   level: `INFO` 9 (info), `WATCH` 13 and `WARNING` 14 (warn), `DISTRESS` 17 (error), `CRITICAL` 21 and `SEVERE` 22

@@ -3,6 +3,7 @@ package convert
 import (
 	"maps"
 	"slices"
+	"time"
 
 	otellog "go.opentelemetry.io/otel/log"
 
@@ -36,7 +37,10 @@ var severityNumbers = map[events.Event_EventSeverity]otellog.Severity{
 func LogRecord(e *events.Event) otellog.Record {
 	var r otellog.Record
 	if e.GenerationTime != nil {
-		r.SetTimestamp(e.GetGenerationTime().AsTime())
+		// YAMCS gives the generation time to the millisecond. We add the last six
+		// digits of the sequence number as nanoseconds so events from one millisecond
+		// stay in order.
+		r.SetTimestamp(e.GetGenerationTime().AsTime().Add(time.Duration(e.GetSeqNumber() % 1_000_000)))
 	}
 	if e.ReceptionTime != nil {
 		r.SetObservedTimestamp(e.GetReceptionTime().AsTime())

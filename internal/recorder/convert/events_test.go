@@ -2,11 +2,13 @@ package convert
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	otellog "go.opentelemetry.io/otel/log"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/nasa/hermes/internal/yamcspb/protobuf/events"
 )
@@ -55,7 +57,7 @@ const seqCountJumpEvent = `{"source": "FprimePacketPreprocessor", "generationTim
 
 func TestLogRecordKeepsYamcsFields(t *testing.T) {
 	r := LogRecord(parseEvent(t, dispatchedEvent))
-	assert.Equal(t, utc("2026-10-05T22:56:34.620Z"), r.Timestamp())
+	assert.Equal(t, utc("2026-10-05T22:56:34.620000006Z"), r.Timestamp())
 	assert.Equal(t, utc("2026-10-05T22:56:34.591Z"), r.ObservedTimestamp())
 	assert.Equal(t, otellog.SeverityInfo1, r.Severity())
 	assert.Empty(t, r.SeverityText())
@@ -127,11 +129,24 @@ func TestLogRecordTimes(t *testing.T) {
 	e := parseEvent(t, dispatchedEvent)
 	e.ReceptionTime = nil
 	r := LogRecord(e)
-	assert.Equal(t, utc("2026-10-05T22:56:34.620Z"), r.Timestamp())
+	assert.Equal(t, utc("2026-10-05T22:56:34.620000006Z"), r.Timestamp())
 	assert.Zero(t, r.ObservedTimestamp())
 
 	e.GenerationTime = nil
 	r = LogRecord(e)
 	assert.Zero(t, r.Timestamp())
 	assert.Equal(t, "[OpCodeDispatched] Opcode 0x1000000 dispatched to port 4", r.Body().AsString())
+}
+
+// Events in the same millisecond sort in sequence order. We use sequence
+// numbers past a million to check that the timestamp stays in that millisecond.
+func TestLogRecordOrdersEventsWithinAMillisecond(t *testing.T) {
+	e := parseEvent(t, dispatchedEvent)
+	e.SeqNumber = proto.Int32(1_000_006)
+	first := LogRecord(e)
+	e.SeqNumber = proto.Int32(1_000_007)
+	second := LogRecord(e)
+	assert.True(t, first.Timestamp().Before(second.Timestamp()))
+	assert.Equal(t, utc("2026-10-05T22:56:34.620Z"), first.Timestamp().Truncate(time.Millisecond))
+	assert.Equal(t, utc("2026-10-05T22:56:34.620Z"), second.Timestamp().Truncate(time.Millisecond))
 }
