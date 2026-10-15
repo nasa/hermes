@@ -22,8 +22,8 @@ func simParam(name string) Parameter {
 func readRows(t *testing.T, db *sql.DB) map[string]Row {
 	t.Helper()
 	rows, err := db.Query(`
-		SELECT p.instance, p.space_system, p.name, v.member_path, v.generation_time, v.acquisition_time,
-		       v.value_type, v.int_value, v.float_value, v.bool_value, v.string_value, v.binary_value
+		SELECT p.instance, p.space_system, p.name, p.member_path, v.generation_time, v.acquisition_time,
+		       p.value_type, v.int_value, v.float_value, v.bool_value, v.string_value, v.binary_value
 		FROM parameter_values v JOIN parameters p ON p.id = v.parameter_id`)
 	require.NoError(t, err)
 	defer rows.Close()
@@ -121,12 +121,14 @@ func TestInsertRollsBackWholeBatch(t *testing.T) {
 	gen := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
 
 	good := Row{Parameter: simParam("Good"), GenerationTime: gen, Value: DoubleValue(1)}
+	// Postgres refuses invalid UTF-8, so the COPY fails on this row. We build the
+	// Value directly because StringValue would replace the bad byte.
 	bad := Row{Parameter: simParam("Bad"), GenerationTime: gen, Value: Value{
-		Type: "VOID", Int: sql.NullInt64{Int64: 1, Valid: true},
+		Type: TypeString, String: sql.NullString{String: "\xff", Valid: true},
 	}}
 
 	err := Insert(ctx, db, ids, []Row{good, bad})
-	require.ErrorContains(t, err, "value_type_known")
+	require.ErrorContains(t, err, "0xff")
 
 	var values, params int
 	require.NoError(t, db.QueryRow(`SELECT COUNT(*) FROM parameter_values`).Scan(&values))

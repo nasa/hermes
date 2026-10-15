@@ -897,7 +897,7 @@ func TestResourceHandlerMembers(t *testing.T) {
 
 	ds := &Datasource{db: db}
 
-	mock.ExpectQuery(`(?s)SELECT DISTINCT p.space_system, p.name, m.member_path.*FROM parameter_values v`).
+	mock.ExpectQuery(`(?s)SELECT DISTINCT p.space_system, p.name, p.member_path.*JOIN parameters p`).
 		WithArgs(`[{"spaceSystem":"/CDH","name":"Attitude"},{"spaceSystem":"/Sensors","name":"Attitude"}]`).
 		WillReturnRows(sqlmock.NewRows([]string{"space_system", "name", "member_path"}).
 			AddRow("/CDH", "Attitude", ".x").

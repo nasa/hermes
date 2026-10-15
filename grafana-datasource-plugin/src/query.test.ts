@@ -33,7 +33,7 @@ function baseQuery(overrides: Partial<ResolvedQuery>): ResolvedQuery {
 const FROM = '2024-01-01T00:00:00.000Z';
 const TO = '2024-01-01T01:00:00.000Z';
 const INT_COL =
-  "(CASE WHEN v.value_type = 'UINT64' AND v.int_value < 0 THEN v.int_value + 18446744073709551616 ELSE v.int_value END)::double precision";
+  "(CASE WHEN p.value_type = 'UINT64' AND v.int_value < 0 THEN v.int_value + 18446744073709551616 ELSE v.int_value END)::double precision";
 
 describe('buildTelemetryQuery — per-parameter member scoping', () => {
   it('does not filter a scalar parameter when a compound parameter has members selected', () => {
@@ -49,12 +49,12 @@ describe('buildTelemetryQuery — per-parameter member scoping', () => {
 
     // Compound parameter is scoped to its selected member.
     expect(sql).toContain(
-      "(p.space_system = 'CDH' AND p.name = 'Attitude' AND v.member_path = ANY('{\".x\"}'))"
+      "(p.space_system = 'CDH' AND p.name = 'Attitude' AND p.member_path = ANY('{\".x\"}'))"
     );
     // Scalar parameter has NO member restriction, so it is not filtered out.
     expect(sql).toContain("(p.space_system = 'CDH' AND p.name = 'Temperature')");
     // The member filter appears only in Attitude's clause, not across the whole query.
-    expect(sql.match(/v\.member_path = ANY\(/g)).toHaveLength(1);
+    expect(sql.match(/p\.member_path = ANY\(/g)).toHaveLength(1);
   });
 
   it('restricts a compound parameter to only its selected members', () => {
@@ -66,7 +66,7 @@ describe('buildTelemetryQuery — per-parameter member scoping', () => {
     const sql = buildTelemetryQuery(q, FROM, TO);
 
     expect(sql).toContain(
-      "(p.space_system = 'CDH' AND p.name = 'Attitude' AND v.member_path = ANY('{\".x\"}'))"
+      "(p.space_system = 'CDH' AND p.name = 'Attitude' AND p.member_path = ANY('{\".x\"}'))"
     );
     expect(sql).not.toContain('.y');
   });
@@ -80,7 +80,7 @@ describe('buildTelemetryQuery — per-parameter member scoping', () => {
     const sql = buildTelemetryQuery(q, FROM, TO);
 
     expect(sql).toContain("(p.space_system = 'CDH' AND p.name = 'Attitude')");
-    expect(sql).not.toContain('v.member_path = ANY');
+    expect(sql).not.toContain('p.member_path = ANY');
   });
 
   it('matches the whole value of a scalar by its empty member path', () => {
@@ -91,7 +91,7 @@ describe('buildTelemetryQuery — per-parameter member scoping', () => {
 
     const sql = buildTelemetryQuery(q, FROM, TO);
 
-    expect(sql).toContain(`(p.space_system = 'CDH' AND p.name = 'Temperature' AND v.member_path = ANY('{""}'))`);
+    expect(sql).toContain(`(p.space_system = 'CDH' AND p.name = 'Temperature' AND p.member_path = ANY('{""}'))`);
   });
 
   it('joins multiple parameters with OR', () => {
@@ -179,7 +179,7 @@ describe('buildTelemetryQuery — aggregations', () => {
     expect(sql).toContain(`${fn}(v.float_value) AS val_float`);
     expect(sql).toContain(`${fn}(v.bool_value::int::double precision) AS val_bool`);
     expect(sql).toContain('time_bucket($__interval, v.generation_time)');
-    expect(sql).toContain('GROUP BY time_bucket');
+    expect(sql).toContain('GROUP BY time_bucket, p.id');
   });
 
   it.each([
@@ -456,7 +456,7 @@ describe('buildTransformCase', () => {
       ],
     });
     const sql = buildTransformCase(q, col);
-    expect(sql.indexOf("v.member_path = '.x'")).toBeLessThan(sql.indexOf('THEN (v.float_value) * 10'));
+    expect(sql.indexOf("p.member_path = '.x'")).toBeLessThan(sql.indexOf('THEN (v.float_value) * 10'));
   });
 
   it('limits a transform on the empty member path to that member', () => {
@@ -464,7 +464,7 @@ describe('buildTransformCase', () => {
       parameters: [{ spaceSystem: 'CDH', name: 'Attitude' }],
       transforms: [{ spaceSystem: 'CDH', parameter: 'Attitude', member: '', expr: '2' }],
     });
-    expect(buildTransformCase(q, col)).toContain("p.name = 'Attitude' AND v.member_path = '' THEN");
+    expect(buildTransformCase(q, col)).toContain("p.name = 'Attitude' AND p.member_path = '' THEN");
   });
 
   it('falls back to the bare column in the ELSE branch', () => {
@@ -483,7 +483,7 @@ describe('buildTransformCase', () => {
       transforms: [{ spaceSystem: "O'Brien", parameter: 'Temp', member: "a'b", expr: '2' }],
     });
     expect(buildTransformCase(q, col)).toContain("p.space_system = 'O''Brien'");
-    expect(buildTransformCase(q, col)).toContain("v.member_path = 'a''b'");
+    expect(buildTransformCase(q, col)).toContain("p.member_path = 'a''b'");
   });
 });
 
@@ -499,7 +499,7 @@ describe('buildTelemetryQuery — value transforms', () => {
     expect(sql).toContain(`AVG(${INT_COL}) AS val_int`);
     expect(sql).toContain('AVG(v.float_value) AS val_float');
     // The int column always has the UINT64 CASE, so only check that no transform CASE was added.
-    expect(sql).not.toContain('CASE WHEN p.');
+    expect(sql).not.toContain('CASE WHEN p.space_system');
   });
 
   it('binds the token to the matching column for each numeric output', () => {
@@ -516,7 +516,7 @@ describe('buildTelemetryQuery — value transforms', () => {
 
   it('scopes a member-specific transform with an exact member match', () => {
     const sql = buildTelemetryQuery(withTransform('0.001', '.x'), FROM, TO);
-    expect(sql).toContain("p.space_system = 'CDH' AND p.name = 'Temperature' AND v.member_path = '.x'");
+    expect(sql).toContain("p.space_system = 'CDH' AND p.name = 'Temperature' AND p.member_path = '.x'");
   });
 
   it('never transforms the bool, string, or bytes columns', () => {
@@ -684,7 +684,7 @@ describe('name-only transforms', () => {
       transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '', name: 'Reactor Temp' }],
     });
     expect(buildTransformCase(q, 'v.float_value')).toBe('v.float_value');
-    expect(buildTelemetryQuery(q, FROM, TO)).not.toContain('CASE WHEN p.');
+    expect(buildTelemetryQuery(q, FROM, TO)).not.toContain('CASE WHEN p.space_system');
   });
 
   it('still emits SQL when both an expression and a name are set', () => {
