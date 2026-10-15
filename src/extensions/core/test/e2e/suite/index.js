@@ -24,9 +24,9 @@ exports.run = async function () {
     const step = (s) => { result.steps.push(s); fs.writeFileSync(resultFile, JSON.stringify(result, null, 2)); };
     const state = {
         address: process.env.YAMCS_GRPC_ADDRESS,
-        instance: process.env.YAMCS_INSTANCE,
         processor: 'realtime',
     };
+    const instance = process.env.YAMCS_INSTANCE;
 
     try {
         const core = await vscode.extensions.getExtension('jet-propulsion-laboratory.hermes').activate();
@@ -80,7 +80,7 @@ exports.run = async function () {
         step('table panel sent update rows');
 
         // The newest archived YAMCS events reach the events panel on connecting
-        const yamcsEvents = () => core.eventPanel.panelEvents.filter((e) => e.source === `yamcs:${state.instance}`);
+        const yamcsEvents = () => core.eventPanel.panelEvents.filter((e) => e.source === `yamcs:${instance}`);
         await waitFor('a YAMCS event in the events panel', () => yamcsEvents().length > 0, 10000);
         result.yamcsEvents = yamcsEvents().length;
         result.newestYamcsEvent = yamcsEvents()[result.yamcsEvents - 1];
@@ -120,10 +120,11 @@ exports.run = async function () {
         // the qualified name in its metadata, which getDictionary returns as JSON text, so we parse the metadata first.
         const fsws = await core.api.allFsw();
         result.fsws = fsws.map((f) => ({ id: f.id, type: f.type, dictionary: f.dictionary }));
-        const dictionary = await core.api.getDictionary(fsws[0].dictionary);
+        const fsw = fsws.find((f) => f.id === `yamcs:${instance}`);
+        const dictionary = await core.api.getDictionary(fsw.dictionary);
         const proto = Object.values(dictionary.content[''].commands).find((c) => c.mnemonic === 'CMD_NO_OP_STRING');
         const def = { ...proto, metadata: JSON.parse(proto.metadata) };
-        await fsws[0].sequence({ language: 'yamcs', commands: [{ def, args: [`hermes e2e ${Date.now()}`] }] });
+        await fsw.sequence({ language: 'yamcs', commands: [{ def, args: [`hermes e2e ${Date.now()}`] }] });
         step(`${def.metadata.qualifiedName} sent through the YAMCS connection`);
 
         // E2E_HOLD_MS keeps the window open that many milliseconds, to look at the table
