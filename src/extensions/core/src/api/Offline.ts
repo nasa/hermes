@@ -191,7 +191,8 @@ export class Offline implements Hermes.Api {
         this.dictionaryCache.delete(id);
         this.dictionaryUpdate();
 
-        if (this.context.storageUri) {
+        // We delete only files we saved, and addDictionary saves a dictionary only when it has no id
+        if (this.context.storageUri && (!dict?.id || dict.head?.type === 'yamcs')) {
             // A YAMCS dictionary is named after its instance, and we save it as that instance's commands
             const dictPath = vscode.Uri.joinPath(
                 this.context.storageUri,

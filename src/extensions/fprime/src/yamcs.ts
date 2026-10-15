@@ -31,8 +31,9 @@ export function fprimeDictionary(yamcsDictionary: Proto.IDictionary): Proto.IDic
     return { ...out.toProto(), id: `${yamcsDictionary.id}:fprime` };
 }
 
-// Adds an F Prime dictionary for each YAMCS dictionary that doesn't have one yet
-export async function addFprimeDictionaries(api: Hermes.Api): Promise<void> {
+// Adds an F Prime dictionary for each YAMCS dictionary that doesn't have one yet, and removes an F Prime dictionary
+// whose YAMCS dictionary is gone
+export async function updateFprimeDictionaries(api: Hermes.Api): Promise<void> {
     const dictionaries = await api.allDictionaries();
     for (const [id, head] of Object.entries(dictionaries)) {
         // The extension calls this on every dictionary change, and adding a dictionary fires another change, so we
@@ -42,6 +43,11 @@ export async function addFprimeDictionaries(api: Hermes.Api): Promise<void> {
             if (dictionary) {
                 await api.addDictionary(dictionary);
             }
+        }
+        // We remove an F Prime dictionary like yamcs:fprime-project:fprime once yamcs:fprime-project is gone
+        const yamcsId = id.match(/^(yamcs:.+):fprime$/)?.[1];
+        if (yamcsId && !dictionaries[yamcsId]) {
+            await api.removeDictionary(id);
         }
     }
 }

@@ -747,6 +747,20 @@ describe('YAMCS commands', () => {
         expect(mockFiles.size).toBe(0);
     });
 
+    test('deletes the file of a removed dictionary only if Offline mode saved one', async () => {
+        const context: Partial<vscode.ExtensionContext> = { storageUri: { path: '/storage' } as vscode.Uri };
+        const offline = await Offline.activate(context as vscode.ExtensionContext, { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } });
+        // Offline mode saves a dictionary added without an id. It keeps one with an id in memory only, like the F Prime
+        // dictionary that the F Prime extension builds from a YAMCS dictionary.
+        const saved = await offline.addDictionary({ head: { name: 'saved', type: 'fprime' } });
+        await offline.addDictionary({ id: 'yamcs:fprime-project:fprime', head: { name: 'fprime-project (F Prime)', type: 'fprime' } });
+        expect(mockFiles.size).toBe(1);
+
+        await offline.removeDictionary(saved);
+        await offline.removeDictionary('yamcs:fprime-project:fprime');
+        expect(mockFiles.size).toBe(0);
+    });
+
     test('issues each command by its qualified name once the one before has completed', async () => {
         const { api, fsw, issue, get } = await backend();
         // YAMCS has only queued the first command when the backend first looks. At the second look YAMCS has sent
