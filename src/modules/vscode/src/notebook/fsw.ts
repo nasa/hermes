@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
-import type { YamcsEvent } from '@gov.nasa.jpl.hermes/rpc';
+import { componentAndName, type YamcsEvent } from '@gov.nasa.jpl.hermes/rpc';
 import {
     DisplayEvent,
     Proto,
@@ -47,9 +47,7 @@ function yamcsDisplayEvent(source: string, event: YamcsEvent): Omit<DisplayEvent
         // YAMCS has no SCLK
         sclk: NaN,
         source,
-        // As in the events panel, YAMCS's source goes in the component column and its type in the name column
-        component: event.source ?? '',
-        name: event.type ?? '',
+        ...componentAndName(event),
         // fprime-yamcs puts an F Prime event's own severity in extra.fprime_severity. We show that one, because
         // the notebook's severity settings use F Prime's severity names. Any other event has no
         // extra.fprime_severity, so we show YAMCS's severity, which is INFO when YAMCS leaves it out.
