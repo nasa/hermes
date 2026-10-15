@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import moment from 'moment';
 
+import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { Settings } from '@gov.nasa.jpl.hermes/vscode';
 import { NotebookLanguageManager } from './NotebookLanguageManager';
 
@@ -36,7 +37,27 @@ export class NotebookController implements vscode.Disposable {
         return template;
     }
 
-    static registerCommands(): vscode.Disposable[] {
+    // Sets the target connection of every F Prime and YAMCS cell in the active notebook
+    private static async setCellTargets(api: Hermes.Api) {
+        const notebook = vscode.window.activeNotebookEditor?.notebook;
+        if (!notebook) {
+            return;
+        }
+        const ids = (await api.allFsw()).filter((fsw) => fsw.sequence).map((fsw) => fsw.id).sort();
+        const fsw = await vscode.window.showQuickPick(ids, { title: 'Target connection for every F Prime and YAMCS cell' });
+        if (!fsw) {
+            return;
+        }
+
+        // Only F Prime and YAMCS cells read a target, so we leave the other cells' metadata alone
+        const edit = new vscode.WorkspaceEdit();
+        edit.set(notebook.uri, notebook.getCells()
+            .filter((cell) => cell.document.languageId === 'fprime' || cell.document.languageId === 'yamcs')
+            .map((cell) => vscode.NotebookEdit.updateCellMetadata(cell.index, { ...cell.metadata, hermes: { ...cell.metadata.hermes, fsw } })));
+        await vscode.workspace.applyEdit(edit);
+    }
+
+    static registerCommands(api: Hermes.Api): vscode.Disposable[] {
         return [
             vscode.commands.registerCommand('hermes.testbed.signoff', async (cell: vscode.NotebookCell) => {
                 // Add a signoff to the notebook cell
@@ -49,7 +70,8 @@ export class NotebookController implements vscode.Disposable {
                 const wsEdit = new vscode.WorkspaceEdit();
                 wsEdit.set(cell.notebook.uri, [nbEdit]);
                 vscode.workspace.applyEdit(wsEdit);
-            })
+            }),
+            vscode.commands.registerCommand('hermes.notebook.setCellTargets', () => NotebookController.setCellTargets(api)),
         ];
     }
 
