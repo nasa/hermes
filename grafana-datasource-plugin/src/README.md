@@ -87,6 +87,18 @@ Notes:
 
 Raw SQL editor. Switching from Builder → Code pre-populates the editor with the generated SQL. Switching back to Builder will warn if you have made manual edits.
 
+Dashboard variables such as `$instance` are filled in before the query runs. Values go in as plain text, so use `${instance:sqlstring}` to have them quoted, for example `WHERE p.instance IN (${instance:sqlstring})`. These macros are expanded on the server:
+
+| Macro                   | Expands to                                                          |
+| ----------------------- | ------------------------------------------------------------------- |
+| `$__timeFilter(column)` | `column >= '<from>' AND column <= '<to>'` for the dashboard range   |
+| `$__timeFrom(column)`   | `column >= '<from>'`                                                |
+| `$__timeTo(column)`     | `column <= '<to>'`                                                  |
+| `$__interval`           | The panel interval as a Postgres interval, for use in `time_bucket` |
+| `$__interval_ms`        | The panel interval in milliseconds                                  |
+
+The generated SQL has the time range written in as fixed timestamps. Replace them with `$__timeFilter(...)` if the panel should follow the dashboard time picker.
+
 
 ## License
 

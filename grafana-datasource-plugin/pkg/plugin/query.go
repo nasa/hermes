@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"reflect"
 	"slices"
-	"strings"
 	"time"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
@@ -44,6 +43,14 @@ type queryModel struct {
 	RawSql      *string `json:"rawSql,omitempty"`
 }
 
+// We take $__timeFilter and the other macros from the SDK, but keep our own $__interval. The SDK's
+// version writes a bare duration like 10m, which Postgres can't parse in time_bucket($__interval, ...).
+var macros = sqlutil.Macros{
+	"interval": func(q *sqlutil.Query, _ []string) (string, error) {
+		return fmt.Sprintf("'%d milliseconds'::interval", q.Interval.Milliseconds()), nil
+	},
+}
+
 func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, query backend.DataQuery) backend.DataResponse {
 	// Unmarshal the JSON into our queryModel.
 	var qm queryModel
@@ -66,9 +73,9 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("rawSql is required for query type: %s", qm.QueryType))
 	}
 
-	if strings.Contains(querySQL, "$__interval") {
-		intervalStr := fmt.Sprintf("%d milliseconds", int(query.Interval.Milliseconds()))
-		querySQL = strings.ReplaceAll(querySQL, "$__interval", fmt.Sprintf("'%s'::interval", intervalStr))
+	querySQL, err := sqlutil.Interpolate(&sqlutil.Query{RawSQL: querySQL, TimeRange: query.TimeRange, Interval: query.Interval}, macros)
+	if err != nil {
+		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("macro expansion failed: %v", err.Error()))
 	}
 
 	switch qm.QueryType {

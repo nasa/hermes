@@ -492,6 +492,58 @@ func TestQueryTelemetryWithMock(t *testing.T) {
 	}
 }
 
+func TestQueryMacros(t *testing.T) {
+	from := time.Date(2026, 1, 2, 3, 0, 0, 0, time.UTC)
+	timeRange := backend.TimeRange{From: from, To: from.Add(time.Hour)}
+
+	t.Run("expands time range and interval macros", func(t *testing.T) {
+		db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+		if err != nil {
+			t.Fatalf("sqlmock: %v", err)
+		}
+		defer func() { _ = db.Close() }()
+
+		ds := Datasource{db: db}
+		mock.ExpectQuery("SELECT 10000 AS ms, time_bucket('10000 milliseconds'::interval, generation_time) FROM parameter_values " +
+			"WHERE generation_time >= '2026-01-02T03:00:00Z' AND generation_time <= '2026-01-02T04:00:00Z'").
+			WillReturnRows(sqlmock.NewRows([]string{"ms"}))
+
+		rawSql := "SELECT $__interval_ms AS ms, time_bucket($__interval, generation_time) FROM parameter_values WHERE $__timeFilter(generation_time)"
+		qJSON, _ := json.Marshal(queryModel{QueryType: "raw", TimeField: "generation_time", RawSql: &rawSql})
+		resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
+			Queries: []backend.DataQuery{
+				{RefID: "A", JSON: qJSON, Interval: 10 * time.Second, TimeRange: timeRange},
+			},
+		})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if dr := resp.Responses["A"]; dr.Status != 0 {
+			t.Fatalf("expected success, got status %v: %s", dr.Status, dr.Error)
+		}
+		if err := mock.ExpectationsWereMet(); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("returns error on a malformed macro", func(t *testing.T) {
+		ds := Datasource{}
+		rawSql := "SELECT * FROM parameter_values WHERE $__timeFilter(generation_time"
+		qJSON, _ := json.Marshal(queryModel{QueryType: "raw", TimeField: "generation_time", RawSql: &rawSql})
+		resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
+			Queries: []backend.DataQuery{
+				{RefID: "A", JSON: qJSON, TimeRange: timeRange},
+			},
+		})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if resp.Responses["A"].Status != backend.StatusBadRequest {
+			t.Errorf("expected StatusBadRequest, got %v", resp.Responses["A"].Status)
+		}
+	})
+}
+
 func TestCheckHealth(t *testing.T) {
 	t.Run("returns error when host is missing", func(t *testing.T) {
 		ds := Datasource{config: &models.PluginSettings{Host: "", Database: "hermes"}}

@@ -57,7 +57,14 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
 
   private resolveTargetVariables(query: MyQuery, scopedVars: ScopedVars, known: ParameterRef[] = []): ResolvedQuery {
     const templateSrv = getTemplateSrv();
-    const replace = (value: string) => templateSrv.replace(value, scopedVars);
+    // We pass $__interval and $__interval_ms through as written so the backend can expand them. Leaving them out of
+    // scopedVars is not enough, since dashboards then fill in the previous run's interval, like 10s.
+    const vars = {
+      ...scopedVars,
+      __interval: { text: '$__interval', value: '$__interval' },
+      __interval_ms: { text: '$__interval_ms', value: '$__interval_ms' },
+    };
+    const replace = (value: string) => templateSrv.replace(value, vars);
     return resolveQuery(query, replace, known);
   }
 

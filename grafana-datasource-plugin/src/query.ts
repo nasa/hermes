@@ -38,6 +38,7 @@ export function resolveQuery(
 ): ResolvedQuery {
     return {
         ...query,
+        rawSql: query.rawSql === undefined ? undefined : replace(query.rawSql),
         parameters: resolveParameters(query.parameters ?? [], replace, known),
         instances: query.instances?.map(replace) ?? [],
         members: query.members?.map((m) => ({
