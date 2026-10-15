@@ -815,6 +815,23 @@ describe('YAMCS commands', () => {
         api.dispose();
     });
 
+    test('shows each cell its own target, listing the connections once', async () => {
+        const { api } = await backend();
+        const allFsw = jest.spyOn(api, 'allFsw');
+        const cells = new Cells('yamcs', (fsw) => fsw.type === 'yamcs', api);
+        const { token } = tokenSource();
+        const shown: string[] = [];
+        for (const fsw of ['yamcs:fprime-project', 'yamcs:other-instance']) {
+            const cell: Partial<vscode.NotebookCell> = { metadata: { hermes: { fsw } } };
+            const [item] = await cells.provideCellStatusBarItems(cell as vscode.NotebookCell, token);
+            shown.push(item.text);
+        }
+        expect(shown).toEqual(['$(vm-active) yamcs:fprime-project', '$(vm-active) yamcs:other-instance']);
+        expect(allFsw).toHaveBeenCalledTimes(1);
+        cells.dispose();
+        api.dispose();
+    });
+
     test('refuses a command from a dictionary that did not come from YAMCS', async () => {
         const { api, fsw, issue } = await backend();
         const fromJson = { opcode: 0x1000001, component: 'CdhCore.cmdDisp', mnemonic: 'CMD_NO_OP_STRING', arguments: [] };

@@ -87,8 +87,9 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
     didChangeCellStatusBarItems = new vscode.EventEmitter<void>();
     onDidChangeCellStatusBarItems = this.didChangeCellStatusBarItems.event;
 
-    private didFswStatusChange = true;
-    private statusBarItems: vscode.NotebookCellStatusBarItem[] = [];
+    // VS Code asks for a cell's status bar item every time the cell changes, so we keep the list of
+    // connections between calls and list them again only after they change
+    private statusBarFsws?: Promise<Hermes.Fsw[]>;
 
     protected subscriptions: vscode.Disposable[];
 
@@ -107,7 +108,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
 
         this.subscriptions = [
             this.api.onFswChange(() => {
-                this.didFswStatusChange = true;
+                this.statusBarFsws = undefined;
                 this.didChangeCellStatusBarItems.fire();
             }),
 
@@ -146,7 +147,6 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
                     canPickMany: false
                 }).then((value) => {
                     if (value) {
-                        this.didFswStatusChange = true;
                         if (value.selectCustom) {
                             vscode.window.showInputBox({
                                 title: 'Connection Name',
@@ -266,10 +266,6 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
         cell: vscode.NotebookCell,
         token: vscode.CancellationToken,
     ): Promise<vscode.NotebookCellStatusBarItem[]> {
-        if (!this.didFswStatusChange) {
-            return [...this.statusBarItems];
-        }
-
         const item = new vscode.NotebookCellStatusBarItem(
             '',
             vscode.NotebookCellStatusBarAlignment.Left
@@ -284,7 +280,8 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
             ]
         };
 
-        const fsw = this.getFsw(cell, await this.validFsws(token));
+        this.statusBarFsws ??= this.validFsws();
+        const fsw = this.getFsw(cell, await this.statusBarFsws);
         const auto = cell.metadata.hermes?.fsw === undefined;
 
         if (fsw) {
@@ -303,9 +300,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
             item.tooltip = 'No fsw set or connected';
         }
 
-        this.didFswStatusChange = false;
-        this.statusBarItems = [item];
-        return [...this.statusBarItems];
+        return [item];
     }
 
     dispose() {
