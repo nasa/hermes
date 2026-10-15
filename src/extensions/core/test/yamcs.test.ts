@@ -381,7 +381,7 @@ describe('yamcsEventRows', () => {
                 source: 'yamcs:fprime-project',
                 component: 'CdhCore.cmdDisp',
                 name: 'OpCodeDispatched',
-                severity: 'INFO',
+                severity: 'COMMAND',
                 message: '[OpCodeDispatched] Opcode 0x10005001 dispatched to port 0',
             },
             {

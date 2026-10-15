@@ -40,12 +40,15 @@ Each event becomes one log record:
   the event's sequence number to it as nanoseconds, which keeps events from the same millisecond in sequence order in
   Grafana.
 - The body is the event's message.
-- The severity number places the YAMCS severity in an OpenTelemetry band, and Loki gives the record that band's
-  level: `INFO` 9 (info), `WATCH` 13 and `WARNING` 14 (warn), `DISTRESS` 17 (error), `CRITICAL` 21 and `SEVERE` 22
-  (fatal, which Grafana shows as critical). The numbers keep YAMCS's order, so queries can filter on them.
-  `WARNING_NEW`, the number YAMCS plans to move `WARNING` to, also gets 14, and the deprecated `ERROR` gets 22. There
-  is no severity text, because Loki would take the level from that text and does not know `WATCH`, `DISTRESS` or
-  `SEVERE`.
+- The severity number places the event's F Prime severity in an OpenTelemetry band, and Loki gives the record that
+  band's level: `DIAGNOSTIC` 1 (trace), `COMMAND` 5 (debug), `ACTIVITY_LO` 9 and `ACTIVITY_HI` 10 (info), `WARNING_LO`
+  13 (warn), `WARNING_HI` 17 (error) and `FATAL` 21 (fatal, which Grafana shows as critical). These are the levels
+  the Hermes backend gives F Prime events. Higher numbers are more severe, so queries can filter on them.
+  fprime-yamcs converts each F Prime severity to a YAMCS one, such as `ACTIVITY_HI` to `WATCH`. An event without an
+  F Prime severity, such as one raised inside YAMCS, gets the number of the F Prime severity that converts to its
+  YAMCS severity: `INFO` 9, `WATCH` 10, `WARNING` 13, `DISTRESS` 17, and `CRITICAL` and `SEVERE` 21. `WARNING_NEW`,
+  the number YAMCS plans to move `WARNING` to, also gets 13, and the deprecated `ERROR` gets 21. There is no severity
+  text, because Loki would take the level from that text and does not know names like `ACTIVITY_HI` or `WATCH`.
 - `yamcs.severity`, `yamcs.source`, `yamcs.type`, `yamcs.seq_number` and `yamcs.created_by` hold YAMCS's own fields.
   `yamcs.type` and `yamcs.created_by` are there only when YAMCS sets them. `yamcs.severity` is the severity name,
   with `WARNING_NEW` named `WARNING` and `ERROR` named `SEVERE`.
