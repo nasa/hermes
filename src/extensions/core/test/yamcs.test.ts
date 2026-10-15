@@ -544,6 +544,13 @@ describe('YAMCS event source', () => {
         };
         expect(events.split('\n').map((row) => JSON.parse(row))).toEqual([seqCountJumpRow, seqCountJumpRow]);
 
+        // With evrCommand on, a cell also lists opCodeDispatched, under its F Prime component and event name
+        mockSettings['hermes.notebook.evrCommand'] = true;
+        const evrCommandOn = notebookCell();
+        await cells.execute(evrCommandOn.cell, evrCommandOn.execution, tokenSource().token);
+        const rows = evrCommandOn.outputs()[0].split('\n').map((row) => JSON.parse(row));
+        expect(rows).toMatchObject([seqCountJumpRow, { component: 'CdhCore.cmdDisp', name: 'OpCodeDispatched' }, seqCountJumpRow]);
+
         // A cell whose connection is gone, as it is while YAMCS mode reconnects, lists no event raised after that
         sequence.mockImplementation(async () => {
             connections.fire([]);
