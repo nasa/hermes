@@ -3,9 +3,10 @@ import * as vscode from 'vscode';
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import * as Rpc from '@gov.nasa.jpl.hermes/rpc';
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
-import type { Proto } from '@gov.nasa.jpl.hermes/types';
+import { Proto } from '@gov.nasa.jpl.hermes/types';
 import { BackendProvider, Settings } from '@gov.nasa.jpl.hermes/vscode';
 
+import type { Link } from '../../common/connections';
 import { Offline } from './Offline';
 import { commandComplete, commandSent, Verifier, yamcsArguments, yamcsDictionary } from './yamcsCommands';
 
@@ -30,6 +31,16 @@ export interface YamcsEventSource {
     onYamcsEvents(handler: YamcsEventHandler): vscode.Disposable;
 }
 
+export type YamcsLinkHandler = (profileId: string, links: Link[]) => void;
+
+/**
+ * A backend that sends each YAMCS instance's links, with the id of the instance's
+ * profile, every time YAMCS updates them, which is once a second
+ */
+export interface YamcsLinkSource {
+    onYamcsLinks(handler: YamcsLinkHandler): vscode.Disposable;
+}
+
 // How many archived events we send on connect. YAMCS's live subscription only
 // sends events raised after it starts, so without the archived events the
 // events panel would start empty.
@@ -45,18 +56,28 @@ export function inTopLevelSpaceSystem(qualifiedName: string): boolean {
     return qualifiedName.split('/').length === 3;
 }
 
+// YAMCS publishes SYSTEM parameters about each link. We use its status, and the bytes per second it
+// received and sent, which YAMCS averages over five seconds.
+const LINK_PARAMETER = /\/links\/([^/]+)\/(linkStatus|dataInRate|dataOutRate)$/;
+
 // A running YAMCS instance, with the parameters we subscribe to and a dictionary built from its commands
 interface Instance {
     name: string;
     parameters: readonly string[];
+    linkParameters: readonly string[];
     dictionary: Proto.IDictionary;
+}
+
+// The Connections panel shows each instance as a profile, holding the instance's connection and links
+function profileId(instance: string): string {
+    return `yamcs:${instance}`;
 }
 
 // Telemetry and events straight from YAMCS, and commands to it, through the yamcs-grpc plugin.
 // Telemetry and events are named by YAMCS, so they don't need a Hermes dictionary. Commands go
 // through one flight software connection per instance, using a dictionary built from that
 // instance's mission database. Everything else behaves as in Offline mode.
-export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSource {
+export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSource, YamcsLinkSource {
     private readonly parameters = new vscode.EventEmitter<{ instance: string; values: Rpc.YamcsParameterValue[] }>();
     // Handlers share one YAMCS subscription per instance, opened for the first handler and cancelled when the last one is disposed
     private listeners = 0;
@@ -65,6 +86,10 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
     private readonly events = new vscode.EventEmitter<{ instance: string; events: Rpc.YamcsEvent[] }>();
     private eventListeners = 0;
     private cancelEvents?: () => void;
+
+    private readonly links = new vscode.EventEmitter<{ profileId: string; links: Link[] }>();
+    private linkListeners = 0;
+    private cancelLinks?: () => void;
 
     // Losing YAMCS ends every subscription together, so we only exit the backend for the first one
     private exited = false;
@@ -84,7 +109,7 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
         this.fsws = instances.map(({ name, dictionary }) => ({
             id: `yamcs:${name}`,
             type: 'yamcs',
-            profileId: '',
+            profileId: profileId(name),
             dictionary: dictionary.id!,
             command: (value, token) => this.command(name, value, token),
             sequence: (value, token) => this.sequence(name, value, token),
@@ -174,6 +199,30 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
         };
     }
 
+    onYamcsLinks(handler: YamcsLinkHandler): vscode.Disposable {
+        const subscription = this.links.event(({ profileId, links }) => handler(profileId, links));
+        if (this.linkListeners++ === 0) {
+            const cancels = this.instances.map(({ name, linkParameters }) => this.client.subscribeParameters(
+                name,
+                this.state.processor,
+                linkParameters,
+                (values) => this.links.fire({ profileId: profileId(name), links: buildLinks(values) }),
+                (err) => this.exit(err),
+            ));
+            this.cancelLinks = () => cancels.forEach((cancel) => cancel());
+        }
+
+        return {
+            dispose: () => {
+                subscription.dispose();
+                if (--this.linkListeners === 0) {
+                    this.cancelLinks?.();
+                    this.cancelLinks = undefined;
+                }
+            }
+        };
+    }
+
     // We subscribe before calling listEvents so an event raised during the
     // listing still arrives live. We hold live events back until we send the
     // archived ones, so handlers get the archived events first.
@@ -215,6 +264,15 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
 
     async getFsw(id: string): Promise<Hermes.Fsw> {
         return this.fsws.find((fsw) => fsw.id === id) ?? super.getFsw(id);
+    }
+
+    async allProfiles(): Promise<Record<string, Proto.IStatefulProfile>> {
+        return Object.fromEntries(this.instances.map(({ name }) => [profileId(name), {
+            value: { name },
+            state: Proto.ProfileState.PROFILE_ACTIVE,
+            // Each instance's profile exists only while we're connected to it, so the Connections panel gives it no buttons
+            runtimeOnly: true,
+        }]));
     }
 
     // We call each listener with our flight software connections as soon as it subscribes. The
@@ -286,6 +344,8 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
         this.parameters.dispose();
         this.cancelEvents?.();
         this.events.dispose();
+        this.cancelLinks?.();
+        this.links.dispose();
         this.client.close();
         super.dispose();
     }
@@ -336,7 +396,7 @@ export class YamcsBackendProvider implements BackendProvider<Settings.Yamcs> {
     }
 }
 
-// Lists an instance's parameters and commands
+// Lists an instance's parameters, commands and links
 async function loadInstance(client: Rpc.YamcsClient, name: string, state: Settings.Yamcs, log: Hermes.Log): Promise<Instance> {
     const all = await client.listTelemetered(name);
     // Parameters directly in a top-level space system are packet header fields in fprime-yamcs, not channels
@@ -345,7 +405,29 @@ async function loadInstance(client: Rpc.YamcsClient, name: string, state: Settin
 
     const commands = await client.listCommands(name);
     log.info(`Found ${commands.length} commands in YAMCS instance ${name}`);
-    return { name, parameters, dictionary: yamcsDictionary(name, commands) };
+
+    const linkParameters = (await client.listLinkParameters(name)).filter((parameter) => LINK_PARAMETER.test(parameter));
+    return { name, parameters, linkParameters, dictionary: yamcsDictionary(name, commands) };
+}
+
+// Builds an instance's links from one batch of their parameters. YAMCS publishes the parameters of
+// every link together once a second, so each batch holds all of them.
+function buildLinks(values: Rpc.YamcsParameterValue[]): Link[] {
+    const links = new Map<string, Link>();
+    for (const value of values) {
+        const [, name, parameter] = value.id!.name!.match(LINK_PARAMETER)!;
+        const link = links.get(name) ?? { name, status: '', receiving: false, sending: false };
+        links.set(name, link);
+        if (parameter === 'linkStatus') {
+            link.status = value.engValue?.stringValue ?? '';
+        } else if (parameter === 'dataInRate') {
+            link.receiving = (value.engValue?.doubleValue ?? 0) > 0;
+        } else {
+            link.sending = (value.engValue?.doubleValue ?? 0) > 0;
+        }
+    }
+    // YAMCS doesn't always send the parameters in the same order, so we sort the links to keep the panel's rows in place
+    return [...links.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 function delay(ms: number): Promise<void> {

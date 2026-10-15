@@ -82,3 +82,7 @@ section.active .entry-actions>.actions-container>li>a:hover {
     display: flex;
     margin: calc(var(--design-unit) * 1px) 0;
 }
+
+.link {
+    gap: calc(var(--design-unit) * 1px);
+}

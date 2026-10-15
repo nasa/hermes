@@ -25,7 +25,7 @@ import VSCodeForm, {
 
 import { Proto } from '@gov.nasa.jpl.hermes/types';
 import { getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
-import type { Backend, Frontend } from '../../common/connections';
+import type { Backend, Frontend, Link } from '../../common/connections';
 
 import * as rjsf from "@rjsf/utils";
 import { ProfileProvider, profileProviderFromProto, StatefulProfile, statefulProfileFromProto } from './convert';
@@ -67,6 +67,20 @@ function ActiveConnections(props: { connections: Proto.IFsw[] }) {
     return (
         <div className="active-connections">
             {props.connections.map((c, idx) => <ActiveConnection key={idx} fsw={c} />)}
+        </div>
+    );
+}
+
+// We say whether data is flowing beside the link's status, because a UDP link stays OK while nothing sends to it
+function YamcsLink({ link }: { link: Link }) {
+    return (
+        <div className="connection link">
+            {link.name}
+            <div style={{ flexGrow: 1 }} />
+            {link.receiving && <VSCodeTag>receiving</VSCodeTag>}
+            {link.sending && <VSCodeTag>sending</VSCodeTag>}
+            {!link.receiving && !link.sending && <VSCodeTag>idle</VSCodeTag>}
+            <VSCodeTag>{link.status}</VSCodeTag>
         </div>
     );
 }
@@ -216,6 +230,7 @@ interface ConfigurationProps {
     profileProviders: Record<string, ProfileProvider>;
     dictionaries: Record<string, Proto.IDictionaryHead>;
     connections: Proto.IFsw[];
+    links: Link[];
 
     onUpdateConfig: (settings: any) => void;
     cfgId: string;
@@ -235,6 +250,7 @@ function Configuration({
     profileProviders,
     dictionaries,
     connections,
+    links,
     onUpdateConfig
 }: ConfigurationProps) {
     const [isEditing, setIsEditing] = useState<boolean>(cfg.state === Proto.ProfileState.PROFILE_IDLE);
@@ -424,6 +440,7 @@ function Configuration({
                 </VSCodeForm>
             }
             <ActiveConnections connections={activeConnections} />
+            {links.map((link) => <YamcsLink key={link.name} link={link} />)}
         </section>
     );
 }
@@ -434,6 +451,7 @@ export default function ConnectionUi() {
     const [profilesList, setProfilesList] = useState<string[]>([]);
     const [profiles, setProfiles] = useState<Record<string, StatefulProfile>>({});
     const [connections, setConnections] = useState<Proto.IFsw[]>([]);
+    const [links, setLinks] = useState<Record<string, Link[]>>({});
     const [dictionaries, setDictionaries] = useState<Record<string, Proto.IDictionaryHead>>({});
 
     const [dictionaryProviders, setDictionaryProviders] = useState<{ key: string, title: string }[]>([]);
@@ -477,6 +495,10 @@ export default function ConnectionUi() {
 
         if (message.connections) {
             setConnections([...message.connections]);
+        }
+
+        if (message.links) {
+            setLinks({ ...message.links });
         }
     }, [selectedDictionaryProvider, selectedProfileProvider]);
 
@@ -616,6 +638,7 @@ export default function ConnectionUi() {
                         profileProviders={profileProviders}
                         dictionaries={dictionaries}
                         connections={connections}
+                        links={links[cfgId] ?? []}
                         onUpdateConfig={(settings) => onProfileUpdate(cfgId, settings)}
                         cfgId={cfgId}
                         cfg={profiles[cfgId]

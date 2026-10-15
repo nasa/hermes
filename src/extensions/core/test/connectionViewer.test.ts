@@ -10,6 +10,7 @@ jest.mock('vscode', () => ({
 }));
 
 import type * as Connections from '../common/connections';
+import type { YamcsLinkSource } from '../src/api/Yamcs';
 import { ConnectionViewer } from '../src/components/ConnectionViewer';
 import type { VscodeHermes } from '../src/context';
 
@@ -22,8 +23,9 @@ test.each(['profileProviders', 'profiles', 'dictionaries'] as const)('a refresh 
     // The listeners the panel registers for changes to each list
     const listeners: { [L in keyof Lists]: ((reported: Lists[L]) => void)[] } = { profileProviders: [], profiles: [], dictionaries: [] };
     const none = () => ({ dispose: () => { } });
-    const api: Partial<Api> = {
+    const api: Partial<Api & YamcsLinkSource> = {
         onFswChange: none,
+        onYamcsLinks: none,
         onProvidersChange: (listener) => { listeners.profileProviders.push(listener); return none(); },
         onProfilesChange: (listener) => { listeners.profiles.push(listener); return none(); },
         onDictionaryChange: (listener) => { listeners.dictionaries.push(listener); return none(); },
@@ -33,7 +35,7 @@ test.each(['profileProviders', 'profiles', 'dictionaries'] as const)('a refresh 
         allDictionaries: async () => lists.dictionaries,
     };
     const vscodeApi: Partial<VscodeHermes> = { dictionaryProviders: new Map(), onDictionaryProvidersChanged: none };
-    const viewer = new ConnectionViewer('', api as Api, vscodeApi as VscodeHermes);
+    const viewer = new ConnectionViewer('', api as Api & YamcsLinkSource, vscodeApi as VscodeHermes);
 
     // The lists the webview shows. A message replaces the ones it carries.
     const shown: Connections.State = {};

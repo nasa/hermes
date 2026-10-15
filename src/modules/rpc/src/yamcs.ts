@@ -19,6 +19,7 @@ import type { YamcsInstance__Output } from './proto/yamcs/yamcs/protobuf/instanc
 import type { CommandInfo__Output } from './proto/yamcs/yamcs/protobuf/mdb/CommandInfo';
 import type { ListCommandsResponse__Output } from './proto/yamcs/yamcs/protobuf/mdb/ListCommandsResponse';
 import type { MdbApiClient } from './proto/yamcs/yamcs/protobuf/mdb/MdbApi';
+import type { ListParametersRequest } from './proto/yamcs/yamcs/protobuf/mdb/ListParametersRequest';
 import type { ListParametersResponse__Output } from './proto/yamcs/yamcs/protobuf/mdb/ListParametersResponse';
 import type { ProcessingApiClient } from './proto/yamcs/yamcs/protobuf/processing/ProcessingApi';
 import type { SubscribeParametersData__Output } from './proto/yamcs/yamcs/protobuf/processing/SubscribeParametersData';
@@ -99,16 +100,28 @@ export class YamcsClient {
 
     /**
      * Qualified names of instance's TELEMETERED parameters, the ones YAMCS
-     * decodes from telemetry. YAMCS lists them a page at a time, so we keep
-     * asking, passing back each page's continuation token, until a page comes
-     * without one.
+     * decodes from telemetry.
      */
-    async listTelemetered(instance: string): Promise<string[]> {
+    listTelemetered(instance: string): Promise<string[]> {
+        return this.listParameters({ instance, source: 'TELEMETERED' });
+    }
+
+    /**
+     * Qualified names of the SYSTEM parameters YAMCS publishes about instance's
+     * links, like /yamcs/<server id>/links/UDP_TM_IN/dataInRate.
+     */
+    listLinkParameters(instance: string): Promise<string[]> {
+        return this.listParameters({ instance, source: 'SYSTEM', q: '/links/' });
+    }
+
+    // YAMCS lists parameters a page at a time, so we keep asking, passing back
+    // each page's continuation token, until a page comes without one.
+    private async listParameters(request: ListParametersRequest): Promise<string[]> {
         const names: string[] = [];
         let next: string | undefined;
         do {
             const page = await new Promise<ListParametersResponse__Output>((resolve, reject) => {
-                this.mdb.ListParameters({ instance, source: 'TELEMETERED', next }, (err, res) => err ? reject(err) : resolve(res!));
+                this.mdb.ListParameters({ ...request, next }, (err, res) => err ? reject(err) : resolve(res!));
             });
             for (const p of page.parameters ?? []) {
                 if (p.qualifiedName) {

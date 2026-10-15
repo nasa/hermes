@@ -12,6 +12,7 @@ import {
 } from '@gov.nasa.jpl.hermes/api';
 
 import type { VscodeHermes } from '../context';
+import type { YamcsLinkSource } from '../api/Yamcs';
 import { Dictionary } from '@gov.nasa.jpl.hermes/types/src';
 
 function assertUnreachable(_: never): never {
@@ -54,9 +55,12 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
     // The number of list changes the backend has reported to us
     private changes = 0;
 
+    // The newest links of each YAMCS instance, keyed by the id of the instance's profile
+    private readonly links: Record<string, Connections.Link[]> = {};
+
     constructor(
         extensionPath: string,
-        readonly api: Api,
+        readonly api: Api & YamcsLinkSource,
         readonly vscodeApi: VscodeHermes,
     ) {
         super(extensionPath, 'hermes.connections');
@@ -95,6 +99,11 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
 
             this.api.onFswChange(() => {
                 this.refresh();
+            }),
+
+            this.api.onYamcsLinks((profileId, links) => {
+                this.links[profileId] = links;
+                this.msg?.postMessage({ links: this.links });
             }),
 
             this.api.onProfilesChange((e) => {
@@ -157,6 +166,7 @@ export class ConnectionViewer extends WebViewPanelBase implements vscode.Webview
                 forwards: v.forwards
             })),
             dictionaries,
+            links: this.links,
         });
     }
 

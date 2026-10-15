@@ -42,10 +42,11 @@ import Long from 'long';
 import type * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { YamcsClient, YamcsCommandHistoryEntry, YamcsCommandInfo, YamcsEvent, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
-import { Def, Dictionary } from '@gov.nasa.jpl.hermes/types';
+import { Def, Dictionary, Proto } from '@gov.nasa.jpl.hermes/types';
 import { FswNotebookLanguageProvider } from '@gov.nasa.jpl.hermes/vscode';
 
-import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterSource } from '../src/api/Yamcs';
+import type { Link } from '../common/connections';
+import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsLinkSource, YamcsParameterSource } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
 import { yamcsEventRows } from '../src/components/yamcsEvents';
 import { leaves, splitName } from '../src/components/yamcsRows';
@@ -356,6 +357,9 @@ describe('YAMCS event source', () => {
         jest.spyOn(YamcsClient.prototype, 'listInstances').mockResolvedValue(names.map((name) => ({ name, state: 'RUNNING' })));
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockImplementation(async (instance) => [`/${instance}/Demo/x`]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([]);
+        // Every parameter YAMCS publishes about two links
+        jest.spyOn(YamcsClient.prototype, 'listLinkParameters').mockResolvedValue(['UDP_TM_IN', 'UDP_TC_OUT'].flatMap((link) =>
+            ['dataInCount', 'dataInRate', 'dataOutCount', 'dataOutRate', 'linkStatus'].map((parameter) => `/yamcs/server/links/${link}/${parameter}`)));
         const live = new vscode.EventEmitter<YamcsEvent>();
         const subscribe = jest.spyOn(YamcsClient.prototype, 'subscribeEvents').mockImplementation((_, onEvent) => {
             const subscription = live.event(onEvent);
@@ -370,7 +374,7 @@ describe('YAMCS event source', () => {
             { address: 'localhost:1', processor: 'realtime' },
             {} as vscode.ExtensionContext,
             { debug: () => { }, info: () => { }, warn, error: () => { } },
-        ) as Hermes.Api & YamcsEventSource & YamcsParameterSource;
+        ) as Hermes.Api & YamcsEventSource & YamcsParameterSource & YamcsLinkSource;
         return { api, raise: (event: YamcsEvent) => live.fire(event), listings, subscribe, list, warn };
     }
 
@@ -433,6 +437,34 @@ describe('YAMCS event source', () => {
         expect(received).toEqual(['bigdata-a /bigdata-a/Demo/x', 'ref /ref/Demo/x', 'ref 5', 'bigdata-a 4']);
         parameters.dispose();
         events.dispose();
+        api.dispose();
+    });
+
+    test('sends each instance\'s links by its profile, with whether data is flowing', async () => {
+        const { api } = await backend(['bigdata-a', 'ref']);
+        const subscribeParameters = jest.spyOn(YamcsClient.prototype, 'subscribeParameters').mockReturnValue(() => { });
+        const received: [string, Link[]][] = [];
+        const sub = api.onYamcsLinks((profileId, links) => received.push([profileId, links]));
+        const [, [instance, , names, send]] = subscribeParameters.mock.calls;
+        expect(instance).toBe('ref');
+        expect(names).toEqual(['UDP_TM_IN', 'UDP_TC_OUT'].flatMap((link) =>
+            ['dataInRate', 'dataOutRate', 'linkStatus'].map((parameter) => `/yamcs/server/links/${link}/${parameter}`)));
+
+        const status = (stringValue: string): YamcsValue => ({ type: 'ENUMERATED', stringValue });
+        const rate = (doubleValue: number): YamcsValue => ({ type: 'DOUBLE', doubleValue });
+        send([
+            pv('/yamcs/server/links/UDP_TM_IN/linkStatus', 1000, status('OK')),
+            pv('/yamcs/server/links/UDP_TM_IN/dataInRate', 1000, rate(1024)),
+            pv('/yamcs/server/links/UDP_TM_IN/dataOutRate', 1000, rate(0)),
+            pv('/yamcs/server/links/UDP_TC_OUT/linkStatus', 1000, status('OK')),
+            pv('/yamcs/server/links/UDP_TC_OUT/dataInRate', 1000, rate(0)),
+            pv('/yamcs/server/links/UDP_TC_OUT/dataOutRate', 1000, rate(12)),
+        ]);
+        expect(received).toEqual([['yamcs:ref', [
+            { name: 'UDP_TC_OUT', status: 'OK', receiving: false, sending: true },
+            { name: 'UDP_TM_IN', status: 'OK', receiving: true, sending: false },
+        ]]]);
+        sub.dispose();
         api.dispose();
     });
 
@@ -739,6 +771,7 @@ describe('YAMCS commands', () => {
         ]);
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([noOpString]);
+        jest.spyOn(YamcsClient.prototype, 'listLinkParameters').mockResolvedValue([]);
         const issue = jest.spyOn(YamcsClient.prototype, 'issueCommand')
             .mockImplementation(async (_instance, _processor, _name, _args, sequenceNumber) => `id-${sequenceNumber}`);
         const get = jest.spyOn(YamcsClient.prototype, 'getCommand')
@@ -768,6 +801,14 @@ describe('YAMCS commands', () => {
         const lists: Hermes.Fsw[][] = [];
         api.onFswChange((fsws) => lists.push(fsws));
         expect(lists).toEqual([fsws]);
+        api.dispose();
+    });
+
+    test('shows each running instance in the Connections panel as an active profile holding its connection', async () => {
+        const { api } = await backend();
+        const profile = (name: string) => ({ value: { name }, state: Proto.ProfileState.PROFILE_ACTIVE, runtimeOnly: true });
+        expect(await api.allProfiles()).toEqual({ 'yamcs:fprime-project': profile('fprime-project'), 'yamcs:other-instance': profile('other-instance') });
+        expect((await api.allFsw()).map((fsw) => fsw.profileId)).toEqual(['yamcs:fprime-project', 'yamcs:other-instance']);
         api.dispose();
     });
 

@@ -4,7 +4,7 @@ import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { BackendProvider } from '@gov.nasa.jpl.hermes/vscode';
 import { Proto, Sourced, Event, Telemetry } from '@gov.nasa.jpl.hermes/types';
 import { Offline } from './Offline';
-import { Yamcs, YamcsEventHandler, YamcsEventSource, YamcsParameterHandler, YamcsParameterSource } from './Yamcs';
+import { Yamcs, YamcsEventHandler, YamcsEventSource, YamcsLinkHandler, YamcsLinkSource, YamcsParameterHandler, YamcsParameterSource } from './Yamcs';
 
 /**
  * VscodeApi wraps the actual API implementation and maintains stable
@@ -12,7 +12,7 @@ import { Yamcs, YamcsEventHandler, YamcsEventSource, YamcsParameterHandler, Yamc
  * extension to change backend connections without requiring a window reload
  * or re-subscribing to events.
  */
-export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSource {
+export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSource, YamcsLinkSource {
     private _onContextRefresh = new vscode.EventEmitter<void>();
     onContextRefresh = this._onContextRefresh.event;
 
@@ -30,12 +30,14 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
     private telemetrySubscribers = new Map<(pkt: Sourced<Telemetry>) => void, Proto.IBusFilter | undefined>();
     private yamcsSubscribers = new Set<YamcsParameterHandler>();
     private yamcsEventSubscribers = new Set<YamcsEventHandler>();
+    private yamcsLinkSubscribers = new Set<YamcsLinkHandler>();
 
     private apiSubscriptions: vscode.Disposable[] = [];
     private eventSubscriptions = new Map<(pkt: Sourced<Event>) => void, vscode.Disposable>();
     private telemetrySubscriptions = new Map<(pkt: Sourced<Telemetry>) => void, vscode.Disposable>();
     private yamcsSubscriptions = new Map<YamcsParameterHandler, vscode.Disposable>();
     private yamcsEventSubscriptions = new Map<YamcsEventHandler, vscode.Disposable>();
+    private yamcsLinkSubscriptions = new Map<YamcsLinkHandler, vscode.Disposable>();
 
     onFswChange = this._onFswChange.event;
     onProvidersChange = this._onProvidersChange.event;
@@ -295,7 +297,7 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
             this.apiSubscriptions.push(subscription);
         }
 
-        // Resubscribe all tracked YAMCS parameter and event handlers
+        // Resubscribe all tracked YAMCS parameter, event and link handlers
         if (this.currentApi instanceof Yamcs) {
             for (const handler of this.yamcsSubscribers) {
                 const subscription = this.currentApi.onYamcsParameters(handler);
@@ -305,6 +307,11 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
             for (const handler of this.yamcsEventSubscribers) {
                 const subscription = this.currentApi.onYamcsEvents(handler);
                 this.yamcsEventSubscriptions.set(handler, subscription);
+                this.apiSubscriptions.push(subscription);
+            }
+            for (const handler of this.yamcsLinkSubscribers) {
+                const subscription = this.currentApi.onYamcsLinks(handler);
+                this.yamcsLinkSubscriptions.set(handler, subscription);
                 this.apiSubscriptions.push(subscription);
             }
         }
@@ -458,6 +465,22 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
         };
     }
 
+    onYamcsLinks(handler: YamcsLinkHandler): vscode.Disposable {
+        this.yamcsLinkSubscribers.add(handler);
+
+        if (this.currentApi instanceof Yamcs) {
+            this.yamcsLinkSubscriptions.set(handler, this.currentApi.onYamcsLinks(handler));
+        }
+
+        return {
+            dispose: () => {
+                this.yamcsLinkSubscribers.delete(handler);
+                this.yamcsLinkSubscriptions.get(handler)?.dispose();
+                this.yamcsLinkSubscriptions.delete(handler);
+            }
+        };
+    }
+
     // Delegate all other API methods to the current implementation
     getFsw(id: string, token?: vscode.CancellationToken): Promise<Hermes.Fsw> {
         if (!this.currentApi) {
@@ -594,10 +617,12 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
         this.telemetrySubscribers.clear();
         this.yamcsSubscribers.clear();
         this.yamcsEventSubscribers.clear();
+        this.yamcsLinkSubscribers.clear();
         this.eventSubscriptions.clear();
         this.telemetrySubscriptions.clear();
         this.yamcsSubscriptions.clear();
         this.yamcsEventSubscriptions.clear();
+        this.yamcsLinkSubscriptions.clear();
 
         for (const disposable of this.disposables) {
             disposable.dispose();
