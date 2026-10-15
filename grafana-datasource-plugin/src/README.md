@@ -41,7 +41,7 @@ Queries time-series values from the `parameter_values` hypertable.
 
 | Field           | Type                   | Description                                                                                                                               |
 | --------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **Parameter**   | multi-select, required | One or more YAMCS parameters, shown as `/space_system/name`. Each parameter, member and instance becomes its own series.                  |
+| **Parameter**   | multi-select, required | One or more YAMCS parameters, shown as `/space_system/name`. Each parameter, member and instance becomes its own series. If a new dictionary changed a parameter's type, each type is its own series, with the type added to its name. |
 | **Aggregation** | select                 | Function applied per time bucket: `Average`, `Min`, `Max`, `Count`, `First`, `Last`, `Sum`, `Derivative`, `Raw (none)`, `Latest Value`.   |
 | **Instance**    | multi-select, optional | YAMCS instance. Leave empty to include all instances.                                                                                     |
 | **Members**     | multi-select, optional | Struct members and array elements (e.g. `[0]`, `.x`). Appears per parameter only when there are several. Adding the parameter selects all of its members; remove the ones you don't need. Clearing the box removes the parameter. |
