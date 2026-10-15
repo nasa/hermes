@@ -26,6 +26,9 @@ public class YamcsGrpcPlugin implements Plugin {
     public Spec getSpec() {
         Spec spec = new Spec();
         spec.addOption("port", OptionType.INTEGER).withDefault(8091);
+        // An upload to a YAMCS bucket carries the whole file in one request, so we raise grpc-java's 4 MiB default
+        // above a bucket's default size of 100 MiB.
+        spec.addOption("maxInboundMessageSize", OptionType.INTEGER).withDefault(128 * 1024 * 1024);
         return spec;
     }
 
@@ -39,6 +42,7 @@ public class YamcsGrpcPlugin implements Plugin {
             Grpc.newServerBuilderForPort(port, InsecureServerCredentials.create())
                     .fallbackHandlerRegistry(new YamcsMethodRegistry())
                     .intercept(new AuthInterceptor())
+                    .maxInboundMessageSize(config.getInt("maxInboundMessageSize"))
                     .build()
                     .start();
         } catch (IOException e) {

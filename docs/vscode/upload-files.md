@@ -52,7 +52,8 @@ sequence has on the spacecraft. Running the command doesn't compile or upload it
 - A finished upload means fprime-yamcs sent every packet. F Prime's `FileReceived` event, in the
   [events panel](telemetry-and-events.md#events-panel), tells you the flight software saved the file.
 - The deployment decides which destination paths it accepts. The Ref deployment saves files only under `/tmp/uplink/`.
-- Files over about 4 MiB fail, because they exceed the yamcs-grpc plugin's default gRPC message size.
+- Hermes keeps every upload in YAMCS's `user.guest` bucket, which holds 100 MiB in all. Once it fills, uploads fail
+  until you delete old files from it in yamcs-web.
 - fprime-yamcs sends one file at a time, at about 20 KiB/s.
 - You can't cancel an upload. Stopping an uplink cell skips its remaining files, but fprime-yamcs still sends the one in
   progress, and the Uplink view lists it once YAMCS finishes sending it.
