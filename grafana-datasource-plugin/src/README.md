@@ -97,7 +97,7 @@ Dashboard variables such as `$instance` are filled in before the query runs. Val
 | `$__interval`           | The panel interval as a Postgres interval, for use in `time_bucket` |
 | `$__interval_ms`        | The panel interval in milliseconds                                  |
 
-The generated SQL has the time range written in as fixed timestamps. Replace them with `$__timeFilter(...)` if the panel should follow the dashboard time picker.
+Unless you set a From or To Override, the generated SQL uses `$__timeFrom` and `$__timeTo`, so it follows the dashboard time picker. As long as your SQL returns the same columns as the generated SQL, each parameter, member and instance is drawn as its own series. Any other result comes back as a table.
 
 
 ## License

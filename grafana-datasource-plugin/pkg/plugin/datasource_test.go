@@ -11,6 +11,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/data/sqlutil"
 	"github.com/nasa/hermes-datasource/pkg/models"
 )
 
@@ -51,23 +52,8 @@ func TestQueryDispatch(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error on unknown query type", func(t *testing.T) {
-		qJSON, _ := json.Marshal(queryModel{QueryType: "unknown"})
-		resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
-			Queries: []backend.DataQuery{
-				{RefID: "A", JSON: qJSON},
-			},
-		})
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if resp.Responses["A"].Status != backend.StatusBadRequest {
-			t.Errorf("expected StatusBadRequest, got %v", resp.Responses["A"].Status)
-		}
-	})
-
-	t.Run("returns no frames for telemetry without rawSql", func(t *testing.T) {
-		qJSON, _ := json.Marshal(queryModel{QueryType: "telemetry", TimeField: "generation_time", Aggregation: "avg"})
+	t.Run("returns no frames without rawSql", func(t *testing.T) {
+		qJSON, _ := json.Marshal(queryModel{TimeField: "generation_time", Aggregation: "avg"})
 		resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 			Queries: []backend.DataQuery{
 				{RefID: "A", JSON: qJSON},
@@ -85,8 +71,8 @@ func TestQueryDispatch(t *testing.T) {
 func TestQueryDataMultipleQueries(t *testing.T) {
 	ds := Datasource{}
 
-	q1, _ := json.Marshal(queryModel{QueryType: "unknown"})
-	q2, _ := json.Marshal(queryModel{QueryType: "telemetry", TimeField: "generation_time", Aggregation: "avg"})
+	q1, _ := json.Marshal(queryModel{})
+	q2, _ := json.Marshal(queryModel{TimeField: "generation_time", Aggregation: "avg"})
 
 	resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 		Queries: []backend.DataQuery{
@@ -447,7 +433,7 @@ func TestQueryTelemetryWithMock(t *testing.T) {
 	mock.ExpectQuery("SELECT").WillReturnRows(telemetryRows)
 
 	rawSql := "SELECT * FROM parameter_values"
-	qJSON, _ := json.Marshal(queryModel{QueryType: "telemetry", TimeField: "generation_time", Aggregation: "avg", RawSql: &rawSql})
+	qJSON, _ := json.Marshal(queryModel{TimeField: "generation_time", Aggregation: "avg", RawSql: &rawSql})
 	resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 		Queries: []backend.DataQuery{
 			{
@@ -492,6 +478,33 @@ func TestQueryTelemetryWithMock(t *testing.T) {
 	}
 }
 
+func TestQueryReturnsOtherColumnsAsTable(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("sqlmock: %v", err)
+	}
+	defer func() { _ = db.Close() }()
+
+	ds := Datasource{db: db}
+	mock.ExpectQuery("SELECT").WillReturnRows(sqlmock.NewRows([]string{"generation_time", "float_value"}).AddRow(time.Now(), 1.5))
+
+	rawSql := "SELECT generation_time, float_value FROM parameter_values"
+	qJSON, _ := json.Marshal(queryModel{TimeField: "generation_time", Aggregation: "avg", RawSql: &rawSql})
+	resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
+		Queries: []backend.DataQuery{{RefID: "A", JSON: qJSON}},
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	dr := resp.Responses["A"]
+	if dr.Status != 0 {
+		t.Fatalf("expected success, got status %v: %s", dr.Status, dr.Error)
+	}
+	if len(dr.Frames) != 1 || len(dr.Frames[0].Fields) != 2 {
+		t.Fatalf("expected one frame with 2 columns, got %v", dr.Frames)
+	}
+}
+
 func TestQueryMacros(t *testing.T) {
 	from := time.Date(2026, 1, 2, 3, 0, 0, 0, time.UTC)
 	timeRange := backend.TimeRange{From: from, To: from.Add(time.Hour)}
@@ -509,7 +522,7 @@ func TestQueryMacros(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"ms"}))
 
 		rawSql := "SELECT $__interval_ms AS ms, time_bucket($__interval, generation_time) FROM parameter_values WHERE $__timeFilter(generation_time)"
-		qJSON, _ := json.Marshal(queryModel{QueryType: "raw", TimeField: "generation_time", RawSql: &rawSql})
+		qJSON, _ := json.Marshal(queryModel{TimeField: "generation_time", RawSql: &rawSql})
 		resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 			Queries: []backend.DataQuery{
 				{RefID: "A", JSON: qJSON, Interval: 10 * time.Second, TimeRange: timeRange},
@@ -529,7 +542,7 @@ func TestQueryMacros(t *testing.T) {
 	t.Run("returns error on a malformed macro", func(t *testing.T) {
 		ds := Datasource{}
 		rawSql := "SELECT * FROM parameter_values WHERE $__timeFilter(generation_time"
-		qJSON, _ := json.Marshal(queryModel{QueryType: "raw", TimeField: "generation_time", RawSql: &rawSql})
+		qJSON, _ := json.Marshal(queryModel{TimeField: "generation_time", RawSql: &rawSql})
 		resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 			Queries: []backend.DataQuery{
 				{RefID: "A", JSON: qJSON, TimeRange: timeRange},
@@ -540,6 +553,21 @@ func TestQueryMacros(t *testing.T) {
 		}
 		if resp.Responses["A"].Status != backend.StatusBadRequest {
 			t.Errorf("expected StatusBadRequest, got %v", resp.Responses["A"].Status)
+		}
+	})
+
+	t.Run("keeps fractional seconds in the time range", func(t *testing.T) {
+		start := from.Add(250 * time.Millisecond)
+		q := &sqlutil.Query{TimeRange: backend.TimeRange{From: start, To: start.Add(time.Hour)}}
+		for macro, want := range map[string]string{
+			"$__timeFilter(t)": "t >= '2026-01-02T03:00:00.25Z' AND t <= '2026-01-02T04:00:00.25Z'",
+			"$__timeFrom(t)":   "t >= '2026-01-02T03:00:00.25Z'",
+			"$__timeTo(t)":     "t <= '2026-01-02T04:00:00.25Z'",
+		} {
+			got, err := sqlutil.Interpolate(q.WithSQL(macro), macros)
+			if err != nil || got != want {
+				t.Errorf("%s = %q, %v; want %q", macro, got, err, want)
+			}
 		}
 	})
 }
@@ -725,7 +753,7 @@ func TestQueryTelemetryAcquisitionTimeField(t *testing.T) {
 	mock.ExpectQuery("SELECT").WillReturnRows(sqlmock.NewRows([]string{"time", "value"}))
 
 	rawSql := "SELECT * FROM parameter_values"
-	qJSON, _ := json.Marshal(queryModel{QueryType: "telemetry", TimeField: "acquisition_time", Aggregation: "avg", RawSql: &rawSql})
+	qJSON, _ := json.Marshal(queryModel{TimeField: "acquisition_time", Aggregation: "avg", RawSql: &rawSql})
 	resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 		Queries: []backend.DataQuery{
 			{RefID: "A", JSON: qJSON},
@@ -742,7 +770,7 @@ func TestQueryTelemetryAcquisitionTimeField(t *testing.T) {
 func TestQueryTelemetryInvalidTimeField(t *testing.T) {
 	ds := Datasource{}
 
-	qJSON, _ := json.Marshal(queryModel{QueryType: "telemetry", TimeField: "bogus", Aggregation: "avg"})
+	qJSON, _ := json.Marshal(queryModel{TimeField: "bogus", Aggregation: "avg"})
 	resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
 		Queries: []backend.DataQuery{
 			{RefID: "A", JSON: qJSON},

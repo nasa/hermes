@@ -37,21 +37,43 @@ func (d *Datasource) QueryData(ctx context.Context, req *backend.QueryDataReques
 }
 
 type queryModel struct {
-	QueryType   string  `json:"queryType"`
 	TimeField   string  `json:"timeField"`
 	Aggregation string  `json:"aggregation"`
 	RawSql      *string `json:"rawSql,omitempty"`
 }
 
-// We take $__timeFilter and the other macros from the SDK, but keep our own $__interval. The SDK's
-// version writes a bare duration like 10m, which Postgres can't parse in time_bucket($__interval, ...).
+// We write our own interval and time range macros and take the rest from the SDK. The SDK writes the
+// interval as a bare duration like 10m, which Postgres can't parse in time_bucket($__interval, ...),
+// and the time range in whole seconds, which leaves a live panel's newest values out.
 var macros = sqlutil.Macros{
 	"interval": func(q *sqlutil.Query, _ []string) (string, error) {
 		return fmt.Sprintf("'%d milliseconds'::interval", q.Interval.Milliseconds()), nil
 	},
+	"timeFilter": func(q *sqlutil.Query, args []string) (string, error) {
+		from, err := timeBound(args, ">=", q.TimeRange.From)
+		if err != nil {
+			return "", err
+		}
+		to, err := timeBound(args, "<=", q.TimeRange.To)
+		return from + " AND " + to, err
+	},
+	"timeFrom": func(q *sqlutil.Query, args []string) (string, error) {
+		return timeBound(args, ">=", q.TimeRange.From)
+	},
+	"timeTo": func(q *sqlutil.Query, args []string) (string, error) {
+		return timeBound(args, "<=", q.TimeRange.To)
+	},
 }
 
-func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, query backend.DataQuery) backend.DataResponse {
+// timeBound writes a condition comparing the column given as the macro's argument with t.
+func timeBound(args []string, op string, t time.Time) (string, error) {
+	if len(args) != 1 {
+		return "", fmt.Errorf("expected 1 argument, received %d", len(args))
+	}
+	return fmt.Sprintf("%s %s '%s'", args[0], op, t.UTC().Format(time.RFC3339Nano)), nil
+}
+
+func (d *Datasource) query(ctx context.Context, _ backend.PluginContext, query backend.DataQuery) backend.DataResponse {
 	// Unmarshal the JSON into our queryModel.
 	var qm queryModel
 
@@ -70,7 +92,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	if qm.RawSql != nil {
 		querySQL = *qm.RawSql
 	} else {
-		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("rawSql is required for query type: %s", qm.QueryType))
+		return backend.ErrDataResponse(backend.StatusBadRequest, "rawSql is required")
 	}
 
 	querySQL, err := sqlutil.Interpolate(&sqlutil.Query{RawSQL: querySQL, TimeRange: query.TimeRange, Interval: query.Interval}, macros)
@@ -78,24 +100,18 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("macro expansion failed: %v", err.Error()))
 	}
 
-	switch qm.QueryType {
-	case "telemetry":
-		return d.queryTelemetry(ctx, pCtx, qm, querySQL)
-	case "raw":
-		return d.queryRaw(ctx, pCtx, querySQL)
-	}
-	return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid query type: %s", qm.QueryType))
-}
-
-func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext, qm queryModel, telemetrySQL string) backend.DataResponse {
-	// Execute the query
-	rows, err := d.db.QueryContext(ctx, telemetrySQL)
+	rows, err := d.db.QueryContext(ctx, querySQL)
 	if err != nil {
-		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("telemetry query execution failed: %v", err.Error()))
+		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("query execution failed: %v", err.Error()))
 	}
 	defer func() { _ = rows.Close() }()
 
-	return buildResponse(qm, rows)
+	// A result with the builder's columns becomes one series per parameter, member and instance,
+	// even when the SQL was edited in Code mode. Any other result comes back as a table.
+	if columns, err := rows.Columns(); err == nil && slices.Equal(columns, builderColumns) {
+		return buildResponse(qm, rows)
+	}
+	return tableResponse(rows)
 }
 
 func validateAggregation(aggregation string, dbValueType string) error {
@@ -118,6 +134,9 @@ func validateAggregation(aggregation string, dbValueType string) error {
 func isNumericAggregate(aggregation, dbValueType string) bool {
 	return aggregation == "count" || (dbValueType == "BOOLEAN" && (aggregation == "avg" || aggregation == "sum"))
 }
+
+// builderColumns are the columns of the SQL that query.ts builds, in the order buildResponse scans them.
+var builderColumns = []string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}
 
 func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 	frames := make(map[string]*data.Frame)
@@ -345,13 +364,7 @@ var nullFloat32Converter = sqlutil.Converter{
 	FrameConverter: sqlutil.NullDecimalConverter.FrameConverter,
 }
 
-func (d *Datasource) queryRaw(ctx context.Context, _ backend.PluginContext, rawSQL string) backend.DataResponse {
-	rows, err := d.db.QueryContext(ctx, rawSQL)
-	if err != nil {
-		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("raw query execution failed: %v", err.Error()))
-	}
-	defer func() { _ = rows.Close() }()
-
+func tableResponse(rows *sql.Rows) backend.DataResponse {
 	frame, err := sqlutil.FrameFromRows(rows, -1, nullFloat32Converter)
 	if err != nil {
 		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("failed to parse rows to frame: %v", err.Error()))

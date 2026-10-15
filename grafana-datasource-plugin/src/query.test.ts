@@ -1,6 +1,7 @@
 import {
   aliasForLabels,
   bindValueToken,
+  buildQuery,
   buildTelemetryQuery,
   buildTransformCase,
   escArr,
@@ -139,6 +140,13 @@ describe('buildTelemetryQuery — per-parameter member scoping', () => {
 
   it('throws when no parameters are provided', () => {
     expect(() => buildTelemetryQuery(baseQuery({ parameters: [] }), FROM, TO)).toThrow();
+  });
+});
+
+describe('buildQuery', () => {
+  it('follows the dashboard time picker for a bound with no override', () => {
+    const q = baseQuery({ parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }], timeOverrideFrom: FROM });
+    expect(buildQuery(q)).toContain("AND v.generation_time >= '2024-01-01 00:00:00.000Z' AND $__timeTo(v.generation_time)");
   });
 });
 

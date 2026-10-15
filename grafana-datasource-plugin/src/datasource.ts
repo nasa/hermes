@@ -33,7 +33,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
           Object.assign(target, resolved);
 
           if (!target.rawSql) {
-            target.rawSql = buildQuery(resolved, request);
+            target.rawSql = buildQuery(resolved);
           }
         });
 
@@ -42,7 +42,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       map((response) => {
         for (const result of response.data) {
           const query = request.targets.find((t) => t.refId === result.refId);
-          if (query?.queryType === 'telemetry' && query.transforms?.some((t) => t.name)) {
+          if (query?.transforms?.some((t) => t.name)) {
             applySeriesAliases(result, query as ResolvedQuery);
           }
         }
