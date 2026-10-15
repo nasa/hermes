@@ -7,7 +7,7 @@ interface CellCommand {
     // The command's text in the cell, and the last character of its line, where we draw its status
     text: string;
     range: vscode.Range;
-    // What the cell's connection has reported: when its first report came, and the command's newest state
+    // When the cell's connection first reported on the command, and the command's newest state
     started?: number;
     state?: Hermes.CommandState;
     // When the command ended, unset while it is in flight
@@ -22,8 +22,7 @@ export class CommandStatuses implements vscode.Disposable {
     private readonly decoration = vscode.window.createTextEditorDecorationType({
         after: { margin: '0 0 0 3em', color: new vscode.ThemeColor('editorCodeLens.foreground') },
     });
-    // The statuses of each cell that has run, by the cell's document. A notebook that is closed and opened again gets
-    // new documents, so it starts without statuses.
+    // The statuses of each cell that has run, by the cell's document
     private readonly shown = new WeakMap<vscode.TextDocument, vscode.DecorationOptions[]>();
     private readonly subscriptions = [
         this.decoration,
@@ -66,7 +65,7 @@ export class CommandStatuses implements vscode.Disposable {
 }
 
 /**
- * One run of a cell. While the cell runs we show each command's status after its line.
+ * One run of a cell, which draws the status of each of the cell's commands
  */
 class CellRun {
     private readonly commands: CellCommand[] = [];
@@ -92,8 +91,7 @@ class CellRun {
     }
 
     /**
-     * Receives a command's state from the cell's connection. A connection that reports no state,
-     * as in Local and Remote modes, never calls this, so the cell gets no statuses.
+     * Receives a command's state from the cell's connection
      */
     readonly report: Hermes.CommandStateHandler = (state) => {
         // A cell's commands are issued one at a time and in order, so the state is for the first command that hasn't passed
@@ -114,7 +112,8 @@ class CellRun {
      * Stops the redraw timer when the cell's run ends
      */
     stop() {
-        // The timer is unset when the cell's connection reported nothing, and then we draw no statuses
+        // The timer is unset when the cell's connection reported nothing, as in Local and Remote modes, and then
+        // we draw no statuses
         if (!this.timer) {
             return;
         }

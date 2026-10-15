@@ -16,6 +16,6 @@ they start working once YAMCS mode connects. Running a cell sends its commands t
 time. If the mission database gives a command verifiers, which are checks that tell YAMCS whether the
 command succeeded, the cell waits for their verdict before it sends the next command, and fails if the
 command failed. A command without verifiers passes once YAMCS has sent it, which doesn't mean the
-flight software ran it. While a cell runs, the editor shows each command's status after the command's
-line. The yamcs-grpc plugin's [README](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin)
+flight software ran it. When you run a cell, the editor shows each command's status at the end of
+its line. The yamcs-grpc plugin's [README](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin)
 explains YAMCS mode.

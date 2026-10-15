@@ -109,24 +109,12 @@ it, which doesn't mean the flight software ran it. When YAMCS refuses or fails t
 cell fails with YAMCS's reason. Commands after a failed one aren't sent. Stopping a cell doesn't
 withdraw a command YAMCS already holds.
 
-While a cell runs, the editor shows each command's status at the end of the command's line. When a
-line is longer than the cell is wide, its status is past the cell's right edge, and you scroll the
-cell sideways to see it. A command in flight shows the newest step YAMCS has recorded as `OK` and the
-seconds since Hermes first read its history, for example `● Sent · 0.4 s`, then
-`● Dispatched · 3.2 s`. The status shows the step's name as YAMCS records it, without the
-`Acknowledge_` or `Verifier_` prefix, so a verifier's step shows the stage name the mission database
-gives it. When YAMCS records its verdict, the status becomes `✓ completed` with the time the command
-took, or `✗ failed` with YAMCS's reason, for example `✗ failed · EXECUTION_ERROR`. A command without
-verifiers ends at `✓ Sent`. Once a cell shows its first status, each command it has not issued shows
-`○ not sent`. So does a command that Hermes has issued, if you stop the cell before YAMCS answers
-Hermes about that command. YAMCS may still send it, as the cell's error says. If you stop the cell
-while a command is in flight, or the command's result is unknown, the command shows `?` with the
-newest step that passed. Hover over a status to see the steps YAMCS has recorded for the command,
-earliest first, with the time since the first step, and the command's qualified name. Steps that YAMCS
-skipped or cancelled have no row. A verifier that ends the command when it passes has a row of its own
-only when it fails or times out. Otherwise the row `Completed` or `Failed` shows its result. The
-statuses disappear when you edit the cell, run it again or close the notebook. A command that passed
-also leaves a line in the cell's output, with the command's text and its status.
+When you run a cell, the editor shows each command's status at the end of its line. A command in
+flight shows the newest step YAMCS has recorded and how long it has taken so far, for example
+`● Sent · 0.4 s`. A command that passes shows `✓` and the time it took, and one that fails shows `✗`
+with YAMCS's reason, for example `✗ failed · EXECUTION_ERROR`. Commands the cell hasn't sent show
+`○ not sent`, and a command still in flight when the cell stops shows `?`. Hover over a status to see
+the steps YAMCS has recorded for the command.
 
 F Prime cells run in YAMCS mode too, when fprime-yamcs runs the instance. The Hermes F Prime extension
 builds an F Prime dictionary from YAMCS mode's dictionary, listed as `<instance> (F Prime)`. It names
