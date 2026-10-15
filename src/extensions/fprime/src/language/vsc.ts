@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 
 import * as Seq from '@gov.nasa.jpl.hermes/sequence';
-import { Def } from '@gov.nasa.jpl.hermes/types';
+import { Def, Dictionary } from '@gov.nasa.jpl.hermes/types';
 import {
     Language,
     DictionaryLanguageItem
@@ -218,11 +218,17 @@ export class FPrimeExtension extends Language.SequenceLanguage<FPrimeCommandExpr
         return psuedoToken.completionItems();
     }
 
-    protected parse(document: vscode.TextDocument, nextExpr: Seq.NextTokenExpression) {
+    // In YAMCS mode we build an F Prime dictionary from an instance's dictionary, and give it that dictionary's id plus
+    // :fprime. A cell that targets a connection outside YAMCS mode uses the selected dictionary.
+    protected targetDictionaryId(target: string): string | undefined {
+        return target.startsWith('yamcs:') ? `${target}:fprime` : undefined;
+    }
+
+    protected parse(document: vscode.TextDocument, dictionary: Dictionary | undefined, nextExpr: Seq.NextTokenExpression) {
         const out: FPrimeCommandExpression[] = [];
 
         // FPrime always uses the primary namespace
-        const dict = this.dictionary?.namespaces.get("");
+        const dict = dictionary?.namespaces.get("");
 
         for (let lineNo = 0; lineNo < document.lineCount; lineNo++) {
             const line = document.lineAt(lineNo);
