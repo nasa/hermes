@@ -10,21 +10,34 @@ import (
 	"github.com/nasa/hermes/internal/yamcspb/protobuf/events"
 )
 
-// severityNumbers puts each YAMCS severity in an OpenTelemetry band (info,
-// warn, error or fatal), which Loki turns into the level Grafana shows, and
-// numbers them in YAMCS's order so queries can filter on severity_number. We
-// put CRITICAL in fatal so it shows apart from DISTRESS, since fprime-yamcs
-// sends F Prime's FATAL as CRITICAL and WARNING_HI as DISTRESS. YAMCS already
-// sends its deprecated ERROR as SEVERE, so we number ERROR the same.
-var severityNumbers = map[events.Event_EventSeverity]otellog.Severity{
-	events.Event_INFO:        otellog.SeverityInfo1,
-	events.Event_WATCH:       otellog.SeverityWarn1,
-	events.Event_WARNING:     otellog.SeverityWarn2,
-	events.Event_WARNING_NEW: otellog.SeverityWarn2,
-	events.Event_DISTRESS:    otellog.SeverityError1,
-	events.Event_CRITICAL:    otellog.SeverityFatal1,
-	events.Event_SEVERE:      otellog.SeverityFatal2,
-	events.Event_ERROR:       otellog.SeverityFatal2,
+// fprimeSeverities gives each F Prime severity the level that LogLevel in
+// pkg/pb/log.go gives it, as an OpenTelemetry severity number that Loki turns
+// into the level Grafana shows. Higher numbers are more severe, so queries can
+// filter on severity_number.
+var fprimeSeverities = map[string]otellog.Severity{
+	"DIAGNOSTIC":  otellog.SeverityTrace1,
+	"COMMAND":     otellog.SeverityDebug1,
+	"ACTIVITY_LO": otellog.SeverityInfo1,
+	"ACTIVITY_HI": otellog.SeverityInfo2,
+	"WARNING_LO":  otellog.SeverityWarn1,
+	"WARNING_HI":  otellog.SeverityError1,
+	"FATAL":       otellog.SeverityFatal1,
+}
+
+// fprimeCounterparts reverses how fprime-yamcs converts F Prime severities to
+// YAMCS ones, such as ACTIVITY_HI to WATCH. An event raised inside YAMCS has no
+// F Prime severity, so we give it the level of the F Prime severity listed here
+// for its YAMCS severity.
+var fprimeCounterparts = map[events.Event_EventSeverity]string{
+	// fprime-yamcs converts COMMAND and DIAGNOSTIC to INFO too
+	events.Event_INFO:        "ACTIVITY_LO",
+	events.Event_WATCH:       "ACTIVITY_HI",
+	events.Event_WARNING:     "WARNING_LO",
+	events.Event_WARNING_NEW: "WARNING_LO",
+	events.Event_DISTRESS:    "WARNING_HI",
+	events.Event_CRITICAL:    "FATAL",
+	events.Event_SEVERE:      "FATAL",
+	events.Event_ERROR:       "FATAL",
 }
 
 // LogRecord converts an event to an OpenTelemetry log record with the message
@@ -46,9 +59,10 @@ func LogRecord(e *events.Event) otellog.Record {
 		r.SetObservedTimestamp(e.GetReceptionTime().AsTime())
 	}
 	// Loki reads the level from the severity text when there is one, and it does
-	// not know WATCH, DISTRESS or SEVERE, so Grafana would show those with no
-	// level. We leave the text unset and keep the YAMCS name in yamcs.severity.
-	r.SetSeverity(severityNumbers[e.GetSeverity()])
+	// not know names like ACTIVITY_HI or WATCH, so Grafana would show those with
+	// no level. We leave the text unset and keep the names in yamcs.severity and
+	// yamcs.extra.fprime_severity.
+	r.SetSeverity(severity(e))
 	r.SetBody(otellog.StringValue(e.GetMessage()))
 
 	r.AddAttributes(
@@ -75,6 +89,15 @@ func LogRecord(e *events.Event) otellog.Record {
 		r.AddAttributes(otellog.String("yamcs.extra."+k, e.GetExtra()[k]))
 	}
 	return r
+}
+
+// severity returns the OpenTelemetry severity number of e.
+func severity(e *events.Event) otellog.Severity {
+	// fprime-yamcs puts an F Prime event's own severity, like ACTIVITY_HI, in extra
+	if s, ok := fprimeSeverities[e.GetExtra()["fprime_severity"]]; ok {
+		return s
+	}
+	return fprimeSeverities[fprimeCounterparts[e.GetSeverity()]]
 }
 
 // severityName returns the name of s, with WARNING_NEW named WARNING and ERROR

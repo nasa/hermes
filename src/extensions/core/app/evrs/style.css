@@ -48,81 +48,91 @@ table.hasFilter tr {
     cursor: pointer;
 }
 
+/* fprime-yamcs converts each F Prime severity to a YAMCS one, such as ACTIVITY_HI to WATCH, so we color both the same. */
+
 .FATAL,
-.CRITICAL {
+.CRITICAL,
+.SEVERE {
     background: #ff5e66;
     color: #f1f1f2;
 }
 
 .FATAL.selected,
-.CRITICAL.selected {
+.CRITICAL.selected,
+.SEVERE.selected {
     background: #f7000c;
 }
 
 .FATAL:hover,
-.CRITICAL:hover {
+.CRITICAL:hover,
+.SEVERE:hover {
     background: #ff2b36;
 }
 
 .FATAL.selected:hover,
-.CRITICAL.selected:hover {
+.CRITICAL.selected:hover,
+.SEVERE.selected:hover {
     background: #e6000c;
 }
 
 .WARNING_HI,
-.WARNING {
+.DISTRESS {
     background: #FEA500;
 }
 
 .WARNING_HI.selected,
-.WARNING.selected {
+.DISTRESS.selected {
     background: #986300;
 }
 
 .WARNING_HI:hover,
-.WARNING:hover {
+.DISTRESS:hover {
     background: #cb8400;
 }
 
 .WARNING_HI.selected:hover,
-.WARNING.selected:hover {
+.DISTRESS.selected:hover {
     background: #aa6f00;
 }
 
 .WARNING_LO,
-.WATCH {
+.WARNING {
     background: #F0F001;
 }
 
 .WARNING_LO.selected,
-.WATCH.selected {
+.WARNING.selected {
     background: #8a8a01;
 }
 
 .WARNING_LO:hover,
-.WATCH:hover {
+.WARNING:hover {
     background: #bdbd01;
 }
 
 .WARNING_LO.selected:hover,
-.WATCH.selected:hover {
+.WARNING.selected:hover {
     background: #a3a301;
 }
 
-.ACTIVITY_HI {
+.ACTIVITY_HI,
+.WATCH {
     background: #666666;
     color: #f1f1f2;
 }
 
-.ACTIVITY_HI.selected {
+.ACTIVITY_HI.selected,
+.WATCH.selected {
     background: #333;
 }
 
-.ACTIVITY_HI:hover {
+.ACTIVITY_HI:hover,
+.WATCH:hover {
     background: #4d4d4d;
 }
 
-.ACTIVITY_HI.selected:hover {
+.ACTIVITY_HI.selected:hover,
+.WATCH.selected:hover {
     background: #3f3f3f;
 }
 
@@ -177,39 +187,4 @@ table.hasFilter tr {
 
 .DIAGNOSTIC.selected:hover {
     background: #34c837;
-}
-
-/* YAMCS severities. INFO, WATCH, WARNING and CRITICAL share the rules above. */
-
-.DISTRESS {
-    background: #FF6A00;
-}
-
-.DISTRESS.selected {
-    background: #994000;
-}
-
-.DISTRESS:hover {
-    background: #cc5500;
-}
-
-.DISTRESS.selected:hover {
-    background: #ab4700;
-}
-
-.SEVERE {
-    background: #b3000c;
-    color: #f1f1f2;
-}
-
-.SEVERE.selected {
-    background: #6b0007;
-}
-
-.SEVERE:hover {
-    background: #8f000a;
-}
-
-.SEVERE.selected:hover {
-    background: #780008;
 }

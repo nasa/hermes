@@ -1,4 +1,5 @@
 import type { YamcsEvent } from '@gov.nasa.jpl.hermes/rpc';
+import type { EvrSeverity } from '@gov.nasa.jpl.hermes/types';
 
 import type { EventRow, YamcsSeverity } from '../../common/evrs';
 import { millis } from './yamcsRows';
@@ -26,7 +27,8 @@ export function yamcsEventRows(instance: string, events: readonly YamcsEvent[], 
             sclk: NaN,
             source,
             ...componentAndName(e),
-            severity: severity(e.severity),
+            // fprime-yamcs puts an F Prime event's own severity, like ACTIVITY_HI, in its extra fields
+            severity: (e.extra?.fprime_severity as EvrSeverity | undefined) ?? severity(e.severity),
             message: e.message ?? '',
         });
     }

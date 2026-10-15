@@ -59,7 +59,7 @@ func TestLogRecordKeepsYamcsFields(t *testing.T) {
 	r := LogRecord(parseEvent(t, dispatchedEvent))
 	assert.Equal(t, utc("2026-10-05T22:56:34.620000006Z"), r.Timestamp())
 	assert.Equal(t, utc("2026-10-05T22:56:34.591Z"), r.ObservedTimestamp())
-	assert.Equal(t, otellog.SeverityInfo1, r.Severity())
+	assert.Equal(t, otellog.SeverityDebug1, r.Severity())
 	assert.Empty(t, r.SeverityText())
 	assert.Equal(t, "[OpCodeDispatched] Opcode 0x1000000 dispatched to port 4", r.Body().AsString())
 	assert.Equal(t, map[string]any{
@@ -78,7 +78,7 @@ func TestLogRecordKeepsYamcsFields(t *testing.T) {
 
 func TestLogRecordWithoutTypeExtraOrCreatedBy(t *testing.T) {
 	r := LogRecord(parseEvent(t, seqCountJumpEvent))
-	assert.Equal(t, otellog.SeverityWarn2, r.Severity())
+	assert.Equal(t, otellog.SeverityWarn1, r.Severity())
 	assert.Equal(t, map[string]any{
 		"yamcs.severity":   "WARNING",
 		"yamcs.source":     "FprimePacketPreprocessor",
@@ -95,18 +95,35 @@ func TestLogRecordWithoutTypeExtraOrCreatedBy(t *testing.T) {
 // We write out the severity numbers rather than otellog's names for them,
 // since Loki stores the numbers as severity_number and queries filter on them.
 func TestLogRecordSeverities(t *testing.T) {
+	// An F Prime event gets a number from the F Prime severity in its extra.
+	for s, want := range map[string]otellog.Severity{
+		"DIAGNOSTIC":  1,
+		"COMMAND":     5,
+		"ACTIVITY_LO": 9,
+		"ACTIVITY_HI": 10,
+		"WARNING_LO":  13,
+		"WARNING_HI":  17,
+		"FATAL":       21,
+	} {
+		e := parseEvent(t, dispatchedEvent)
+		e.Extra["fprime_severity"] = s
+		r := LogRecord(e)
+		assert.Equal(t, want, r.Severity(), s)
+	}
+
+	// Other events get a number from their YAMCS severity.
 	for s, want := range map[events.Event_EventSeverity]struct {
 		number otellog.Severity
 		name   string
 	}{
 		events.Event_INFO:        {9, "INFO"},
-		events.Event_WATCH:       {13, "WATCH"},
-		events.Event_WARNING:     {14, "WARNING"},
-		events.Event_WARNING_NEW: {14, "WARNING"},
+		events.Event_WATCH:       {10, "WATCH"},
+		events.Event_WARNING:     {13, "WARNING"},
+		events.Event_WARNING_NEW: {13, "WARNING"},
 		events.Event_DISTRESS:    {17, "DISTRESS"},
 		events.Event_CRITICAL:    {21, "CRITICAL"},
-		events.Event_SEVERE:      {22, "SEVERE"},
-		events.Event_ERROR:       {22, "SEVERE"},
+		events.Event_SEVERE:      {21, "SEVERE"},
+		events.Event_ERROR:       {21, "SEVERE"},
 	} {
 		e := parseEvent(t, seqCountJumpEvent)
 		e.Severity = s.Enum()
@@ -114,7 +131,7 @@ func TestLogRecordSeverities(t *testing.T) {
 		assert.Equal(t, want.number, r.Severity(), s.String())
 		assert.Equal(t, want.name, attributes(t, r)["yamcs.severity"], s.String())
 	}
-	assert.Len(t, events.Event_EventSeverity_name, 8, "a new YAMCS severity needs a number in severityNumbers")
+	assert.Len(t, events.Event_EventSeverity_name, 8, "a new YAMCS severity needs an entry in fprimeCounterparts")
 
 	// An unset severity reads as INFO, the default events.proto declares.
 	e := parseEvent(t, seqCountJumpEvent)
