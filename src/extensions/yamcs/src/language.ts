@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { Api } from '@gov.nasa.jpl.hermes/api';
 import * as Seq from '@gov.nasa.jpl.hermes/sequence';
-import { Def, DictionaryNamespace } from '@gov.nasa.jpl.hermes/types';
+import { Def, Dictionary, DictionaryNamespace } from '@gov.nasa.jpl.hermes/types';
 import { DictionaryLanguageItem, FswNotebookLanguageProvider, Language } from '@gov.nasa.jpl.hermes/vscode';
 
 // We complete a command with its qualified name, which is how a YAMCS cell names it. YAMCS mode's
@@ -40,9 +40,9 @@ export class YamcsLanguage extends Language.SequenceLanguage<Seq.CommandExpressi
         });
     }
 
-    protected parse(document: vscode.TextDocument, nextExpr: Seq.NextTokenExpression) {
+    protected parse(document: vscode.TextDocument, dict: Dictionary | undefined, nextExpr: Seq.NextTokenExpression) {
         const out: Seq.CommandExpression[] = [];
-        const dictionary = this.dictionary?.namespaces.get('');
+        const dictionary = dict?.namespaces.get('');
         for (let lineNo = 0; lineNo < document.lineCount; lineNo++) {
             const line = document.lineAt(lineNo);
             // tokenizeLine cuts a line at its comment prefix even inside a quoted string, and a YAMCS
