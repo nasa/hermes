@@ -1074,8 +1074,9 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
             const [fsw] = await api.allFsw();
             const commands = Dictionary.fromProto(await api.getDictionary(fsw.dictionary!)).get('');
             const def = [...commands.getCommands()].find((c) => c.mnemonic === 'CMD_NO_OP_STRING')!;
-            // CMD_NO_OP_STRING's argument holds at most 40 bytes
-            await expect(fsw.sequence!({ language: 'yamcs', commands: [{ def, args: ['x'.repeat(100)] }] })).rejects.toThrow('String size');
+            // CMD_NO_OP_STRING's argument holds at most 40 bytes. YAMCS refuses a longer one when it
+            // encodes the command, or earlier, when it checks the argument, if the XTCE gives the limit.
+            await expect(fsw.sequence!({ language: 'yamcs', commands: [{ def, args: ['x'.repeat(100)] }] })).rejects.toThrow(/String size|maximum length/);
         } finally {
             api.dispose();
         }
