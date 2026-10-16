@@ -65,11 +65,14 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
                     }));
 
                     switch (item.mime) {
+                        // We save these types, and any type not listed here, as text. The loader skips the line after an item's
+                        // start tag, so if we wrote nothing, it would skip the item's end tag and load the next cell empty.
                         case 'text/plain':
                         case 'application/vnd.code.notebook.stdout':
                         case 'application/vnd.code.notebook.stderr':
                         case 'application/vnd.code.notebook.error':
                         case 'application/json':
+                        default:
                             contents.push('<details><summary>Execution Outputs</summary><pre>');
                             contents.push(textDecoder.decode(item.data));
                             contents.push('</pre></details>');
