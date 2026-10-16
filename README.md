@@ -8,13 +8,13 @@ Hermes is a plugin driven spacecraft telemetry processing and commanding
 framework built around a variety of mature open-source software.
 It is developed at [NASA JPL](https://www.jpl.nasa.gov).
 
-![alt text](docs/assets/full-screenshot.png)
+![The Hermes VS Code extension showing a command procedure notebook, a telemetry table, and a telemetry plot alongside F Prime source code](docs/assets/full-screenshot.png)
 
 > [!IMPORTANT]  
 > Hermes is currently undergoing migration from our internal deployment
-> to public Github. Documentation is in the works.
+> to public GitHub. Documentation is in the works.
 
-We encourage new users to read out [Quick Start](https://nasa.github.io/hermes/getting-started/quick-start/) guide
+We encourage new users to read our [Quick Start](https://nasa.github.io/hermes/getting-started/quick-start/) guide
 and our [documentation](https://nasa.github.io/hermes/).
 
 ## Hermes Capabilities
