@@ -249,19 +249,21 @@ export class YamcsClient {
      * against its mission database and replies once the command is queued, with
      * the id of its command history entry.
      *
-     * Pass a different sequenceNumber for each command. YAMCS builds the id
-     * from the time in milliseconds, the address we connect from and
-     * sequenceNumber. Two commands with the same id share one history entry.
+     * Pass an origin that no other client uses and a different sequenceNumber
+     * for each command. YAMCS builds the id from the time in milliseconds,
+     * origin and sequenceNumber. Two commands with the same id share one
+     * history entry.
      */
     async issueCommand(
         instance: string,
         processor: string,
         name: string,
         args: Record<string, ArgumentValue>,
+        origin: string,
         sequenceNumber: number,
     ): Promise<string> {
         const res = await new Promise<IssueCommandResponse__Output>((resolve, reject) => {
-            this.commands.IssueCommand({ instance, processor, name, args: { fields: args }, sequenceNumber }, (err, res) => err ? reject(err) : resolve(res!));
+            this.commands.IssueCommand({ instance, processor, name, args: { fields: args }, origin, sequenceNumber }, (err, res) => err ? reject(err) : resolve(res!));
         });
         return res.id!;
     }

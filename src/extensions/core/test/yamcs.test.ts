@@ -746,7 +746,7 @@ describe('YAMCS commands', () => {
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([noOpString]);
         const issue = jest.spyOn(YamcsClient.prototype, 'issueCommand')
-            .mockImplementation(async (_instance, _processor, _name, _args, sequenceNumber) => `id-${sequenceNumber}`);
+            .mockImplementation(async (_instance, _processor, _name, _args, _origin, sequenceNumber) => `id-${sequenceNumber}`);
         const get = jest.spyOn(YamcsClient.prototype, 'getCommand')
             .mockResolvedValue(history(...queued, attr('Acknowledge_Sent_Status', 'OK')));
         const api = await new YamcsBackendProvider().provideBackendApi(
@@ -780,8 +780,8 @@ describe('YAMCS commands', () => {
         expect(sent).toBe(true);
         const name = '/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING';
         expect(issue.mock.calls).toEqual([
-            ['fprime-project', 'other-processor', name, { arg1: { stringValue: 'a' } }, 0],
-            ['fprime-project', 'other-processor', name, { arg1: { stringValue: 'b' } }, 1],
+            ['fprime-project', 'other-processor', name, { arg1: { stringValue: 'a' } }, expect.any(String), 0],
+            ['fprime-project', 'other-processor', name, { arg1: { stringValue: 'b' } }, expect.any(String), 1],
         ]);
         // All three looks at the first command's history come before the second command
         expect(get.mock.calls.map(([, id]) => id)).toEqual(['id-0', 'id-0', 'id-0', 'id-1']);
