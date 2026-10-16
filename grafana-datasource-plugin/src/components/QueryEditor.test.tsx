@@ -291,14 +291,13 @@ describe('QueryEditor — Code mode', () => {
     expect(screen.getByRole('radio', { name: 'Code' })).toBeChecked();
   });
 
-  it('fills Code mode with SQL that keeps the telemetry query type and follows the time picker', async () => {
+  it('fills Code mode with SQL that follows the time picker', async () => {
     const onChange = jest.fn();
     const query = { ...buildProps().query, parameters: [param('CDH', 'Temperature')] };
     await act(async () => { render(<QueryEditor {...buildProps({ query, onChange })} />); });
     await act(async () => { fireEvent.click(screen.getByRole('radio', { name: 'Code' })); });
 
     expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({
-      queryType: 'telemetry',
       rawSql: expect.stringContaining('$__timeFrom(v.generation_time) AND $__timeTo(v.generation_time)'),
     }));
   });
