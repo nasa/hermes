@@ -3,7 +3,7 @@ import { afterEach, describe, expect, jest, test } from '@jest/globals';
 // Settings a test has set. Every other setting reads as unset and takes its default.
 const mockSettings: Record<string, unknown> = {};
 // The commands registered so far, by name, so a test can run one
-const mockCommands = new Map<string, () => Promise<void>>();
+const mockCommands = new Map<string, (...args: unknown[]) => unknown>();
 afterEach(() => {
     Object.keys(mockSettings).forEach((key) => delete mockSettings[key]);
     jest.restoreAllMocks();
@@ -56,7 +56,7 @@ jest.mock('vscode', () => {
         SemanticTokensBuilder: class { },
         SemanticTokensLegend: class { },
         commands: {
-            registerCommand: (name: string, run: () => Promise<void>) => {
+            registerCommand: (name: string, run: (...args: unknown[]) => unknown) => {
                 mockCommands.set(name, run);
                 return { dispose: () => { } };
             },
@@ -65,6 +65,7 @@ jest.mock('vscode', () => {
         WorkspaceEdit: class { set() { } },
         NotebookCellStatusBarItem: class { constructor(public text: string, public alignment: number) { } },
         NotebookCellStatusBarAlignment: { Left: 1 },
+        QuickPickItemKind: { Separator: -1, Default: 0 },
     };
 });
 
@@ -78,6 +79,7 @@ import { Def, Dictionary } from '@gov.nasa.jpl.hermes/types';
 import { DictionaryLanguageItem, FswNotebookLanguageProvider, Language } from '@gov.nasa.jpl.hermes/vscode';
 
 import { VscodeApi } from '../src/api';
+import { Offline } from '../src/api/Offline';
 import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterSource } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
 import { yamcsEventRows } from '../src/components/yamcsEvents';
@@ -868,6 +870,9 @@ describe('YAMCS commands', () => {
 
     test('sets the target of every F Prime and YAMCS cell in the active notebook', async () => {
         const { api } = await backend();
+        // The stopped instance has no connection, only its dictionary and the F Prime dictionary built from it
+        await api.addDictionary(yamcsDictionary('stopped', [noOpString]));
+        await api.addDictionary({ ...new Dictionary({ name: 'stopped (F Prime)', type: 'fprime' }).toProto(), id: 'yamcs:stopped:fprime' });
         NotebookController.registerCommands(api);
         const cell = (index: number, languageId: string, metadata = {}): Partial<vscode.NotebookCell> =>
             ({ index, metadata, document: { languageId } as vscode.TextDocument });
@@ -875,17 +880,47 @@ describe('YAMCS commands', () => {
         const cells = [cell(0, 'fprime', { owner: 'ops', hermes: { fsw: 'yamcs:fprime-project', note: 'x' } }), cell(1, 'python'), cell(2, 'yamcs')];
         const notebook: Partial<vscode.NotebookDocument> = { uri: {} as vscode.Uri, getCells: () => cells as vscode.NotebookCell[] };
         jest.replaceProperty(vscode.window, 'activeNotebookEditor', { notebook } as vscode.NotebookEditor);
-        // The user picks the second connection. The command offers a list of strings, so we mock that signature of showQuickPick.
-        const pick = jest.mocked(vscode.window.showQuickPick as (items: readonly string[]) => Thenable<string | undefined>)
+        // The user picks the second connection
+        const pick = jest.mocked(vscode.window.showQuickPick as (items: readonly vscode.QuickPickItem[]) => Thenable<vscode.QuickPickItem | undefined>)
             .mockImplementation(async (items) => items[1]);
 
         await mockCommands.get('hermes.notebook.setCellTargets')!();
-        expect(pick.mock.calls[0][0]).toEqual(['yamcs:fprime-project', 'yamcs:other-instance']);
+        expect(pick.mock.calls[0][0]).toEqual([
+            { label: 'yamcs:fprime-project' }, { label: 'yamcs:other-instance' }, { label: 'yamcs:stopped', description: 'not connected' },
+        ]);
         expect(jest.mocked(vscode.NotebookEdit.updateCellMetadata).mock.calls).toEqual([
             [0, { owner: 'ops', hermes: { fsw: 'yamcs:other-instance', note: 'x' } }],
             [2, { hermes: { fsw: 'yamcs:other-instance' } }],
         ]);
         api.dispose();
+    });
+
+    test('offers each instance that has a dictionary but no connection as a target, and refuses to run a cell on it', async () => {
+        const { api: yamcs, issue } = await backend();
+        const offline = await Offline.activate({} as vscode.ExtensionContext, { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } });
+        const pick = jest.mocked(vscode.window.showQuickPick as (items: Promise<vscode.QuickPickItem[]>) => Thenable<undefined>)
+            .mockResolvedValue(undefined);
+        const cell: Partial<vscode.NotebookCell> = { metadata: { hermes: { fsw: 'yamcs:stopped' } } };
+        const { token } = tokenSource();
+
+        const offered: vscode.QuickPickItem[][] = [];
+        for (const api of [offline, yamcs]) {
+            // A dictionary for the stopped instance, which has no connection in either mode
+            await api.addDictionary(yamcsDictionary('stopped', [noOpString]));
+            const cells = new Cells('yamcs', (fsw) => fsw.type === 'yamcs', api);
+            mockCommands.get('hermes.notebook.yamcs.select')!(cell);
+            // The picker lists Automatic, Custom and a separator before the targets
+            offered.push((await pick.mock.lastCall![0]).slice(3).map(({ label, description }) => ({ label, description })));
+            await expect(cells.execute(cell as vscode.NotebookCell, {} as vscode.NotebookCellExecution, token))
+                .rejects.toThrow('No target FSW set on this cell (or connected)');
+            cells.dispose();
+        }
+        expect(offered).toEqual([
+            [{ label: 'yamcs:stopped', description: 'not connected' }],
+            [{ label: 'yamcs:fprime-project' }, { label: 'yamcs:other-instance' }, { label: 'yamcs:stopped', description: 'not connected' }],
+        ]);
+        expect(issue).not.toHaveBeenCalled();
+        yamcs.dispose();
     });
 
     test('parses each cell with the dictionary of the instance it targets', async () => {

@@ -83,6 +83,15 @@ function severalYamcs(fsws: Hermes.Fsw[]): boolean {
     return fsws.filter((f) => f.type === 'yamcs').length > 1;
 }
 
+/** Lists the YAMCS instances that have a dictionary but no connection. A cell can target one, but can't run on it. */
+export async function unconnectedYamcsTargets(api: Hermes.Api, connected: string[], token?: vscode.CancellationToken): Promise<string[]> {
+    return Object.entries(await api.allDictionaries(token))
+        // YAMCS mode gives an instance's connection and its dictionary the same id, yamcs:<instance>
+        .filter(([id, head]) => head.type === 'yamcs' && !connected.includes(id))
+        .map(([id]) => id)
+        .sort();
+}
+
 export abstract class FswNotebookLanguageProvider implements NotebookLanguageProvider {
     didChangeCellStatusBarItems = new vscode.EventEmitter<void>();
     onDidChangeCellStatusBarItems = this.didChangeCellStatusBarItems.event;
@@ -118,6 +127,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
             ) => {
                 vscode.window.showQuickPick<FswLanguageProviderQuickPickItem>((async () => {
                     const connectedFsws = await this.validFsws(token);
+                    const unconnected = await unconnectedYamcsTargets(this.api, connectedFsws.map((fsw) => fsw.id), token);
 
                     return [
                         {
@@ -140,7 +150,8 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
                             label: v.id ?? "(unknown)",
                             context: v.id ?? undefined,
                             kind: vscode.QuickPickItemKind.Default,
-                        } satisfies FswLanguageProviderQuickPickItem))
+                        } satisfies FswLanguageProviderQuickPickItem)),
+                        ...unconnected.map((id) => ({ label: id, context: id, description: 'not connected' })),
                     ] satisfies FswLanguageProviderQuickPickItem[];
                 })(), {
                     title: 'Select target connection',

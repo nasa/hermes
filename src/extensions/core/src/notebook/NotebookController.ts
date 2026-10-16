@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import moment from 'moment';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
-import { Settings } from '@gov.nasa.jpl.hermes/vscode';
+import { Settings, unconnectedYamcsTargets } from '@gov.nasa.jpl.hermes/vscode';
 import { NotebookLanguageManager } from './NotebookLanguageManager';
 
 export class NotebookController implements vscode.Disposable {
@@ -44,7 +44,9 @@ export class NotebookController implements vscode.Disposable {
             return;
         }
         const ids = (await api.allFsw()).filter((fsw) => fsw.sequence).map((fsw) => fsw.id).sort();
-        const fsw = await vscode.window.showQuickPick(ids, { title: 'Target connection for every F Prime and YAMCS cell' });
+        const unconnected = await unconnectedYamcsTargets(api, ids);
+        const items = [...ids.map((label) => ({ label })), ...unconnected.map((label) => ({ label, description: 'not connected' }))];
+        const fsw = (await vscode.window.showQuickPick(items, { title: 'Target connection for every F Prime and YAMCS cell' }))?.label;
         if (!fsw) {
             return;
         }
