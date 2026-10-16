@@ -30,6 +30,9 @@ jest.mock('vscode', () => {
         EventEmitter,
         window: { showInputBox: jest.fn() },
         workspace: { getConfiguration: () => ({ get: (key: string) => mockSettings[key] }) },
+        commands: { registerCommand: () => ({ dispose: () => { } }) },
+        NotebookCellStatusBarItem: class { constructor(public text: string, public alignment: number) { } },
+        NotebookCellStatusBarAlignment: { Left: 1 },
     };
 });
 
@@ -40,6 +43,7 @@ import type * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { YamcsClient, YamcsCommandHistoryEntry, YamcsCommandInfo, YamcsEvent, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
 import { Def, Dictionary } from '@gov.nasa.jpl.hermes/types';
+import { FswNotebookLanguageProvider } from '@gov.nasa.jpl.hermes/vscode';
 
 import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterSource } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
@@ -124,7 +128,7 @@ describe('YamcsBackendProvider', () => {
         // Nothing listens on port 1, so without the cancel this would wait out the 5 s connect deadline
         const started = Date.now();
         const connecting = new YamcsBackendProvider().provideBackendApi(
-            { address: '127.0.0.1:1', instance: 'fprime-project', processor: 'realtime' },
+            { address: '127.0.0.1:1', processor: 'realtime' },
             {} as vscode.ExtensionContext,
             { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } },
             token,
@@ -134,24 +138,22 @@ describe('YamcsBackendProvider', () => {
         expect(Date.now() - started).toBeLessThan(2000);
     });
 
-    test('prefills the prompts from the setting, then from the last answers', async () => {
+    test('prefills the prompt from the setting, then from the last answer', async () => {
         const showInputBox = jest.mocked(vscode.window.showInputBox);
         const prefilled = () => showInputBox.mock.calls.map(([options]) => options?.value);
         const provider = new YamcsBackendProvider();
         mockSettings['hermes.host.yamcs'] = { address: 'set-server:8091', processor: 'replay', includeTopLevel: true };
 
-        // The prompts ask only for address and instance, so processor and includeTopLevel come from the setting
-        showInputBox.mockResolvedValueOnce('yamcs-server:8095').mockResolvedValueOnce('other-instance');
-        expect(await provider.promptForState()).toEqual({
-            address: 'yamcs-server:8095', instance: 'other-instance', processor: 'replay', includeTopLevel: true,
-        });
-        expect(prefilled()).toEqual(['set-server:8091', 'fprime-project']);
+        // The prompt asks only for the address, so processor and includeTopLevel come from the setting
+        showInputBox.mockResolvedValueOnce('yamcs-server:8095');
+        expect(await provider.promptForState()).toEqual({ address: 'yamcs-server:8095', processor: 'replay', includeTopLevel: true });
+        expect(prefilled()).toEqual(['set-server:8091']);
 
         // Escape cancels
         showInputBox.mockClear();
-        showInputBox.mockResolvedValueOnce('yamcs-server:8095').mockResolvedValueOnce(undefined);
+        showInputBox.mockResolvedValueOnce(undefined);
         expect(await provider.promptForState()).toBeNull();
-        expect(prefilled()).toEqual(['yamcs-server:8095', 'other-instance']);
+        expect(prefilled()).toEqual(['yamcs-server:8095']);
     });
 });
 
@@ -347,11 +349,12 @@ describe('yamcsEventRows', () => {
 });
 
 describe('YAMCS event source', () => {
-    // A YAMCS backend whose event subscriptions and listings the test drives
-    async function backend() {
+    // A YAMCS backend connected to the running instances in names, whose event subscriptions and listings the test drives
+    async function backend(names = ['fprime-project']) {
         const warn = jest.fn();
         jest.spyOn(YamcsClient.prototype, 'waitForReady').mockResolvedValue(undefined);
-        jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
+        jest.spyOn(YamcsClient.prototype, 'listInstances').mockResolvedValue(names.map((name) => ({ name, state: 'RUNNING' })));
+        jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockImplementation(async (instance) => [`/${instance}/Demo/x`]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([]);
         const live = new vscode.EventEmitter<YamcsEvent>();
         const subscribe = jest.spyOn(YamcsClient.prototype, 'subscribeEvents').mockImplementation((_, onEvent) => {
@@ -364,10 +367,10 @@ describe('YAMCS event source', () => {
             listings.push({ resolve, reject });
         }));
         const api = await new YamcsBackendProvider().provideBackendApi(
-            { address: 'localhost:1', instance: 'fprime-project', processor: 'realtime' },
+            { address: 'localhost:1', processor: 'realtime' },
             {} as vscode.ExtensionContext,
             { debug: () => { }, info: () => { }, warn, error: () => { } },
-        ) as Hermes.Api & YamcsEventSource;
+        ) as Hermes.Api & YamcsEventSource & YamcsParameterSource;
         return { api, raise: (event: YamcsEvent) => live.fire(event), listings, subscribe, list, warn };
     }
 
@@ -409,6 +412,34 @@ describe('YAMCS event source', () => {
         api.dispose();
     });
 
+    test('subscribes to each instance\'s parameters and events, and tells handlers the instance', async () => {
+        const { api, listings, subscribe } = await backend(['bigdata-a', 'ref']);
+        // Each parameter subscription sends a value for every name it was given as soon as it opens
+        const subscribeParameters = jest.spyOn(YamcsClient.prototype, 'subscribeParameters')
+            .mockImplementation((_instance, _processor, names, onValues) => {
+                onValues(names.map((name) => pv(name, 1000, comQueueDepth)));
+                return () => { };
+            });
+        const received: string[] = [];
+        const parameters = api.onYamcsParameters((instance, values) => received.push(`${instance} ${values[0].id!.name}`));
+        const events = api.onYamcsEvents((instance, batch) => received.push(`${instance} ${batch[0].seqNumber}`));
+        // ref's archive listing finishes first, so a batch can't get its instance from the order it arrives in
+        listings[1].resolve([second]);
+        listings[0].resolve([first]);
+        await settle();
+
+        expect(subscribeParameters.mock.calls.map(([instance]) => instance)).toEqual(['bigdata-a', 'ref']);
+        expect(subscribe.mock.calls.map(([instance]) => instance)).toEqual(['bigdata-a', 'ref']);
+        expect(received).toEqual(['bigdata-a /bigdata-a/Demo/x', 'ref /ref/Demo/x', 'ref 5', 'bigdata-a 4']);
+        parameters.dispose();
+        events.dispose();
+        api.dispose();
+    });
+
+    test('refuses to connect when no instance is running', async () => {
+        await expect(backend([])).rejects.toThrow('No YAMCS instance is running');
+    });
+
     test('drops a listing that finishes after its listener left', async () => {
         const { api, listings } = await backend();
         const batches: YamcsEvent[][] = [];
@@ -421,6 +452,18 @@ describe('YAMCS event source', () => {
         expect(batches).toEqual([[second]]);
         sub.dispose();
         api.dispose();
+    });
+});
+
+describe('YamcsClient.listInstances', () => {
+    test('lists nothing when the server has no instances', async () => {
+        const client = new YamcsClient('localhost:1');
+        // grpc-js decodes a reply without instances as an object with no instances field. The client's gRPC stub is
+        // private and readonly, so we swap it for a fake with Object.assign.
+        const reply = (_request: object, _options: object, done: (err: null, res: object) => void) => done(null, {});
+        Object.assign(client, { instances: { ListInstances: reply } });
+        expect(await client.listInstances()).toEqual([]);
+        client.close();
     });
 });
 
@@ -689,6 +732,11 @@ describe('YAMCS commands', () => {
     // a command's history shows that YAMCS sent it and recorded no verifier, which completes a command without verifiers.
     async function backend() {
         jest.spyOn(YamcsClient.prototype, 'waitForReady').mockResolvedValue(undefined);
+        jest.spyOn(YamcsClient.prototype, 'listInstances').mockResolvedValue([
+            { name: 'fprime-project', state: 'RUNNING' },
+            { name: 'stopped', state: 'OFFLINE' },
+            { name: 'other-instance', state: 'RUNNING' },
+        ]);
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([noOpString]);
         const issue = jest.spyOn(YamcsClient.prototype, 'issueCommand')
@@ -696,21 +744,39 @@ describe('YAMCS commands', () => {
         const get = jest.spyOn(YamcsClient.prototype, 'getCommand')
             .mockResolvedValue(history(...queued, attr('Acknowledge_Sent_Status', 'OK')));
         const api = await new YamcsBackendProvider().provideBackendApi(
-            { address: 'localhost:1', instance: 'fprime-project', processor: 'other-processor' },
+            { address: 'localhost:1', processor: 'other-processor' },
             {} as vscode.ExtensionContext,
             { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } },
         );
         return { api, fsw: (await api.allFsw())[0], issue, get };
     }
 
-    test('offers one connection, with the dictionary built from YAMCS', async () => {
-        const { api, fsw } = await backend();
-        expect(fsw).toMatchObject({ id: 'yamcs:fprime-project', type: 'yamcs', dictionary: 'yamcs:fprime-project' });
-        expect(await api.getFsw('yamcs:fprime-project')).toBe(fsw);
-        expect((await api.allDictionaries())['yamcs:fprime-project']).toMatchObject({ name: 'fprime-project', type: 'yamcs' });
+    // A provider for YAMCS cells, whose cells hold no commands
+    class Cells extends FswNotebookLanguageProvider {
+        async *parse() { }
+    }
+
+    test('offers one connection per running instance, with the dictionary built from its commands', async () => {
+        const { api } = await backend();
+        const fsws = await api.allFsw();
+        expect(fsws.map(({ id, type, dictionary }) => ({ id, type, dictionary }))).toEqual([
+            { id: 'yamcs:fprime-project', type: 'yamcs', dictionary: 'yamcs:fprime-project' },
+            { id: 'yamcs:other-instance', type: 'yamcs', dictionary: 'yamcs:other-instance' },
+        ]);
+        expect(await api.getFsw('yamcs:other-instance')).toBe(fsws[1]);
+        expect((await api.allDictionaries())['yamcs:other-instance']).toMatchObject({ name: 'other-instance', type: 'yamcs' });
         const lists: Hermes.Fsw[][] = [];
         api.onFswChange((fsws) => lists.push(fsws));
-        expect(lists).toEqual([[fsw]]);
+        expect(lists).toEqual([fsws]);
+        api.dispose();
+    });
+
+    test('issues a command in its connection\'s instance', async () => {
+        const { api, issue, get } = await backend();
+        const fsw = await api.getFsw('yamcs:other-instance');
+        await fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a'])] });
+        expect(issue.mock.calls[0][0]).toBe('other-instance');
+        expect(get.mock.calls[0][0]).toBe('other-instance');
         api.dispose();
     });
 
@@ -732,6 +798,20 @@ describe('YAMCS commands', () => {
         // All three looks at the first command's history come before the second command
         expect(get.mock.calls.map(([, id]) => id)).toEqual(['id-0', 'id-0', 'id-0', 'id-1']);
         expect(get.mock.invocationCallOrder[2]).toBeLessThan(issue.mock.invocationCallOrder[1]);
+        api.dispose();
+    });
+
+    test('refuses to run a cell on Automatic while several instances are connected', async () => {
+        const { api } = await backend();
+        const cells = new Cells('yamcs', (fsw) => fsw.type === 'yamcs', api);
+        const cell: Partial<vscode.NotebookCell> = { metadata: {} };
+        const { token } = tokenSource();
+
+        await expect(cells.execute(cell as vscode.NotebookCell, {} as vscode.NotebookCellExecution, token))
+            .rejects.toThrow("Several YAMCS instances are connected. Pick this cell's target from its status bar.");
+        const [item] = await cells.provideCellStatusBarItems(cell as vscode.NotebookCell, token);
+        expect(item.text).toBe('$(circle-large-outline)');
+        cells.dispose();
         api.dispose();
     });
 
@@ -858,6 +938,18 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
         'FPrimePacketId', 'FPrimeTime',
     ];
 
+    test('lists the server\'s instances with their states', async () => {
+        const client = new YamcsClient(address!);
+        try {
+            await client.waitForReady(5000);
+            const instances = await client.listInstances();
+            console.log(instances.map((i) => `${i.name} ${i.state}`).join(', '));
+            expect(instances).toContainEqual(expect.objectContaining({ name: instance, state: 'RUNNING' }));
+        } finally {
+            client.close();
+        }
+    });
+
     test('lists every TELEMETERED parameter across pages', async () => {
         const client = new YamcsClient(address!);
         try {
@@ -876,7 +968,7 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
 
     test('parameter values reach the telemetry database', async () => {
         const api = await new YamcsBackendProvider().provideBackendApi(
-            { address: address!, instance, processor: 'realtime' },
+            { address: address!, processor: 'realtime' },
             {} as vscode.ExtensionContext,
             log,
         );
@@ -915,7 +1007,7 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
 
     test('includeTopLevel brings back the packet header fields', async () => {
         const api = await new YamcsBackendProvider().provideBackendApi(
-            { address: address!, instance, processor: 'realtime', includeTopLevel: true },
+            { address: address!, processor: 'realtime', includeTopLevel: true },
             {} as vscode.ExtensionContext,
             log,
         );
@@ -937,12 +1029,12 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
 
     async function eventBatches() {
         const api = await new YamcsBackendProvider().provideBackendApi(
-            { address: address!, instance, processor: 'realtime' },
+            { address: address!, processor: 'realtime' },
             {} as vscode.ExtensionContext,
             log,
         ) as Hermes.Api & YamcsEventSource;
         const batches: YamcsEvent[][] = [];
-        const sub = api.onYamcsEvents((_, events) => batches.push(events));
+        const sub = api.onYamcsEvents((from, events) => from === instance && batches.push(events));
         return { batches, dispose: () => { sub.dispose(); api.dispose(); } };
     }
 
@@ -1001,9 +1093,11 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
         // sends it live and also returns it in the listing.
         const listEvents = YamcsClient.prototype.listEvents;
         jest.spyOn(YamcsClient.prototype, 'listEvents').mockImplementation(async function (this: YamcsClient, inst, limit) {
-            // YAMCS does not acknowledge the subscription, so give it time to start
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            await raiseEvent(client, message);
+            if (inst === instance) {
+                // YAMCS does not acknowledge the subscription, so give it time to start
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+                await raiseEvent(client, message);
+            }
             return listEvents.call(this, inst, limit);
         });
         const { batches, dispose } = await eventBatches();
@@ -1041,14 +1135,14 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
     test('a command from the YAMCS dictionary reaches YAMCS and gets sent', async () => {
         const issue = jest.spyOn(YamcsClient.prototype, 'issueCommand');
         const api = await new YamcsBackendProvider().provideBackendApi(
-            { address: address!, instance, processor: 'realtime' },
+            { address: address!, processor: 'realtime' },
             {} as vscode.ExtensionContext,
             log,
         );
         const client = new YamcsClient(address!);
         const text = `hermes live test ${Date.now()}`;
         try {
-            const [fsw] = await api.allFsw();
+            const fsw = await api.getFsw(`yamcs:${instance}`);
             const commands = Dictionary.fromProto(await api.getDictionary(fsw.dictionary!)).get('');
             const def = [...commands.getCommands()].find((c) => c.mnemonic === 'CMD_NO_OP_STRING')!;
             expect(def.arguments.map((a) => a.name)).toEqual(['arg1']);
@@ -1066,12 +1160,12 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
 
     test('YAMCS refuses a bad argument before sending anything', async () => {
         const api = await new YamcsBackendProvider().provideBackendApi(
-            { address: address!, instance, processor: 'realtime' },
+            { address: address!, processor: 'realtime' },
             {} as vscode.ExtensionContext,
             log,
         );
         try {
-            const [fsw] = await api.allFsw();
+            const fsw = await api.getFsw(`yamcs:${instance}`);
             const commands = Dictionary.fromProto(await api.getDictionary(fsw.dictionary!)).get('');
             const def = [...commands.getCommands()].find((c) => c.mnemonic === 'CMD_NO_OP_STRING')!;
             // CMD_NO_OP_STRING's argument holds at most 40 bytes

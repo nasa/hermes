@@ -5,6 +5,7 @@ import yamcsDescriptor from './proto/yamcs.json';
 import type { ProtoGrpcType } from './proto/yamcs/processing';
 import type { ProtoGrpcType as EventsProtoGrpcType } from './proto/yamcs/events_service';
 import type { ProtoGrpcType as CommandsProtoGrpcType } from './proto/yamcs/commands_service';
+import type { ProtoGrpcType as InstancesProtoGrpcType } from './proto/yamcs/instances_service';
 import type { Value as ArgumentValue } from './proto/yamcs/google/protobuf/Value';
 import type { CommandHistoryEntry__Output } from './proto/yamcs/yamcs/protobuf/commanding/CommandHistoryEntry';
 import type { CommandsApiClient } from './proto/yamcs/yamcs/protobuf/commanding/CommandsApi';
@@ -12,6 +13,9 @@ import type { IssueCommandResponse__Output } from './proto/yamcs/yamcs/protobuf/
 import type { EventsApiClient } from './proto/yamcs/yamcs/protobuf/events/EventsApi';
 import type { Event__Output } from './proto/yamcs/yamcs/protobuf/events/Event';
 import type { ListEventsResponse__Output } from './proto/yamcs/yamcs/protobuf/events/ListEventsResponse';
+import type { InstancesApiClient } from './proto/yamcs/yamcs/protobuf/instances/InstancesApi';
+import type { ListInstancesResponse__Output } from './proto/yamcs/yamcs/protobuf/instances/ListInstancesResponse';
+import type { YamcsInstance__Output } from './proto/yamcs/yamcs/protobuf/instances/YamcsInstance';
 import type { CommandInfo__Output } from './proto/yamcs/yamcs/protobuf/mdb/CommandInfo';
 import type { ListCommandsResponse__Output } from './proto/yamcs/yamcs/protobuf/mdb/ListCommandsResponse';
 import type { MdbApiClient } from './proto/yamcs/yamcs/protobuf/mdb/MdbApi';
@@ -29,6 +33,7 @@ export type { CommandInfo__Output as YamcsCommandInfo } from './proto/yamcs/yamc
 export type { ArgumentTypeInfo__Output as YamcsArgumentTypeInfo } from './proto/yamcs/yamcs/protobuf/mdb/ArgumentTypeInfo';
 export type { Value as YamcsArgumentValue } from './proto/yamcs/google/protobuf/Value';
 export type { CommandHistoryEntry__Output as YamcsCommandHistoryEntry } from './proto/yamcs/yamcs/protobuf/commanding/CommandHistoryEntry';
+export type { YamcsInstance__Output as YamcsInstance } from './proto/yamcs/yamcs/protobuf/instances/YamcsInstance';
 
 // 64-bit integers decode as strings so they stay exact, and enums as their names.
 // The generated types in ./proto/yamcs assume the same, so these options must match
@@ -37,7 +42,7 @@ const yamcsDefinition = protoLoader.fromJSON(yamcsDescriptor as any, {
     longs: String,
     enums: String,
 });
-const yamcsPackage = grpc.loadPackageDefinition(yamcsDefinition) as unknown as ProtoGrpcType & EventsProtoGrpcType & CommandsProtoGrpcType;
+const yamcsPackage = grpc.loadPackageDefinition(yamcsDefinition) as unknown as ProtoGrpcType & EventsProtoGrpcType & CommandsProtoGrpcType & InstancesProtoGrpcType;
 
 /**
  * Client for the YAMCS API that the yamcs-grpc plugin serves over gRPC.
@@ -47,6 +52,7 @@ export class YamcsClient {
     private readonly mdb: MdbApiClient;
     private readonly events: EventsApiClient;
     private readonly commands: CommandsApiClient;
+    private readonly instances: InstancesApiClient;
 
     constructor(address: string) {
         const credentials = grpc.credentials.createInsecure();
@@ -56,8 +62,8 @@ export class YamcsClient {
             // more often than that.
             'grpc.keepalive_time_ms': 5 * 60 * 1000,
         });
-        // MdbApi, EventsApi and CommandsApi share ProcessingApi's channel, so we only need to wait on
-        // and close processing.
+        // MdbApi, EventsApi, CommandsApi and InstancesApi share ProcessingApi's channel, so we only need
+        // to wait on and close processing.
         this.mdb = new yamcsPackage.yamcs.protobuf.mdb.MdbApi(address, credentials, {
             channelOverride: this.processing.getChannel(),
         });
@@ -67,12 +73,28 @@ export class YamcsClient {
         this.commands = new yamcsPackage.yamcs.protobuf.commanding.CommandsApi(address, credentials, {
             channelOverride: this.processing.getChannel(),
         });
+        this.instances = new yamcsPackage.yamcs.protobuf.instances.InstancesApi(address, credentials, {
+            channelOverride: this.processing.getChannel(),
+        });
     }
 
     waitForReady(timeoutMs: number): Promise<void> {
         return new Promise((resolve, reject) => {
             this.processing.waitForReady(Date.now() + timeoutMs, (err) => err ? reject(err) : resolve());
         });
+    }
+
+    /**
+     * Every instance on the server, running or not. Each has its name and state,
+     * and a failureCause when its state is FAILED.
+     */
+    async listInstances(): Promise<YamcsInstance__Output[]> {
+        const res = await new Promise<ListInstancesResponse__Output>((resolve, reject) => {
+            // YAMCS mode waits on this list to connect, so we give ListInstances 10 seconds rather
+            // than letting a hung call wait forever.
+            this.instances.ListInstances({}, { deadline: Date.now() + 10000 }, (err, res) => err ? reject(err) : resolve(res!));
+        });
+        return res.instances ?? [];
     }
 
     /**

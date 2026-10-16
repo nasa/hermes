@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import * as Rpc from '@gov.nasa.jpl.hermes/rpc';
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
+import type { Proto } from '@gov.nasa.jpl.hermes/types';
 import { BackendProvider, Settings } from '@gov.nasa.jpl.hermes/vscode';
 
 import { Offline } from './Offline';
@@ -44,24 +45,31 @@ export function inTopLevelSpaceSystem(qualifiedName: string): boolean {
     return qualifiedName.split('/').length === 3;
 }
 
+// A running YAMCS instance, with the parameters we subscribe to and a dictionary built from its commands
+interface Instance {
+    name: string;
+    parameters: readonly string[];
+    dictionary: Proto.IDictionary;
+}
+
 // Telemetry and events straight from YAMCS, and commands to it, through the yamcs-grpc plugin.
 // Telemetry and events are named by YAMCS, so they don't need a Hermes dictionary. Commands go
-// through our one flight software connection, using a dictionary built from YAMCS's mission
-// database. Everything else behaves as in Offline mode.
+// through one flight software connection per instance, using a dictionary built from that
+// instance's mission database. Everything else behaves as in Offline mode.
 export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSource {
-    private readonly parameters = new vscode.EventEmitter<Rpc.YamcsParameterValue[]>();
-    // Handlers share one YAMCS subscription, opened for the first handler and cancelled when the last one is disposed
+    private readonly parameters = new vscode.EventEmitter<{ instance: string; values: Rpc.YamcsParameterValue[] }>();
+    // Handlers share one YAMCS subscription per instance, opened for the first handler and cancelled when the last one is disposed
     private listeners = 0;
     private cancel?: () => void;
 
-    private readonly events = new vscode.EventEmitter<Rpc.YamcsEvent[]>();
+    private readonly events = new vscode.EventEmitter<{ instance: string; events: Rpc.YamcsEvent[] }>();
     private eventListeners = 0;
     private cancelEvents?: () => void;
 
-    // Losing YAMCS ends the parameter and event subscriptions together, so we only exit the backend for the first one
+    // Losing YAMCS ends every subscription together, so we only exit the backend for the first one
     private exited = false;
 
-    private readonly fsw: Hermes.Fsw;
+    private readonly fsws: Hermes.Fsw[];
     // YAMCS puts this in each command's id, so commands issued in the same millisecond get different ids
     private sequenceNumber = 0;
 
@@ -70,26 +78,25 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
         log: Hermes.Log,
         readonly client: Rpc.YamcsClient,
         readonly state: Settings.Yamcs,
-        readonly names: readonly string[],
-        dictionaryId: string,
+        readonly instances: readonly Instance[],
     ) {
         super(context, log);
-        this.fsw = {
-            id: `yamcs:${state.instance}`,
+        this.fsws = instances.map(({ name, dictionary }) => ({
+            id: `yamcs:${name}`,
             type: 'yamcs',
             profileId: '',
-            dictionary: dictionaryId,
-            command: (value, token) => this.command(value, token),
-            sequence: (value, token) => this.sequence(value, token),
-        };
+            dictionary: dictionary.id!,
+            command: (value, token) => this.command(name, value, token),
+            sequence: (value, token) => this.sequence(name, value, token),
+        }));
     }
 
     /**
      * Connects to the yamcs-grpc plugin at state.address. We wait up to 5 s for the
-     * plugin to answer, then list the instance's parameters and commands, then load the
-     * workspace's dictionaries as Offline mode does, plus one built from the commands.
-     * The parameter subscription itself opens later, when the first handler calls
-     * onYamcsParameters.
+     * plugin to answer, then list the running instances and each one's parameters and
+     * commands, then load the workspace's dictionaries as Offline mode does, plus one
+     * built from each instance's commands. The parameter subscriptions open later, when
+     * the first handler calls onYamcsParameters.
      */
     static async connect(
         state: Settings.Yamcs,
@@ -104,20 +111,19 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
         // the channel until waitForReady's deadline.
         try {
             await cancellable(client.waitForReady(5000), token);
-            const all = await cancellable(client.listTelemetered(state.instance), token);
-            // Parameters directly in a top-level space system are packet header fields in fprime-yamcs, not channels
-            const names = state.includeTopLevel ? all : all.filter((name) => !inTopLevelSpaceSystem(name));
-            log.info(`Found ${all.length} TELEMETERED parameters in YAMCS instance ${state.instance}, subscribing to ${names.length}`);
+            const running = (await cancellable(client.listInstances(), token)).filter((i) => i.state === 'RUNNING');
+            if (running.length === 0) {
+                throw new Error('No YAMCS instance is running');
+            }
+            const instances = await cancellable(Promise.all(running.map((i) => loadInstance(client, i.name!, state, log))), token);
 
-            const commands = await cancellable(client.listCommands(state.instance), token);
-            log.info(`Found ${commands.length} commands in YAMCS instance ${state.instance}`);
-            const dictionary = yamcsDictionary(state.instance, commands);
-
-            const api = new Yamcs(context, log, client, state, names, dictionary.id!);
+            const api = new Yamcs(context, log, client, state, instances);
             await api._activate();
-            // This dictionary has to stay in memory, because a saved copy reloads its missing opcodes as 0. It has
-            // an id, so addDictionary doesn't save it to workspace storage.
-            await api.addDictionary(dictionary);
+            // These dictionaries have to stay in memory, because a saved copy reloads its missing opcodes as 0. They
+            // have ids, so addDictionary doesn't save them to workspace storage.
+            for (const instance of instances) {
+                await api.addDictionary(instance.dictionary);
+            }
             return api;
         } catch (err) {
             // A cancel or any failure above ends here, and we close the client so its channel doesn't linger
@@ -127,15 +133,16 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
     }
 
     onYamcsParameters(handler: YamcsParameterHandler): vscode.Disposable {
-        const subscription = this.parameters.event((values) => handler(this.state.instance, values));
+        const subscription = this.parameters.event(({ instance, values }) => handler(instance, values));
         if (this.listeners++ === 0) {
-            this.cancel = this.client.subscribeParameters(
-                this.state.instance,
+            const cancels = this.instances.map(({ name, parameters }) => this.client.subscribeParameters(
+                name,
                 this.state.processor,
-                this.names,
-                (values) => this.parameters.fire(values),
+                parameters,
+                (values) => this.parameters.fire({ instance: name, values }),
                 (err) => this.exit(err),
-            );
+            ));
+            this.cancel = () => cancels.forEach((cancel) => cancel());
         }
 
         return {
@@ -150,9 +157,10 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
     }
 
     onYamcsEvents(handler: YamcsEventHandler): vscode.Disposable {
-        const subscription = this.events.event((events) => handler(this.state.instance, events));
+        const subscription = this.events.event(({ instance, events }) => handler(instance, events));
         if (this.eventListeners++ === 0) {
-            this.cancelEvents = this.subscribeEvents();
+            const cancels = this.instances.map(({ name }) => this.subscribeEvents(name));
+            this.cancelEvents = () => cancels.forEach((cancel) => cancel());
         }
 
         return {
@@ -169,21 +177,21 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
     // We subscribe before calling listEvents so an event raised during the
     // listing still arrives live. We hold live events back until we send the
     // archived ones, so handlers get the archived events first.
-    private subscribeEvents(): () => void {
+    private subscribeEvents(instance: string): () => void {
         let held: Rpc.YamcsEvent[] | undefined = [];
         let cancelled = false;
         const cancel = this.client.subscribeEvents(
-            this.state.instance,
-            (event) => held ? held.push(event) : this.events.fire([event]),
+            instance,
+            (event) => held ? held.push(event) : this.events.fire({ instance, events: [event] }),
             (err) => this.exit(err),
         );
 
-        this.client.listEvents(this.state.instance, RECENT_EVENTS).catch((err) => {
-            this.log.warn(`Could not list recent YAMCS events: ${err}`);
+        this.client.listEvents(instance, RECENT_EVENTS).catch((err) => {
+            this.log.warn(`Could not list recent events in YAMCS instance ${instance}: ${err}`);
             return [];
         }).then((newest) => {
             if (!cancelled) {
-                this.events.fire([...newest.reverse(), ...held!]);
+                this.events.fire({ instance, events: [...newest.reverse(), ...held!] });
                 held = undefined;
             }
         });
@@ -202,22 +210,22 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
     }
 
     async allFsw(): Promise<Hermes.Fsw[]> {
-        return [this.fsw];
+        return this.fsws;
     }
 
     async getFsw(id: string): Promise<Hermes.Fsw> {
-        return id === this.fsw.id ? this.fsw : super.getFsw(id);
+        return this.fsws.find((fsw) => fsw.id === id) ?? super.getFsw(id);
     }
 
-    // We call each listener with our one flight software connection as soon as it subscribes. The
-    // connection never changes, so a listener would never hear of it otherwise.
+    // We call each listener with our flight software connections as soon as it subscribes. The
+    // connections never change, so a listener would never hear of them otherwise.
     onFswChange: vscode.Event<Hermes.Fsw[]> = (listener) => {
-        listener([this.fsw]);
+        listener(this.fsws);
         return { dispose: () => { } };
     };
 
     /**
-     * Issues a command on state.processor by the qualified name in its metadata, then
+     * Issues a command on state.processor in the given instance, by the qualified name in its metadata, then
      * checks its history every 50 ms and resolves once YAMCS has sent it and, if the
      * mission database gives it verifiers, has finished verifying it. We poll because
      * SubscribeCommands streams every command on the processor, with no way to ask for
@@ -226,7 +234,7 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
      * grpc-js can leave a call waiting for minutes on a dead connection, so we make each
      * wait cancellable to let the user stop the cell.
      */
-    private async command(value: CommandValue, token?: vscode.CancellationToken): Promise<boolean> {
+    private async command(instance: string, value: CommandValue, token?: vscode.CancellationToken): Promise<boolean> {
         const name = value.def.metadata?.qualifiedName;
         if (!name) {
             throw new Error(`${value.def.component}.${value.def.mnemonic} has no YAMCS qualified name. Select a dictionary built from YAMCS as this cell language's dictionary.`);
@@ -238,7 +246,7 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
             throw new Error('Cancelled');
         }
         const verifiers: Verifier[] = value.def.metadata?.verifiers ?? [];
-        const issued = this.client.issueCommand(this.state.instance, this.state.processor, name, yamcsArguments(value), this.sequenceNumber++);
+        const issued = this.client.issueCommand(instance, this.state.processor, name, yamcsArguments(value), this.sequenceNumber++);
         let sent = false;
         try {
             const id = await cancellable(issued, token).catch((err) => {
@@ -246,7 +254,7 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
                 throw new Error(`Could not issue ${name}: ${err.details ?? err.message}`, { cause: err });
             });
             for (; ;) {
-                const entry = await cancellable(this.client.getCommand(this.state.instance, id), token);
+                const entry = await cancellable(this.client.getCommand(instance, id), token);
                 sent = commandSent(entry);
                 if (sent && commandComplete(entry, verifiers)) {
                     return true;
@@ -266,9 +274,9 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
     }
 
     // Issues a cell's commands one at a time, each once the one before has completed
-    private async sequence(value: Hermes.CommandSequence, token?: vscode.CancellationToken): Promise<boolean> {
+    private async sequence(instance: string, value: Hermes.CommandSequence, token?: vscode.CancellationToken): Promise<boolean> {
         for (const cmd of value.commands) {
-            await this.command(cmd, token);
+            await this.command(instance, cmd, token);
         }
         return true;
     }
@@ -291,8 +299,8 @@ export class YamcsBackendProvider implements BackendProvider<Settings.Yamcs> {
     icon = "broadcast";
     priority = 30;
 
-    // Address and instance entered last, to prefill the next prompt
-    private last?: Pick<Settings.Yamcs, 'address' | 'instance'>;
+    // Address entered last, to prefill the next prompt
+    private last?: Pick<Settings.Yamcs, 'address'>;
 
     async promptForState(): Promise<Settings.Yamcs | null> {
         const defaults = { ...Settings.hostYamcs(), ...this.last };
@@ -304,12 +312,8 @@ export class YamcsBackendProvider implements BackendProvider<Settings.Yamcs> {
         if (!address) {
             return null;
         }
-        const instance = await vscode.window.showInputBox({ title: "YAMCS instance", value: defaults.instance });
-        if (!instance) {
-            return null;
-        }
-        this.last = { address, instance };
-        return { ...defaults, address, instance };
+        this.last = { address };
+        return { ...defaults, address };
     }
 
     provideBackendApi(
@@ -332,6 +336,18 @@ export class YamcsBackendProvider implements BackendProvider<Settings.Yamcs> {
     }
 }
 
+// Lists an instance's parameters and commands
+async function loadInstance(client: Rpc.YamcsClient, name: string, state: Settings.Yamcs, log: Hermes.Log): Promise<Instance> {
+    const all = await client.listTelemetered(name);
+    // Parameters directly in a top-level space system are packet header fields in fprime-yamcs, not channels
+    const parameters = state.includeTopLevel ? all : all.filter((parameter) => !inTopLevelSpaceSystem(parameter));
+    log.info(`Found ${all.length} TELEMETERED parameters in YAMCS instance ${name}, subscribing to ${parameters.length}`);
+
+    const commands = await client.listCommands(name);
+    log.info(`Found ${commands.length} commands in YAMCS instance ${name}`);
+    return { name, parameters, dictionary: yamcsDictionary(name, commands) };
+}
+
 function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -348,7 +364,7 @@ function cancellable<T>(promise: Promise<T>, token?: vscode.CancellationToken): 
 }
 
 function showServer(item: vscode.StatusBarItem, state: Settings.Yamcs) {
-    item.text = `$(broadcast) ${state.instance}`;
+    item.text = `$(broadcast) ${state.address}`;
     item.command = {
         title: "Change YAMCS server",
         command: "hermes.host.set",

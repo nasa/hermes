@@ -46,7 +46,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 }
             }
 
-            // For YAMCS mode's connection, we build an F Prime dictionary from YAMCS mode's dictionary and select it
+            // In YAMCS mode, we build an F Prime dictionary from the first YAMCS connection's dictionary and select it
             const yamcsDictionaryId = fsws.find(f => f.type === "yamcs")?.dictionary;
             if (yamcsDictionaryId) {
                 try {
