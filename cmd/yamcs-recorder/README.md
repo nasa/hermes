@@ -10,8 +10,10 @@ PGPASSWORD=... go run ./cmd/yamcs-recorder --yamcs localhost:8091 --instance fpr
 ```
 
 On start it creates the `timescaledb` extension, the `parameters` table and the `parameter_values` hypertable if
-they are missing. Each value becomes one row per scalar, with struct members and array elements named in
-`member_path` (`.member`, `[0]`).
+they are missing. Each value becomes one `parameter_values` row per scalar. Each row points to a `parameters` row
+that holds the parameter, the scalar's `member_path` (`.member`, `[0]`, or empty for a whole value) and its
+`value_type`. A parameter whose type changes in a new dictionary gets a new `parameters` row, so Grafana can
+show each type as its own series.
 
 It leaves out parameters directly in a top-level space system, such as `/Ref_Ref/FPrimeTime`, where
 fprime-yamcs puts the CCSDS and F Prime packet header fields. To record them anyway, pass `--include-top-level`.

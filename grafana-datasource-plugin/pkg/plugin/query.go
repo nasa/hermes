@@ -172,6 +172,7 @@ func isNumericAggregate(aggregation, dbValueType string) bool {
 
 func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 	frames := make(map[string]*data.Frame)
+	var skipped error
 
 	for rows.Next() {
 		var t time.Time
@@ -184,11 +185,16 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("telemetry row scan failure: %v", err.Error()))
 		}
 
+		// A parameter whose type changed can have rows this aggregation can't
+		// use, such as text under avg. We skip those and fail only when nothing
+		// was usable.
 		if err := validateAggregation(qm.Aggregation, dbValueType); err != nil {
-			return backend.ErrDataResponse(backend.StatusBadRequest, err.Error())
+			skipped = err
+			continue
 		}
 
-		frameId := fmt.Sprintf("%s/%s%s/%s(%s)", spaceSystem, parameter, member, qm.TimeField, instance)
+		// A parameter whose type changed gets one frame per type.
+		frameId := fmt.Sprintf("%s/%s%s/%s(%s) %s", spaceSystem, parameter, member, qm.TimeField, instance, dbValueType)
 		frame, exists := frames[frameId]
 
 		// Create new frame
@@ -215,6 +221,7 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 				"member":       member,
 				"instance":     instance,
 				"timeField":    qm.TimeField,
+				"value_type":   dbValueType,
 			}
 			frame.Fields = append(frame.Fields, valueField)
 			frames[frameId] = frame
@@ -288,18 +295,25 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("telemetry row iteration error: %v", err.Error()))
 	}
 
+	if skipped != nil && len(frames) == 0 {
+		return backend.ErrDataResponse(backend.StatusBadRequest, skipped.Error())
+	}
+
 	if qm.Aggregation == "deriv" {
 		computeDerivatives(&frames)
 	}
 
-	// Name the instance only when the result spans more than one.
+	// Name the instance only when the result spans more than one, and the value
+	// type only when one parameter member has several types in the result.
 	instanceSet := make(map[string]struct{})
+	typeCount := make(map[string]int)
 	for _, frame := range frames {
 		for _, field := range frame.Fields {
 			if field.Labels == nil {
 				continue
 			}
 			instanceSet[field.Labels["instance"]] = struct{}{}
+			typeCount[seriesKey(field.Labels)]++
 		}
 	}
 	multiInstance := len(instanceSet) > 1
@@ -317,6 +331,9 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 			if multiInstance {
 				displayName += " (" + field.Labels["instance"] + ")"
 			}
+			if typeCount[seriesKey(field.Labels)] > 1 {
+				displayName += " " + field.Labels["value_type"]
+			}
 			field.Name = displayName
 			field.SetConfig(&data.FieldConfig{
 				DisplayNameFromDS: displayName,
@@ -329,7 +346,15 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 	slices.SortFunc(response.Frames, func(a, b *data.Frame) int {
 		return cmp.Compare(a.Name, b.Name)
 	})
+	if skipped != nil {
+		response.Frames[0].AppendNotices(data.Notice{Severity: data.NoticeSeverityWarning, Text: skipped.Error()})
+	}
 	return response
+}
+
+// seriesKey identifies one parameter member in one instance, whatever its value type.
+func seriesKey(labels data.Labels) string {
+	return labels["space_system"] + "/" + labels["parameter"] + labels["member"] + "(" + labels["instance"] + ")"
 }
 
 func computeDerivatives(frames *map[string]*data.Frame) {

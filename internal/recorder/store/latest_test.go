@@ -32,7 +32,7 @@ func TestLatestGenerationTimes(t *testing.T) {
 	}
 	rows = append(rows, Row{Parameter: other, GenerationTime: day.Add(72 * time.Hour), Value: DoubleValue(1)})
 	require.NoError(t, Insert(ctx, db, ids, rows))
-	_, err := ids.ID(ctx, db, noValues)
+	_, err := ids.ID(ctx, db, Definition{Parameter: noValues, Type: TypeDouble})
 	require.NoError(t, err)
 
 	got, err := LatestGenerationTimes(ctx, db, "simulator")

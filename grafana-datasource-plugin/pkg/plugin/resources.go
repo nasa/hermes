@@ -91,21 +91,13 @@ func (d *Datasource) handleTelemetryMembers(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// We list each parameter's members in its own subquery so parameter_id has
-	// a single value inside it. TimescaleDB's SkipScan can then jump from one
-	// member_path to the next in the (parameter_id, member_path, generation_time)
-	// index instead of reading every stored value. The outer DISTINCT drops
-	// repeats when a parameter exists in several instances.
+	// DISTINCT drops repeats when a member has had several value types or the
+	// parameter exists in several instances.
 	query := `
-		SELECT DISTINCT p.space_system, p.name, m.member_path
+		SELECT DISTINCT p.space_system, p.name, p.member_path
 		FROM json_to_recordset($1::json) AS sel("spaceSystem" text, name text)
 		JOIN parameters p ON p.space_system = sel."spaceSystem" AND p.name = sel.name
-		CROSS JOIN LATERAL (
-			SELECT DISTINCT v.member_path
-			FROM parameter_values v
-			WHERE v.parameter_id = p.id
-		) m
-		ORDER BY p.space_system, p.name, m.member_path;`
+		ORDER BY p.space_system, p.name, p.member_path;`
 
 	rows, err := d.db.QueryContext(r.Context(), query, string(body))
 	if err != nil {
