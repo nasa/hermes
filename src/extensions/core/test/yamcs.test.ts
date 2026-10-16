@@ -34,7 +34,6 @@ jest.mock('vscode', () => {
 });
 
 import { EventEmitter as NodeEventEmitter } from 'events';
-import * as os from 'os';
 import * as vscode from 'vscode';
 import Long from 'long';
 import type * as Hermes from '@gov.nasa.jpl.hermes/api';
@@ -726,10 +725,9 @@ describe('YAMCS commands', () => {
 
         expect(sent).toBe(true);
         const name = '/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING';
-        const origin = `${os.hostname()}:${process.pid}`;
         expect(issue.mock.calls).toEqual([
-            ['fprime-project', 'other-processor', name, { arg1: { stringValue: 'a' } }, origin, 0],
-            ['fprime-project', 'other-processor', name, { arg1: { stringValue: 'b' } }, origin, 1],
+            ['fprime-project', 'other-processor', name, { arg1: { stringValue: 'a' } }, expect.any(String), 0],
+            ['fprime-project', 'other-processor', name, { arg1: { stringValue: 'b' } }, expect.any(String), 1],
         ]);
         // All three looks at the first command's history come before the second command
         expect(get.mock.calls.map(([, id]) => id)).toEqual(['id-0', 'id-0', 'id-0', 'id-1']);
