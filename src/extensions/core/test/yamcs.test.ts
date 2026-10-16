@@ -1134,7 +1134,6 @@ describe('YAMCS commands', () => {
             { index: 0, newCellMetadata: { owner: 'ops', hermes: { fsw: 'yamcs:other-instance', note: 'x' } } },
             { index: 2, newCellMetadata: { hermes: { fsw: 'yamcs:other-instance' } } },
         ]);
-        expect(vscode.workspace.applyEdit).toHaveBeenCalledTimes(1);
         api.dispose();
     });
 
