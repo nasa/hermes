@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
+import type { YamcsEvent } from '@gov.nasa.jpl.hermes/rpc';
 import {
+    DisplayEvent,
     Proto,
 } from '@gov.nasa.jpl.hermes/types';
 import { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
@@ -32,6 +34,30 @@ interface FswLanguageProviderQuickPickItem extends vscode.QuickPickItem {
     selectCustom?: boolean;
 }
 
+// The part of Core's API that raises YAMCS mode's events. Hermes.Api doesn't declare it.
+interface YamcsEventSource {
+    onYamcsEvents(handler: (instance: string, events: YamcsEvent[]) => void): vscode.Disposable;
+}
+
+// A YAMCS event as a row of a cell's event list
+function yamcsDisplayEvent(source: string, event: YamcsEvent): Omit<DisplayEvent, 'severity'> & { severity: string } {
+    const time = event.generationTime;
+    return {
+        time: Number(time?.seconds ?? 0) * 1000 + (time?.nanos ?? 0) / 1e6,
+        // YAMCS has no SCLK
+        sclk: NaN,
+        source,
+        // As in the events panel, YAMCS's source goes in the component column and its type in the name column
+        component: event.source ?? '',
+        name: event.type ?? '',
+        // fprime-yamcs puts an F Prime event's own severity in extra.fprime_severity. We show that one, because
+        // the notebook's severity settings use F Prime's severity names. Any other event has no
+        // extra.fprime_severity, so we show YAMCS's severity, which is INFO when YAMCS leaves it out.
+        severity: event.extra?.fprime_severity ?? event.severity ?? 'INFO',
+        message: event.message ?? '',
+    };
+}
+
 /**
  * Subscribe to EVRs from the EVR event bus that are related
  * to the given FSW. By default only EVRs from this FSW are shown.
@@ -54,6 +80,31 @@ export function evrOutput(
     const evrs: string[] = [];
 
     output.appendOutput(out);
+
+    // In YAMCS mode Hermes decodes no events itself, so we list the ones YAMCS raises
+    if (fsw.type === 'yamcs') {
+        // YAMCS mode sends the newest events in YAMCS's archive when its first handler subscribes. The events panel
+        // subscribes when Hermes starts, so a cell is never that handler, and subscribing here doesn't put the
+        // archived events in the cell's list.
+        const listing = (api as Hermes.Api & YamcsEventSource).onYamcsEvents((_, events) => {
+            const shown = events.map((event) => yamcsDisplayEvent(fsw.id, event)).filter((evr) => showEvr(evr.severity));
+            if (shown.length) {
+                evrs.push(...shown.map((evr) => JSON.stringify(evr)));
+                output.replaceOutputItems(
+                    vscode.NotebookCellOutputItem.text(evrs.join('\n'), 'hermes.notebook/evr'),
+                    out
+                );
+            }
+        });
+        // When YAMCS mode reconnects, it sends the archived events to every handler. Hermes first reports that the
+        // cell's connection is gone, and we stop listing then.
+        const gone = api.onFswChange((connections) => {
+            if (!connections.includes(fsw)) {
+                listing.dispose();
+            }
+        });
+        return { dispose: () => [listing, gone].forEach((subscription) => subscription.dispose()) };
+    }
 
     if (fsw.forwards) {
         return api.onEvent((evr) => {

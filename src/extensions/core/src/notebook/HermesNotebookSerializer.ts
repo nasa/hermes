@@ -91,7 +91,7 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
                                 }
                             }).filter(v => v !== null);
                             const tableRows = evrs.map(evr => (
-                                `|${evr.source}|${evr.sclk?.toFixed(6)}|${evr.time?.toFixed(6)}|${evr.severity}|${evr.component}|${evr.name}|${evr.message?.replace(/(\||\n)/g, "&#124;")}|`
+                                `|${evr.source}|${evr.sclk?.toFixed(6) ?? ''}|${evr.time?.toFixed(6)}|${evr.severity}|${evr.component}|${evr.name}|${evr.message?.replace(/(\||\n)/g, "&#124;")}|`
                             ));
 
                             contents.push(...tableRows);

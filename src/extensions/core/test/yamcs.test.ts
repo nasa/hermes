@@ -143,6 +143,10 @@ function notebookCell(...lines: string[]) {
         appendOutput: async (output) => {
             outputs.push(...[output].flat());
         },
+        // As in VS Code, this swaps the items of an output the cell already has
+        replaceOutputItems: async (items, output) => {
+            output.items = [items].flat();
+        },
     };
     const cell: Partial<vscode.NotebookCell> = { metadata: {}, document: document as vscode.TextDocument };
     const decorations = () => setDecorations.mock.lastCall![1] as vscode.DecorationOptions[];
@@ -496,6 +500,61 @@ describe('YAMCS event source', () => {
         sub.dispose();
         api.dispose();
     });
+
+    test('a cell lists the events YAMCS raises while the cell runs, except ones whose F Prime severity the notebook settings turn off', async () => {
+        const { api, raise, listings } = await backend();
+        // The test fires onFswChange itself, as Hermes does when YAMCS mode's connection is gone
+        const connections = new vscode.EventEmitter<Hermes.Fsw[]>();
+        jest.spyOn(api, 'onFswChange').mockImplementation(connections.event);
+        const cells = new Cells(api, []);
+        // While the cell runs, Hermes reports that the cell's connection is still there, and YAMCS raises three events
+        const sequence = jest.spyOn(cells, 'executeSequence').mockImplementation(async (_cell, fsw) => {
+            connections.fire([fsw]);
+            raise(seqCountJump);
+            raise(opCodeDispatched);
+            raise(seqCountJump);
+            return true;
+        });
+        // As the events panel does, a handler subscribes before any cell runs. The backend lists YAMCS's archive
+        // when the backend's first handler subscribes, and holds live events back until it has sent the archived
+        // ones, so we answer with an empty archive.
+        api.onYamcsEvents(() => { });
+        const [archive] = listings;
+        archive.resolve([]);
+        await settle();
+
+        const { cell, execution, outputs } = notebookCell();
+        mockSettings['hermes.notebook.evrCommand'] = false;
+        await cells.execute(cell, execution, tokenSource().token);
+        // The cell has ended, so it doesn't list this one
+        raise(seqCountJump);
+
+        // evrCommand is off, which hides events of severity COMMAND. opCodeDispatched's F Prime severity
+        // is COMMAND and its YAMCS severity is INFO, which no setting hides.
+        const [events] = outputs();
+        const seqCountJumpRow = {
+            time: 1790722468095,
+            // The row has NaN here, which JSON writes as null
+            sclk: null,
+            source: 'yamcs:fprime-project',
+            component: 'FprimePacketPreprocessor',
+            name: 'SEQ_COUNT_JUMP',
+            severity: 'WARNING',
+            message: 'Sequence count jump for APID: 4 old seq: 0 newseq: 0',
+        };
+        expect(events.split('\n').map((row) => JSON.parse(row))).toEqual([seqCountJumpRow, seqCountJumpRow]);
+
+        // A cell whose connection is gone, as it is while YAMCS mode reconnects, lists no event raised after that
+        sequence.mockImplementation(async () => {
+            connections.fire([]);
+            raise(seqCountJump);
+            return true;
+        });
+        const disconnected = notebookCell();
+        await cells.execute(disconnected.cell, disconnected.execution, tokenSource().token);
+        expect(disconnected.outputs()).toEqual(['']);
+        api.dispose();
+    });
 });
 
 describe('YamcsClient.subscribeParameters', () => {
@@ -819,6 +878,9 @@ describe('YAMCS commands', () => {
         jest.spyOn(YamcsClient.prototype, 'waitForReady').mockResolvedValue(undefined);
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([noOpString]);
+        // A cell subscribes to YAMCS's events while it runs, and these tests raise none
+        jest.spyOn(YamcsClient.prototype, 'subscribeEvents').mockReturnValue(() => { });
+        jest.spyOn(YamcsClient.prototype, 'listEvents').mockResolvedValue([]);
         const issue = jest.spyOn(YamcsClient.prototype, 'issueCommand')
             .mockImplementation(async (_instance, _processor, _name, _args, sequenceNumber) => `id-${sequenceNumber}`);
         const get = jest.spyOn(YamcsClient.prototype, 'getCommand')
