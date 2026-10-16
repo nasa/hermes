@@ -31,6 +31,21 @@ export function fprimeDictionary(yamcsDictionary: Proto.IDictionary): Proto.IDic
     return { ...out.toProto(), id: `${yamcsDictionary.id}:fprime` };
 }
 
+// Adds an F Prime dictionary for each YAMCS dictionary that doesn't have one yet
+export async function addFprimeDictionaries(api: Hermes.Api): Promise<void> {
+    const dictionaries = await api.allDictionaries();
+    for (const [id, head] of Object.entries(dictionaries)) {
+        // The extension calls this on every dictionary change, and adding a dictionary fires another change, so we
+        // skip a YAMCS dictionary that already has its F Prime dictionary
+        if (head.type === 'yamcs' && !dictionaries[`${id}:fprime`]) {
+            const dictionary = fprimeDictionary(await api.getDictionary(id));
+            if (dictionary) {
+                await api.addDictionary(dictionary);
+            }
+        }
+    }
+}
+
 function fprimeType(type: Def.Type): Def.Type {
     switch (type.kind) {
         case Def.TypeKind.enum:

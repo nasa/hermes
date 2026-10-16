@@ -41,6 +41,7 @@ const yamcsBackend: Partial<Hermes.Api> = {
     onFileDownlink: none,
     onFileUplink: none,
     onFileTransfer: none,
+    allDictionaries: async () => ({}),
     dispose: () => { },
 };
 

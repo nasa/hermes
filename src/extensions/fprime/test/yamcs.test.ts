@@ -3,10 +3,10 @@ import Long from 'long';
 
 import type * as Hermes from '@gov.nasa.jpl.hermes/api';
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
-import { Def, Dictionary, DualKeyMap } from '@gov.nasa.jpl.hermes/types';
+import { Def, Dictionary, DualKeyMap, Proto } from '@gov.nasa.jpl.hermes/types';
 import type * as vscode from 'vscode';
 
-import { fprimeDictionary, runOnYamcs } from '../src/yamcs';
+import { addFprimeDictionaries, fprimeDictionary, runOnYamcs } from '../src/yamcs';
 
 // fprime-yamcs's bool enumeration, which it also uses for bools inside structs and arrays
 const bool: Def.EnumType = {
@@ -80,10 +80,33 @@ test('names YAMCS commands the F Prime way, with their opcodes and booleans', ()
     expect((state.fields[1].type as Def.ArrayType).type.kind).toBe(Def.TypeKind.boolean);
 });
 
-test('builds no F Prime dictionary from an instance without opcodes', () => {
+// A dictionary as YAMCS mode builds it from the YAMCS simulator, which has no opcodes
+function simulatorDictionary() {
     const dict = new Dictionary({ name: 'simulator', type: 'yamcs' });
     dict.get('').addCommand('/YSS/SIMULATOR/SWITCH_VOLTAGE_ON', switchVoltageOn);
-    expect(fprimeDictionary({ ...dict.toProto(), id: 'yamcs:simulator' })).toBeUndefined();
+    return { ...dict.toProto(), id: 'yamcs:simulator' };
+}
+
+test('builds no F Prime dictionary from an instance without opcodes', () => {
+    expect(fprimeDictionary(simulatorDictionary())).toBeUndefined();
+});
+
+test('adds an F Prime dictionary for each YAMCS dictionary with opcodes that has none yet', async () => {
+    const stored: Record<string, Proto.IDictionary> = { 'yamcs:fprime-project': yamcsDictionary(), 'yamcs:simulator': simulatorDictionary() };
+    const added: Proto.IDictionary[] = [];
+    const api: Partial<Hermes.Api> = {
+        allDictionaries: async () => ({
+            'yamcs:fprime-project': { type: 'yamcs' },
+            'yamcs:simulator': { type: 'yamcs' },
+            // This one already has its F Prime dictionary, so getDictionary is never asked for it
+            'yamcs:other': { type: 'yamcs' },
+            'yamcs:other:fprime': { type: 'fprime' },
+        }),
+        getDictionary: async (id) => stored[id],
+        addDictionary: async (dict) => { added.push(dict); return dict.id!; },
+    };
+    await addFprimeDictionaries(api as Hermes.Api);
+    expect(added.map((dict) => dict.id)).toEqual(['yamcs:fprime-project:fprime']);
 });
 
 // A fake of YAMCS mode's connection, which records each command it sends. It refuses a command whose first

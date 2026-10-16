@@ -39,6 +39,18 @@ const yamcsDefinition = protoLoader.fromJSON(yamcsDescriptor as any, {
 });
 const yamcsPackage = grpc.loadPackageDefinition(yamcsDefinition) as unknown as ProtoGrpcType & EventsProtoGrpcType & CommandsProtoGrpcType;
 
+// The client uses this method definition to decode YAMCS's ListCommands replies. We use it to encode and decode
+// saved commands too, so they come back exactly as listCommands returned them.
+const listCommandsMethod = yamcsPackage.yamcs.protobuf.mdb.MdbApi.service.ListCommands;
+
+export function encodeYamcsCommands(commands: CommandInfo__Output[]): Uint8Array {
+    return listCommandsMethod.responseSerialize({ commands });
+}
+
+export function decodeYamcsCommands(bytes: Uint8Array): CommandInfo__Output[] {
+    return listCommandsMethod.responseDeserialize(Buffer.from(bytes)).commands ?? [];
+}
+
 /**
  * Client for the YAMCS API that the yamcs-grpc plugin serves over gRPC.
  */

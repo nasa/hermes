@@ -2,8 +2,11 @@ import { afterEach, describe, expect, jest, test } from '@jest/globals';
 
 // Settings a test has set. Every other setting reads as unset and takes its default.
 const mockSettings: Record<string, unknown> = {};
+// Files a test has written to workspace storage, by path
+const mockFiles = new Map<string, Uint8Array>();
 afterEach(() => {
     Object.keys(mockSettings).forEach((key) => delete mockSettings[key]);
+    mockFiles.clear();
     jest.restoreAllMocks();
 });
 
@@ -25,11 +28,28 @@ jest.mock('vscode', () => {
             this.listeners.clear();
         }
     }
+    type Uri = { path: string };
     return {
         ...jest.requireActual<object>('vscode'),
         EventEmitter,
+        FileType: { File: 1 },
+        Uri: { joinPath: (dir: Uri, name: string) => ({ path: `${dir.path}/${name}` }) },
         window: { showInputBox: jest.fn() },
-        workspace: { getConfiguration: () => ({ get: (key: string) => mockSettings[key] }) },
+        workspace: {
+            getConfiguration: () => ({ get: (key: string) => mockSettings[key] }),
+            // Workspace storage, kept in mockFiles. Like VS Code, delete throws for a file that doesn't exist.
+            fs: {
+                createDirectory: async () => { },
+                writeFile: async (file: Uri, content: Uint8Array) => { mockFiles.set(file.path, content); },
+                readFile: async (file: Uri) => mockFiles.get(file.path)!,
+                readDirectory: async () => [...mockFiles.keys()].map((path) => [path.slice(path.lastIndexOf('/') + 1), 1]),
+                delete: async (file: Uri) => {
+                    if (!mockFiles.delete(file.path)) {
+                        throw new Error(`${file.path} not found`);
+                    }
+                },
+            },
+        },
     };
 });
 
@@ -41,6 +61,7 @@ import { YamcsClient, YamcsCommandHistoryEntry, YamcsCommandInfo, YamcsEvent, Ya
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
 import { Def, Dictionary } from '@gov.nasa.jpl.hermes/types';
 
+import { Offline } from '../src/api/Offline';
 import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterSource } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
 import { yamcsEventRows } from '../src/components/yamcsEvents';
@@ -687,7 +708,7 @@ describe('commandComplete', () => {
 describe('YAMCS commands', () => {
     // Hermes's YAMCS backend with its client stubbed, so a test sees each command the backend issues. Every look at
     // a command's history shows that YAMCS sent it and recorded no verifier, which completes a command without verifiers.
-    async function backend() {
+    async function backend(context: Partial<vscode.ExtensionContext> = {}) {
         jest.spyOn(YamcsClient.prototype, 'waitForReady').mockResolvedValue(undefined);
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([noOpString]);
@@ -697,7 +718,7 @@ describe('YAMCS commands', () => {
             .mockResolvedValue(history(...queued, attr('Acknowledge_Sent_Status', 'OK')));
         const api = await new YamcsBackendProvider().provideBackendApi(
             { address: 'localhost:1', instance: 'fprime-project', processor: 'other-processor' },
-            {} as vscode.ExtensionContext,
+            context as vscode.ExtensionContext,
             { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } },
         );
         return { api, fsw: (await api.allFsw())[0], issue, get };
@@ -712,6 +733,18 @@ describe('YAMCS commands', () => {
         api.onFswChange((fsws) => lists.push(fsws));
         expect(lists).toEqual([[fsw]]);
         api.dispose();
+    });
+
+    test('saves the commands so Offline mode builds the same dictionary, and removing that dictionary deletes them', async () => {
+        const context: Partial<vscode.ExtensionContext> = { storageUri: { path: '/storage' } as vscode.Uri };
+        const { api } = await backend(context);
+        const built = await api.getDictionary('yamcs:fprime-project');
+        api.dispose();
+
+        const offline = await Offline.activate(context as vscode.ExtensionContext, { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } });
+        expect(await offline.getDictionary('yamcs:fprime-project')).toEqual(built);
+        await offline.removeDictionary('yamcs:fprime-project');
+        expect(mockFiles.size).toBe(0);
     });
 
     test('issues each command by its qualified name once the one before has completed', async () => {

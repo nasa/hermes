@@ -87,9 +87,9 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
     /**
      * Connects to the yamcs-grpc plugin at state.address. We wait up to 5 s for the
      * plugin to answer, then list the instance's parameters and commands, then load the
-     * workspace's dictionaries as Offline mode does, plus one built from the commands.
-     * The parameter subscription itself opens later, when the first handler calls
-     * onYamcsParameters.
+     * workspace's dictionaries as Offline mode does, plus one built from the commands,
+     * then save the commands. The parameter subscription itself opens later, when the
+     * first handler calls onYamcsParameters.
      */
     static async connect(
         state: Settings.Yamcs,
@@ -115,9 +115,8 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
 
             const api = new Yamcs(context, log, client, state, names, dictionary.id!);
             await api._activate();
-            // This dictionary has to stay in memory, because a saved copy reloads its missing opcodes as 0. It has
-            // an id, so addDictionary doesn't save it to workspace storage.
             await api.addDictionary(dictionary);
+            await api.saveYamcsCommands(state.instance, commands);
             return api;
         } catch (err) {
             // A cancel or any failure above ends here, and we close the client so its channel doesn't linger

@@ -1,10 +1,16 @@
 import * as vscode from 'vscode';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
+import * as Rpc from '@gov.nasa.jpl.hermes/rpc';
 import { Proto } from '@gov.nasa.jpl.hermes/types';
 import { generateShortUid } from '@gov.nasa.jpl.hermes/util';
 
+import { yamcsDictionary } from './yamcsCommands';
+
 const nullDisposable: vscode.Disposable = { dispose: () => { } };
+
+// YAMCS mode saves each instance's commands in a file named like fprime-project.yamcs-commands.pb
+const savedCommandsSuffix = '.yamcs-commands.pb';
 
 export class Offline implements Hermes.Api {
     private dictionaryCache = new Map<string, Proto.IDictionary>();
@@ -43,6 +49,17 @@ export class Offline implements Hermes.Api {
                             this.dictionaryCache.set(id, dict);
                         } catch (e) {
                             this.log.error(`failed to parse dictionary ${id}: ${e}`);
+                        }
+                    } else if (name.endsWith(savedCommandsSuffix)) {
+                        // We build the dictionary that YAMCS mode builds from these commands, with the same id, so a
+                        // language item's saved selection still finds it
+                        try {
+                            const content = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this.context.storageUri, name));
+                            const dict = yamcsDictionary(name.slice(0, -savedCommandsSuffix.length), Rpc.decodeYamcsCommands(content));
+                            this.log.info(`registering dictionary ${dict.id} from the YAMCS commands in ${name}`);
+                            this.dictionaryCache.set(dict.id!, dict);
+                        } catch (e) {
+                            this.log.error(`failed to load YAMCS commands from ${name}: ${e}`);
                         }
                     }
                 }
@@ -148,6 +165,21 @@ export class Offline implements Hermes.Api {
         return id;
     }
 
+    // Saves an instance's commands, so Offline mode can build the instance's dictionary without YAMCS. addDictionary
+    // keeps a dictionary that has an id in memory only.
+    protected async saveYamcsCommands(instance: string, commands: Rpc.YamcsCommandInfo[]) {
+        if (!this.context.storageUri) {
+            return;
+        }
+        try {
+            await vscode.workspace.fs.createDirectory(this.context.storageUri);
+            const file = vscode.Uri.joinPath(this.context.storageUri, `${instance}${savedCommandsSuffix}`);
+            await vscode.workspace.fs.writeFile(file, Rpc.encodeYamcsCommands(commands));
+        } catch (err) {
+            this.log.warn(`Could not save the commands of YAMCS instance ${instance}: ${err}`);
+        }
+    }
+
     async allDictionaries(): Promise<Record<string, Proto.IDictionaryHead>> {
         return Object.fromEntries(Array.from(this.dictionaryCache.entries()).map(([id, dict]) => [
             id, dict.head ?? {}
@@ -155,13 +187,15 @@ export class Offline implements Hermes.Api {
     }
 
     async removeDictionary(id: string): Promise<void> {
+        const dict = this.dictionaryCache.get(id);
         this.dictionaryCache.delete(id);
         this.dictionaryUpdate();
 
         if (this.context.storageUri) {
+            // A YAMCS dictionary is named after its instance, and we save it as that instance's commands
             const dictPath = vscode.Uri.joinPath(
                 this.context.storageUri,
-                `${id}.dictionary.pb`
+                dict?.head?.type === 'yamcs' ? `${dict.head.name}${savedCommandsSuffix}` : `${id}.dictionary.pb`
             );
 
             this.log.info(`removing cached dictionary from ${dictPath.path}`);
