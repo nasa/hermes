@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { css } from '@emotion/css';
 import { ConfirmModal, RadioButtonGroup } from '@grafana/ui';
-import { dateTime, QueryEditorProps, SelectableValue } from '@grafana/data';
+import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { getTemplateSrv } from '@grafana/runtime';
 import { DataSource } from '../datasource';
 import { MyDataSourceOptions, MyQuery, ResolvedQuery, withDefaults } from '../types';
@@ -16,10 +16,11 @@ const EDITOR_MODE_OPTIONS: Array<SelectableValue<string>> = [
   { label: 'Code', value: 'code' },
 ];
 
-export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: Props) {
-  const [editorMode, setEditorMode] = useState<string>('builder');
+export function QueryEditor({ query, onChange, onRunQuery, datasource }: Props) {
+  // We show Code mode whenever the query has SQL. Only Code mode stores SQL, and the
+  // datasource runs stored SQL instead of building it from the Builder's fields.
+  const editorMode = query.rawSql === undefined ? 'builder' : 'code';
   const [showConfirmSwitch, setShowConfirmSwitch] = useState(false);
-  const [builderQueryType, setBuilderQueryType] = useState<string>(query.queryType ?? 'telemetry');
   const [generatedSql, setGeneratedSql] = useState<string | undefined>(undefined);
 
   const onEditorModeChange = async (mode: string) => {
@@ -29,15 +30,10 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
         setShowConfirmSwitch(true);
         return;
       }
-      onChange({ ...query, rawSql: undefined, queryType: builderQueryType as any });
-      setEditorMode('builder');
+      onChange({ ...query, rawSql: undefined });
       onRunQuery();
       return;
     }
-    if (mode === 'code') {
-      setBuilderQueryType(query.queryType ?? 'telemetry');
-    }
-    setEditorMode(mode);
     if (mode === 'code') {
       try {
         const filled = withDefaults(query);
@@ -45,13 +41,13 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
         const needsParameters = (filled.parameters ?? []).some((p) => p.raw !== undefined);
         const known = needsParameters ? await datasource.getParameters().catch(() => []) : [];
         const resolved: ResolvedQuery = resolveQuery(filled, (value) => templateSrv.replace(value), known);
-        const from = range?.from ?? dateTime();
-        const to = range?.to ?? dateTime();
-        const sql = buildQuery(resolved, { range: { from, to, raw: { from, to } } } as any);
+        const sql = buildQuery(resolved);
         setGeneratedSql(sql);
-        onChange({ ...query, rawSql: sql, queryType: 'raw' });
+        onChange({ ...query, rawSql: sql });
       } catch (e) {
         console.warn('Could not generate SQL for code editor:', e);
+        // With no parameter picked there is no SQL to generate, so we open an empty editor.
+        onChange({ ...query, rawSql: '' });
       }
     }
   };
@@ -101,14 +97,12 @@ export function QueryEditor({ query, onChange, onRunQuery, datasource, range }: 
         dismissText="Cancel"
         onConfirm={() => {
           navigator.clipboard.writeText(query.rawSql ?? '');
-          onChange({ ...query, rawSql: undefined, queryType: builderQueryType as any });
-          setEditorMode('builder');
+          onChange({ ...query, rawSql: undefined });
           setShowConfirmSwitch(false);
           onRunQuery();
         }}
         onAlternative={() => {
-          onChange({ ...query, rawSql: undefined, queryType: builderQueryType as any });
-          setEditorMode('builder');
+          onChange({ ...query, rawSql: undefined });
           setShowConfirmSwitch(false);
           onRunQuery();
         }}
