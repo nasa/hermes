@@ -42,3 +42,14 @@ test('saves an output of any type as text, and loads the cell after it', async (
     expect(loaded.cells.map((cell) => cell.value)).toEqual(['CMD_ONE', 'CMD_TWO']);
     expect(new TextDecoder().decode(loaded.cells[0].outputs?.[0].items[0].data)).toBe('**completed**');
 });
+
+test('loads cell metadata that contains -->', async () => {
+    const cell = new vscode.NotebookCellData(vscode.NotebookCellKind.Code, 'CMD "a --> b"', 'yamcs');
+    cell.metadata = { hermes: { statuses: [{ line: 0, text: 'CMD "a --> b"' }] } };
+
+    const serializer = new HermesNotebookSerializer();
+    const saved = await serializer.serializeNotebook(new vscode.NotebookData([cell]), token);
+    const loaded = await serializer.deserializeNotebook(saved, token);
+
+    expect(loaded.cells[0].metadata).toEqual(cell.metadata);
+});

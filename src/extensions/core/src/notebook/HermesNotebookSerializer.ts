@@ -21,7 +21,8 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
         const contents: string[] = [];
 
         const metaline = (tag: Encoding3.Tag) => {
-            return `<!-- hermes: ${JSON.stringify(tag)} -->`;
+            // The line is an HTML comment, which ends at the first -->, so we write the > of any --> in the JSON as \u003e
+            return `<!-- hermes: ${JSON.stringify(tag).replace(/-->/g, '--\\u003e')} -->`;
         };
 
         contents.push(metaline({ type: Encoding3.TagType.VERSION, value: ENCODING_VERSION }));

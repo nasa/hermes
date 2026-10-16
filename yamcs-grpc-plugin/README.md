@@ -114,7 +114,9 @@ flight shows the newest step YAMCS has recorded and how long it has taken so far
 `● Sent · 0.4 s`. A command that passes shows `✓` and the time it took, and one that fails shows `✗`
 with YAMCS's reason, for example `✗ failed · EXECUTION_ERROR`. Commands the cell hasn't sent show
 `○ not sent`, and a command still in flight when the cell stops shows `?`. Hover over a status to see
-the steps YAMCS has recorded for the command.
+the steps YAMCS has recorded for the command. Hermes saves the statuses and their steps with the
+notebook, so they come back when you open it again, as long as the command's line is unchanged.
+Running the cell again clears them.
 
 F Prime cells run in YAMCS mode too, when fprime-yamcs runs the instance. The Hermes F Prime extension
 builds an F Prime dictionary from YAMCS mode's dictionary, listed as `<instance> (F Prime)`. It names
