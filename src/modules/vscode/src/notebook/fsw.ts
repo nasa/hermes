@@ -310,8 +310,10 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
             return await this.executeSequence(cell, fsw, this.sequence(cell, commands), token, run.report, run.wait);
         } finally {
             run.stop();
-            // Wait for a short amount of time to flush the EVRs through
-            await new Promise((resolve) => setTimeout(resolve, 50));
+            // Wait for a short amount of time to flush the EVRs through. In YAMCS mode a command without verifiers
+            // ends once YAMCS has sent it, and the flight software's events for it can reach Hermes about a second
+            // later, so we wait a second there.
+            await new Promise((resolve) => setTimeout(resolve, fsw.type === 'yamcs' ? 1000 : 50));
             output.dispose();
         }
     }

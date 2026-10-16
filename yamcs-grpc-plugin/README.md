@@ -131,10 +131,8 @@ even when the flight software rejects one.
 A cell's output lists the events YAMCS reports for the instance while the cell runs, whichever command
 or client caused them. An F Prime event shows its F Prime severity, and the `hermes.notebook.evr*`
 settings hide severities as in the other modes. Any other event shows YAMCS's severity and is always
-listed. A cell stops listing 50 ms after its last command ends, so its list lacks any event that
-reaches Hermes later. A command without verifiers ends once YAMCS has sent it, often before the flight
-software's events for it reach YAMCS, so a cell of such commands can list none. The events panel shows
-every event.
+listed. A cell stops listing one second after its last command ends, so its list lacks any event that
+reaches Hermes later. The events panel shows every event.
 
 YAMCS mode sends no credentials, so it fails with `UNAUTHENTICATED` when YAMCS security is on. When
 its subscription ends, for example because YAMCS or its instance stopped, the status bar turns red
