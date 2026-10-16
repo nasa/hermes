@@ -1,0 +1,29 @@
+{
+    "type": "object",
+    "description": "Run socat to relay bytes between two endpoints (serial, TCP, UDP, file, ...)",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Name for this relay"
+        },
+        "address1": {
+            "type": "string",
+            "title": "Endpoint 1",
+            "description": "First socat address, e.g. '/dev/ttyUSB0,raw,b9600'"
+        },
+        "address2": {
+            "type": "string",
+            "title": "Endpoint 2",
+            "description": "Second socat address, e.g. 'tcp-connect:localhost:8000'"
+        },
+        "globalOptions": {
+            "type": "string",
+            "title": "Global Options",
+            "description": "Optional socat flags before the endpoints, e.g. '-d -d -T 30'"
+        }
+    },
+    "required": [
+        "address1",
+        "address2"
+    ]
+}
