@@ -1035,6 +1035,36 @@ describe('YAMCS commands', () => {
         expect(decorations()).toBe(last);
         api.dispose();
     });
+
+    test('counts down the wait before a command, and shows not sent when the cell is stopped during the wait', async () => {
+        const { api } = await backend();
+        const { cell, execution, statuses } = notebookCell('CMD a', 'CMD b');
+        const cells = new Cells(api, [command(noOpString, ['a']), command(noOpString, ['b'])]);
+        // The cell waits 12.34 s before its first command, and is stopped during the wait
+        const sequence = jest.spyOn(cells, 'executeSequence').mockImplementation(async (_cell, _fsw, _seq, _token, _onState, onWait) => {
+            onWait!(12340);
+            expect(statuses()).toEqual(['◷ sends in 12.3 s', '○ not sent']);
+            throw new Error('Cancelled');
+        });
+        await expect(cells.execute(cell, execution, tokenSource().token)).rejects.toThrow('Cancelled');
+        expect(statuses()).toEqual(['○ not sent', '○ not sent']);
+
+        // The cell runs again. Its first command passes after the wait, and then the cell waits before its second command.
+        sequence.mockImplementation(async (_cell, _fsw, _seq, _token, onState, onWait) => {
+            onWait!(12340);
+            onState!({ label: 'Sent', detail: '', passed: true });
+            onWait!(12340);
+            expect(statuses()).toEqual(['✓ Sent · 0.0 s', '◷ sends in 12.3 s']);
+            // The cell draws the countdown again ten times a second. Here the wait is over, and the command has
+            // reported nothing yet.
+            jest.spyOn(Date, 'now').mockReturnValue(Date.now() + 12400);
+            await new Promise((resolve) => setTimeout(resolve, 150));
+            expect(statuses()).toEqual(['✓ Sent · 0.0 s', '◷ sends in 0.0 s']);
+            return true;
+        });
+        await cells.execute(cell, execution, tokenSource().token);
+        api.dispose();
+    });
 });
 
 // Live checks against a YAMCS server running the yamcs-grpc plugin, e.g.
