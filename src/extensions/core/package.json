@@ -99,6 +99,12 @@
                 "icon": "$(check-all)"
             },
             {
+                "command": "hermes.notebook.setCellTargets",
+                "title": "Set Target for All Cells",
+                "category": "Hermes",
+                "icon": "$(vm)"
+            },
+            {
                 "command": "hermes.host.changeMode",
                 "title": "Hermes: Change Backend Mode",
                 "category": "Hermes"
@@ -214,6 +220,13 @@
                     "command": "hermes.uplink.add",
                     "when": "view == hermes.uplink",
                     "group": "navigation@2"
+                }
+            ],
+            "notebook/toolbar": [
+                {
+                    "command": "hermes.notebook.setCellTargets",
+                    "when": "notebookType == hermes.notebook || notebookType == fprime-notebook",
+                    "group": "navigation"
                 }
             ],
             "notebook/cell/title": [

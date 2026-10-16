@@ -2,6 +2,8 @@ import { afterEach, describe, expect, jest, test } from '@jest/globals';
 
 // Settings a test has set. Every other setting reads as unset and takes its default.
 const mockSettings: Record<string, unknown> = {};
+// The commands registered so far, by name, so a test can run one
+const mockCommands = new Map<string, () => Promise<void>>();
 afterEach(() => {
     Object.keys(mockSettings).forEach((key) => delete mockSettings[key]);
     jest.restoreAllMocks();
@@ -28,9 +30,16 @@ jest.mock('vscode', () => {
     return {
         ...jest.requireActual<object>('vscode'),
         EventEmitter,
-        window: { showInputBox: jest.fn() },
-        workspace: { getConfiguration: () => ({ get: (key: string) => mockSettings[key] }) },
-        commands: { registerCommand: () => ({ dispose: () => { } }) },
+        window: { showInputBox: jest.fn(), showQuickPick: jest.fn(), activeNotebookEditor: undefined },
+        workspace: { getConfiguration: () => ({ get: (key: string) => mockSettings[key] }), applyEdit: jest.fn() },
+        commands: {
+            registerCommand: (name: string, run: () => Promise<void>) => {
+                mockCommands.set(name, run);
+                return { dispose: () => { } };
+            },
+        },
+        NotebookEdit: { updateCellMetadata: jest.fn() },
+        WorkspaceEdit: class { set() { } },
         NotebookCellStatusBarItem: class { constructor(public text: string, public alignment: number) { } },
         NotebookCellStatusBarAlignment: { Left: 1 },
     };
@@ -48,6 +57,7 @@ import { FswNotebookLanguageProvider } from '@gov.nasa.jpl.hermes/vscode';
 import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterSource } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
 import { yamcsEventRows } from '../src/components/yamcsEvents';
+import { NotebookController } from '../src/notebook/NotebookController';
 import { leaves, splitName } from '../src/components/yamcsRows';
 import { argumentValue, commandComplete, commandSent, Verifier, yamcsDictionary } from '../src/api/yamcsCommands';
 
@@ -829,6 +839,28 @@ describe('YAMCS commands', () => {
         expect(shown).toEqual(['$(vm-active) yamcs:fprime-project', '$(vm-active) yamcs:other-instance']);
         expect(allFsw).toHaveBeenCalledTimes(1);
         cells.dispose();
+        api.dispose();
+    });
+
+    test('sets the target of every F Prime and YAMCS cell in the active notebook', async () => {
+        const { api } = await backend();
+        NotebookController.registerCommands(api);
+        const cell = (index: number, languageId: string, metadata = {}): Partial<vscode.NotebookCell> =>
+            ({ index, metadata, document: { languageId } as vscode.TextDocument });
+        // The F Prime cell already has a target, and other metadata that the command should keep
+        const cells = [cell(0, 'fprime', { owner: 'ops', hermes: { fsw: 'yamcs:fprime-project', note: 'x' } }), cell(1, 'python'), cell(2, 'yamcs')];
+        const notebook: Partial<vscode.NotebookDocument> = { uri: {} as vscode.Uri, getCells: () => cells as vscode.NotebookCell[] };
+        jest.replaceProperty(vscode.window, 'activeNotebookEditor', { notebook } as vscode.NotebookEditor);
+        // The user picks the second connection. The command offers a list of strings, so we mock that signature of showQuickPick.
+        const pick = jest.mocked(vscode.window.showQuickPick as (items: readonly string[]) => Thenable<string | undefined>)
+            .mockImplementation(async (items) => items[1]);
+
+        await mockCommands.get('hermes.notebook.setCellTargets')!();
+        expect(pick.mock.calls[0][0]).toEqual(['yamcs:fprime-project', 'yamcs:other-instance']);
+        expect(jest.mocked(vscode.NotebookEdit.updateCellMetadata).mock.calls).toEqual([
+            [0, { owner: 'ops', hermes: { fsw: 'yamcs:other-instance', note: 'x' } }],
+            [2, { hermes: { fsw: 'yamcs:other-instance' } }],
+        ]);
         api.dispose();
     });
 
