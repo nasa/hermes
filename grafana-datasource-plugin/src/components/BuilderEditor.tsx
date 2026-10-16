@@ -2,9 +2,8 @@ import React from 'react';
 import { CollapsableSection, DateTimePicker, InlineField, RadioButtonGroup } from '@grafana/ui';
 import { dateTime, DateTime, SelectableValue } from '@grafana/data';
 import { DataSource } from '../datasource';
-import { MyQuery, QueryType, TimeField } from '../types';
+import { MyQuery, TimeField } from '../types';
 import { TelemetryFields } from './TelemetryFields';
-import { EventFields } from './EventFields';
 
 interface BuilderEditorProps {
   query: MyQuery;
@@ -13,35 +12,12 @@ interface BuilderEditorProps {
   datasource: DataSource;
 }
 
-const QUERY_TYPE_OPTIONS: Array<SelectableValue<QueryType>> = [
-  { label: 'Telemetry', value: 'telemetry' },
-  { label: 'Events', value: 'events' },
-  { label: 'Raw SQL', value: 'raw' },
-];
-
 const TIME_FIELD_OPTIONS: Array<SelectableValue<TimeField>> = [
   { label: 'Generation Time', value: 'generation_time' },
   { label: 'Acquisition Time', value: 'acquisition_time' },
 ];
 
 export function BuilderEditor({ query, onChange, onRunQuery, datasource }: BuilderEditorProps) {
-  const queryType = query.queryType ?? 'telemetry';
-
-  const onQueryTypeChange = (value: QueryType) => {
-    const updated: MyQuery = {
-      ...query,
-      queryType: value,
-      parameters: [],
-      members: [],
-      instances: [],
-      transforms: [],
-    };
-    onChange(updated);
-    if (value === 'events') {
-      onRunQuery();
-    }
-  };
-
   const onTimeFieldChange = (value: TimeField) => {
     onChange({ ...query, timeField: value });
     onRunQuery();
@@ -58,7 +34,7 @@ export function BuilderEditor({ query, onChange, onRunQuery, datasource }: Build
   };
 
   const sharedOptions = (
-    <div style={{ marginTop: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div style={{ marginTop: 8, marginBottom: 8 }}>
       <RadioButtonGroup
         id="query-editor-time-field"
         options={TIME_FIELD_OPTIONS}
@@ -67,42 +43,18 @@ export function BuilderEditor({ query, onChange, onRunQuery, datasource }: Build
         size="sm"
         fullWidth={false}
       />
-      <RadioButtonGroup
-        id="query-editor-query-type"
-        // yamcs-recorder only records telemetry, so we leave Events out of the toggle.
-        // Raw SQL stays out too, since a query becomes raw SQL by switching the editor to Code.
-        options={QUERY_TYPE_OPTIONS.filter(opt => opt.value === 'telemetry')}
-        value={queryType}
-        onChange={onQueryTypeChange}
-        size="sm"
-        fullWidth={false}
-      />
     </div>
   );
 
   return (
     <>
-      {queryType === 'telemetry' ? (
-        <TelemetryFields
-          query={query}
-          onChange={onChange}
-          onRunQuery={onRunQuery}
-          datasource={datasource}
-          sharedOptions={sharedOptions}
-        />
-      ) : (
-        <>
-          {queryType === 'events' && (
-            <EventFields
-              query={query}
-              onChange={onChange}
-              onRunQuery={onRunQuery}
-              datasource={datasource}
-            />
-          )}
-          {sharedOptions}
-        </>
-      )}
+      <TelemetryFields
+        query={query}
+        onChange={onChange}
+        onRunQuery={onRunQuery}
+        datasource={datasource}
+        sharedOptions={sharedOptions}
+      />
 
       <CollapsableSection label="Advanced" isOpen={false}>
         <InlineField label="From Override" labelWidth={16} tooltip="Absolute start time (optional)">

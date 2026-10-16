@@ -34,32 +34,6 @@ func TestQueryData(t *testing.T) {
 	}
 }
 
-func TestSeverityLabel(t *testing.T) {
-	tests := []struct {
-		input    int64
-		expected string
-	}{
-		{0, "DIAGNOSTIC"},
-		{1, "ACTIVITY_LOW"},
-		{2, "ACTIVITY_HIGH"},
-		{3, "WARNING_LOW"},
-		{4, "WARNING_HIGH"},
-		{5, "COMMAND"},
-		{6, "FATAL"},
-		{99, "UNKNOWN(99)"},
-		{-1, "UNKNOWN(-1)"},
-	}
-
-	for _, tt := range tests {
-		t.Run(fmt.Sprintf("severity_%d", tt.input), func(t *testing.T) {
-			result := severityLabel(tt.input)
-			if result != tt.expected {
-				t.Errorf("severityLabel(%d) = %q, want %q", tt.input, result, tt.expected)
-			}
-		})
-	}
-}
-
 func TestQueryDispatch(t *testing.T) {
 	ds := Datasource{}
 
@@ -453,56 +427,6 @@ func TestBuildResponseEmptyRows(t *testing.T) {
 
 	if len(resp.Frames) != 0 {
 		t.Fatalf("expected 0 frames for empty result, got %d", len(resp.Frames))
-	}
-}
-
-func TestQueryEventsWithMock(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("sqlmock: %v", err)
-	}
-	defer func() { _ = db.Close() }()
-
-	ds := Datasource{db: db}
-	now := time.Now().Truncate(time.Second)
-
-	eventRows := sqlmock.NewRows([]string{"time", "component", "name", "severity", "message", "source", "arguments"}).
-		AddRow(now, "comp1", "evt1", int64(3), "something happened", "src1", `{"key":"val"}`).
-		AddRow(now.Add(time.Second), "comp1", "evt2", int64(6), "fatal error", "src1", `{}`)
-
-	mock.ExpectQuery("SELECT").WillReturnRows(eventRows)
-
-	rawSql := "SELECT * FROM events"
-	qJSON, _ := json.Marshal(queryModel{QueryType: "events", TimeField: "generation_time", Aggregation: "avg", RawSql: &rawSql})
-	resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
-		Queries: []backend.DataQuery{
-			{RefID: "A", JSON: qJSON, TimeRange: backend.TimeRange{From: now.Add(-time.Hour), To: now.Add(time.Hour)}},
-		},
-	})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	dr := resp.Responses["A"]
-	if dr.Status != 0 {
-		t.Fatalf("expected success, got status %v: %s", dr.Status, dr.Error)
-	}
-	if len(dr.Frames) != 1 {
-		t.Fatalf("expected 1 frame, got %d", len(dr.Frames))
-	}
-	frame := dr.Frames[0]
-	if frame.Name != "Events" {
-		t.Errorf("expected frame name 'Events', got %q", frame.Name)
-	}
-	if frame.Fields[0].Len() != 2 {
-		t.Errorf("expected 2 rows, got %d", frame.Fields[0].Len())
-	}
-	// severity labels
-	if frame.Fields[3].At(0) != "WARNING_LOW" {
-		t.Errorf("expected WARNING_LOW, got %v", frame.Fields[3].At(0))
-	}
-	if frame.Fields[3].At(1) != "FATAL" {
-		t.Errorf("expected FATAL, got %v", frame.Fields[3].At(1))
 	}
 }
 
@@ -951,35 +875,5 @@ func TestResourceHandlerMembersBadBody(t *testing.T) {
 
 	if rr.code != http.StatusBadRequest {
 		t.Fatalf("expected 400, got %d", rr.code)
-	}
-}
-
-func TestResourceHandlerEventSources(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("sqlmock: %v", err)
-	}
-	defer func() { _ = db.Close() }()
-
-	ds := &Datasource{db: db}
-
-	mock.ExpectQuery("SELECT DISTINCT source").WillReturnRows(
-		sqlmock.NewRows([]string{"source"}).AddRow("fsw-1"),
-	)
-
-	req, _ := http.NewRequest("GET", "/events/sources", nil)
-	rr := &responseRecorder{header: http.Header{}}
-	ds.handleGetEventSources(rr, req)
-
-	if rr.code != http.StatusOK {
-		t.Fatalf("expected 200, got %d", rr.code)
-	}
-
-	var result []string
-	if err := json.Unmarshal(rr.body, &result); err != nil {
-		t.Fatalf("json unmarshal: %v", err)
-	}
-	if len(result) != 1 || result[0] != "fsw-1" {
-		t.Errorf("unexpected event sources: %v", result)
 	}
 }

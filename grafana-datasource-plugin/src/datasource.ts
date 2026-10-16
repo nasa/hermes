@@ -42,9 +42,6 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       map((response) => {
         for (const result of response.data) {
           const query = request.targets.find((t) => t.refId === result.refId);
-          if (query?.queryType === 'events' && query.instances?.length) {
-            result.fields = result.fields.filter((f: { name: string }) => f.name !== 'source');
-          }
           if (query?.queryType === 'telemetry' && query.transforms?.some((t) => t.name)) {
             applySeriesAliases(result, query as ResolvedQuery);
           }
@@ -69,10 +66,6 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       return true;
     }
 
-    if (query.queryType === 'events') {
-      return true;
-    }
-
     return !!(query.parameters && query.parameters.length);
   }
 
@@ -90,10 +83,6 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     const known = parameters.some((p) => p.raw !== undefined) ? await this.getKnownParameters() : [];
     const expanded = resolveParameters(parameters, (value) => templateSrv.replace(value), known);
     return this.postResource('telemetry/members', expanded);
-  }
-
-  async getEventSources(): Promise<string[]> {
-    return this.getResource('events/sources');
   }
 
 }

@@ -205,8 +205,6 @@ export function aliasForLabels(
 export function buildQuery(q: ResolvedQuery, options: DataQueryRequest): string {
     const { from, to } = buildQueryOptions(q, options);
     switch (q.queryType) {
-        case "events":
-            return buildEventsQuery(q, from, to);
         case "telemetry":
             return buildTelemetryQuery(q, from, to);
         default:
@@ -225,26 +223,6 @@ export function buildQueryOptions(q: ResolvedQuery, options: DataQueryRequest): 
     }
 
     return { from, to }
-}
-
-export function buildEventsQuery(q: ResolvedQuery, from: string, to: string): string {
-    return format(
-`SELECT
-	e.%s,
-	d.component,
-	d.name,
-	d.severity,
-	e.message,
-	e.source,
-	e.args::text AS arguments
-FROM eventDefs d
-JOIN events e ON e.eventDefId = d.id
-WHERE (%s::text[] = '{}' OR e.source = ANY(%s))
-  AND e.%s >= %s
-  AND e.%s <= %s
-ORDER BY e.%s ASC;`,
-        q.timeField, escArr(q.instances), escArr(q.instances),
-        q.timeField, escDate(from), q.timeField, escDate(to), q.timeField);
 }
 
 export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string): string {

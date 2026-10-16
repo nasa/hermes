@@ -39,7 +39,6 @@ function mockDatasource(overrides?: Partial<DataSource>): DataSource {
       { spaceSystem: 'CDH', parameter: 'Temperature', member: '.x' },
       { spaceSystem: 'CDH', parameter: 'Temperature', member: '.y' },
     ]),
-    getEventSources: jest.fn().mockResolvedValue(['fsw-1', 'fsw-2']),
     ...overrides,
   } as unknown as DataSource;
 }
@@ -67,11 +66,9 @@ function buildProps(
 }
 
 describe('QueryEditor — Telemetry', () => {
-  it('renders query type toggle and telemetry dropdowns', async () => {
+  it('renders telemetry dropdowns', async () => {
     await act(async () => { render(<QueryEditor {...buildProps()} />); });
 
-    expect(screen.getByRole('radio', { name: /Telemetry/ })).toBeInTheDocument();
-    expect(screen.queryByRole('radio', { name: /Events/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: /Component/ })).not.toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /Parameter/ })).toBeInTheDocument();
     expect(screen.getByRole('combobox', { name: /Instance/ })).toBeInTheDocument();
@@ -280,126 +277,6 @@ describe('QueryEditor — Telemetry', () => {
     expect(screen.queryByText('CDH/Temperature')).not.toBeInTheDocument();
     expect(screen.queryByText('fsw-1')).not.toBeInTheDocument();
     expect(ds.getMembers).not.toHaveBeenCalled();
-  });
-
-  it('does not load event resources when in telemetry mode', async () => {
-    const ds = mockDatasource();
-    render(<QueryEditor {...buildProps({ datasource: ds })} />);
-
-    await waitFor(() => {
-      expect(ds.getParameters).toHaveBeenCalled();
-    });
-
-    expect(ds.getEventSources).not.toHaveBeenCalled();
-  });
-});
-
-describe('QueryEditor — Events', () => {
-  it('renders only source dropdown when queryType is events', async () => {
-    await act(async () => {
-      render(
-        <QueryEditor
-          {...buildProps({
-            query: { refId: 'A', queryType: 'events', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
-          })}
-        />
-      );
-    });
-
-    expect(screen.getByRole('combobox', { name: /Source/ })).toBeInTheDocument();
-    expect(screen.queryByRole('combobox', { name: /Event name/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('combobox', { name: /Severity/ })).not.toBeInTheDocument();
-  });
-
-  it('hides telemetry fields when queryType is events', async () => {
-    await act(async () => {
-      render(
-        <QueryEditor
-          {...buildProps({
-            query: { refId: 'A', queryType: 'events', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
-          })}
-        />
-      );
-    });
-
-    expect(screen.queryByRole('combobox', { name: /Parameter/ })).not.toBeInTheDocument();
-  });
-
-  it('loads event sources on mount', async () => {
-    const ds = mockDatasource();
-    render(
-      <QueryEditor
-        {...buildProps({
-          datasource: ds,
-          query: { refId: 'A', queryType: 'events', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
-        })}
-      />
-    );
-
-    await waitFor(() => {
-      expect(ds.getEventSources).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  it('does not load telemetry resources when in events mode', async () => {
-    const ds = mockDatasource();
-    render(
-      <QueryEditor
-        {...buildProps({
-          datasource: ds,
-          query: { refId: 'A', queryType: 'events', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
-        })}
-      />
-    );
-
-    await waitFor(() => {
-      expect(ds.getEventSources).toHaveBeenCalled();
-    });
-
-    expect(ds.getParameters).not.toHaveBeenCalled();
-    expect(ds.getInstances).not.toHaveBeenCalled();
-    expect(ds.getMembers).not.toHaveBeenCalled();
-  });
-
-  it('displays existing event source value', async () => {
-    await act(async () => {
-      render(
-        <QueryEditor
-          {...buildProps({
-            query: {
-              refId: 'A',
-              queryType: 'events',
-              parameters: [],
-              instances: ['fsw-1'],
-              members: [],
-              aggregation: 'avg',
-            } as MyQuery,
-          })}
-        />
-      );
-    });
-
-    expect(screen.getByText('fsw-1')).toBeInTheDocument();
-  });
-
-  it('handles event source fetch errors gracefully', async () => {
-    const ds = mockDatasource({
-      getEventSources: jest.fn().mockRejectedValue(new Error('Network error')),
-    });
-    render(
-      <QueryEditor
-        {...buildProps({
-          datasource: ds,
-          query: { refId: 'A', queryType: 'events', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
-        })}
-      />
-    );
-
-    await waitFor(() => {
-      expect(ds.getEventSources).toHaveBeenCalled();
-    });
-
-    expect(screen.getByRole('combobox', { name: /Source/ })).toBeInTheDocument();
   });
 });
 
@@ -624,8 +501,7 @@ describe('withDefaults', () => {
   });
 
   it('preserves explicit values', () => {
-    const q = withDefaults({ refId: 'A', queryType: 'events', timeField: 'acquisition_time', aggregation: 'max', parameters: [], instances: [], members: [] } as MyQuery);
-    expect(q.queryType).toBe('events');
+    const q = withDefaults({ refId: 'A', queryType: 'telemetry', timeField: 'acquisition_time', aggregation: 'max', parameters: [], instances: [], members: [] } as MyQuery);
     expect(q.timeField).toBe('acquisition_time');
     expect(q.aggregation).toBe('max');
   });
@@ -677,20 +553,5 @@ describe('QueryEditor — Time field toggle', () => {
     });
 
     expect(screen.getByRole('radio', { name: /Acquisition Time/ })).toBeChecked();
-  });
-
-  it('renders Generation Time/Acquisition Time radio buttons for events', async () => {
-    await act(async () => {
-      render(
-        <QueryEditor
-          {...buildProps({
-            query: { refId: 'A', queryType: 'events', parameters: [], instances: [], members: [], aggregation: 'avg' } as MyQuery,
-          })}
-        />
-      );
-    });
-
-    expect(screen.getByRole('radio', { name: /Generation Time/ })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: /Acquisition Time/ })).toBeInTheDocument();
   });
 });
