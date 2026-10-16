@@ -23,6 +23,26 @@ export interface CommandSequence {
     metadata?: Record<string, string>;
 }
 
+/**
+ * A command's state, which a connection reports while it sends the command and waits for the command's result
+ */
+export interface CommandState {
+    // The command's newest step, such as Sent, or how the command ended
+    label: string;
+    // What the connection has recorded for the command, as lines of text for a hover
+    detail: string;
+    // Whether the command passed. Unset while the connection is working on the command, and
+    // left unset when the connection can't tell.
+    passed?: boolean;
+}
+
+/**
+ * Receives a command's state from a connection, each time the state changes. A state doesn't say
+ * which command it describes. A connection works on a sequence's commands one at a time and in
+ * order, and reports passed as true once for each command that passes, as that command's last state.
+ */
+export type CommandStateHandler = (state: CommandState) => void;
+
 export interface FileHeader {
     // Source path of file (usually trancated for uplink bandwidth reasons)
     sourcePath: string;
@@ -79,20 +99,24 @@ export interface Fsw {
      * groups together commands into a single trace.
      * @param value command sequence to execute
      * @param token cancellation token
+     * @param onState receives each command's state, from connections that report it
      */
     sequence?(
         value: CommandSequence,
-        token?: vscode.CancellationToken
+        token?: vscode.CancellationToken,
+        onState?: CommandStateHandler
     ): Promise<boolean>;
 
     /**
      * Execute a single command as an immediate command
      * @param value Command to execute
      * @param token cancellation token
+     * @param onState receives the command's state, from connections that report it
      */
     command?(
         value: CommandValue,
-        token?: vscode.CancellationToken
+        token?: vscode.CancellationToken,
+        onState?: CommandStateHandler
     ): Promise<boolean>;
 
     /**

@@ -45,7 +45,7 @@ import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsPar
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
 import { yamcsEventRows } from '../src/components/yamcsEvents';
 import { leaves, splitName } from '../src/components/yamcsRows';
-import { argumentValue, commandComplete, commandSent, Verifier, yamcsDictionary } from '../src/api/yamcsCommands';
+import { argumentValue, commandComplete, commandSent, commandState, Verifier, yamcsDictionary } from '../src/api/yamcsCommands';
 
 // Values as the live fprime-project instance sent them
 const packetSequence: YamcsValue = {
@@ -684,6 +684,60 @@ describe('commandComplete', () => {
     });
 });
 
+describe('commandState', () => {
+    // A step's status and time as YAMCS records them. ms is the time since YAMCS queued the command.
+    const at = (step: string, status: string, ms: number) => [attr(`${step}_Status`, status), attr(`${step}_Time`, new Date(Date.UTC(2026, 9, 12, 12) + ms).toISOString())];
+    const released = [...at('Acknowledge_Queued', 'OK', 0), ...at('TransmissionConstraints', 'NA', 0), ...at('Acknowledge_Released', 'OK', 1)];
+    // YAMCS starts a command's verifiers before it sends the command, so it lists them before Acknowledge_Sent.
+    // A waiting verifier has the time YAMCS started it.
+    const waiting = history(...released, ...['Dispatched', 'Complete', 'Failed'].flatMap((stage) => at(`Verifier_${stage}`, 'PENDING', 1)), ...at('Acknowledge_Sent', 'OK', 19));
+    const failed = history(
+        ...released, ...at('Verifier_Dispatched', 'OK', 943), ...at('Verifier_Complete', 'CANCELLED', 946), ...at('Verifier_Failed', 'OK', 945),
+        ...at('Acknowledge_Sent', 'OK', 14), ...at('CommandComplete', 'NOK', 946), attr('CommandComplete_Message', 'EXECUTION_ERROR'));
+    const name = '/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING';
+
+    test('labels a command issued, then with its newest step that passed, then with YAMCS\'s verdict', () => {
+        expect(commandState(history(), fprime).label).toBe('issued');
+        expect(commandState(waiting, fprime).label).toBe('Sent');
+        expect(commandState(history(...released, ...at('CommandComplete', 'OK', 946)), fprime).label).toBe('completed');
+        expect(commandState(failed, fprime)).toMatchObject({ label: 'failed · EXECUTION_ERROR', passed: false });
+        expect(commandState(history(...at('CommandComplete', 'NOK', 0)), fprime).label).toBe('failed');
+    });
+
+    test('lists the steps in time order, with the verdict in place of the verifiers that end the command', () => {
+        expect(commandState(waiting, fprime).detail).toBe([
+            '✓ Queued         +0 ms',
+            '✓ Released       +1 ms',
+            '✓ Sent           +19 ms',
+            '○ Dispatched     waiting',
+            '○ Completed      waiting',
+            '',
+            name,
+        ].join('\n'));
+        expect(commandState(failed, fprime).detail).toBe([
+            '✓ Queued         +0 ms',
+            '✓ Released       +1 ms',
+            '✓ Sent           +14 ms',
+            '✓ Dispatched     +943 ms',
+            '✗ Failed         +946 ms   EXECUTION_ERROR',
+            '',
+            name,
+        ].join('\n'));
+        // A verifier that ends the command when it passes gets a row of its own when it fails or times out
+        const timedOut = history(...released, ...at('Verifier_Complete', 'TIMEOUT', 60001), ...at('Acknowledge_Sent', 'OK', 19));
+        expect(commandState(timedOut, one).detail).toContain('✗ Complete     +60.0 s   TIMEOUT');
+        // A verifier without an onSuccess action doesn't end the command, so there is no verdict to wait for
+        const accepted = history(...released, ...at('Verifier_Accepted', 'PENDING', 1), ...at('Acknowledge_Sent', 'OK', 19));
+        expect(commandState(accepted, plain).detail).not.toContain('Completed');
+        // YAMCS has its verdict and has not cancelled the other verifier yet
+        const decided = history(...released, ...at('Verifier_Failed', 'PENDING', 1), ...at('Acknowledge_Sent', 'OK', 19), ...at('CommandComplete', 'OK', 946));
+        expect(commandState(decided, fprime).detail).not.toContain('waiting');
+        // A verifier that YAMCS cancelled or did not run has no row
+        const skipped = history(...released, ...at('Verifier_Dispatched', 'CANCELLED', 2), ...at('Verifier_Accepted', 'DISABLED', 2));
+        expect(commandState(skipped, fprime).detail).toBe(commandState(history(...released), fprime).detail);
+    });
+});
+
 describe('YAMCS commands', () => {
     // Hermes's YAMCS backend with its client stubbed, so a test sees each command the backend issues. Every look at
     // a command's history shows that YAMCS sent it and recorded no verifier, which completes a command without verifiers.
@@ -819,6 +873,24 @@ describe('YAMCS commands', () => {
         cancel();
         await expect(fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['a'])] }, token)).rejects.toThrow('Cancelled');
         expect(issue).not.toHaveBeenCalled();
+        api.dispose();
+    });
+
+    test('reports a command\'s state each time it changes, and once more when the command has passed', async () => {
+        const { api, fsw, get } = await backend();
+        // The first two looks show the same steps. At the last look YAMCS has failed to send the command.
+        const looks = [history(...queued), history(...queued), history(...queued, attr('Acknowledge_Sent_Status', 'NOK'))];
+        looks.forEach((look) => get.mockResolvedValueOnce(look));
+        const onState = jest.fn();
+        await expect(fsw.sequence!({ language: 'yamcs', commands: [command(verified, ['a'])] }, undefined, onState))
+            .rejects.toThrow('YAMCS did not send');
+        expect(onState.mock.calls).toEqual([looks[0], looks[2]].map((look) => [commandState(look, one)]));
+
+        // An F Prime cell issues its commands through fsw.command. This command has no verifiers, so it passes once YAMCS has sent it.
+        onState.mockClear();
+        await fsw.command!(command(noOpString, ['a']), undefined, onState);
+        const state = commandState(sentCommand(), []);
+        expect(onState.mock.calls).toEqual([[state], [{ ...state, passed: true }]]);
         api.dispose();
     });
 });

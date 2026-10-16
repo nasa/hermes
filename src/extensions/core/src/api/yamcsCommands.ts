@@ -1,5 +1,6 @@
 import Long from 'long';
 
+import type * as Hermes from '@gov.nasa.jpl.hermes/api';
 import type * as Rpc from '@gov.nasa.jpl.hermes/rpc';
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
 import { Def, Dictionary, DualKeyMap, Proto, Value } from '@gov.nasa.jpl.hermes/types';
@@ -195,21 +196,27 @@ const waitingStatuses = ['SCHEDULED', 'PENDING'];
 interface CommandStep {
     name: string;
     status: string;
+    // When the step got its status, as text like 2026-10-12T23:57:36.420Z
+    time: string;
     // Why the step has its status, when YAMCS gives a reason
     message?: string;
 }
 
 /**
- * The steps YAMCS has recorded for the command in entry. YAMCS records each step of a
- * command in its history as <step>_Status, for example Acknowledge_Queued_Status, and
- * the reason for that status, when it gives one, as <step>_Message.
+ * The steps YAMCS has recorded for the command in entry, earliest first. YAMCS records each
+ * step of a command in its history as <step>_Status, for example Acknowledge_Queued_Status,
+ * the reason for that status, when it gives one, as <step>_Message, and when the step got
+ * its status as <step>_Time.
  */
 function commandSteps(entry: Rpc.YamcsCommandHistoryEntry): CommandStep[] {
     const attributes = new Map((entry.attr ?? []).map((a) => [a.name ?? '', a.value?.stringValue ?? '']));
-    return [...attributes].filter(([attribute]) => attribute.endsWith('_Status')).map(([attribute, status]) => {
+    const steps = [...attributes].filter(([attribute]) => attribute.endsWith('_Status')).map(([attribute, status]) => {
         const name = attribute.slice(0, -'_Status'.length);
-        return { name, status, message: attributes.get(`${name}_Message`) };
+        return { name, status, time: attributes.get(`${name}_Time`) ?? '', message: attributes.get(`${name}_Message`) };
     });
+    // A step's time is text like 2026-10-12T23:57:36.420Z, which sorts in time order. Steps with the same time
+    // stay in the order YAMCS lists them, because sort leaves items that compare equal in their original order.
+    return steps.sort((a, b) => a.time.localeCompare(b.time));
 }
 
 // A step as text, like Acknowledge_Sent NOK, no link available
@@ -274,4 +281,70 @@ export function commandComplete(entry: Rpc.YamcsCommandHistoryEntry, verifiers: 
     // The command is complete when nothing is waiting. For a command without verifiers, that is as soon as
     // YAMCS has sent it.
     return !waiting;
+}
+
+// YAMCS prefixes each step of sending a command with Acknowledge_ and each verifier's step with Verifier_, and
+// we show the name without the prefix
+function stepLabel(step: CommandStep): string {
+    return step.name.replace(/^(Acknowledge|Verifier)_/, '');
+}
+
+// The steps of the command in entry that a cell shows
+function shownSteps(entry: Rpc.YamcsCommandHistoryEntry, verifiers: Verifier[]): CommandStep[] {
+    // We leave out a step that is NA, which YAMCS records for a check the command doesn't have, a verifier that is
+    // CANCELLED, which YAMCS stopped before it had a result, and a verifier that is DISABLED, which YAMCS didn't run
+    const steps = commandSteps(entry).filter((s) => !['NA', 'CANCELLED', 'DISABLED'].includes(s.status));
+    // A verifier with an onSuccess action ends the command when it passes, so YAMCS's verdict says what the
+    // verifier found. We show the verdict in the verifier's place, unless the verifier failed or timed out.
+    const ending = verifiers.filter((v) => v.onSuccess).map((v) => `Verifier_${v.stage}`);
+    const shown = steps.filter((s) => !ending.includes(s.name) || failedStatuses.includes(s.status));
+    // While such a verifier is waiting and YAMCS has no verdict, we show the verdict as a step that is waiting
+    const waiting = (step: CommandStep) => waitingStatuses.includes(step.status);
+    if (steps.some((s) => ending.includes(s.name) && waiting(s)) && !steps.some((s) => s.name === 'CommandComplete')) {
+        shown.push({ name: 'CommandComplete', status: 'PENDING', time: '' });
+    }
+    // A waiting verifier has the time YAMCS started it, which can be before YAMCS sent the command, so we move the
+    // waiting steps to the end
+    return [...shown.filter((s) => !waiting(s)), ...shown.filter(waiting)];
+}
+
+// A line for each step, with the time since the first step, like "✓ Sent     +19 ms"
+function timeline(steps: CommandStep[]): string {
+    const first = Date.parse(steps[0]?.time);
+    const rows = steps.map((s) => {
+        const passed = s.status === 'OK';
+        const waiting = waitingStatuses.includes(s.status);
+        const label = s.name === 'CommandComplete' ? (passed || waiting ? 'Completed' : 'Failed') : stepLabel(s);
+        const ms = Date.parse(s.time) - first;
+        return [
+            `${passed ? '✓' : waiting ? '○' : '✗'} ${label}`,
+            waiting ? 'waiting' : ms < 1000 ? `+${ms} ms` : `+${(ms / 1000).toFixed(1)} s`,
+            // A step that didn't pass and has no message shows its status, such as TIMEOUT
+            s.message ?? (passed || waiting ? '' : s.status),
+        ];
+    });
+    // We pad every label and every time to the length of the longest one, so the columns line up
+    const width = (column: number) => Math.max(...rows.map((row) => row[column].length));
+    const [labels, times] = [width(0), width(1)];
+    return rows.map(([label, time, message]) => `${label.padEnd(labels + 5)}${time.padEnd(times + 3)}${message}`.trimEnd()).join('\n');
+}
+
+/**
+ * What YAMCS mode reports to a cell about the command in entry. The detail is a line for
+ * each step a cell shows, then the command's qualified name.
+ */
+export function commandState(entry: Rpc.YamcsCommandHistoryEntry, verifiers: Verifier[]): Hermes.CommandState {
+    const steps = shownSteps(entry, verifiers);
+    const detail = `${timeline(steps)}\n\n${entry.commandName}`;
+    const verdict = steps.find((s) => s.name === 'CommandComplete' && !waitingStatuses.includes(s.status));
+    if (!verdict) {
+        // Without a verdict the label is the newest step that passed
+        const newest = steps.filter((s) => s.status === 'OK').pop();
+        return { label: newest ? stepLabel(newest) : 'issued', detail };
+    }
+    if (verdict.status === 'OK') {
+        // We leave passed unset here. Yamcs.command sets it once the command has completed.
+        return { label: 'completed', detail };
+    }
+    return { label: `failed${verdict.message ? ` · ${verdict.message}` : ''}`, detail, passed: false };
 }

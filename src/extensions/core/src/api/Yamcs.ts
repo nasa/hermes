@@ -6,7 +6,7 @@ import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
 import { BackendProvider, Settings } from '@gov.nasa.jpl.hermes/vscode';
 
 import { Offline } from './Offline';
-import { commandComplete, commandSent, Verifier, yamcsArguments, yamcsDictionary } from './yamcsCommands';
+import { commandComplete, commandSent, commandState, Verifier, yamcsArguments, yamcsDictionary } from './yamcsCommands';
 
 export type YamcsParameterHandler = (instance: string, values: Rpc.YamcsParameterValue[]) => void;
 
@@ -79,8 +79,8 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
             type: 'yamcs',
             profileId: '',
             dictionary: dictionaryId,
-            command: (value, token) => this.command(value, token),
-            sequence: (value, token) => this.sequence(value, token),
+            command: (value, token, onState) => this.command(value, token, onState),
+            sequence: (value, token, onState) => this.sequence(value, token, onState),
         };
     }
 
@@ -226,7 +226,7 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
      * grpc-js can leave a call waiting for minutes on a dead connection, so we make each
      * wait cancellable to let the user stop the cell.
      */
-    private async command(value: CommandValue, token?: vscode.CancellationToken): Promise<boolean> {
+    private async command(value: CommandValue, token?: vscode.CancellationToken, onState?: Hermes.CommandStateHandler): Promise<boolean> {
         const name = value.def.metadata?.qualifiedName;
         if (!name) {
             throw new Error(`${value.def.component}.${value.def.mnemonic} has no YAMCS qualified name. Select a dictionary built from YAMCS as this cell language's dictionary.`);
@@ -245,10 +245,19 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
                 // grpc-js puts YAMCS's reason in details, without the status code in front
                 throw new Error(`Could not issue ${name}: ${err.details ?? err.message}`, { cause: err });
             });
+            let reported = '';
             for (; ;) {
                 const entry = await cancellable(this.client.getCommand(this.state.instance, id), token);
+                // commandSent and commandComplete throw when the command failed, so we report its state first
+                const state = commandState(entry, verifiers);
+                if (state.detail !== reported) {
+                    reported = state.detail;
+                    onState?.(state);
+                }
                 sent = commandSent(entry);
                 if (sent && commandComplete(entry, verifiers)) {
+                    // Tell the cell this command is done, so it moves on to the next one
+                    onState?.({ ...state, passed: true });
                     return true;
                 }
                 await cancellable(delay(50), token);
@@ -266,9 +275,9 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
     }
 
     // Issues a cell's commands one at a time, each once the one before has completed
-    private async sequence(value: Hermes.CommandSequence, token?: vscode.CancellationToken): Promise<boolean> {
+    private async sequence(value: Hermes.CommandSequence, token?: vscode.CancellationToken, onState?: Hermes.CommandStateHandler): Promise<boolean> {
         for (const cmd of value.commands) {
-            await this.command(cmd, token);
+            await this.command(cmd, token, onState);
         }
         return true;
     }
