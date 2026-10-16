@@ -28,8 +28,38 @@ jest.mock('vscode', () => {
     return {
         ...jest.requireActual<object>('vscode'),
         EventEmitter,
-        window: { showInputBox: jest.fn() },
-        workspace: { getConfiguration: () => ({ get: (key: string) => mockSettings[key] }) },
+        window: {
+            showInputBox: jest.fn(),
+            // CommandStatuses calls the next three
+            createTextEditorDecorationType: () => ({ dispose: () => { } }),
+            onDidChangeVisibleTextEditors: () => ({ dispose: () => { } }),
+            visibleTextEditors: [],
+        },
+        workspace: {
+            getConfiguration: () => ({ get: (key: string) => mockSettings[key] }),
+            onDidChangeTextDocument: () => ({ dispose: () => { } }),
+        },
+        // FswNotebookLanguageProvider and CommandStatuses call the entries below
+        commands: { registerCommand: () => ({ dispose: () => { } }) },
+        ThemeColor: class { },
+        MarkdownString: class {
+            value = '';
+            appendCodeblock(code: string) {
+                this.value = code;
+                return this;
+            }
+        },
+        Range: class {
+            readonly start: object;
+            readonly end: object;
+            constructor(startLine: number, startCharacter: number, endLine: number, endCharacter: number) {
+                this.start = { line: startLine, character: startCharacter };
+                this.end = { line: endLine, character: endCharacter };
+            }
+        },
+        NotebookCellOutput: class { constructor(readonly items: unknown[]) { } },
+        // As in VS Code, an output item holds its text as bytes
+        NotebookCellOutputItem: { text: (value: string) => ({ data: Buffer.from(value) }) },
     };
 });
 
@@ -40,6 +70,7 @@ import type * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { YamcsClient, YamcsCommandHistoryEntry, YamcsCommandInfo, YamcsEvent, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
 import { Def, Dictionary } from '@gov.nasa.jpl.hermes/types';
+import { FswNotebookLanguageProvider } from '@gov.nasa.jpl.hermes/vscode';
 
 import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterSource } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
@@ -92,6 +123,49 @@ function tokenSource() {
         cancelled.fire();
     };
     return { token, cancel };
+}
+
+// A notebook cell with a command on each of its lines, in an editor that is visible. decorations gives what the
+// editor draws for each command, statuses gives only the text, and outputs gives the text of each of the cell's outputs.
+function notebookCell(...lines: string[]) {
+    const document: Partial<vscode.TextDocument> = {
+        version: 1,
+        languageId: 'yamcs',
+        getText: (range) => lines[range!.start.line],
+        lineAt: (line: number | vscode.Position) => ({ range: new vscode.Range(Number(line), 0, Number(line), lines[Number(line)].length) } as vscode.TextLine),
+    };
+    const setDecorations = jest.fn<vscode.TextEditor['setDecorations']>();
+    const editor: Partial<vscode.TextEditor> = { document: document as vscode.TextDocument, setDecorations };
+    jest.replaceProperty(vscode.window, 'visibleTextEditors', [editor as vscode.TextEditor]);
+
+    const outputs: vscode.NotebookCellOutput[] = [];
+    const execution: Partial<vscode.NotebookCellExecution> = {
+        appendOutput: async (output) => {
+            outputs.push(...[output].flat());
+        },
+    };
+    const cell: Partial<vscode.NotebookCell> = { metadata: {}, document: document as vscode.TextDocument };
+    const decorations = () => setDecorations.mock.lastCall![1] as vscode.DecorationOptions[];
+    return {
+        cell: cell as vscode.NotebookCell,
+        execution: execution as vscode.NotebookCellExecution,
+        decorations,
+        statuses: () => decorations().map((decoration) => decoration.renderOptions?.after?.contentText),
+        outputs: () => outputs.map((output) => Buffer.from(output.items[0].data).toString()),
+    };
+}
+
+// A cell language whose cells hold the given commands, one on each line
+class Cells extends FswNotebookLanguageProvider {
+    constructor(api: Hermes.Api, private readonly commands: CommandValue[]) {
+        super('test', () => true, api);
+    }
+
+    async *parse(): AsyncIterable<[CommandValue, vscode.Range]> {
+        for (const [line, value] of this.commands.entries()) {
+            yield [value, new vscode.Range(line, 0, line, 3)];
+        }
+    }
 }
 
 describe('splitName', () => {
@@ -891,6 +965,74 @@ describe('YAMCS commands', () => {
         await fsw.command!(command(noOpString, ['a']), undefined, onState);
         const state = commandState(sentCommand(), []);
         expect(onState.mock.calls).toEqual([[state], [{ ...state, passed: true }]]);
+        api.dispose();
+    });
+
+    test('draws each command\'s status after its line until the cell is edited, and keeps a line of output for a command that passed', async () => {
+        const { api, get } = await backend();
+        // YAMCS completes the first command, and fails the second 5 s later. The first command's status keeps
+        // the 0.0 s it took.
+        const now = jest.spyOn(Date, 'now').mockReturnValue(0);
+        const failed = sentCommand({}, 'NOK', 'EXECUTION_ERROR');
+        get.mockResolvedValueOnce(sentCommand({ Complete: 'OK' }, 'OK')).mockImplementation(async () => {
+            now.mockReturnValue(5000);
+            return failed;
+        });
+        const { cell, execution, decorations, statuses, outputs } = notebookCell('CMD a', 'CMD b', 'CMD c');
+        const edits = new vscode.EventEmitter<vscode.TextDocumentChangeEvent>();
+        jest.spyOn(vscode.workspace, 'onDidChangeTextDocument').mockImplementation(edits.event);
+        const cells = new Cells(api, [command(verified, ['a']), command(noOpString, ['b']), command(noOpString, ['c'])]);
+        await expect(cells.execute(cell, execution, tokenSource().token)).rejects.toThrow('CommandComplete NOK');
+
+        expect(statuses()).toEqual(['✓ completed · 0.0 s', '✗ failed · EXECUTION_ERROR', '○ not sent']);
+        // Each status is drawn on the last character of its line
+        expect(decorations().map((decoration) => decoration.range)).toEqual([0, 1, 2].map((line) => new vscode.Range(line, 4, line, 5)));
+        expect(decorations()[1].hoverMessage).toEqual(new vscode.MarkdownString().appendCodeblock(commandState(failed, []).detail));
+        // The cell's first output is its list of events
+        expect(outputs()).toEqual(['', 'CMD a  ✓ completed · 0.0 s']);
+
+        // VS Code also fires this event when the cell's text has not changed, which leaves the statuses.
+        // An edit clears them.
+        const edit: Partial<vscode.TextDocumentChangeEvent> = { document: cell.document, contentChanges: [] };
+        edits.fire(edit as vscode.TextDocumentChangeEvent);
+        expect(statuses()).toHaveLength(3);
+        const change = { range: new vscode.Range(0, 0, 0, 0), rangeOffset: 0, rangeLength: 0, text: 'x' };
+        edits.fire({ ...edit, contentChanges: [change] } as vscode.TextDocumentChangeEvent);
+        expect(statuses()).toEqual([]);
+        api.dispose();
+    });
+
+    test('draws no statuses for a cell whose connection reports no state', async () => {
+        const { api, fsw } = await backend();
+        // As a connection in Local or Remote mode does, this one sends the cell's commands and reports nothing
+        jest.spyOn(fsw, 'sequence').mockResolvedValue(true);
+        const { cell, execution, statuses } = notebookCell('CMD a');
+        await new Cells(api, [command(noOpString, ['a'])]).execute(cell, execution, tokenSource().token);
+        expect(statuses()).toEqual([]);
+        api.dispose();
+    });
+
+    test('counts the seconds of a command in flight until the cell is stopped, and then shows ?', async () => {
+        const { api, get } = await backend();
+        get.mockResolvedValue(sentCommand({ Complete: 'PENDING' }));
+        const { cell, execution, decorations, statuses } = notebookCell('CMD a');
+        const now = jest.spyOn(Date, 'now').mockReturnValue(0);
+        const { token, cancel } = tokenSource();
+        const run = new Cells(api, [command(verified, ['a'])]).execute(cell, execution, token);
+        await waitFor(() => get.mock.calls.length >= 2, 1000);
+        const first = statuses();
+        // The cell draws the status again ten times a second
+        now.mockReturnValue(1500);
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        const later = statuses();
+        cancel();
+        await expect(run).rejects.toThrow('YAMCS already sent it');
+        // We check the statuses once the cell has stopped, so a failed check doesn't leave the cell polling
+        expect([first, later, statuses()]).toEqual([['● Sent · 0.0 s'], ['● Sent · 1.5 s'], ['? Sent · 1.5 s']]);
+        // Nothing is drawn after the run has ended
+        const last = decorations();
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        expect(decorations()).toBe(last);
         api.dispose();
     });
 });

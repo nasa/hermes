@@ -109,16 +109,24 @@ it, which doesn't mean the flight software ran it. When YAMCS refuses or fails t
 cell fails with YAMCS's reason. Commands after a failed one aren't sent. Stopping a cell doesn't
 withdraw a command YAMCS already holds.
 
+When you run a cell, the editor shows each command's status at the end of its line. A command in
+flight shows the newest step YAMCS has recorded and how long it has taken so far, for example
+`● Sent · 0.4 s`. A command that passes shows `✓` and the time it took, and one that fails shows `✗`
+with YAMCS's reason, for example `✗ failed · EXECUTION_ERROR`. Commands the cell hasn't sent show
+`○ not sent`, and a command still in flight when the cell stops shows `?`. Hover over a status to see
+the steps YAMCS has recorded for the command.
+
 F Prime cells run in YAMCS mode too, when fprime-yamcs runs the instance. The Hermes F Prime extension
 builds an F Prime dictionary from YAMCS mode's dictionary, listed as `<instance> (F Prime)`. It names
 each command as F Prime does, for example `CdhCore.cmdDisp.CMD_NO_OP` for
 `/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP`, and takes its opcode from fprime-yamcs's
 `OpCode` argument assignment. Each command waits out its relative time tag, then goes out as a YAMCS
-cell's command does, so an F Prime cell passes and fails as a YAMCS cell does. The cell waits for the
-flight software only when the mission database gives a command verifiers. fprime-yamcs builds its
-database with fprime-xtce, which as of version 0.1.5 defines none, so with that database an F Prime
-cell passes once YAMCS has sent its commands, even when the flight software rejects one. Unlike Local
-and Remote modes, the cell doesn't list the events its commands raise. They show in the events panel.
+cell's command does, so an F Prime cell passes, fails and shows its commands' statuses as a YAMCS cell
+does. The cell waits for the flight software only when the mission database gives a command verifiers.
+fprime-yamcs builds its database with fprime-xtce, which as of version 0.1.5 defines none, so with
+that database an F Prime cell passes once YAMCS has sent its commands, even when the flight software
+rejects one. Unlike Local and Remote modes, the cell doesn't list the events its commands raise. They
+show in the events panel.
 
 YAMCS mode sends no credentials, so it fails with `UNAUTHENTICATED` when YAMCS security is on. When
 its subscription ends, for example because YAMCS or its instance stopped, the status bar turns red
