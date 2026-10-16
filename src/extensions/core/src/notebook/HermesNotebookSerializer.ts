@@ -203,7 +203,8 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
                                 continue;
                             }
 
-                            cell.outputs = [];
+                            // Each output of a cell has its own start tag, so we keep the outputs the cell already has
+                            cell.outputs ??= [];
                             break;
                         case Encoding3.TagType.OUTPUT_END:
                             break;
@@ -214,7 +215,7 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
                             lineNo++; // skip the item prefix line
                             break;
                         case Encoding3.TagType.OUTPUT_ITEM_END:
-                            // Remove the item closer line
+                            // Remove the blank line that the serializer writes after an item
                             outputContents.pop();
 
                             if (!outputMime) {
@@ -239,7 +240,8 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
                                         break;
                                     case 3.1:
                                         // Remove the markdown table header/footer
-                                        outputContents = outputContents.slice(3, -1);
+                                        // An empty table is saved with one blank line in place of its rows, and we drop that line
+                                        outputContents = outputContents.slice(3, -1).filter((row) => row !== '');
 
                                         cell?.outputs?.push(
                                             new vscode.NotebookCellOutput([
@@ -269,6 +271,11 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
                                         break;
                                 }
                             } else {
+                                // The serializer writes a closing </pre></details> line after the text, and we drop that line. A version 3
+                                // notebook may not have the line, so we check for it first.
+                                if (outputContents[outputContents.length - 1] === '</pre></details>') {
+                                    outputContents.pop();
+                                }
                                 cell?.outputs?.push(
                                     new vscode.NotebookCellOutput([
                                         new vscode.NotebookCellOutputItem(
