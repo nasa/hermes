@@ -86,7 +86,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
 
     private didFswStatusChange = true;
     private statusBarItems: vscode.NotebookCellStatusBarItem[] = [];
-    private readonly commandStatuses = new CommandStatuses();
+    private readonly commandStatuses: CommandStatuses;
 
     protected subscriptions: vscode.Disposable[];
 
@@ -102,7 +102,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
         readonly connectionPredicate: (fsw: Proto.IFsw) => boolean,
         readonly api: Hermes.Api,
     ) {
-
+        this.commandStatuses = new CommandStatuses(id);
         this.subscriptions = [
             this.commandStatuses,
             this.api.onFswChange(() => {
@@ -238,7 +238,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
         execution: vscode.NotebookCellExecution,
         token: vscode.CancellationToken,
     ): Promise<boolean> {
-        const run = this.commandStatuses.run(cell, execution);
+        const run = this.commandStatuses.run(cell);
         const fsw = await this.getFsw(cell, token);
         if (!fsw) {
             throw new Error("No target FSW set on this cell (or connected)");
