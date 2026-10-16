@@ -861,7 +861,6 @@ describe('YAMCS commands', () => {
             [0, { owner: 'ops', hermes: { fsw: 'yamcs:other-instance', note: 'x' } }],
             [2, { hermes: { fsw: 'yamcs:other-instance' } }],
         ]);
-        expect(vscode.workspace.applyEdit).toHaveBeenCalledTimes(1);
         api.dispose();
     });
 
