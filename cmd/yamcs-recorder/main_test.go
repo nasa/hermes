@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"log/slog"
 	"net"
@@ -119,6 +120,35 @@ func TestExportEventsEmitsEachEvent(t *testing.T) {
 		assert.Equal(t, e.GetMessage(), records[i].Body().AsString())
 	}
 	assert.EqualValues(t, len(sent), st.events.Load())
+}
+
+func TestWriteStoresWaitingMessagesInOneInsert(t *testing.T) {
+	row := func(value float64) store.Row { return store.Row{Value: store.DoubleValue(value)} }
+	ctx, cancel := context.WithCancel(context.Background())
+	queue := make(chan []store.Row, 3)
+	var inserts [][]store.Row
+	r := &recorder{insert: func(insertCtx context.Context, rows []store.Row) error {
+		inserts = append(inserts, rows)
+		if len(inserts) == 1 {
+			// While the first insert is in flight, three more messages arrive
+			// and a signal ends the subscription. Then the insert fails.
+			queue <- []store.Row{row(2)}
+			queue <- []store.Row{row(3)}
+			queue <- []store.Row{row(4)}
+			cancel()
+			close(queue)
+			return errors.New("database is down")
+		}
+		// A later insert fails only if the signal cancelled its context.
+		return insertCtx.Err()
+	}}
+	queue <- []store.Row{row(1)}
+
+	r.write(ctx, queue)
+
+	assert.Equal(t, [][]store.Row{{row(1)}, {row(2), row(3), row(4)}}, inserts)
+	assert.EqualValues(t, 1, r.stats.insertErrors.Load())
+	assert.EqualValues(t, 3, r.stats.rows.Load())
 }
 
 // logsReceiver stands in for the OpenTelemetry collector. It accepts OTLP log

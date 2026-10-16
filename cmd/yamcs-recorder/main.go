@@ -19,6 +19,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -162,9 +163,11 @@ func run(ctx context.Context, cfg config, logger *slog.Logger) error {
 		logger.Info("exporting events", "otlp", cfg.otlp)
 	}
 
+	ids := store.NewResolver()
 	r := &recorder{
-		db:     db,
-		ids:    store.NewResolver(),
+		insert: func(ctx context.Context, rows []store.Row) error {
+			return store.Insert(ctx, db, ids, rows)
+		},
 		conv:   convert.New(cfg.instance, logger),
 		stored: stored,
 		logger: logger,
@@ -275,14 +278,32 @@ func newLoggerProvider(ctx context.Context, addr, instance string) (*sdklog.Logg
 	), nil
 }
 
+// maxQueuedMessages is how many messages can wait for the database before we
+// stop reading from YAMCS.
+const maxQueuedMessages = 1024
+
 // recordParameters stores the values that stream delivers until it ends.
 func recordParameters(ctx context.Context, stream processing.ProcessingApi_SubscribeParametersClient, r *recorder) error {
+	// A second goroutine writes to the database, so we keep reading from YAMCS
+	// while an insert is in flight.
+	queue := make(chan []store.Row, maxQueuedMessages)
+	var writer sync.WaitGroup
+	writer.Go(func() { r.write(ctx, queue) })
+	// Before we return, we wait for that goroutine to store the rows still in
+	// queue.
+	defer func() {
+		close(queue)
+		writer.Wait()
+	}()
 	for ctx.Err() == nil {
 		data, err := stream.Recv()
 		if err != nil {
 			return fmt.Errorf("parameter subscription ended: %w", err)
 		}
-		r.record(ctx, data)
+		if rows := r.rows(data); len(rows) > 0 {
+			// When queue is full, this waits until an insert finishes.
+			queue <- rows
+		}
 	}
 	return ctx.Err()
 }
@@ -303,9 +324,10 @@ func exportEvents(ctx context.Context, stream events.EventsApi_SubscribeEventsCl
 
 // recorder stores the values that arrive on one parameter subscription.
 type recorder struct {
-	db   *sql.DB
-	ids  *store.Resolver
-	conv *convert.Converter
+	// insert writes rows to the database in one transaction. It is a field so
+	// tests can stand in for the database.
+	insert func(ctx context.Context, rows []store.Row) error
+	conv   *convert.Converter
 	// stored holds the newest generation time each parameter had in the
 	// database when we started. dropStored uses it to skip the values YAMCS
 	// re-sends when the subscription opens.
@@ -314,10 +336,8 @@ type recorder struct {
 	logger *slog.Logger
 }
 
-// record stores the values in one message from YAMCS. If the insert fails, we
-// count the error and drop the message's rows rather than exit, so the YAMCS
-// subscription stays open and we record again once the database is back.
-func (r *recorder) record(ctx context.Context, data *processing.SubscribeParametersData) {
+// rows returns the rows to store for one message from YAMCS.
+func (r *recorder) rows(data *processing.SubscribeParametersData) []store.Row {
 	if invalid := data.GetInvalid(); len(invalid) > 0 {
 		r.logger.Warn("YAMCS rejected parameters", "count", len(invalid), "first", invalid[0].GetName())
 	}
@@ -327,17 +347,31 @@ func (r *recorder) record(ctx context.Context, data *processing.SubscribeParamet
 	r.stats.unmapped.Add(int64(unmapped))
 	r.stats.incomplete.Add(int64(incomplete))
 	r.stats.alreadyStored.Add(int64(alreadyStored))
-	if len(rows) == 0 {
-		return
+	return rows
+}
+
+// write stores the rows of each message on queue until queue is closed.
+func (r *recorder) write(ctx context.Context, queue <-chan []store.Row) {
+	for rows := range queue {
+		// One insert for many messages takes far less time than an insert for
+		// each, so we add the rows of every message already on queue. If queue
+		// is empty, we store this message alone rather than wait for more.
+		for range len(queue) {
+			rows = append(rows, <-queue...)
+		}
+		// We insert even after a signal has cancelled ctx, so the rows we have
+		// already read aren't lost.
+		if err := r.insert(context.WithoutCancel(ctx), rows); err != nil {
+			// We count the error and drop these rows rather than exit, so the
+			// YAMCS subscription stays open and we record again once the
+			// database is back.
+			r.stats.insertErrors.Add(1)
+			msg := err.Error()
+			r.stats.lastInsertError.Store(&msg)
+			continue
+		}
+		r.stats.rows.Add(int64(len(rows)))
 	}
-	// Finish this insert even if a signal arrives, so its rows aren't lost.
-	if err := store.Insert(context.WithoutCancel(ctx), r.db, r.ids, rows); err != nil {
-		r.stats.insertErrors.Add(1)
-		msg := err.Error()
-		r.stats.lastInsertError.Store(&msg)
-		return
-	}
-	r.stats.rows.Add(int64(len(rows)))
 }
 
 // dropStored removes rows generated at or before the newest time stored for
@@ -373,7 +407,7 @@ type stats struct {
 	unmapped      atomic.Int64 // values dropped because YAMCS never sent their parameter's name
 	incomplete    atomic.Int64 // values and members dropped for having no generation time or no value
 	alreadyStored atomic.Int64 // rows dropped by dropStored
-	insertErrors  atomic.Int64 // failed inserts, each dropping one message's rows
+	insertErrors  atomic.Int64 // failed inserts, each dropping the rows of every message in it
 
 	lastInsertError atomic.Pointer[string]
 }

@@ -21,9 +21,16 @@ YAMCS sends each parameter's cached value first. After a restart, that value is 
 The recorder exits non-zero when its parameter or event subscription ends, for example when YAMCS stops or its
 instance restarts, so run it under a supervisor that restarts it.
 
-If a write to TimescaleDB fails, for example while the database is down, the values in that message are dropped.
-The recorder keeps running and writes again once the database is back. Each failed write adds one to `insert_errors`
-on the `recorder stats` line, which it logs every 30 seconds.
+The recorder keeps reading from YAMCS while it writes to TimescaleDB. Each write is one transaction, which stores
+every message that is waiting when the write starts. So the slower the database, the more messages each write
+stores. When 1024 messages are waiting, the recorder stops reading from YAMCS until a write finishes, and the
+yamcs-grpc plugin holds the messages the recorder has not read. If more than 8 MiB of them wait in the plugin, it
+drops them and ends the subscription, and the recorder exits. Before it exits, the recorder writes the messages it
+has already read.
+
+If a write to TimescaleDB fails, for example while the database is down, the values of every message in that write
+are dropped. The recorder keeps running and writes again once the database is back. Each failed write adds one to
+`insert_errors` on the `recorder stats` line, which it logs every 30 seconds.
 
 ## Events
 
