@@ -256,8 +256,7 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
                 }
                 sent = commandSent(entry);
                 if (sent && commandComplete(entry, verifiers)) {
-                    // We tell the handler here that the command passed, once for each command. commandState can't
-                    // do that for every command, because one without a verdict records no step that says it passed.
+                    // Tell the cell this command is done, so it moves on to the next one
                     onState?.({ ...state, passed: true });
                     return true;
                 }
