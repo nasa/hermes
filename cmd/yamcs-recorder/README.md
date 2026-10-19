@@ -40,18 +40,23 @@ Each event becomes one log record:
   the event's sequence number to it as nanoseconds, which keeps events from the same millisecond in sequence order in
   Grafana.
 - The body is the event's message.
-- The severity number places the YAMCS severity in an OpenTelemetry band, and Loki gives the record that band's
-  level: `INFO` 9 (info), `WATCH` 13 and `WARNING` 14 (warn), `DISTRESS` 17 (error), `CRITICAL` 21 and `SEVERE` 22
-  (fatal, which Grafana shows as critical). The numbers keep YAMCS's order, so queries can filter on them.
-  `WARNING_NEW`, the number YAMCS plans to move `WARNING` to, also gets 14, and the deprecated `ERROR` gets 22. There
-  is no severity text, because Loki would take the level from that text and does not know `WATCH`, `DISTRESS` or
-  `SEVERE`.
+- The severity number, which sets the level Grafana shows, comes from the event's F Prime severity (table below).
 - `yamcs.severity`, `yamcs.source`, `yamcs.type`, `yamcs.seq_number` and `yamcs.created_by` hold YAMCS's own fields.
   `yamcs.type` and `yamcs.created_by` are there only when YAMCS sets them. `yamcs.severity` is the severity name,
   with `WARNING_NEW` named `WARNING` and `ERROR` named `SEVERE`.
 - Each entry of the event's `extra` becomes an attribute `yamcs.extra.<key>`; for F Prime events those are the event
   arguments, `fprime_event_id`, `fprime_event_name` and `fprime_severity`. The prefix stops an argument named
   `level` or `severity` from replacing the level Loki gives the record.
+
+| F Prime severity | Severity number | Loki level | Events with only a YAMCS severity |
+| --- | --- | --- | --- |
+| `DIAGNOSTIC` | 1 | trace | |
+| `COMMAND` | 5 | debug | |
+| `ACTIVITY_LO` | 9 | info | `INFO` |
+| `ACTIVITY_HI` | 10 | info | `WATCH` |
+| `WARNING_LO` | 13 | warn | `WARNING` |
+| `WARNING_HI` | 17 | error | `DISTRESS` |
+| `FATAL` | 21 | fatal (critical in Grafana) | `CRITICAL`, `SEVERE` |
 
 Only events raised while the recorder runs are exported; it does not read missed ones from the YAMCS archive. The
 recorder sends records in batches about once a second, and on exit sends the rest before it stops. If the collector

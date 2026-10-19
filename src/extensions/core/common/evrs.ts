@@ -6,7 +6,7 @@ import { DisplayEvent, EvrSeverity } from "@gov.nasa.jpl.hermes/types/src";
 export type YamcsSeverity = 'INFO' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
 
 /**
- * A row of the events panel. YAMCS rows keep YAMCS's severity.
+ * A row of the events panel. YAMCS events without an F Prime severity keep their YAMCS severity.
  */
 export type EventRow = Omit<DisplayEvent, 'severity'> & { severity: EvrSeverity | YamcsSeverity };
 
