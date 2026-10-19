@@ -4,8 +4,7 @@ import type { EventRow, YamcsSeverity } from '../../common/evrs';
 import { millis } from './yamcsRows';
 
 /**
- * Turn YAMCS events into events panel rows, with YAMCS's source in the component
- * column and its type in the name column. We skip events without a generation
+ * Turn YAMCS events into events panel rows. We skip events without a generation
  * time or already in seen, and add the rest to seen.
  */
 export function yamcsEventRows(instance: string, events: readonly YamcsEvent[], seen: Set<string>): EventRow[] {
@@ -26,13 +25,24 @@ export function yamcsEventRows(instance: string, events: readonly YamcsEvent[], 
             // YAMCS has no SCLK
             sclk: NaN,
             source,
-            component: e.source ?? '',
-            name: e.type ?? '',
+            ...componentAndName(e),
             severity: severity(e.severity),
             message: e.message ?? '',
         });
     }
     return rows;
+}
+
+function componentAndName(e: YamcsEvent): { component: string; name: string } {
+    // fprime-yamcs puts an F Prime event's full name, like CdhCore.cmdDisp.OpCodeDispatched,
+    // in its extra fields. We split it into the component and the event name.
+    const full = e.extra?.fprime_event_name;
+    const dot = full?.lastIndexOf('.') ?? -1;
+    if (full && dot > 0) {
+        return { component: full.slice(0, dot), name: full.slice(dot + 1) };
+    }
+    // Other events keep YAMCS's source and type
+    return { component: e.source ?? '', name: e.type ?? '' };
 }
 
 function severity(s: YamcsEvent['severity']): YamcsSeverity {
