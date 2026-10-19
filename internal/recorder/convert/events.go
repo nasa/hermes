@@ -97,6 +97,8 @@ func severity(e *events.Event) otellog.Severity {
 	if s, ok := fprimeSeverities[e.GetExtra()["fprime_severity"]]; ok {
 		return s
 	}
+	// Events not originating from an fprime instance won't include "fprime_severity"
+	// so we fall back to reading the YAMCS severity
 	return fprimeSeverities[fprimeCounterparts[e.GetSeverity()]]
 }
 
