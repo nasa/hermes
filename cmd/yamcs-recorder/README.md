@@ -1,54 +1,64 @@
 # yamcs-recorder
 
-Records the TELEMETERED parameters of a YAMCS instance into TimescaleDB, through the yamcs-grpc plugin. With
-`--otlp`, it also exports the instance's events as OpenTelemetry log records to an OpenTelemetry collector, which
-forwards them to Loki.
+yamcs-recorder records the telemetered parameters of a YAMCS instance in TimescaleDB, where Grafana charts them with
+the [Hermes datasource](../../grafana-datasource-plugin/src/README.md). With `--otlp`, it also sends the instance's
+events through an OpenTelemetry collector to Loki.
+
+```mermaid
+flowchart LR
+    yamcs["YAMCS with yamcs-grpc"] -->|"parameters, events"| rec["yamcs-recorder"]
+    rec -->|"parameters"| ts[("TimescaleDB")]
+    rec -->|"events"| otel["OpenTelemetry collector"] --> loki[("Loki")]
+    ts -->|"Hermes datasource"| graf["Grafana"]
+    loki --> graf
+```
+
+## Run
+
+Start YAMCS with the [yamcs-grpc plugin](../../yamcs-grpc-plugin/README.md#run), and the TimescaleDB, collector, Loki
+and Grafana services in the root [`docker-compose.yml`](../../docker-compose.yml). Then, from the repo root:
 
 ```sh
-PGPASSWORD=... go run ./cmd/yamcs-recorder --yamcs localhost:8091 --instance fprime-project \
+# docker-compose.yml gives TimescaleDB the password "password"
+PGPASSWORD=password go run ./cmd/yamcs-recorder --yamcs localhost:8091 --instance fprime-project \
     --postgresql 'postgres://postgres@localhost:5432/hermes?sslmode=disable' --otlp localhost:4317
 ```
 
-On start it creates the `timescaledb` extension, the `parameters` table and the `parameter_values` hypertable if
-they are missing. Each value becomes one `parameter_values` row per scalar. Each row points to a `parameters` row
-that holds the parameter, the scalar's `member_path` (`.member`, `[0]`, or empty for a whole value) and its
-`value_type`. A parameter whose type changes in a new dictionary gets a new `parameters` row, so Grafana can
-show each type as its own series.
+| Flag | Default | Use |
+| --- | --- | --- |
+| `--yamcs` | `localhost:8091` | `host:port` of the yamcs-grpc plugin |
+| `--instance` | `fprime-project` | YAMCS instance to record |
+| `--processor` | `realtime` | YAMCS processor to subscribe to |
+| `--postgresql` | required | TimescaleDB database URL. Give the password in `PGPASSWORD`. |
+| `--otlp` | unset: parameters only, no events | `host:port` of the collector's OTLP gRPC receiver, for example `localhost:4317` for `docker-compose.yml` |
+| `--include-top-level` | `false` | Also record parameters directly in a top-level space system, such as `/Ref_Ref/FPrimeTime`, where fprime-yamcs puts packet header fields |
+| `--log-level` | `info` | `debug`, `info`, `warn` or `error` |
 
-It leaves out parameters directly in a top-level space system, such as `/Ref_Ref/FPrimeTime`, where
-fprime-yamcs puts the CCSDS and F Prime packet header fields. To record them anyway, pass `--include-top-level`.
+## What it writes
 
-YAMCS sends each parameter's cached value first. After a restart, that value is dropped if it is already stored.
+On start it creates the `timescaledb` extension and its tables if they are missing. The database itself must exist;
+`docker-compose.yml` creates `hermes`.
 
-The recorder exits non-zero when its parameter or event subscription ends, for example when YAMCS stops or its
-instance restarts, so run it under a supervisor that restarts it.
-
-If a write to TimescaleDB fails, for example while the database is down, the values in that message are dropped.
-The recorder keeps running and writes again once the database is back. Each failed write adds one to `insert_errors`
-on the `recorder stats` line, which it logs every 30 seconds.
+| Where | One entry per |
+| --- | --- |
+| `parameters` table | scalar it has stored a value for, by instance, space system, name, `member_path` (for example `.x` or `[0]`, empty for a whole value) and value type. A type change in a new dictionary adds a row, so Grafana shows each type as its own series. |
+| `parameter_values` table | scalar value, pointing at its `parameters` row |
+| Loki, with `--otlp` | event, as described in [Events](#events) |
 
 ## Events
 
-`--otlp` is the `host:port` of the collector's OTLP gRPC receiver, such as `localhost:4317` for the root
-`docker-compose.yml`. The recorder connects without TLS, so it cannot reach a collector that requires TLS. Without
-`--otlp` it records parameters only and does not subscribe to events.
+Each event becomes one OpenTelemetry log record.
 
-Each event becomes one log record:
-
-- The service name is the YAMCS instance, and the instrumentation scope is `yamcs-recorder`.
-- The timestamp is the event's generation time (when its source raised it) and the observed timestamp its reception
-  time (when YAMCS received it). When YAMCS sends no reception time, the OpenTelemetry SDK uses the time the recorder
-  handed it the event. YAMCS gives the generation time to the millisecond, so the recorder adds the last six digits of
-  the event's sequence number to it as nanoseconds, which keeps events from the same millisecond in sequence order in
-  Grafana.
-- The body is the event's message.
-- The severity number, which sets the level Grafana shows, comes from the event's F Prime severity (table below).
-- `yamcs.severity`, `yamcs.source`, `yamcs.type`, `yamcs.seq_number` and `yamcs.created_by` hold YAMCS's own fields.
-  `yamcs.type` and `yamcs.created_by` are there only when YAMCS sets them. `yamcs.severity` is the severity name,
-  with `WARNING_NEW` named `WARNING` and `ERROR` named `SEVERE`.
-- Each entry of the event's `extra` becomes an attribute `yamcs.extra.<key>`; for F Prime events those are the event
-  arguments, `fprime_event_id`, `fprime_event_name` and `fprime_severity`. The prefix stops an argument named
-  `level` or `severity` from replacing the level Loki gives the record.
+| Log record field | Holds |
+| --- | --- |
+| Service name | the YAMCS instance |
+| Instrumentation scope | `yamcs-recorder` |
+| Timestamp | generation time, when the event's source raised it |
+| Observed timestamp | reception time, when YAMCS received it |
+| Body | the event's message |
+| Severity number | the event's F Prime severity, numbered as in the next table |
+| `yamcs.severity`, `yamcs.source`, `yamcs.type`, `yamcs.seq_number`, `yamcs.created_by` | YAMCS's fields of the same names |
+| `yamcs.extra.<key>` | each entry of the event's `extra`. For an F Prime event, its arguments and `fprime_event_id`, `fprime_event_name` and `fprime_severity`. |
 
 | F Prime severity | Severity number | Loki level | Events with only a YAMCS severity |
 | --- | --- | --- | --- |
@@ -60,36 +70,43 @@ Each event becomes one log record:
 | `WARNING_HI` | 17 | error | `DISTRESS` |
 | `FATAL` | 21 | fatal (critical in Grafana) | `CRITICAL`, `SEVERE` |
 
-Only events raised while the recorder runs are exported; it does not read missed ones from the YAMCS archive. The
-recorder sends records in batches about once a second, and on exit sends the rest before it stops. If the collector
-is unreachable, the exporter retries each batch for about 10 seconds, then logs an `OpenTelemetry error` line and
-drops it. Exit can then take up to about 30 seconds, and the recorder may also log `failed to flush events`. If more
-than 2048 events are waiting while the collector is unreachable, the SDK drops the oldest without logging. `events`
-on the `recorder stats` line counts the events handed to the SDK, not the ones the collector accepted.
+## Query events in Grafana
 
-Loki drops an event whose generation time is more than 7 days old, more than 10 minutes in the future, or more than
-an hour older than the newest event it already has for that instance, such as an event downlinked late. The
-collector logs `Exporting failed` for it, and the recorder does not see the error.
-
-In Grafana, query events through the Loki datasource. Loki indexes the service name as the `service_name` label and
-keeps the other fields as structured metadata, with dots replaced by underscores. For example, the events of one
-F Prime event type, and the errors and worse:
+Use the Loki datasource that `docker-compose.yml` sets up in Grafana. Loki indexes the service name as the
+`service_name` label and keeps the other fields as structured metadata, with dots replaced by underscores. These two
+queries select the events of one F Prime event type, and the events at level error or worse:
 
 ```logql
 {service_name="fprime-project"} | yamcs_type="CdhCore.cmdDisp.OpCodeDispatched"
 {service_name="fprime-project"} | severity_number >= 17
 ```
 
-## Tests
+## Limits
 
-The store tests need `HERMES_TEST_TIMESCALE_DSN`, a `postgres://` URL whose user can create databases. The live
-subscription tests, which run against a real YAMCS, need `YAMCS_GRPC_ADDRESS` and read `YAMCS_INSTANCE` (default
-`fprime-project`). Without them, those tests skip. The live event subscription test raises one event through
-YAMCS's `CreateEvent` call, and the event stays in that instance's archive. The end-to-end recorder test needs both
-`HERMES_TEST_TIMESCALE_DSN` and `YAMCS_GRPC_ADDRESS` and raises one event the same way. It waits for a parameter
-value, so the instance must be receiving telemetry or have a cached value from earlier telemetry.
+| When | What happens |
+| --- | --- |
+| YAMCS or TimescaleDB is unreachable at start, YAMCS stops, or the instance restarts | The recorder exits non-zero. Run it under a supervisor that restarts it. |
+| YAMCS requires a login | The recorder can't subscribe, because it sends no credentials. |
+| The recorder isn't running | Nothing is recorded. The recorder doesn't read missed values or events from the YAMCS archive later. |
+| TimescaleDB goes down while the recorder runs | Values are dropped until it is back. `insert_errors` on the `recorder stats` log line, logged every 30 seconds, counts the failed writes. |
+| The collector is unreachable | The recorder retries each batch of events for about 10 seconds, then drops it and logs `OpenTelemetry error`. |
+| The collector requires TLS | The recorder can't reach it, because it connects without TLS. |
+| Loki gets an event outside its time limits | Loki drops the event and the collector logs `Exporting failed`. With the repo's `config/loki.yml`, that is a generation time more than 10 minutes ahead, or more than about six months behind the newest event for the instance. |
+
+## Tests
 
 ```sh
 HERMES_TEST_TIMESCALE_DSN='postgres://postgres:password@localhost:5432/postgres?sslmode=disable' \
 YAMCS_GRPC_ADDRESS=localhost:8091 go test ./internal/recorder/... ./cmd/yamcs-recorder/
 ```
+
+| Variable | Value | Read by |
+| --- | --- | --- |
+| `HERMES_TEST_TIMESCALE_DSN` | a `postgres://` URL whose user can create databases. Tests skip without it. | database tests, end-to-end test |
+| `YAMCS_GRPC_ADDRESS` | `host:port` of the yamcs-grpc plugin. Tests skip without it. | YAMCS tests, end-to-end test |
+| `YAMCS_INSTANCE` | instance name, optional, default `fprime-project` | YAMCS tests, end-to-end test |
+
+- The YAMCS event test and the end-to-end test each raise one event through YAMCS's `CreateEvent` call. The event
+  stays in the instance's archive.
+- The YAMCS parameter test and the end-to-end test wait for a parameter value, so the instance must be receiving
+  telemetry or have a cached value from earlier telemetry.
