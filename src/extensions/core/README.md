@@ -1,73 +1,132 @@
-# Hermes Extension for Visual Studio Code
+# Hermes for Visual Studio Code
 
-A VSCode extension that provides telemetry monitoring, commanding, and notebook-based workflows for spacecraft ground systems. The Hermes extension enables real-time testbed operations and flight software integration.
+Hermes shows live telemetry and events in VS Code and sends commands from notebook cells. It connects to
+[YAMCS](https://yamcs.org/), a mission control server, through the
+[yamcs-grpc plugin](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin). The
+[project README](https://github.com/nasa/hermes/tree/v6) shows how the parts of Hermes fit together.
 
-Support for NASA's F' (FPrime) framework can be found in the
-Hermes F Prime [sub-extension](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes-fprime).
+![A Hermes notebook cell in YAMCS mode with each command's status and the events it raised, above the telemetry table and a telemetry plot](https://github.com/nasa/hermes/raw/v6/docs/assets/yamcs-mode.png)
 
 ## Features
 
-- **Interactive Notebooks**: Create and execute command sequences using Jupyter-style notebooks
-- **Live Telemetry**: Real-time monitoring of spacecraft telemetry channels and events (EVRs)
-- **Command Uplink**: Send commands to flight software with validation and confirmation
-- **Dictionary Integration**: Automatic loading of F' dictionaries for command and telemetry definitions
-- **Multiple Backend Modes**: Work offline, run a local backend, connect to remote ground systems, or work with YAMCS
-- **Profile Management**: Configure and switch between different spacecraft configurations
-- **Connection Management**: Support for TCP/UDP connections to flight software
+- Notebooks (`.hermes.md`) that mix Markdown with command cells
+- A telemetry table and plot
+- An events panel
+- Commanding from notebook cells, with completion, argument checks and each command's status on its line
 
-![Full Screenshot](https://github.com/nasa/hermes/raw/HEAD/docs/assets/full-screenshot.png)
+## Companion extensions
 
-### Requirements
+| Extension | Adds |
+| --- | --- |
+| [Hermes YAMCS](https://github.com/nasa/hermes/tree/v6/src/extensions/yamcs) | YAMCS command cells, which name each command by its full YAMCS path |
+| [Hermes FPrime](https://github.com/nasa/hermes/tree/v6/src/extensions/fprime) | F Prime command cells, `.seq` sequences and F Prime dictionaries |
 
-- Visual Studio Code 1.90.0 or higher
-- For local backend mode: The extension includes a bundled backend binary for your platform
-- For remote backend mode: Access to a running Hermes backend server
-- For YAMCS mode: A YAMCS server running the yamcs-grpc plugin
+## Requirements
 
-## Getting Started
+- VS Code 1.98 or newer
+- A YAMCS server that runs the [yamcs-grpc plugin](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin) and
+  doesn't require a login. Hermes sends no credentials, so a server that requires one refuses it with
+  `UNAUTHENTICATED`.
 
-1. **Install the extension** from the marketplace
-2. **Open a workspace** containing F' dictionaries or Hermes configuration
-3. **Select a backend mode** using the status bar or command palette:
-   - `Hermes: Change Backend Mode`
+## Install
 
-![Full Screenshot](https://github.com/nasa/hermes/raw/HEAD/docs/assets/mode-select.png)
+Hermes is on the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes),
+but YAMCS mode isn't released there yet. Until it is, run the extensions from this repository as described in
+[Develop](#develop).
 
-### Backend Modes
+## Notebooks
 
-The extension supports four backend modes:
+1. Create a file whose name ends in `.hermes.md`. It opens as a Hermes notebook.
+2. Add a code cell and set its language to YAMCS (from Hermes YAMCS) or fprime (from Hermes FPrime).
+3. Connect [YAMCS mode](#yamcs-mode) and run the cell.
 
-#### Offline Mode
-Work with sequences and notebooks without connecting to flight software. Ideal for writing procedures and planning operations.
+Each cell sends its commands to its target, shown in the cell's status bar as `yamcs:<instance>`. Click it to pick
+another. A cell on Automatic uses the only instance, and refuses to run while several are connected. "Set Target for
+All Cells" in the notebook toolbar gives every F Prime and YAMCS cell the same target.
 
-#### Local Mode (Default)
-Runs a backend process managed by VSCode. Provides full telemetry, commanding, and profile management capabilities. Data is stored in `.hermes/` in your workspace.
+The [Hermes YAMCS](https://github.com/nasa/hermes/tree/v6/src/extensions/yamcs) and
+[Hermes FPrime](https://github.com/nasa/hermes/tree/v6/src/extensions/fprime) READMEs show what to write in each kind
+of cell.
 
-#### Remote Mode
-Connect to an externally-managed backend server for shared testbed or operations environments. Configure the backend URL in settings.
+## YAMCS mode
 
-#### YAMCS Mode
-Show live telemetry and events from a YAMCS server, and send it commands from notebook cells written in the YAMCS language, which the Hermes YAMCS extension adds. It needs the yamcs-grpc plugin, whose [README](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin) explains the setup. F Prime cells can send commands too when fprime-yamcs runs the YAMCS instance they target.
+### Connect
 
-<!-- Add screenshot of connection status here -->
+1. Run "Hermes: Change Backend Mode" from the command palette.
+2. Pick "YAMCS". The other modes in the list don't use YAMCS.
+3. Enter the plugin's address, for example `localhost:8091`.
 
-## Working with Notebooks
+A YAMCS server can run several instances, each with its own commands, telemetry and archive. Hermes connects to every
+running instance that has the `processor` from [Settings](#settings). The status bar then shows "Hermes: YAMCS" and the
+address. Click the address to connect to another server.
 
-Create a new Hermes notebook (`.hermes.md`) to start building command sequences:
+If the connection ends, for example because YAMCS stopped, the status bar turns red and the address's tooltip gives
+the reason. Run "Hermes: Reconnect to Backend" to connect again, or to add an instance started after Hermes connected.
 
-1. Create a new file with `.hermes.md` extension
-2. Add code cells and select language to write sequences in
-3. Execute cells to send commands to flight software
+### Settings
 
-<!-- Add screenshot of notebook interface here -->
+The connect prompt suggests `address`, or the last address you entered in this window.
 
-## Documentation
+| Key in `hermes.host.yamcs` | Default | Sets |
+| --- | --- | --- |
+| `address` | `localhost:8091` | The plugin's `host:port` |
+| `processor` | `realtime` | Which YAMCS processor to subscribe to and send commands through. `realtime` handles live data. |
+| `includeTopLevel` | `false` | Also show parameters directly in a top-level space system, such as `/Ref_Ref/FPrimeTime`, where [fprime-yamcs](https://github.com/fprime-community/fprime-yamcs) puts packet header fields |
 
-For more detailed documentation, see:
-- [Project README](https://github.com/nasa/hermes/)
-- [Users Guide](https://nasa.github.io/hermes/)
+### What you see
 
-## Issues & Feedback
+| View | In YAMCS mode |
+| --- | --- |
+| Telemetry table and plot | A row for each parameter of each instance, with source `yamcs:<instance>`. Structs and arrays get one row per member or element, for example `comQueueDepth[1]`. Each value is timed by when YAMCS received it. |
+| Events panel | Each instance's newest 100 events in YAMCS's archive, then live ones. An F Prime event shows its component and name, for example `CdhCore.cmdDisp` and `OpCodeDispatched`. Any other event shows YAMCS's source and type. |
+| Connections view, in the Hermes sidebar | Each instance's [dictionaries](#dictionaries). Deleting `<instance>` also deletes `<instance> (F Prime)`. |
+| Times | UTC by default, including in cell event lists (`hermes.notebook.evr.timeFormat`). YAMCS values have no spacecraft clock (SCLK) time, so their time is blank when a view is set to SCLK. |
+
+### Dictionaries
+
+Completion and argument checks in cells come from a dictionary of commands. Hermes builds these for each instance:
+
+- `<instance>`, from the instance's commands, for YAMCS cells
+- `<instance> (F Prime)`, for F Prime cells, when Hermes FPrime is installed and fprime-yamcs runs the instance
+
+A cell uses its target's dictionary. A cell on Automatic uses the one selected under `{ }` in the status bar, which
+Hermes sets to the first instance's when it connects. In Offline mode the dictionaries stay available, as long as
+VS Code has a folder open.
+
+## Develop
+
+```sh
+yarn install
+yarn test      # unit tests
+```
+
+To try a change, open the repository in VS Code and run the `All` launch configuration. It builds the extensions and
+opens a VS Code window with Hermes, Hermes YAMCS and Hermes FPrime loaded.
+
+### Live tests
+
+These need [fprime-yamcs](https://github.com/fprime-community/fprime-yamcs) running with the yamcs-grpc plugin and an
+F Prime deployment. From the repository root:
+
+```sh
+YAMCS_GRPC_ADDRESS=localhost:8091 yarn jest src/extensions/core/test/yamcs.test.ts
+node build build                           # builds the extension run.js loads
+node src/extensions/core/test/e2e/run.js   # downloads VS Code 1.138.0 on first run, writes result.json next to itself
+```
+
+| Variable | Default | Effect |
+| --- | --- | --- |
+| `YAMCS_GRPC_ADDRESS` | `localhost:8091` (`run.js` only) | The plugin's address. Jest runs the live tests only when it is set. |
+| `YAMCS_INSTANCE` | `fprime-project` | The YAMCS instance the tests check |
+| `VSCODE_TEST_CACHE` | `.vscode-test` next to `run.js` | Where `run.js` finds or downloads VS Code |
+| `E2E_HOLD_MS` | `0` | Keeps the `run.js` window open this many milliseconds with the telemetry table showing |
+
+- Boot the F Prime deployment while YAMCS runs. The tests wait for the FrameworkVersion telemetry channel, which
+  F Prime sends only at boot.
+- The jest tests and `run.js` each send `CMD_NO_OP_STRING` to the flight software. The jest tests also raise two events
+  of their own, which stay in the instance's archive.
+
+## Issues and feedback
 
 Report issues or request features on [GitHub Issues](https://github.com/nasa/hermes/issues).
 
