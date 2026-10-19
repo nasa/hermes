@@ -859,11 +859,11 @@ describe('commandState', () => {
         expect(commandState(history(...at('CommandComplete', 'NOK', 0)), fprime).label).toBe('failed');
     });
 
-    test('lists the steps in time order with their UTC times, and the verdict in place of the verifiers that end the command', () => {
+    test('lists the steps in time order with their UTC times and the time since the first, and the verdict in place of the verifiers that end the command', () => {
         expect(commandState(waiting, fprime).detail).toBe([
-            '✓ Queued         2026-10-12T12:00:00.000Z',
-            '✓ Released       2026-10-12T12:00:00.001Z',
-            '✓ Sent           2026-10-12T12:00:00.019Z',
+            '✓ Queued         2026-10-12T12:00:00.000Z    +0 ms',
+            '✓ Released       2026-10-12T12:00:00.001Z    +1 ms',
+            '✓ Sent           2026-10-12T12:00:00.019Z   +19 ms',
             '○ Dispatched     waiting',
             '○ Completed      waiting',
             '',
@@ -871,18 +871,18 @@ describe('commandState', () => {
             'id 1792010844598-0:0:0:0:0:0:0:1-4',
         ].join('\n'));
         expect(commandState(failed, fprime).detail).toBe([
-            '✓ Queued         2026-10-12T12:00:00.000Z',
-            '✓ Released       2026-10-12T12:00:00.001Z',
-            '✓ Sent           2026-10-12T12:00:00.014Z',
-            '✓ Dispatched     2026-10-12T12:00:00.943Z',
-            '✗ Failed         2026-10-12T12:00:00.946Z   EXECUTION_ERROR',
+            '✓ Queued         2026-10-12T12:00:00.000Z     +0 ms',
+            '✓ Released       2026-10-12T12:00:00.001Z     +1 ms',
+            '✓ Sent           2026-10-12T12:00:00.014Z    +14 ms',
+            '✓ Dispatched     2026-10-12T12:00:00.943Z   +943 ms',
+            '✗ Failed         2026-10-12T12:00:00.946Z   +946 ms   EXECUTION_ERROR',
             '',
             name,
             'id 1792010844598-0:0:0:0:0:0:0:1-4',
         ].join('\n'));
         // A verifier that ends the command when it passes gets a row of its own when it fails or times out
         const timedOut = history(...released, ...at('Verifier_Complete', 'TIMEOUT', 60001), ...at('Acknowledge_Sent', 'OK', 19));
-        expect(commandState(timedOut, one).detail).toContain('✗ Complete     2026-10-12T12:01:00.001Z   TIMEOUT');
+        expect(commandState(timedOut, one).detail).toContain('✗ Complete     2026-10-12T12:01:00.001Z   +60.0 s   TIMEOUT');
         // A verifier without an onSuccess action doesn't end the command, so there is no verdict to wait for
         const accepted = history(...released, ...at('Verifier_Accepted', 'PENDING', 1), ...at('Acknowledge_Sent', 'OK', 19));
         expect(commandState(accepted, plain).detail).not.toContain('Completed');

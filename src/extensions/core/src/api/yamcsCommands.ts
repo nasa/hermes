@@ -308,23 +308,28 @@ function shownSteps(entry: Rpc.YamcsCommandHistoryEntry, verifiers: Verifier[]):
     return [...shown.filter((s) => !waiting(s)), ...shown.filter(waiting)];
 }
 
-// A line for each step, with the time YAMCS recorded for it, like "✓ Sent     2026-10-14T20:46:47.631Z"
+// A line for each step, with the time YAMCS recorded for it and the time since the first step, like
+// "✓ Sent     2026-10-14T20:46:47.631Z   +19 ms"
 function timeline(steps: CommandStep[]): string {
+    const first = Date.parse(steps[0]?.time);
     const rows = steps.map((s) => {
         const passed = s.status === 'OK';
         const waiting = waitingStatuses.includes(s.status);
         const label = s.name === 'CommandComplete' ? (passed || waiting ? 'Completed' : 'Failed') : stepLabel(s);
+        const ms = Date.parse(s.time) - first;
         return [
             `${passed ? '✓' : waiting ? '○' : '✗'} ${label}`,
             waiting ? 'waiting' : s.time,
+            waiting ? '' : ms < 1000 ? `+${ms} ms` : `+${(ms / 1000).toFixed(1)} s`,
             // A step that didn't pass and has no message shows its status, such as TIMEOUT
             s.message ?? (passed || waiting ? '' : s.status),
         ];
     });
-    // We pad every label and every time to the length of the longest one, so the columns line up
+    // We pad every column but the last to the length of its longest entry, so the columns line up
     const width = (column: number) => Math.max(...rows.map((row) => row[column].length));
-    const [labels, times] = [width(0), width(1)];
-    return rows.map(([label, time, message]) => `${label.padEnd(labels + 5)}${time.padEnd(times + 3)}${message}`.trimEnd()).join('\n');
+    const [labels, times, offsets] = [width(0), width(1), width(2)];
+    return rows.map(([label, time, offset, message]) =>
+        `${label.padEnd(labels + 5)}${time.padEnd(times + 3)}${offset.padStart(offsets)}   ${message}`.trimEnd()).join('\n');
 }
 
 /**
