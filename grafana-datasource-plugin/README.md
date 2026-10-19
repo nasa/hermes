@@ -1,96 +1,73 @@
-# Hermes-Datasource
+# Hermes datasource for Grafana
 
-A [Grafana](https://grafana.com/) backend datasource plugin that connects to [TimescaleDB](https://www.timescale.com/) to query and visualize **telemetry** data from NASA's Hermes ground data system.
-
-For end-user documentation (configuration, query editor usage, etc.), see the [plugin catalog README](src/README.md).
+A Grafana datasource, with a Go backend and a TypeScript frontend, that charts the telemetry
+[yamcs-recorder](../cmd/yamcs-recorder/README.md) writes to TimescaleDB. The user guide, which Grafana shows on the
+plugin's page, is [src/README.md](src/README.md).
 
 ## Prerequisites
 
-| Tool                    | Version              |
-| ----------------------- | -------------------- |
-| Node.js                 | >= 22 (see `.nvmrc`) |
-| Go                      | >= 1.26              |
-| Mage                    | latest               |
-| Docker & Docker Compose | latest               |
+| Tool                                                        | Version                        |
+| ----------------------------------------------------------- | ------------------------------ |
+| Node.js                                                     | 22 or newer (see `.nvmrc`)     |
+| Go                                                          | 1.26.5 or newer (see `go.mod`) |
+| [Mage](https://magefile.org), a make-like build tool for Go | latest                         |
+| Docker and Docker Compose                                   | latest                         |
 
-## Local Development
+## Develop
 
-### 1. Start the dev environment
-
-Docker Compose starts Grafana and a TimescaleDB instance with the plugin auto-provisioned:
-
-```bash
-npm run server
-```
-
-Grafana will be available at [http://localhost:3000](http://localhost:3000) (default login: `admin` / `admin`). The datasource is pre-configured to connect to the TimescaleDB container (`timescaledb:5432`, database `hermes`).
-
-### 2. Build the frontend
+### 1. Build the frontend
 
 ```bash
 npm install
-npm run dev       # watch mode
+npm run dev       # watch mode, leave it running in its own terminal
 ```
 
-### 3. Build the backend
+### 2. Build the backend
 
 ```bash
 mage -v
 ```
 
-### 4. Run tests
+### 3. Start Grafana and TimescaleDB
 
 ```bash
-# Frontend (Jest, watch mode)
-npm run test
-
-# Frontend (CI, single run)
-npm run test:ci
-
-# Backend (Go)
-go test ./pkg/...
-
-# E2E (Playwright — requires the dev server to be running)
-npm run e2e
+npm run server
 ```
 
-### 5. Lint
+Grafana runs at [http://localhost:3000](http://localhost:3000) with anonymous admin access. It loads the plugin from
+`dist/` and comes with a datasource for the TimescaleDB container (`timescaledb:5432`, database `hermes`). Stop the
+root `docker-compose.yml` stack first, since both use ports 3000 and 5432.
 
-```bash
-npm run lint
-npm run lint:fix
-```
+The database starts empty. The [yamcs-recorder](../cmd/yamcs-recorder/README.md#run) command fills it, since this
+TimescaleDB has the same port, user, password and database as the root `docker-compose.yml`.
+
+## Test and lint
+
+| Command             | Runs                                                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `npm run test`      | Frontend unit tests (Jest) for changed files, in watch mode                                                              |
+| `npm run test:ci`   | All frontend unit tests once                                                                                             |
+| `npm run typecheck` | TypeScript type check                                                                                                    |
+| `go test ./pkg/...` | Backend tests                                                                                                            |
+| `npm run e2e`       | Playwright end-to-end tests against the Grafana from `npm run server`. Run `npx playwright install chromium` once first. |
+| `npm run lint`      | ESLint                                                                                                                   |
+| `npm run lint:fix`  | ESLint and Prettier, fixing what they can                                                                                |
 
 ## Release
 
-The Grafana plugin is released together with the VSCode extensions as part of the unified release process. Releasing a tag with the `v*` prefix (e.g., `v4.1.0`) will trigger a release build that includes both the VSCode extensions and the Grafana plugin. The workflow creates a release with all artifacts attached.
+Publishing a GitHub release builds the plugin and attaches `nasa-hermes-datasource.zip` to it. A pull request
+from a nasa/hermes branch (not a fork) that changes the plugin gets a pre-release tagged
+`grafana-plugin-pr-<number>`, linked from a comment on the PR and deleted when the PR closes.
 
-Additionally, PRs that modify the plugin will trigger a CI build that includes the plugin artifacts with a backlink to the PR in the comment, using a version that includes the PR and commit hash.
+## Layout
 
-## Project Structure
-
-```
-pkg/
-  main.go                  # Plugin entrypoint
-  models/                  # Settings types and parsing
-  plugin/
-    datasource.go          # Instance lifecycle, health check
-    query.go               # Telemetry query execution
-    resources.go           # REST resource handlers (parameters, instances, members)
-provisioning/
-  datasources/
-    datasources.yml        # Auto-provisioned datasource for local dev
-src/
-  components/
-    ConfigEditor.tsx       # Datasource configuration form
-    QueryEditor.tsx        # Query editor UI
-  datasource.ts            # Frontend datasource class
-  query.ts                 # SQL query builder (frontend)
-  types.ts                 # Shared TypeScript types
-  plugin.json              # Plugin metadata
-  README.md                # Plugin catalog README (user-facing)
-```
+| Folder          | Holds                                                                                                             |
+| --------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `pkg/`          | Go backend: queries, the dropdown options for parameters, instances and members, and the Save & Test health check |
+| `src/`          | Frontend: config and query editors, the SQL builder (`query.ts`), the user guide                                  |
+| `provisioning/` | The datasource the dev Grafana starts with                                                                        |
+| `tests/`        | Playwright end-to-end tests                                                                                       |
 
 ## License
 
-[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) — see [LICENSE](LICENSE) for details.
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). See [LICENSE](LICENSE).
