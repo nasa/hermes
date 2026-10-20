@@ -1,5 +1,5 @@
 all: go vscode
-go: out/protocolc out/backend out/uplink out/sqlrecord out/yamcs-recorder
+go: out/backend out/yamcs-recorder
 
 .PHONY: release go vscode all clean
 
@@ -11,35 +11,13 @@ FORCE: ;
 clean: FORCE
 	rm -rf out
 
-release: vscode out/uplink out/backend out/sqlrecord out/yamcs-recorder
-
-protocol: out/protocolc
-	./out/protocolc -p fprime -o pkg/fprime/packet.go ./pkg/fprime/fprime.protocol
-	./out/protocolc -p ccsds -o pkg/ccsds/packet.go ./pkg/ccsds/ccsds.protocol
-
-out/protocolc: out FORCE
-	go build ${GO_FLAGS} -o out/protocolc github.com/nasa/hermes/cmd/protocolc
-
-out/fprime-decode: out FORCE
-	go build ${GO_FLAGS} -o out/fprime-decode github.com/nasa/hermes/cmd/fprime-decode
-
-out/dict: out FORCE
-	go build ${GO_FLAGS} -o out/dict github.com/nasa/hermes/cmd/dict
-
-out/uplink: out FORCE
-	go build ${GO_FLAGS} -o out/uplink github.com/nasa/hermes/cmd/uplink
+release: vscode out/backend out/yamcs-recorder
 
 out/backend: out FORCE
 	go build ${GO_FLAGS} -o out/backend github.com/nasa/hermes/cmd/backend
 
-out/sqlrecord: out FORCE
-	go build ${GO_FLAGS} -o out/sqlrecord github.com/nasa/hermes/cmd/sqlrecord
-
 out/yamcs-recorder: out FORCE
 	go build ${GO_FLAGS} -o out/yamcs-recorder github.com/nasa/hermes/cmd/yamcs-recorder
-
-out/downlink-pb-to-json: out FORCE
-	go build ${GO_FLAGS} -o out/downlink-pb-to-json github.com/nasa/hermes/cmd/downlink-pb-to-json
 
 vscode: out FORCE
 	yarn build

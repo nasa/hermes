@@ -1,4 +1,0 @@
-struct S_CustomImplicit * {
-    Kind: I32
-    Name: R("F1", "U32", "F2", "F32")
-}
