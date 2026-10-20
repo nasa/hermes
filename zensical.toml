@@ -23,14 +23,6 @@ nav = [
     { "Telemetry Monitoring" = [
         "tlm/index.md",
         "tlm/grafana.md",
-        { "Datastore" = [
-            "tlm/db/index.md",
-            "tlm/db/open-telemetry.md",
-            "tlm/db/clickhouse.md",
-            "tlm/db/influxdb.md",
-            "tlm/db/timescaledb.md",
-            "tlm/db/sqlite.md",
-        ] },
     ] },
     { "Deploying" = [
         "prod/dev.md",
