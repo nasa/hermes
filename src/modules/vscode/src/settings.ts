@@ -58,7 +58,7 @@ export function showEvr(severity: "DIAGNOSTIC" | "COMMAND" | "ACTIVITY_LO" | "AC
 }
 
 export function getNotebookEvrTimeFormat(): TimeFormat {
-    return getSetting(names.notebook.evr.timeFormat, TimeFormat.SCLK);
+    return getSetting(names.notebook.evr.timeFormat, TimeFormat.UTC);
 }
 
 export function signoffTemplate(): string {

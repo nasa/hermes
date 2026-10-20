@@ -20,6 +20,7 @@ import { TimeFormat } from '@gov.nasa.jpl.hermes/types';
 
 import { getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
 import type { BackendMessage, EventRow, FrontendMessage } from '../../common/evrs';
+import { formatTime } from '../../common/timeFormat';
 
 import './style.css';
 import AnnotatedMultiSelect from '../common/AnnotatedMultiSelect';
@@ -31,24 +32,6 @@ interface IndexedEvr extends EventRow {
 }
 
 type EvrSeverityFilter = EventRow['severity'] | '*';
-
-const localTimeOffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
-
-function formatTime(
-    evr: EventRow,
-    format: TimeFormat
-) {
-    switch (format) {
-        case TimeFormat.UTC:
-            return new Date(evr.time).toISOString();
-        case TimeFormat.LOCAL:
-            return new Date(evr.time - localTimeOffset).toISOString().slice(0, -1);
-        case TimeFormat.SCLK:
-            // YAMCS rows have no SCLK, so we show their UTC time. postMessage turns
-            // their NaN into null, so we check Number.isFinite rather than isNaN.
-            return Number.isFinite(evr.sclk) ? evr.sclk.toFixed(4) : new Date(evr.time).toISOString();
-    }
-}
 
 export function EvrTable() {
     const jsScrolling = React.useRef<boolean>(false);
@@ -65,7 +48,7 @@ export function EvrTable() {
     const [filteredSources, setFilteredSources] = useState<string[]>(['*']);
     const [filteredSeverities, setFilteredSeverities] = useState<EvrSeverityFilter[]>(['*']);
 
-    const [timeFormat, setTimeFormat] = useState<TimeFormat>(TimeFormat.SCLK);
+    const [timeFormat, setTimeFormat] = useState<TimeFormat>(TimeFormat.UTC);
 
     const sourcesSevStr = useMemo(() => {
         const srcs = new Set<string>();

@@ -405,9 +405,9 @@
                         "default": "OPERATOR NAME"
                     },
                     "hermes.notebook.evr.timeFormat": {
-                        "description": "Time format of the EVR sclk in notebook outputs. Use raw SCLK if FSW SCLK does not correspond to seconds since Epoch",
+                        "description": "Time format of events in notebook outputs. YAMCS events have no SCLK, so they show no time under SCLK.",
                         "type": "string",
-                        "default": "sclk",
+                        "default": "utc",
                         "enum": [
                             "utc",
                             "local",

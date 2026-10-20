@@ -20,6 +20,7 @@ import { TimeFormat } from '@gov.nasa.jpl.hermes/types';
 
 import { vscode, getMessages } from '@gov.nasa.jpl.hermes/vscode/browser';
 import type { BackendTableMessage, FrontendTableMessage, TableState, TelemetrySeries, TelemetrySeriesDataPoint } from '../../common/telemetry';
+import { formatTime } from '../../common/timeFormat';
 
 import './table.css';
 import AnnotatedMultiSelect from '../common/AnnotatedMultiSelect';
@@ -31,25 +32,8 @@ interface ChannelInfo extends TelemetrySeries, TelemetrySeriesDataPoint {
     key: string;
 }
 
-const localTimeOffset = (new Date()).getTimezoneOffset() * 60000;
-
-function formatTime(channel: ChannelInfo, format: TimeFormat): string {
-    switch (format) {
-        case TimeFormat.UTC:
-            return new Date(channel.time).toISOString();
-        case TimeFormat.LOCAL:
-            return new Date(channel.time - localTimeOffset).toISOString().slice(0, -1);
-        case TimeFormat.SCLK:
-            // YAMCS rows have no SCLK. postMessage sends JSON, which turns their NaN into null,
-            // and isNaN(null) is false, so we check Number.isFinite instead.
-            return Number.isFinite(channel.sclk) ? channel.sclk.toFixed(4) : new Date(channel.time).toISOString();
-        default:
-            return new Date(channel.time).toISOString();
-    }
-}
-
 const initialState: TableState = vscode.getState<TableState | undefined>() ?? {
-    timeFormat: TimeFormat.SCLK,
+    timeFormat: TimeFormat.UTC,
     channels: []
 };
 
