@@ -28,8 +28,8 @@ export async function activate(context: vscode.ExtensionContext) {
     const jsonProvider = new FprimeJsonDictionaryProvider();
     const xmlProvider = new FprimeXmlDictionaryProvider();
 
-    // We build an F Prime dictionary from every YAMCS dictionary, both the ones loaded before we activated and the ones
-    // added later
+    // Offline mode loads the YAMCS dictionaries that YAMCS mode saved, so we build an F Prime dictionary from every
+    // YAMCS dictionary, both the ones loaded before we activated and the ones added later
     const addFromYamcs = () => addFprimeDictionaries(hermesVSCode.api).catch((err) => {
         hermesVSCode.log.error(`Failed to build F Prime dictionaries from YAMCS dictionaries: ${err}`);
     });

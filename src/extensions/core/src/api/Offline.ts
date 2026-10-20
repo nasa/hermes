@@ -35,10 +35,14 @@ export class Offline implements Hermes.Api {
                             continue;
                         }
 
-                        const id = name.replace(".dictionary.pb", "");
+                        const id = decodeURIComponent(name.replace(".dictionary.pb", ""));
 
                         try {
-                            const dict = Proto.Dictionary.decode(dictContent);
+                            // In a message that protobufjs decodes, a field missing from the file reads as its default,
+                            // so a YAMCS command, which has no opcode, would read as opcode 0. toObject leaves those
+                            // fields out. With longs: Number it also turns each int64 into a number, because
+                            // Dictionary.fromProto drops an integer's min and max unless they're numbers.
+                            const dict: Proto.IDictionary = Proto.Dictionary.toObject(Proto.Dictionary.decode(dictContent), { longs: Number });
                             this.log.info(`registering dictionary ${id}: ${dict.head?.name} (version=${dict.head?.version}, type=${dict.head?.type})`);
                             this.dictionaryCache.set(id, dict);
                         } catch (e) {
@@ -126,21 +130,33 @@ export class Offline implements Hermes.Api {
         let save: boolean;
         if (dict.id) {
             id = dict.id;
-            save = false;
+            // YAMCS mode's dictionaries have an id, and we save them so Offline mode keeps them
+            save = dict.head?.type === 'yamcs';
         } else {
             id = generateShortUid();
             save = true;
         }
 
         if (save && this.context.storageUri) {
-            await vscode.workspace.fs.createDirectory(this.context.storageUri);
-            const dictPath = vscode.Uri.joinPath(
-                this.context.storageUri,
-                `${id}.dictionary.pb`
-            );
+            try {
+                await vscode.workspace.fs.createDirectory(this.context.storageUri);
+                // On Windows, a colon in a file name starts a stream name, so yamcs:fprime-project.dictionary.pb would
+                // write to a hidden stream of a file called yamcs, which the loader never finds. We escape the id instead.
+                const dictPath = vscode.Uri.joinPath(
+                    this.context.storageUri,
+                    `${encodeURIComponent(id)}.dictionary.pb`
+                );
 
-            this.log.info(`writing dictionary to ${dictPath.path}`);
-            await vscode.workspace.fs.writeFile(dictPath, Proto.Dictionary.encode(dict).finish());
+                this.log.info(`writing dictionary to ${dictPath.path}`);
+                await vscode.workspace.fs.writeFile(dictPath, Proto.Dictionary.encode(dict).finish());
+            } catch (err) {
+                if (dict.head?.type !== 'yamcs') {
+                    throw err;
+                }
+                // YAMCS mode adds its dictionary while connecting and builds it again each time, so we warn rather
+                // than fail the connection
+                this.log.warn(`Could not save YAMCS dictionary ${id}: ${err}`);
+            }
         }
 
         this.dictionaryCache.set(id, dict);
@@ -161,7 +177,7 @@ export class Offline implements Hermes.Api {
         if (this.context.storageUri) {
             const dictPath = vscode.Uri.joinPath(
                 this.context.storageUri,
-                `${id}.dictionary.pb`
+                `${encodeURIComponent(id)}.dictionary.pb`
             );
 
             this.log.info(`removing cached dictionary from ${dictPath.path}`);
