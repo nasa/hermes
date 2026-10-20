@@ -1,5 +1,5 @@
 all: go vscode
-go: out/protocolc out/backend out/uplink out/sqlrecord
+go: out/protocolc out/backend out/uplink out/sqlrecord out/yamcs-recorder
 
 .PHONY: release go vscode all clean
 
@@ -11,7 +11,7 @@ FORCE: ;
 clean: FORCE
 	rm -rf out
 
-release: vscode out/uplink out/backend out/sqlrecord
+release: vscode out/uplink out/backend out/sqlrecord out/yamcs-recorder
 
 protocol: out/protocolc
 	./out/protocolc -p fprime -o pkg/fprime/packet.go ./pkg/fprime/fprime.protocol
@@ -34,6 +34,9 @@ out/backend: out FORCE
 
 out/sqlrecord: out FORCE
 	go build ${GO_FLAGS} -o out/sqlrecord github.com/nasa/hermes/cmd/sqlrecord
+
+out/yamcs-recorder: out FORCE
+	go build ${GO_FLAGS} -o out/yamcs-recorder github.com/nasa/hermes/cmd/yamcs-recorder
 
 out/downlink-pb-to-json: out FORCE
 	go build ${GO_FLAGS} -o out/downlink-pb-to-json github.com/nasa/hermes/cmd/downlink-pb-to-json
