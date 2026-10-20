@@ -310,6 +310,8 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
                 this.yamcsEventSubscriptions.set(handler, subscription);
                 this.apiSubscriptions.push(subscription);
             }
+            // We show the health of YAMCS's links in the status bar, and remove it when Hermes leaves YAMCS mode
+            this.apiSubscriptions.push(this.currentApi.showLinkHealth());
         }
 
         this._onContextRefresh.fire();

@@ -87,7 +87,7 @@ jest.mock('vscode', () => {
                 return { dispose: () => { } };
             },
         },
-        ThemeColor: class { },
+        ThemeColor: class { constructor(readonly id: string) { } },
         MarkdownString: class {
             value = '';
             appendCodeblock(code: string) {
@@ -137,6 +137,7 @@ import { yamcsEventRows } from '../src/components/yamcsEvents';
 import { NotebookController } from '../src/notebook/NotebookController';
 import { leaves, splitName } from '../src/components/yamcsRows';
 import { argumentValue, commandComplete, commandSent, commandState, Verifier, yamcsDictionary } from '../src/api/yamcsCommands';
+import { buildLinks, healthy, LinkHealth } from '../src/api/yamcsLinks';
 
 // Values as the live fprime-project instance sent them
 const packetSequence: YamcsValue = {
@@ -500,6 +501,7 @@ describe('YAMCS event source', () => {
             .mockResolvedValue(names.map((name) => ({ name, state: 'RUNNING', processors: [{ name: 'realtime' }] })));
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockImplementation(async (instance) => [`/${instance}/Demo/x`]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([]);
+        jest.spyOn(YamcsClient.prototype, 'listLinkParameters').mockResolvedValue([]);
         const live = new vscode.EventEmitter<YamcsEvent>();
         const subscribe = jest.spyOn(YamcsClient.prototype, 'subscribeEvents').mockImplementation((_, onEvent) => {
             const subscription = live.event(onEvent);
@@ -672,6 +674,57 @@ describe('YAMCS event source', () => {
         await cells.execute(disconnected.cell, disconnected.execution, tokenSource().token);
         expect(disconnected.outputs()).toEqual(['']);
         api.dispose();
+    });
+});
+
+describe('YAMCS link health', () => {
+    // A link with its status and the bytes per second it received and sent
+    const link = (name: string, status: string, inRate = 0, outRate = 0) => ({ name, status, inRate, outRate });
+    // Shows the health of these instances. statusBar gives the health item's text, then the colors of the arrows for
+    // data coming in and going out.
+    function linkHealth(...instances: string[]) {
+        const createStatusBarItem = jest.spyOn(vscode.window, 'createStatusBarItem');
+        const health = new LinkHealth({ address: 'localhost:1', processor: 'realtime' }, instances);
+        const [summary, receiving, sending] = createStatusBarItem.mock.results.map(({ value }) => value as vscode.StatusBarItem);
+        const statusBar = () => [summary.text, ...[receiving, sending].map((arrow) => (arrow.color as vscode.ThemeColor).id)];
+        return { health, statusBar };
+    }
+
+    test('builds each link from its parameters, leaving out the sub-link of each virtual channel', () => {
+        expect(buildLinks([
+            pv('/yamcs/server/links/UDP_TC_OUT/linkStatus', 0, { type: 'ENUMERATED', stringValue: 'OK' }),
+            pv('/yamcs/server/links/UDP_TC_OUT/dataOutRate', 0, { type: 'DOUBLE', doubleValue: 12 }),
+            pv('/yamcs/server/links/UDP_TC_OUT.vc1/dataOutRate', 0, { type: 'DOUBLE', doubleValue: 12 }),
+        ])).toEqual([link('UDP_TC_OUT', 'OK', 0, 12)]);
+    });
+
+    test('counts an instance as healthy while every link is OK and it received data in the last 10 s', () => {
+        const ok = [link('UDP_TM_IN', 'OK')];
+        expect(healthy({ links: ok, received: [1300, ...Array(9).fill(0)], sent: [] })).toBe(true);
+        expect(healthy({ links: ok, received: [1300, ...Array(10).fill(0)], sent: [] })).toBe(false);
+        // The split link has to be OK too
+        expect(healthy({ links: [...ok, link('UDP_TM_SPLIT_IN', 'DISABLED')], received: [1300], sent: [] })).toBe(false);
+    });
+
+    test('counts an instance that hasn\'t sent its links yet as not healthy', () => {
+        const { health, statusBar } = linkHealth('bigdata-a', 'ref');
+        health.update('bigdata-a', [link('UDP_TM_IN', 'OK', 1300)]);
+        expect(statusBar()[0]).toBe('$(info) 1 of 2 healthy');
+    });
+
+    test('lights each arrow while the newest rate in its direction is above zero', () => {
+        const { health, statusBar } = linkHealth('ref');
+        health.update('ref', [link('UDP_TM_IN', 'OK', 1300), link('UDP_TC_OUT', 'OK')]);
+        expect(statusBar()).toEqual(['$(pass) 1 healthy', 'charts.green', 'disabledForeground']);
+        // We leave out the split link's traffic, since it re-sends telemetry that UDP_TM_IN already received
+        health.update('ref', [link('UDP_TM_IN', 'OK'), link('UDP_TM_SPLIT_IN', 'OK', 600), link('UDP_TC_OUT', 'OK', 0, 12)]);
+        expect(statusBar()).toEqual(['$(pass) 1 healthy', 'disabledForeground', 'charts.yellow']);
+    });
+
+    test('names a link that isn\'t OK, even the split link', () => {
+        const { health, statusBar } = linkHealth('ref');
+        health.update('ref', [link('UDP_TM_IN', 'OK'), link('UDP_TM_SPLIT_IN', 'DISABLED')]);
+        expect(statusBar()[0]).toBe('$(warning) ref: UDP_TM_SPLIT_IN DISABLED');
     });
 });
 
@@ -871,6 +924,7 @@ test('YAMCS mode connects with its dictionary and warns when it cannot save the 
     jest.spyOn(YamcsClient.prototype, 'listInstances').mockResolvedValue([{ name: 'fprime-project', state: 'RUNNING', processors: [{ name: 'realtime' }] }]);
     jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
     jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([noOpString]);
+    jest.spyOn(YamcsClient.prototype, 'listLinkParameters').mockResolvedValue([]);
     jest.spyOn(vscode.workspace.fs, 'writeFile').mockRejectedValue(new Error('disk full'));
     const warn = jest.fn();
     const api = await new YamcsBackendProvider().provideBackendApi(
@@ -1052,6 +1106,7 @@ describe('YAMCS commands', () => {
         ]);
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([noOpString]);
+        jest.spyOn(YamcsClient.prototype, 'listLinkParameters').mockResolvedValue([]);
         // A cell subscribes to YAMCS's events while it runs, and these tests raise none
         jest.spyOn(YamcsClient.prototype, 'subscribeEvents').mockReturnValue(() => { });
         jest.spyOn(YamcsClient.prototype, 'listEvents').mockResolvedValue([]);
@@ -1204,6 +1259,8 @@ describe('YAMCS commands', () => {
     test('parses each cell with the dictionary of the instance it targets', async () => {
         // The API that the extensions use, with YAMCS mode as its only mode
         const { api: yamcs } = await backend();
+        // Connecting shows the health of YAMCS's links, which subscribes to their parameters
+        jest.spyOn(YamcsClient.prototype, 'subscribeParameters').mockReturnValue(() => { });
         const api = new VscodeApi({} as vscode.ExtensionContext, { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } });
         api.registerBackendProvider({ type: 'yamcs', title: 'YAMCS', icon: 'remote', promptForState: async () => ({}), provideBackendApi: async () => yamcs });
         // A language that records the name of the dictionary it last parsed each document with
