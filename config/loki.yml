@@ -30,6 +30,15 @@ limits_config:
   # Allow structured metadata so OTLP resource/log attributes are preserved.
   allow_structured_metadata: true
   volume_enabled: true
+  # F Prime events are stamped with the flight software's time, which can be weeks old
+  # when they are played back or downlinked late, so we turn off Loki's 7-day age limit.
+  reject_old_samples: false
+
+ingester:
+  # Loki also rejects an entry more than half of max_chunk_age behind the newest
+  # entry in its stream. Each YAMCS instance is one stream, so a year lets an event
+  # arrive up to about six months behind the newest one from its instance.
+  max_chunk_age: 8760h
 
 ruler:
   alertmanager_url: http://localhost:9093
