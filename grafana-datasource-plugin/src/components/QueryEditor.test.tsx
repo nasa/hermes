@@ -14,6 +14,9 @@ jest.mock('@grafana/runtime', () => ({
   }),
 }));
 
+// The SQL editor's CodeEditor loads Monaco, which isn't installed for tests, so we render a stand-in.
+jest.mock('./SqlEditor', () => ({ SqlEditor: () => 'SQL editor' }));
+
 beforeAll(() => {
   global.IntersectionObserver = class IntersectionObserver {
     constructor() {}
@@ -277,6 +280,26 @@ describe('QueryEditor — Telemetry', () => {
     expect(screen.queryByText('CDH/Temperature')).not.toBeInTheDocument();
     expect(screen.queryByText('fsw-1')).not.toBeInTheDocument();
     expect(ds.getMembers).not.toHaveBeenCalled();
+  });
+});
+
+describe('QueryEditor — Code mode', () => {
+  it('opens in Code mode when the query has SQL', async () => {
+    const query = { ...buildProps().query, rawSql: 'SELECT 1' };
+    await act(async () => { render(<QueryEditor {...buildProps({ query })} />); });
+
+    expect(screen.getByRole('radio', { name: 'Code' })).toBeChecked();
+  });
+
+  it('fills Code mode with SQL that follows the time picker', async () => {
+    const onChange = jest.fn();
+    const query = { ...buildProps().query, parameters: [param('CDH', 'Temperature')] };
+    await act(async () => { render(<QueryEditor {...buildProps({ query, onChange })} />); });
+    await act(async () => { fireEvent.click(screen.getByRole('radio', { name: 'Code' })); });
+
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({
+      rawSql: expect.stringContaining('$__timeFrom(v.generation_time) AND $__timeTo(v.generation_time)'),
+    }));
   });
 });
 

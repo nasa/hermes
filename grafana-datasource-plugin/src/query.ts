@@ -1,5 +1,4 @@
 import { MyQuery, ParameterQuery, ParameterRef, ResolvedQuery, TransformRef } from "types";
-import { DataQueryRequest } from "@grafana/data";
 
 // token for user transforms
 export const VALUE_TOKEN = '$__value';
@@ -38,6 +37,7 @@ export function resolveQuery(
 ): ResolvedQuery {
     return {
         ...query,
+        rawSql: query.rawSql === undefined ? undefined : replace(query.rawSql),
         parameters: resolveParameters(query.parameters ?? [], replace, known),
         instances: query.instances?.map(replace) ?? [],
         members: query.members?.map((m) => ({
@@ -202,30 +202,11 @@ export function aliasForLabels(
     return match ? match.name!.trim() : undefined;
 }
 
-export function buildQuery(q: ResolvedQuery, options: DataQueryRequest): string {
-    const { from, to } = buildQueryOptions(q, options);
-    switch (q.queryType) {
-        case "telemetry":
-            return buildTelemetryQuery(q, from, to);
-        default:
-            throw new Error(`Invalid query type: ${q.queryType}`);
-    }
+export function buildQuery(q: ResolvedQuery): string {
+    return buildTelemetryQuery(q, q.timeOverrideFrom, q.timeOverrideTo);
 }
 
-export function buildQueryOptions(q: ResolvedQuery, options: DataQueryRequest): { from: string; to: string } {
-    let from = options.range.from.toISOString();
-    let to = options.range.to.toISOString();
-    if (q.timeOverrideFrom) {
-        from = q.timeOverrideFrom;
-    }
-    if (q.timeOverrideTo) {
-        to = q.timeOverrideTo;
-    }
-
-    return { from, to }
-}
-
-export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string): string {
+export function buildTelemetryQuery(q: ResolvedQuery, from?: string, to?: string): string {
     if (!q.parameters || q.parameters.length === 0) {
         throw new Error("No parameters specified for query");
     }
@@ -243,6 +224,10 @@ export function buildTelemetryQuery(q: ResolvedQuery, from: string, to: string):
         return `(p.space_system = ${esc(param.spaceSystem)} AND p.name = ${esc(param.name)})`;
     });
     const parameterPredicate = parameterClauses.join("\n\t\t       OR ");
+
+    // A bound with no override becomes a macro, which the backend expands to the dashboard time range.
+    const fromBound = from ? `v.${q.timeField} >= ${escDate(from)}` : `$__timeFrom(v.${q.timeField})`;
+    const toBound = to ? `v.${q.timeField} <= ${escDate(to)}` : `$__timeTo(v.${q.timeField})`;
 
     let intervalExpr;
     if (q.aggregation !== "raw" && q.aggregation !== "deriv" && q.aggregation !== "latest") {
@@ -316,12 +301,12 @@ FROM parameters p
 JOIN parameter_values v ON v.parameter_id = p.id
 WHERE (%s)
   AND (%s::text[] = '{}' OR p.instance = ANY(%s))
-  AND v.%s >= %s AND v.%s <= %s
+  AND %s AND %s
 %s
 ORDER BY time_bucket ASC;`,
         intervalExpr, aggInt, aggFloat, aggBool, aggStr, aggBytes,
         parameterPredicate, escArr(q.instances), escArr(q.instances),
-        q.timeField, escDate(from), q.timeField, escDate(to), groupByExpr);
+        fromBound, toBound, groupByExpr);
 
     return telemetrySql;
 }

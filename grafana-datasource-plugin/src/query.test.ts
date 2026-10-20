@@ -1,6 +1,7 @@
 import {
   aliasForLabels,
   bindValueToken,
+  buildQuery,
   buildTelemetryQuery,
   buildTransformCase,
   escArr,
@@ -139,6 +140,13 @@ describe('buildTelemetryQuery — per-parameter member scoping', () => {
 
   it('throws when no parameters are provided', () => {
     expect(() => buildTelemetryQuery(baseQuery({ parameters: [] }), FROM, TO)).toThrow();
+  });
+});
+
+describe('buildQuery', () => {
+  it('follows the dashboard time picker for a bound with no override', () => {
+    const q = baseQuery({ parameters: [{ spaceSystem: 'CDH', name: 'Temperature' }], timeOverrideFrom: FROM });
+    expect(buildQuery(q)).toContain("AND v.generation_time >= '2024-01-01 00:00:00.000Z' AND $__timeTo(v.generation_time)");
   });
 });
 
@@ -685,5 +693,18 @@ describe('name-only transforms', () => {
       transforms: [{ spaceSystem: 'CDH', parameter: 'Temperature', expr: '2', name: 'Reactor Temp' }],
     });
     expect(buildTelemetryQuery(q, FROM, TO)).toContain('THEN (v.float_value) * 2');
+  });
+});
+
+describe('resolveQuery', () => {
+  const replaceWith = (vars: Record<string, string>) => (value: string) =>
+    value.replace(/\$\w+/g, (m) => (m.slice(1) in vars ? vars[m.slice(1)] : m));
+
+  it('expands template variables in Code mode SQL', () => {
+    const resolved = resolveQuery(
+      baseQuery({ rawSql: "SELECT * FROM parameters WHERE instance = '$instance'" }) as MyQuery,
+      replaceWith({ instance: 'bigdata-a' })
+    );
+    expect(resolved.rawSql).toBe("SELECT * FROM parameters WHERE instance = 'bigdata-a'");
   });
 });

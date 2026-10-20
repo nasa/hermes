@@ -13,10 +13,7 @@ export function SqlEditor({ query, onChange, onRunQuery }: SqlEditorProps) {
     <>
       <div style={{ marginTop: 8, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <span style={{ fontWeight: 500 }}>Manual query editor</span>
-        <Button variant="primary" size="sm" icon="play" onClick={() => {
-          onChange({ ...query, queryType: 'raw' });
-          onRunQuery();
-        }}>
+        <Button variant="primary" size="sm" icon="play" onClick={onRunQuery}>
           Run query
         </Button>
       </div>
@@ -28,7 +25,7 @@ export function SqlEditor({ query, onChange, onRunQuery }: SqlEditorProps) {
         showLineNumbers={true}
         onChange={(value) => onChange({ ...query, rawSql: value })}
         onSave={(value) => {
-          onChange({ ...query, rawSql: value, queryType: 'raw' });
+          onChange({ ...query, rawSql: value });
           onRunQuery();
         }}
         onBlur={(value) => {
