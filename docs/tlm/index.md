@@ -1,9 +1,23 @@
-# Telemetry Monitoring
+# Recording and Grafana
 
-## Database
+Hermes can record what a YAMCS instance receives, so you can chart its telemetry and search its events in Grafana.
+YAMCS calls each telemetry value a parameter.
 
-Hermes does not come with a database, but rather, offers supports pushing data to multiple different databases. In addition, Hermes supports Grafana for live data monitoring. The recommended stack is a TimescaleDB instance with a Grafana instance with the Hermes datasource plugin installed. To get started, see the [TimescaleDB](./db/timescaledb) page.
+```mermaid
+flowchart LR
+    yamcs["YAMCS with yamcs-grpc"] -->|"parameters, events"| rec["yamcs-recorder"]
+    rec -->|"parameters"| ts[("TimescaleDB")]
+    rec -->|"events"| otel["OpenTelemetry collector"] --> loki[("Loki")]
+    ts -->|"Hermes datasource"| graf["Grafana"]
+    loki -->|"Loki datasource"| graf
+```
 
-## Grafana Plugin Only
+- `yamcs-recorder` subscribes to one YAMCS instance through the yamcs-grpc plugin. It writes parameter values to
+  TimescaleDB and sends events through an OpenTelemetry collector to Loki.
+- Grafana charts the parameters with the Hermes datasource and searches the events with its Loki datasource.
+- The `docker-compose.yml` at the root of the repo starts TimescaleDB, the collector, Loki and Grafana.
 
-Alternatively, if you only want to install the Hermes Grafana datasource plugin, see the [Grafana](./grafana) page.
+| Page | What it covers |
+| --- | --- |
+| [Recording from YAMCS](recording.md) | Starting the databases, building yamcs-recorder and having YAMCS run it |
+| [Grafana](grafana.md) | Installing the Hermes datasource, charting telemetry and searching events |

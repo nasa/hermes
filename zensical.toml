@@ -20,8 +20,9 @@ nav = [
         "arch/core-concepts.md",
         "arch/system-design.md",
     ] },
-    { "Telemetry Monitoring" = [
+    { "Recording and Grafana" = [
         "tlm/index.md",
+        "tlm/recording.md",
         "tlm/grafana.md",
     ] },
     { "Deploying" = [

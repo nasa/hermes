@@ -4,136 +4,84 @@ icon: brands/grafana
 
 # Grafana
 
-## Grafana Hermes Data Source Plugin
+Grafana charts the telemetry that yamcs-recorder writes to TimescaleDB with the Hermes datasource, and searches the
+events it sends to Loki with Grafana's own Loki datasource. [Recording from YAMCS](recording.md) shows how to start
+the databases and the recorder.
 
-Hermes offers a Grafana Datasource plugin to easily query Hermes telemetry from TimescaleDB. The plugin offers a visual query builder, which you can use to query and aggregate telemetry. Additionally you can manually write queries using the raw SQL editor. Events are not stored in TimescaleDB; query them from Loki with Grafana's Loki datasource.
+## Install the v6 Datasource
 
-![Grafana Dashboards page configuring a new panel using the Hermes data source](../assets/grafana-plugin-query.png)
+No Hermes release has the v6 datasource yet, so build it from source. From `grafana-datasource-plugin/` in a clone of
+the `v6` branch:
 
-You can set this up quickly using Hermes's default docker compose which includes TimescaleDB, Grafana, and the plugin. Check out [using Grafana with TimescaleDB](db/timescaledb#using-grafana-with-timescaledb-hermes-docker-compose).
+```sh
+npm install && npm run build   # frontend, needs Node.js 22 or newer
+mage -v                        # backend, needs Go and Mage (magefile.org)
+```
 
-## Installing the Hermes Data Source Plugin
+Then load it into Grafana 12.3.0 or newer:
 
-The Hermes data source plugin is distributed as a release asset on GitHub.
-
-- **If you are using the [default docker compose](db/timescaledb#using-grafana-with-timescaledb-hermes-docker-compose)**, the plugin is pre-installed with a pinned version, and you can skip directly to [verifying the installation](#verifying-the-installation).
-- Otherwise, you need to install the plugin following the steps below. Also, because it is unsigned, Grafana must be configured to allow it in addition to installing the files.
-
-After [allowing the unsigned plugin](#allowing-the-unsigned-plugin), pick the method that matches your setup:
-
-- **[Install to Docker Compose](#install-to-docker-compose)** — use Grafana's built-in plugin installer with a pinned version (**recommended**).
-- **[Install to an existing Grafana instance](#install-to-an-existing-grafana-instance)** — run the install script to get the latest release.
-- **[Install to a single Docker container](#install-to-a-single-docker-container)** — mount a host directory.
-
-### Allowing the Unsigned Plugin
-
-Grafana will not load the plugin unless it is explicitly allowed. Use whichever
-applies to your setup:
-
-- **Environment variable** (used in the Docker examples below):
-
-    ```bash
-    GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=nasa-hermes-datasource
-    ```
-
-- **`grafana.ini`** under `[plugins]`:
+1. Copy `dist/` into Grafana's plugins directory as `nasa-hermes-datasource`, for example
+   `/var/lib/grafana/plugins/nasa-hermes-datasource`.
+2. Builds from source aren't signed, so allow the plugin with the environment variable
+   `GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=nasa-hermes-datasource`, or in `grafana.ini`:
 
     ```ini
     [plugins]
     allow_loading_unsigned_plugins = nasa-hermes-datasource
     ```
 
-Restart Grafana after changing `grafana.ini`.
+3. Restart Grafana.
 
-### Install to Docker Compose
+!!! tip "Try it in the development Grafana"
+    Until a release has the v6 datasource, the Grafana in the root `docker-compose.yml` fails to download it and
+    doesn't start. The datasource's development setup runs its own Grafana, which loads `dist/` and already has the
+    TimescaleDB connection, but no Loki datasource. It uses the same ports as the Grafana and TimescaleDB in the root
+    `docker-compose.yml`, so stop those first:
 
-**This is the recommended approach.** Use Grafana's built-in `GF_INSTALL_PLUGINS` environment variable to install the plugin automatically. This is the approach used in the default [`docker-compose.yml`](https://github.com/nasa/hermes/blob/main/docker-compose.yml).
+    ```sh
+    docker compose stop grafana timescaledb         # from the repo root
+    cd grafana-datasource-plugin && npm run server
+    ```
 
-The recommended URL uses GitHub's `latest` redirect so you always track the newest release without editing the version by hand:
+    Its database starts empty. It has the same port, user, password and database as the TimescaleDB in
+    `docker-compose.yml`, so yamcs-recorder writes to it with the same flags. See
+    [Develop](https://github.com/nasa/hermes/blob/v6/grafana-datasource-plugin/README.md#develop) in the datasource's
+    README.
 
-```diff
-services:
-  grafana:
-    image: grafana/grafana:latest
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-+     GF_INSTALL_PLUGINS: "https://github.com/nasa/hermes/releases/latest/download/nasa-hermes-datasource.zip;nasa-hermes-datasource"
-+     GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: "nasa-hermes-datasource"
-    volumes:
-      - grafana-data:/var/lib/grafana
+## Connect to TimescaleDB
 
-volumes:
-  grafana-data:
+The Grafana in `docker-compose.yml` and the development Grafana come with this connection. In another Grafana, go to
+Connections > Data sources > Add new data source, search for Hermes, and fill in:
+
+| Field | Value for the TimescaleDB in `docker-compose.yml` |
+| --- | --- |
+| Host | `localhost:5432` from a Grafana on the same machine, or `timescaledb:5432` from a container in the same compose project |
+| User | `postgres` |
+| Password | `password` |
+| Database | `hermes` |
+
+Click Save & Test to check the connection.
+
+## Chart Telemetry
+
+Create a panel and pick the Hermes datasource. The Builder / Code toggle at the top of the query editor switches
+between picking parameters from lists and writing your own SQL. The datasource's
+[user guide](https://github.com/nasa/hermes/blob/v6/grafana-datasource-plugin/src/README.md) explains each Builder
+field, Value Transform and Code mode.
+
+## Search Events
+
+In Explore or a panel, pick the Loki datasource. The recorder sends each event with its YAMCS instance as the service
+name, and Loki keeps that as the `service_name` label. This query shows every event from the `fprime-project`
+instance:
+
+```logql
+{service_name="fprime-project"}
 ```
 
-The plugin is downloaded and installed automatically when the container starts. Recreating the container picks up the newest release automatically. `latest` tracks the most recent non-prerelease release.
-
-If you prefer to pin a specific version instead, point `GF_INSTALL_PLUGINS` at a versioned release URL from the [releases page](https://github.com/nasa/hermes/releases) and update it when upgrading:
-
-```yaml
-    environment:
-      GF_INSTALL_PLUGINS: "https://github.com/nasa/hermes/releases/download/v5.0.0/nasa-hermes-datasource-5.0.0.zip;nasa-hermes-datasource"
-      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: "nasa-hermes-datasource"
-```
-
-### Install to an Existing Grafana Instance
-
-The install script downloads the latest published release and extracts it into
-your Grafana plugins directory. It requires [`jq`](https://jqlang.github.io/jq/).
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/nasa/hermes/main/grafana-datasource-plugin/install.sh | bash
-```
-
-The script auto-detects a plugins directory. To install into a specific directory,
-pass it as an argument (everything after `bash -s --` is passed to the script):
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/nasa/hermes/main/grafana-datasource-plugin/install.sh \
-  | bash -s -- /var/lib/grafana/plugins
-```
-
-The plugin is installed to `<plugins-dir>/nasa-hermes-datasource/`. Then
-[allow the unsigned plugin](#allowing-the-unsigned-plugin) and restart Grafana.
-
-### Install to a Single Docker Container
-
-Install the plugin into a host folder, then mount it into the container:
-
-```bash
-# Install the plugin into a host folder
-mkdir -p ~/grafana-plugins
-curl -fsSL https://raw.githubusercontent.com/nasa/hermes/main/grafana-datasource-plugin/install.sh \
-  | bash -s -- ~/grafana-plugins
-
-# Start Grafana with the plugin mounted and allowed
-docker run -d -p 3000:3000 \
-  -e GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=nasa-hermes-datasource \
-  -v ~/grafana-plugins:/var/lib/grafana/plugins \
-  --name grafana grafana/grafana:latest
-```
-
-### Verifying the Installation
-
-Open [http://localhost:3000](http://localhost:3000) (default login `admin` /
-`admin`), then navigate to **Administration → Plugins and data → Plugins** and
-search for **hermes**. The **Hermes** data source should appear in the list, marked
-as an unsigned plugin.
-
-If it does not appear, confirm the plugin was extracted into the correct plugins
-directory and that [unsigned plugins are allowed](#allowing-the-unsigned-plugin).
-
-## Using the Hermes Data Source Plugin
-
-We will be using the default docker compose, which comes with a TimescaleDB instance located at `timescaledb:5432` in this tutorial. Once the plugin is installed, we can configure the Hermes data source by navigating to `Connections → Data sources`. You should see a Hermes data source. If you do not see one, add a new data source with type `Hermes`. Next, fill out the connection information. The default config parameters are shown in the screenshot below, with password `password`. Once done, click `Save & test` to test the connection.
-
-![Grafana Data Sources page configuring the Hermes data source with a blue "Save & test" button](../../assets/grafana-plugin-datasource.png)
-
-!!! note
-    We may add a `Hermes` field to the connection settings, which would connect to the Hermes backend for dictionary information. You can use `host.docker.internal:port` to connect to a Hermes instance outside of the docker, on your host machine.
-
-Once connected, we can visualize the data. Navigate to the `Dashboards` page and create a new dashboard. Add a panel and select `Configure visualization` on the panel. A query editor should pop up, as shown in the screenshot below. You can query your data using the form, starting with selecting the Hermes data source. The query will be automatically sent when you fill out a box. You can also use the refresh button on the top right to send the query.
-
-![Grafana Dashboards page configuring a new panel using the Hermes data source](../../assets/grafana-plugin-query.png)
+- The Grafana in `docker-compose.yml` has a Loki datasource, named Loki. In another Grafana, add one whose URL
+  reaches Loki on port 3100. That is `http://localhost:3100` from a Grafana installed on the same machine, or
+  `http://host.docker.internal:3100` from a container on Docker Desktop, such as the development Grafana.
+- To filter by event type or severity, see
+  [Query events in Grafana](https://github.com/nasa/hermes/blob/v6/cmd/yamcs-recorder/README.md#query-events-in-grafana)
+  in the recorder's README.
