@@ -14,7 +14,11 @@ nav = [
     { "Getting Started" = [
         "getting-started/installation.md",
         "getting-started/quick-start.md",
-        "getting-started/workflow.md",
+    ] },
+    { "VS Code" = [
+        "vscode/notebooks.md",
+        "vscode/telemetry-and-events.md",
+        "vscode/offline-mode.md",
     ] },
     { "Architecture" = [
         "arch/core-concepts.md",
