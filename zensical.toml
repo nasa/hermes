@@ -18,7 +18,6 @@ nav = [
     ] },
     { "Architecture" = [
         "arch/core-concepts.md",
-        "arch/system-design.md",
     ] },
     { "Telemetry Monitoring" = [
         "tlm/index.md",
@@ -31,23 +30,6 @@ nav = [
             "tlm/db/timescaledb.md",
             "tlm/db/sqlite.md",
         ] },
-    ] },
-    { "Deploying" = [
-        "prod/dev.md",
-        "prod/testbed.md",
-        "prod/mission.md",
-        { "Advanced" = [
-            "prod/advanced/relay.md",
-            "prod/advanced/gateway.md",
-            "prod/advanced/systemd.md",
-        ] },
-    ] },
-    { "API" = [
-        "api/index.md",
-        "api/go.md",
-        "api/python.md",
-        "api/rust.md",
-        "api/typescript.md",
     ] },
 ]
 
