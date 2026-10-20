@@ -280,6 +280,9 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
             this.currentApi.onFileUplink(data => this._onUplink.fire(data)),
             this.currentApi.onFileTransfer(data => this._onFileTransfer.fire(data)),
         );
+        // The backend loaded its dictionaries before we subscribed to its changes, so we send them now. A language item
+        // that couldn't load its saved dictionary at startup tries again once a change lists it.
+        this.currentApi.allDictionaries().then((all) => this._onDictionaryChange.fire(all));
 
         // Resubscribe all tracked event handlers
         for (const [handler, filter] of this.eventSubscribers.entries()) {

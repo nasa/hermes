@@ -2,8 +2,11 @@ import { afterEach, describe, expect, jest, test } from '@jest/globals';
 
 // Settings a test has set. Every other setting reads as unset and takes its default.
 const mockSettings: Record<string, unknown> = {};
+// Files a test has written to workspace storage, by path
+const mockFiles = new Map<string, Uint8Array>();
 afterEach(() => {
     Object.keys(mockSettings).forEach((key) => delete mockSettings[key]);
+    mockFiles.clear();
     jest.restoreAllMocks();
 });
 
@@ -25,9 +28,12 @@ jest.mock('vscode', () => {
             this.listeners.clear();
         }
     }
+    type Uri = { path: string };
     return {
         ...jest.requireActual<object>('vscode'),
         EventEmitter,
+        FileType: { File: 1 },
+        Uri: { joinPath: (dir: Uri, name: string) => ({ path: `${dir.path}/${name}` }) },
         window: {
             showInputBox: jest.fn(),
             // CommandStatuses calls the next three
@@ -41,6 +47,18 @@ jest.mock('vscode', () => {
             onDidChangeTextDocument: () => ({ dispose: () => { } }),
             notebookDocuments: [],
             applyEdit: async () => true,
+            // Workspace storage, kept in mockFiles. Like VS Code, delete throws for a file that doesn't exist.
+            fs: {
+                createDirectory: async () => { },
+                writeFile: async (file: Uri, content: Uint8Array) => { mockFiles.set(file.path, content); },
+                readFile: async (file: Uri) => mockFiles.get(file.path)!,
+                readDirectory: async () => [...mockFiles.keys()].map((path) => [path.slice(path.lastIndexOf('/') + 1), 1]),
+                delete: async (file: Uri) => {
+                    if (!mockFiles.delete(file.path)) {
+                        throw new Error(`${file.path} not found`);
+                    }
+                },
+            },
         },
         // FswNotebookLanguageProvider and CommandStatuses call the entries below
         commands: { registerCommand: () => ({ dispose: () => { } }) },
@@ -80,9 +98,10 @@ import Long from 'long';
 import type * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { YamcsClient, YamcsCommandHistoryEntry, YamcsCommandInfo, YamcsEvent, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
-import { Def, Dictionary } from '@gov.nasa.jpl.hermes/types';
+import { Def, Dictionary, Proto } from '@gov.nasa.jpl.hermes/types';
 import { FswNotebookLanguageProvider } from '@gov.nasa.jpl.hermes/vscode';
 
+import { Offline } from '../src/api/Offline';
 import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterSource } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
 import { yamcsEventRows } from '../src/components/yamcsEvents';
@@ -746,6 +765,37 @@ describe('yamcsDictionary', () => {
         const timed = { ...noOpString, argument: [{ name: 'at', type: { engType: 'time', name: 'Time' } }] };
         expect(command(timed, []).def.metadata?.error).toBe('Time has engType time, which isn\'t supported');
     });
+});
+
+test('Offline mode keeps a YAMCS dictionary with its id and commands, and removing it deletes its file', async () => {
+    const context = { storageUri: { path: '/storage' } } as vscode.ExtensionContext;
+    const log = { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } };
+    // Two commands without opcodes, where ccsdsPacket's 11-bit argument has a range
+    const dictionary = yamcsDictionary('fprime-project', [noOpString, ccsdsPacket]);
+    await (await Offline.activate(context, log)).addDictionary(dictionary);
+    expect([...mockFiles.keys()]).toEqual(['/storage/yamcs%3Afprime-project.dictionary.pb']);
+
+    const offline = await Offline.activate(context, log);
+    const commands = (dict: Proto.IDictionary) => [...Dictionary.fromProto(dict).get('').getCommands()];
+    expect(commands(await offline.getDictionary('yamcs:fprime-project'))).toEqual(commands(dictionary));
+    await offline.removeDictionary('yamcs:fprime-project');
+    expect(mockFiles.size).toBe(0);
+});
+
+test('YAMCS mode connects with its dictionary and warns when it cannot save the dictionary', async () => {
+    jest.spyOn(YamcsClient.prototype, 'waitForReady').mockResolvedValue(undefined);
+    jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
+    jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([noOpString]);
+    jest.spyOn(vscode.workspace.fs, 'writeFile').mockRejectedValue(new Error('disk full'));
+    const warn = jest.fn();
+    const api = await new YamcsBackendProvider().provideBackendApi(
+        { address: 'localhost:1', instance: 'fprime-project', processor: 'realtime' },
+        { storageUri: { path: '/storage' } } as vscode.ExtensionContext,
+        { debug: () => { }, info: () => { }, warn, error: () => { } },
+    );
+    expect(Object.keys(await api.allDictionaries())).toEqual(['yamcs:fprime-project']);
+    expect(warn).toHaveBeenCalledWith('Could not save YAMCS dictionary yamcs:fprime-project: Error: disk full');
+    api.dispose();
 });
 
 describe('argumentValue', () => {
