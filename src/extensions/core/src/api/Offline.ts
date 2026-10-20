@@ -171,10 +171,13 @@ export class Offline implements Hermes.Api {
     }
 
     async removeDictionary(id: string): Promise<void> {
+        const dict = this.dictionaryCache.get(id);
         this.dictionaryCache.delete(id);
         this.dictionaryUpdate();
 
-        if (this.context.storageUri) {
+        // We delete a file only if addDictionary saved one, which it does for a dictionary added without an id and for
+        // a YAMCS dictionary
+        if (this.context.storageUri && (!dict?.id || dict.head?.type === 'yamcs')) {
             const dictPath = vscode.Uri.joinPath(
                 this.context.storageUri,
                 `${encodeURIComponent(id)}.dictionary.pb`

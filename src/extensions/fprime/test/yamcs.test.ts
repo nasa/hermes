@@ -6,7 +6,7 @@ import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
 import { Def, Dictionary, DualKeyMap, Proto } from '@gov.nasa.jpl.hermes/types';
 import type * as vscode from 'vscode';
 
-import { addFprimeDictionaries, fprimeDictionary, runOnYamcs } from '../src/yamcs';
+import { fprimeDictionary, runOnYamcs, updateFprimeDictionaries } from '../src/yamcs';
 
 // fprime-yamcs's bool enumeration, which it also uses for bools inside structs and arrays
 const bool: Def.EnumType = {
@@ -91,9 +91,10 @@ test('builds no F Prime dictionary from an instance without opcodes', () => {
     expect(fprimeDictionary(simulatorDictionary())).toBeUndefined();
 });
 
-test('adds an F Prime dictionary for each YAMCS dictionary with opcodes that has none yet', async () => {
+test('adds an F Prime dictionary for each YAMCS dictionary with opcodes that has none yet, and removes one whose YAMCS dictionary is gone', async () => {
     const stored: Record<string, Proto.IDictionary> = { 'yamcs:fprime-project': yamcsDictionary(), 'yamcs:simulator': simulatorDictionary() };
     const added: Proto.IDictionary[] = [];
+    const removed: string[] = [];
     const api: Partial<Hermes.Api> = {
         allDictionaries: async () => ({
             'yamcs:fprime-project': { type: 'yamcs' },
@@ -101,12 +102,16 @@ test('adds an F Prime dictionary for each YAMCS dictionary with opcodes that has
             // This one already has its F Prime dictionary, so getDictionary is never asked for it
             'yamcs:other': { type: 'yamcs' },
             'yamcs:other:fprime': { type: 'fprime' },
+            // This one's YAMCS dictionary is gone
+            'yamcs:deleted:fprime': { type: 'fprime' },
         }),
         getDictionary: async (id) => stored[id],
         addDictionary: async (dict) => { added.push(dict); return dict.id!; },
+        removeDictionary: async (id) => { removed.push(id); },
     };
-    await addFprimeDictionaries(api as Hermes.Api);
+    await updateFprimeDictionaries(api as Hermes.Api);
     expect(added.map((dict) => dict.id)).toEqual(['yamcs:fprime-project:fprime']);
+    expect(removed).toEqual(['yamcs:deleted:fprime']);
 });
 
 // A fake of YAMCS mode's connection, which records each command it sends. It refuses a command whose first
