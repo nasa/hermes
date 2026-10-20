@@ -10,7 +10,7 @@ import { FPrimeExtension } from './language';
 import { FprimeNotebookLanguageProvider } from './language/notebook';
 import { FprimeDeploymentProvider } from './task';
 import { FprimeJsonDictionaryProvider, FprimeXmlDictionaryProvider } from './dictionary';
-import { fprimeDictionary } from './yamcs';
+import { addFprimeDictionaries, fprimeDictionary } from './yamcs';
 
 export async function activate(context: vscode.ExtensionContext) {
     const hermesVSCode = getApi();
@@ -28,12 +28,20 @@ export async function activate(context: vscode.ExtensionContext) {
     const jsonProvider = new FprimeJsonDictionaryProvider();
     const xmlProvider = new FprimeXmlDictionaryProvider();
 
+    // We build an F Prime dictionary from every YAMCS dictionary, both the ones loaded before we activated and the ones
+    // added later
+    const addFromYamcs = () => addFprimeDictionaries(hermesVSCode.api).catch((err) => {
+        hermesVSCode.log.error(`Failed to build F Prime dictionaries from YAMCS dictionaries: ${err}`);
+    });
+    addFromYamcs();
+
     context.subscriptions.push(
         hermesVSCode.registerDictionaryProvider("fprime.json", jsonProvider),
         hermesVSCode.registerDictionaryProvider("fprime.xml", xmlProvider),
         hermesVSCode.registerLanguageDictionaryItem(dictionaryItem),
         hermesVSCode.registerNotebookLanguageProvider("fprime", nbLanguage),
         jsonProvider.startWatching(),
+        hermesVSCode.api.onDictionaryChange(addFromYamcs),
 
         hermesVSCode.api.onFswChange(async (fsws) => {
             // Automatically select the proper dictionary when an FSW connects
