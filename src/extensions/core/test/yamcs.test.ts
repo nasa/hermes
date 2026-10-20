@@ -31,15 +31,21 @@ jest.mock('vscode', () => {
         }
     }
     type Uri = { path: string };
+    // What VS Code returns for each listener and provider a language registers
+    const none = () => ({ dispose: () => { } });
     return {
         ...jest.requireActual<object>('vscode'),
         EventEmitter,
         FileType: { File: 1 },
         Uri: { joinPath: (dir: Uri, name: string) => ({ path: `${dir.path}/${name}` }) },
+        // What VscodeApi needs to switch modes
+        StatusBarAlignment: { Left: 1 },
+        CancellationTokenSource: class { cancel() { } dispose() { } },
         window: {
             showInputBox: jest.fn(),
             showQuickPick: jest.fn(),
             activeNotebookEditor: undefined,
+            createStatusBarItem: () => ({ show: () => { }, hide: () => { }, dispose: () => { } }),
             // CommandStatuses calls the next three
             createTextEditorDecorationType: () => ({ dispose: () => { } }),
             onDidChangeVisibleTextEditors: () => ({ dispose: () => { } }),
@@ -47,6 +53,8 @@ jest.mock('vscode', () => {
         },
         workspace: {
             getConfiguration: () => ({ get: (key: string) => mockSettings[key] }),
+            onDidCloseTextDocument: none,
+            onDidChangeNotebookDocument: jest.fn(none),
             // CommandStatuses calls the next three
             onDidChangeTextDocument: () => ({ dispose: () => { } }),
             notebookDocuments: [],
@@ -64,6 +72,14 @@ jest.mock('vscode', () => {
                 },
             },
         },
+        languages: {
+            createDiagnosticCollection: () => ({ set: () => { } }),
+            registerHoverProvider: none, registerDocumentHighlightProvider: none, registerCompletionItemProvider: none,
+            registerSignatureHelpProvider: none, registerDocumentLinkProvider: none, registerDefinitionProvider: none,
+            registerCodeLensProvider: none, registerCodeActionsProvider: none, registerDocumentSemanticTokensProvider: none,
+        },
+        SemanticTokensBuilder: class { },
+        SemanticTokensLegend: class { },
         // FswNotebookLanguageProvider and CommandStatuses call the entries below
         commands: {
             registerCommand: (name: string, run: () => Promise<void>) => {
@@ -108,10 +124,11 @@ import * as vscode from 'vscode';
 import Long from 'long';
 import type * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { YamcsClient, YamcsCommandHistoryEntry, YamcsCommandInfo, YamcsEvent, YamcsParameterValue, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
-import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
+import type { CommandValue, Expression } from '@gov.nasa.jpl.hermes/sequence';
 import { Def, Dictionary, Proto } from '@gov.nasa.jpl.hermes/types';
-import { FswNotebookLanguageProvider } from '@gov.nasa.jpl.hermes/vscode';
+import { DictionaryLanguageItem, FswNotebookLanguageProvider, Language } from '@gov.nasa.jpl.hermes/vscode';
 
+import { VscodeApi } from '../src/api';
 import { Offline } from '../src/api/Offline';
 import { inTopLevelSpaceSystem, YamcsBackendProvider, YamcsEventSource, YamcsParameterSource } from '../src/api/Yamcs';
 import { TelemetryDatabase } from '../src/components/TelemetryViewer';
@@ -1147,6 +1164,68 @@ describe('YAMCS commands', () => {
             { index: 0, newCellMetadata: { owner: 'ops', hermes: { fsw: 'yamcs:other-instance', note: 'x' } } },
             { index: 2, newCellMetadata: { hermes: { fsw: 'yamcs:other-instance' } } },
         ]);
+        api.dispose();
+    });
+
+    test('parses each cell with the dictionary of the instance it targets', async () => {
+        // The API that the extensions use, with YAMCS mode as its only mode
+        const { api: yamcs } = await backend();
+        const api = new VscodeApi({} as vscode.ExtensionContext, { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } });
+        api.registerBackendProvider({ type: 'yamcs', title: 'YAMCS', icon: 'remote', promptForState: async () => ({}), provideBackendApi: async () => yamcs });
+        // A language that records the name of the dictionary it last parsed each document with
+        class Names extends Language.SequenceLanguage<Expression> {
+            parsedWith = new Map<string, string | undefined>();
+            protected parse(document: vscode.TextDocument, dictionary: Dictionary | undefined) {
+                this.parsedWith.set(document.uri.toString(), dictionary?.name);
+                return [];
+            }
+        }
+        const item: Partial<DictionaryLanguageItem> = {
+            api, dictionarySections: ['.commands'], active: new Dictionary({ name: 'selected' }), onDictionaryChanged: () => ({ dispose: () => { } }),
+        };
+        const language = new Names('yamcs', item as DictionaryLanguageItem);
+        // VS Code asks for a document's tokens again, which parses it, when the language says they changed
+        const tokensChanged = jest.fn();
+        language.onDidChangeSemanticTokens(tokensChanged);
+
+        // A notebook with a cell that targets an instance and a cell on Automatic
+        const document = (uri: string) => ({ uri: { toString: () => uri }, version: 1 } as vscode.TextDocument);
+        const target = { fsw: 'yamcs:other-instance' };
+        const cells: Partial<vscode.NotebookCell>[] = [{ metadata: { hermes: target }, document: document('targeted') }, { metadata: {}, document: document('automatic') }];
+        const notebook: Partial<vscode.NotebookDocument> = { getCells: () => cells as vscode.NotebookCell[] };
+        jest.replaceProperty(vscode.workspace, 'notebookDocuments', [notebook as vscode.NotebookDocument]);
+        const parsedWith = async (uri: string) => {
+            await language.provideDocumentExpressions(document(uri));
+            return language.parsedWith.get(uri);
+        };
+
+        // Before YAMCS mode connects, the targeted instance has no dictionary, so the cell parses with none
+        expect(await parsedWith('targeted')).toBeUndefined();
+        // Connecting has VS Code ask for the cell's tokens again, and the cell then parses with its instance's dictionary
+        await api.update('yamcs', {});
+        expect(tokensChanged).toHaveBeenCalledTimes(1);
+        expect(await parsedWith('targeted')).toBe('other-instance');
+        // A cell on Automatic parses with the selected dictionary
+        expect(await parsedWith('automatic')).toBe('selected');
+
+        // Picking another target changes the cell's metadata, and the cell parses again with that target's dictionary
+        target.fsw = 'yamcs:fprime-project';
+        const change: Partial<vscode.NotebookDocumentCellChange> = { metadata: { hermes: target } };
+        const event: Partial<vscode.NotebookDocumentChangeEvent> = { cellChanges: [change as vscode.NotebookDocumentCellChange] };
+        const [onNotebookChange] = jest.mocked(vscode.workspace.onDidChangeNotebookDocument).mock.lastCall!;
+        onNotebookChange(event as vscode.NotebookDocumentChangeEvent);
+        expect(tokensChanged).toHaveBeenCalledTimes(2);
+        expect(await parsedWith('targeted')).toBe('fprime-project');
+
+        // A cell whose instance has no dictionary parses with none, until a dictionary for that instance is added
+        target.fsw = 'yamcs:stopped';
+        expect(await parsedWith('targeted')).toBeUndefined();
+        const added = new Promise((resolve) => api.onDictionaryChange(resolve));
+        await api.addDictionary({ ...new Dictionary({ name: 'stopped' }).toProto(), id: 'yamcs:stopped' });
+        await added;
+        expect(tokensChanged).toHaveBeenCalledTimes(3);
+        expect(await parsedWith('targeted')).toBe('stopped');
+        language.dispose();
         api.dispose();
     });
 

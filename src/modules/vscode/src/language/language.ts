@@ -9,7 +9,7 @@ import { mergeWorkspaceEdits } from './util';
 
 class ParseCache<Expr extends Seq.Expression> {
     documentVersion: number;
-    dictionaryVersion: number;
+    dictionary: Dictionary | undefined;
 
     expressions: Expr[];
     nextExpr: Seq.NextTokenExpression;
@@ -19,7 +19,6 @@ class ParseCache<Expr extends Seq.Expression> {
 
     constructor() {
         this.documentVersion = -1;
-        this.dictionaryVersion = -1;
         this.expressions = [];
         this.tokens = new RangeAssociator();
         this.builder = new vscode.SemanticTokensBuilder();
@@ -82,11 +81,11 @@ class ParseCache<Expr extends Seq.Expression> {
 
     update(
         documentVersion: number,
-        dictionaryVersion: number,
+        dictionary: Dictionary | undefined,
         expressions: Expr[]
     ): vscode.Diagnostic[] {
         this.documentVersion = documentVersion;
-        this.dictionaryVersion = dictionaryVersion;
+        this.dictionary = dictionary;
         this.expressions = expressions;
 
         this.tokens.clear();
@@ -134,7 +133,8 @@ export abstract class SequenceLanguage<Expr extends Seq.Expression> implements
     vscode.Disposable {
 
     protected cache: Map<string, ParseCache<Expr>>;
-    protected dictionaryVersion: number = 0;
+    // The dictionaries of the connections that notebook cells target, by dictionary id
+    private targetDictionaries = new Map<string, Promise<Dictionary | undefined>>();
     protected asyncReparse = new vscode.EventEmitter<void>();
     protected parseEvent = new vscode.EventEmitter<{
         document: vscode.TextDocument;
@@ -164,10 +164,21 @@ export abstract class SequenceLanguage<Expr extends Seq.Expression> implements
             ...options,
         };
 
+        const reloadTargetDictionaries = () => {
+            this.targetDictionaries.clear();
+            this.asyncReparse.fire();
+        };
+
         this.subscriptions = [
-            this.dictionaryProvider.onDictionaryChanged(() => {
-                this.dictionaryVersion++;
-                this.asyncReparse.fire();
+            this.dictionaryProvider.onDictionaryChanged(() => this.asyncReparse.fire()),
+            // We load the dictionaries that cells target again whenever the dictionaries change, which includes
+            // switching modes, since Hermes announces a new mode's dictionaries
+            this.dictionaryProvider.api.onDictionaryChange(reloadTargetDictionaries),
+            // A cell's metadata holds its target, so a change to it can change the cell's dictionary
+            vscode.workspace.onDidChangeNotebookDocument((e) => {
+                if (e.cellChanges.some((change) => change.metadata)) {
+                    this.asyncReparse.fire();
+                }
             }),
             vscode.workspace.onDidCloseTextDocument(doc => this.diagnostics.delete(doc.uri)),
             vscode.workspace.onDidCloseTextDocument(doc => {
@@ -223,19 +234,48 @@ export abstract class SequenceLanguage<Expr extends Seq.Expression> implements
         ];
     }
 
-    get dictionary(): Dictionary | undefined {
-        return this.dictionaryProvider.active;
+    /**
+     * The id of the dictionary for cells that target the connection with this id, or undefined to use the
+     * selected dictionary. YAMCS mode gives each instance's connection and dictionary the same id.
+     */
+    protected targetDictionaryId(target: string): string | undefined {
+        return target;
+    }
+
+    // The dictionary we parse a document with
+    private async documentDictionary(document: vscode.TextDocument): Promise<Dictionary | undefined> {
+        const cell = vscode.workspace.notebookDocuments
+            .flatMap((notebook) => notebook.getCells())
+            .find((cell) => cell.document.uri.toString() === document.uri.toString());
+        const target = cell?.metadata.hermes?.fsw as string | undefined;
+        const id = target ? this.targetDictionaryId(target) : undefined;
+        // Documents outside a notebook and cells on Automatic use the selected dictionary. A cell whose target's
+        // dictionary is missing gets none, so it never offers commands its target doesn't have.
+        return id ? this.loadDictionary(id) : this.dictionaryProvider.active;
+    }
+
+    private loadDictionary(id: string): Promise<Dictionary | undefined> {
+        let dictionary = this.targetDictionaries.get(id);
+        if (!dictionary) {
+            // getDictionary rejects an id it doesn't have
+            dictionary = this.dictionaryProvider.api.getDictionary(id, this.dictionaryProvider.dictionarySections)
+                .then((proto) => Dictionary.fromProto(proto), () => undefined);
+            this.targetDictionaries.set(id, dictionary);
+        }
+        return dictionary;
     }
 
     /**
      * Parse a text document into a set of expressions. The provided token and expression
      * behaviors will be integrated into VSCode language features
      * @param document Document to parse
+     * @param dictionary Dictionary to parse the document with
      * @param token Optional cancellation token to stop parsing asynchronous parsing implementation
      * @returns A set of annotated expressions that contain tokens across the document
      */
     protected abstract parse(
         document: vscode.TextDocument,
+        dictionary: Dictionary | undefined,
         nextTokens: Seq.NextTokenExpression,
         token?: vscode.CancellationToken
     ): vscode.ProviderResult<Expr[]>;
@@ -254,12 +294,13 @@ export abstract class SequenceLanguage<Expr extends Seq.Expression> implements
         force: boolean = false
     ): Promise<ParseCache<Expr>> {
         const uriStr = document.uri.toString();
+        const dictionary = await this.documentDictionary(document);
         if (!force) {
             // Check if we have an up-to-date cache
             const cache = this.cache.get(uriStr);
             if (cache) {
                 if (cache.documentVersion >= document.version &&
-                    cache.dictionaryVersion >= this.dictionaryVersion
+                    cache.dictionary === dictionary
                 ) {
                     return cache;
                 }
@@ -270,8 +311,8 @@ export abstract class SequenceLanguage<Expr extends Seq.Expression> implements
         cache.nextExpr.clear();
         const diagnostics = cache.update(
             document.version,
-            this.dictionaryVersion,
-            (await this.parse(document, cache.nextExpr, token)) ?? []
+            dictionary,
+            (await this.parse(document, dictionary, cache.nextExpr, token)) ?? []
         );
 
         // Refresh the diagnostics
@@ -300,7 +341,7 @@ export abstract class SequenceLanguage<Expr extends Seq.Expression> implements
         if (cache) {
             const diagnostics = cache.update(
                 cache.documentVersion,
-                cache.dictionaryVersion,
+                cache.dictionary,
                 cache.expressions
             );
 
@@ -315,7 +356,7 @@ export abstract class SequenceLanguage<Expr extends Seq.Expression> implements
         for (const [uriStr, cache] of this.cache.entries()) {
             const diagnostics = cache.update(
                 cache.documentVersion,
-                cache.dictionaryVersion,
+                cache.dictionary,
                 cache.expressions
             );
 
