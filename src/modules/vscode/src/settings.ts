@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 
-import { HostAuthenticationKind } from '@gov.nasa.jpl.hermes/rpc';
 import { TimeFormat } from '@gov.nasa.jpl.hermes/types';
 
 export const names = {
@@ -24,11 +23,7 @@ export const names = {
         }
     },
     host: {
-        remotes: "hermes.host.remotes",
         yamcs: "hermes.host.yamcs",
-        binary: "hermes.host.binary",
-        args: "hermes.host.args",
-        bind: "hermes.host.bind",
     }
 };
 
@@ -73,15 +68,6 @@ export function signoffName(): string {
     return getSetting(names.notebook.signoff.name, "OPERATOR NAME");
 }
 
-export interface Remote {
-    key: string;
-    label: string;
-    url: string;
-    authenticationMethod: HostAuthenticationKind;
-    skipTLSVerify: boolean;
-    color?: string;
-}
-
 export interface Yamcs {
     // host:port of the yamcs-grpc plugin
     address: string;
@@ -96,21 +82,4 @@ export function hostYamcs(): Yamcs {
         processor: "realtime",
         ...getSetting<Partial<Yamcs>>(names.host.yamcs, {}),
     };
-}
-
-export function hostBinary(): string | undefined {
-    const b = getSetting(names.host.binary, undefined);
-    return b === "" ? undefined : b;
-}
-
-export function hostBind(): { bindType?: string, bind?: string } {
-    return getSetting(names.host.bind, { bindType: undefined, bind: undefined });
-}
-
-export function hostArgs(): string[] {
-    return getSetting(names.host.args, []);
-}
-
-export function hostRemotes(): Record<string, Remote> {
-    return getSetting(names.host.remotes, {});
 }
