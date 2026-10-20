@@ -72,10 +72,12 @@ grpcurl -plaintext -import-path proto -proto yamcs/protobuf/processing/processin
 
 ## VS Code
 
-In VS Code, run **Hermes: Change Backend Mode**, pick **YAMCS**, and enter the plugin's address and
-the instance. The prompts are prefilled from the `hermes.host.yamcs` setting, then from your last
-answers. The setting also picks the processor. Clicking the instance name in the status bar
-prompts again. F Prime channels show up in the telemetry table and plot with source `yamcs:<instance>`.
+In VS Code, run **Hermes: Change Backend Mode**, pick **YAMCS**, and enter the plugin's address.
+The prompt is prefilled from the `hermes.host.yamcs` setting, then from your last answer. The
+setting also picks the processor. YAMCS mode connects to every running instance that has that
+processor. It lists the instances only when it connects, so to add one started later, run
+**Hermes: Reconnect to Backend**. Clicking the address in the status bar prompts again. F Prime
+channels show up in the telemetry table and plot with source `yamcs:<instance>`.
 Parameters directly in a top-level space system, where fprime-yamcs puts the CCSDS and F Prime packet
 header fields, are left out unless `hermes.host.yamcs` sets `includeTopLevel`. Structs and arrays get
 one row per member or element, such as `comQueueDepth[1]`, with member paths spelled the way
@@ -84,20 +86,26 @@ value, its acquisition time, shown in UTC by default. YAMCS values have no SCLK,
 blank if you pick SCLK.
 
 YAMCS events show up in the events panel with source `yamcs:<instance>`, YAMCS's source in the
-component column and its type in the name column. On connect the panel loads the newest 100 events
-from the archive, then adds live ones. It does not show an event's extra, reception time or createdBy.
+component column and its type in the name column. On connect the panel loads each instance's newest
+100 events from the archive, then adds live ones. It does not show an event's extra, reception time
+or createdBy.
 
-YAMCS mode lists the instance's commands when it connects and builds a Hermes dictionary from them,
+YAMCS mode lists each instance's commands when it connects and builds a Hermes dictionary from them,
 listed under the instance's name with type `yamcs`. The Hermes YAMCS extension
 (`src/extensions/yamcs`) adds a YAMCS cell language for Hermes notebooks: one command per line, its
 qualified name and then its arguments, for example
 `/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING "hello"`. Completion, hovers and argument
-checks come from that dictionary. fprime-yamcs gives commands no descriptions, so hovers show only
-names and types. It gives a string's limit only as its encoded size, which YAMCS's `ListCommands`
-doesn't report, so YAMCS rather than the editor refuses a string that is too long.
+checks come from the first instance's dictionary, unless you pick another one.
+fprime-yamcs gives commands no descriptions, so hovers show only names and types. It gives a string's
+limit only as its encoded size, which YAMCS's `ListCommands` doesn't report, so YAMCS rather than the
+editor refuses a string that is too long.
 
-YAMCS cells run on the connection `yamcs:<instance>`, on the processor from `hermes.host.yamcs`, one
-command at a time. YAMCS's mission database, which defines the instance's commands, can give a command
+Each instance gets a connection called `yamcs:<instance>`. A YAMCS cell runs on the connection picked
+in its status bar, on the processor from `hermes.host.yamcs`, one command at a time. A cell left on
+Automatic refuses to run while several instances are connected. A cell sends the qualified names from
+its language's dictionary, so an instance whose commands have other names refuses them.
+
+YAMCS's mission database, which defines an instance's commands, can give a command
 verifiers. These are checks YAMCS runs on the telemetry that comes back, to decide whether the command
 succeeded or failed. For a command with verifiers, Hermes waits for YAMCS's verdict before it issues
 the next command. The command passes when YAMCS records `CommandComplete` as `OK`, and the cell fails
@@ -120,8 +128,8 @@ notebook, so they come back when you open it again, as long as the command's lin
 Running the cell again clears them.
 
 F Prime cells run in YAMCS mode too, when fprime-yamcs runs the instance. The Hermes F Prime extension
-builds an F Prime dictionary from YAMCS mode's dictionary, listed as `<instance> (F Prime)`. It names
-each command as F Prime does, for example `CdhCore.cmdDisp.CMD_NO_OP` for
+builds an F Prime dictionary from the first instance's dictionary, listed as `<instance> (F Prime)`.
+It names each command as F Prime does, for example `CdhCore.cmdDisp.CMD_NO_OP` for
 `/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP`, and takes its opcode from fprime-yamcs's
 `OpCode` argument assignment. Each command waits out its relative time tag, then goes out as a YAMCS
 cell's command does, so an F Prime cell passes, fails and shows its commands' statuses as a YAMCS cell
@@ -131,15 +139,15 @@ gives a command verifiers. fprime-yamcs builds its database with fprime-xtce, wh
 0.1.5 defines none, so with that database an F Prime cell passes once YAMCS has sent its commands,
 even when the flight software rejects one.
 
-A cell's output lists the events YAMCS reports for the instance while the cell runs, whichever command
+A cell's output lists the events YAMCS reports for the cell's instance while the cell runs, whichever command
 or client caused them. An F Prime event shows its F Prime severity, and the `hermes.notebook.evr*`
 settings hide severities as in the other modes. Any other event shows YAMCS's severity and is always
 listed. A cell stops listing one second after its last command ends, so its list lacks any event that
 reaches Hermes later. The events panel shows every event.
 
 YAMCS mode sends no credentials, so it fails with `UNAUTHENTICATED` when YAMCS security is on. When
-its subscription ends, for example because YAMCS or its instance stopped, the status bar turns red
-with the reason in its tooltip. To subscribe again, run **Hermes: Reconnect to Backend**.
+a subscription ends, for example because YAMCS or one of its instances stopped, the status bar turns
+red with the reason in its tooltip. To subscribe again, run **Hermes: Reconnect to Backend**.
 
 Checks against fprime-yamcs with the plugin and a running F Prime deployment, from the repo root.
 They wait for FrameworkVersion, which F Prime sends only at boot, so the deployment must have booted

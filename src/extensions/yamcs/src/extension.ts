@@ -11,8 +11,8 @@ export async function activate(context: vscode.ExtensionContext) {
     const language = new YamcsLanguage(dictionaryItem);
     const notebook = new YamcsNotebookLanguageProvider(hermesVSCode.api, language);
 
-    // YAMCS mode's connection holds the id of the dictionary it built from YAMCS, so we select that one
-    // whenever YAMCS mode connects, including if it connected before we activated.
+    // Each YAMCS mode connection holds the id of the dictionary built from its instance. We select the first
+    // connection's dictionary whenever YAMCS mode connects, including if it connected before we activated.
     const select = (fsws: Fsw[]) => {
         const dictionary = fsws.find((f) => f.type === 'yamcs')?.dictionary;
         if (dictionary) {

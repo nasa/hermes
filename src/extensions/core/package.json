@@ -329,17 +329,12 @@
                     },
                     "hermes.host.yamcs": {
                         "type": "object",
-                        "description": "Defaults for YAMCS mode, which connects through the yamcs-grpc plugin. Address and instance prefill its prompts.",
+                        "description": "Defaults for YAMCS mode, which connects through the yamcs-grpc plugin. Address prefills its prompt.",
                         "properties": {
                             "address": {
                                 "type": "string",
                                 "description": "host:port of the yamcs-grpc plugin",
                                 "default": "localhost:8091"
-                            },
-                            "instance": {
-                                "type": "string",
-                                "description": "YAMCS instance, one mission configuration on the server",
-                                "default": "fprime-project"
                             },
                             "processor": {
                                 "type": "string",

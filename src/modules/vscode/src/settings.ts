@@ -85,7 +85,6 @@ export interface Remote {
 export interface Yamcs {
     // host:port of the yamcs-grpc plugin
     address: string;
-    instance: string;
     processor: string;
     // Also include parameters directly in a top-level space system
     includeTopLevel?: boolean;
@@ -94,7 +93,6 @@ export interface Yamcs {
 export function hostYamcs(): Yamcs {
     return {
         address: "localhost:8091",
-        instance: "fprime-project",
         processor: "realtime",
         ...getSetting<Partial<Yamcs>>(names.host.yamcs, {}),
     };
