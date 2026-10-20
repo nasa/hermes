@@ -130,20 +130,6 @@ func (d *Datasource) handleTelemetryMembers(w http.ResponseWriter, r *http.Reque
 	writeJSONResponse(w, items)
 }
 
-func (d *Datasource) handleGetEventSources(w http.ResponseWriter, r *http.Request) {
-	rows, err := d.db.QueryContext(r.Context(), "SELECT DISTINCT source FROM events ORDER BY source;")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	items, err := scanStrings(rows)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	writeJSONResponse(w, items)
-}
-
 func writeJSONResponse(w http.ResponseWriter, data any) {
 	bytes, err := json.Marshal(data)
 	if err != nil {

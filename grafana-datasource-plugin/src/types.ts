@@ -1,7 +1,7 @@
 import { DataSourceJsonData } from '@grafana/data';
 import { DataQuery } from '@grafana/schema';
 
-export type QueryType = 'telemetry' | 'events' | 'raw';
+export type QueryType = 'telemetry' | 'raw';
 export type TimeField = 'generation_time' | 'acquisition_time';
 export type Aggregation = 'avg' | 'min' | 'max' | 'count' | 'first' | 'last' | 'sum' | 'deriv' | 'raw' | 'latest';
 

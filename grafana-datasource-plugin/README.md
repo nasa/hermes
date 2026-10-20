@@ -75,7 +75,7 @@ pkg/
   models/                  # Settings types and parsing
   plugin/
     datasource.go          # Instance lifecycle, health check
-    query.go               # Telemetry & event query execution
+    query.go               # Telemetry query execution
     resources.go           # REST resource handlers (parameters, instances, members)
 provisioning/
   datasources/

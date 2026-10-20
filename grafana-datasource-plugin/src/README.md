@@ -12,6 +12,8 @@
 
 The plugin provides a multi-select query editor for querying telemetry, making it easy to build dashboards over spacecraft telemetry without writing raw SQL. Multiple parameters, instances, and members can be selected in a single query to overlay or compare data series. Additionally you can write custom SQL queries.
 
+Events are not stored in TimescaleDB. When started with `--otlp`, yamcs-recorder sends them through an OpenTelemetry collector to Loki, so query them with Grafana's Loki datasource.
+
 ## Requirements
 
 - **Grafana** >= 12.3.0
@@ -35,7 +37,7 @@ Create a new panel and select **Hermes**. Use the **Builder / Code** toggle at t
 
 #### Builder: Telemetry
 
-Select **Telemetry** in the bottom-right toggle. Queries time-series values from the `parameter_values` hypertable.
+Queries time-series values from the `parameter_values` hypertable.
 
 | Field           | Type                   | Description                                                                                                                               |
 | --------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
@@ -72,15 +74,7 @@ Notes:
 
 <br>
 
-#### Builder: Events
-
-The Events query type is hidden because yamcs-recorder records only telemetry in TimescaleDB. With `--otlp`, it exports events through an OpenTelemetry collector to Loki, so query them through Grafana's Loki datasource.
-
-<br>
-
-#### Builder: Shared options
-
-Available for all query types:
+#### Builder: Time options
 
 | Field                  | Description                                                                                            |
 | ---------------------- | ------------------------------------------------------------------------------------------------------ |

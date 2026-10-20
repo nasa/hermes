@@ -6,7 +6,7 @@ icon: brands/grafana
 
 ## Grafana Hermes Data Source Plugin
 
-Hermes offers a Grafana Datasource plugin to easily query Hermes telemetry and events data from TimescaleDB. The plugin offers a visual query builder, which you can use to query and aggregate telemetry and events data. Additionally you can manually write queries using the raw SQL editor.
+Hermes offers a Grafana Datasource plugin to easily query Hermes telemetry from TimescaleDB. The plugin offers a visual query builder, which you can use to query and aggregate telemetry. Additionally you can manually write queries using the raw SQL editor. Events are not stored in TimescaleDB; query them from Loki with Grafana's Loki datasource.
 
 ![Grafana Dashboards page configuring a new panel using the Hermes data source](../assets/grafana-plugin-query.png)
 

@@ -72,70 +72,12 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	}
 
 	switch qm.QueryType {
-	case "events":
-		return d.queryEvents(ctx, pCtx, qm, querySQL)
 	case "telemetry":
 		return d.queryTelemetry(ctx, pCtx, qm, querySQL)
 	case "raw":
 		return d.queryRaw(ctx, pCtx, querySQL)
 	}
 	return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid query type: %s", qm.QueryType))
-}
-
-var severityLabels = map[int64]string{
-	0: "DIAGNOSTIC",
-	1: "ACTIVITY_LOW",
-	2: "ACTIVITY_HIGH",
-	3: "WARNING_LOW",
-	4: "WARNING_HIGH",
-	5: "COMMAND",
-	6: "FATAL",
-}
-
-func severityLabel(sev int64) string {
-	if label, ok := severityLabels[sev]; ok {
-		return label
-	}
-	return fmt.Sprintf("UNKNOWN(%d)", sev)
-}
-
-func (d *Datasource) queryEvents(ctx context.Context, _ backend.PluginContext, qm queryModel, eventSQL string) backend.DataResponse {
-	rows, err := d.db.QueryContext(ctx, eventSQL)
-	if err != nil {
-		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("events query execution failed: %v", err.Error()))
-	}
-	defer func() { _ = rows.Close() }()
-
-	frame := data.NewFrame("Events")
-	frame.Fields = append(frame.Fields,
-		data.NewField(qm.TimeField, nil, []time.Time{}),
-		data.NewField("component", nil, []string{}),
-		data.NewField("name", nil, []string{}),
-		data.NewField("severity", nil, []string{}),
-		data.NewField("message", nil, []string{}),
-		data.NewField("source", nil, []string{}),
-		data.NewField("args", nil, []string{}),
-	)
-
-	for rows.Next() {
-		var t time.Time
-		var component, name string
-		var severity int64
-		var message, source, args string
-
-		if err := rows.Scan(&t, &component, &name, &severity, &message, &source, &args); err != nil {
-			return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("events row scan failure: %v", err.Error()))
-		}
-
-		frame.AppendRow(t, component, name, severityLabel(severity), message, source, args)
-	}
-	if err := rows.Err(); err != nil {
-		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("events row iteration error: %v", err.Error()))
-	}
-
-	var response backend.DataResponse
-	response.Frames = append(response.Frames, frame)
-	return response
 }
 
 func (d *Datasource) queryTelemetry(ctx context.Context, _ backend.PluginContext, qm queryModel, telemetrySQL string) backend.DataResponse {
@@ -396,10 +338,10 @@ var nullFloat32Converter = sqlutil.Converter{
 	FrameConverter: sqlutil.NullDecimalConverter.FrameConverter,
 }
 
-func (d *Datasource) queryRaw(ctx context.Context, _ backend.PluginContext, eventSQL string) backend.DataResponse {
-	rows, err := d.db.QueryContext(ctx, eventSQL)
+func (d *Datasource) queryRaw(ctx context.Context, _ backend.PluginContext, rawSQL string) backend.DataResponse {
+	rows, err := d.db.QueryContext(ctx, rawSQL)
 	if err != nil {
-		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("events query execution failed: %v", err.Error()))
+		return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("raw query execution failed: %v", err.Error()))
 	}
 	defer func() { _ = rows.Close() }()
 
