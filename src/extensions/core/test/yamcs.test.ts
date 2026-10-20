@@ -5,7 +5,7 @@ const mockSettings: Record<string, unknown> = {};
 // Files a test has written to workspace storage, by path
 const mockFiles = new Map<string, Uint8Array>();
 // The commands registered so far, by name, so a test can run one
-const mockCommands = new Map<string, () => Promise<void>>();
+const mockCommands = new Map<string, (...args: unknown[]) => unknown>();
 afterEach(() => {
     Object.keys(mockSettings).forEach((key) => delete mockSettings[key]);
     mockFiles.clear();
@@ -82,7 +82,7 @@ jest.mock('vscode', () => {
         SemanticTokensLegend: class { },
         // FswNotebookLanguageProvider and CommandStatuses call the entries below
         commands: {
-            registerCommand: (name: string, run: () => Promise<void>) => {
+            registerCommand: (name: string, run: (...args: unknown[]) => unknown) => {
                 mockCommands.set(name, run);
                 return { dispose: () => { } };
             },
@@ -116,6 +116,7 @@ jest.mock('vscode', () => {
         NotebookEdit: { updateCellMetadata: (index: number, newCellMetadata: object) => ({ index, newCellMetadata }) },
         NotebookCellStatusBarItem: class { constructor(public text: string, public alignment: number) { } },
         NotebookCellStatusBarAlignment: { Left: 1 },
+        QuickPickItemKind: { Separator: -1, Default: 0 },
     };
 });
 
@@ -1146,6 +1147,9 @@ describe('YAMCS commands', () => {
 
     test('sets the target of every F Prime and YAMCS cell in the active notebook', async () => {
         const { api } = await backend();
+        // The stopped instance has no connection, only its dictionary and the F Prime dictionary built from it
+        await api.addDictionary(yamcsDictionary('stopped', [noOpString]));
+        await api.addDictionary({ ...new Dictionary({ name: 'stopped (F Prime)', type: 'fprime' }).toProto(), id: 'yamcs:stopped:fprime' });
         NotebookController.registerCommands(api);
         const cell = (index: number, languageId: string, metadata = {}): Partial<vscode.NotebookCell> =>
             ({ index, metadata, document: { languageId } as vscode.TextDocument });
@@ -1153,18 +1157,48 @@ describe('YAMCS commands', () => {
         const cells = [cell(0, 'fprime', { owner: 'ops', hermes: { fsw: 'yamcs:fprime-project', note: 'x' } }), cell(1, 'python'), cell(2, 'yamcs')];
         const notebook: Partial<vscode.NotebookDocument> = { uri: {} as vscode.Uri, getCells: () => cells as vscode.NotebookCell[] };
         jest.replaceProperty(vscode.window, 'activeNotebookEditor', { notebook } as vscode.NotebookEditor);
-        // The user picks the second connection. The command offers a list of strings, so we mock that signature of showQuickPick.
-        const pick = jest.mocked(vscode.window.showQuickPick as (items: readonly string[]) => Thenable<string | undefined>)
+        // The user picks the second connection
+        const pick = jest.mocked(vscode.window.showQuickPick as (items: readonly vscode.QuickPickItem[]) => Thenable<vscode.QuickPickItem | undefined>)
             .mockImplementation(async (items) => items[1]);
         const applyEdit = jest.spyOn(vscode.workspace, 'applyEdit');
 
         await mockCommands.get('hermes.notebook.setCellTargets')!();
-        expect(pick.mock.calls[0][0]).toEqual(['yamcs:fprime-project', 'yamcs:other-instance']);
+        expect(pick.mock.calls[0][0]).toEqual([
+            { label: 'yamcs:fprime-project' }, { label: 'yamcs:other-instance' }, { label: 'yamcs:stopped', description: 'not connected' },
+        ]);
         expect((applyEdit.mock.calls[0][0] as vscode.WorkspaceEdit & { edits: vscode.NotebookEdit[] }).edits).toEqual([
             { index: 0, newCellMetadata: { owner: 'ops', hermes: { fsw: 'yamcs:other-instance', note: 'x' } } },
             { index: 2, newCellMetadata: { hermes: { fsw: 'yamcs:other-instance' } } },
         ]);
         api.dispose();
+    });
+
+    test('offers each instance that has a dictionary but no connection as a target, and refuses to run a cell on it', async () => {
+        const { api: yamcs, issue } = await backend();
+        const offline = await Offline.activate({} as vscode.ExtensionContext, { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } });
+        const pick = jest.mocked(vscode.window.showQuickPick as (items: Promise<vscode.QuickPickItem[]>) => Thenable<undefined>)
+            .mockResolvedValue(undefined);
+        const cell: Partial<vscode.NotebookCell> = { metadata: { hermes: { fsw: 'yamcs:stopped' } }, document: {} as vscode.TextDocument };
+        const { token } = tokenSource();
+
+        const offered: vscode.QuickPickItem[][] = [];
+        for (const api of [offline, yamcs]) {
+            // A dictionary for the stopped instance, which has no connection in either mode
+            await api.addDictionary(yamcsDictionary('stopped', [noOpString]));
+            const cells = new Cells(api, []);
+            mockCommands.get('hermes.notebook.yamcs.select')!(cell);
+            // The picker lists Automatic, Custom and a separator before the targets
+            offered.push((await pick.mock.lastCall![0]).slice(3).map(({ label, description }) => ({ label, description })));
+            await expect(cells.execute(cell as vscode.NotebookCell, {} as vscode.NotebookCellExecution, token))
+                .rejects.toThrow('No target FSW set on this cell (or connected)');
+            cells.dispose();
+        }
+        expect(offered).toEqual([
+            [{ label: 'yamcs:stopped', description: 'not connected' }],
+            [{ label: 'yamcs:fprime-project' }, { label: 'yamcs:other-instance' }, { label: 'yamcs:stopped', description: 'not connected' }],
+        ]);
+        expect(issue).not.toHaveBeenCalled();
+        yamcs.dispose();
     });
 
     test('parses each cell with the dictionary of the instance it targets', async () => {
