@@ -80,7 +80,8 @@ Parameters directly in a top-level space system, where fprime-yamcs puts the CCS
 header fields, are left out unless `hermes.host.yamcs` sets `includeTopLevel`. Structs and arrays get
 one row per member or element, such as `comQueueDepth[1]`, with member paths spelled the way
 yamcs-recorder (`cmd/yamcs-recorder`) stores them. Rows are timed by when YAMCS received each
-value, its acquisition time. YAMCS values have no SCLK, so the SCLK column shows that time in UTC.
+value, its acquisition time, shown in UTC by default. YAMCS values have no SCLK, so their times are
+blank if you pick SCLK.
 
 YAMCS events show up in the events panel with source `yamcs:<instance>`, YAMCS's source in the
 component column and its type in the name column. On connect the panel loads the newest 100 events

@@ -38,7 +38,7 @@ export class TelemetryDatabase implements vscode.Disposable {
 
     // Table state (selected channels for plotting)
     private _tableState: TableState = {
-        timeFormat: TimeFormat.SCLK,
+        timeFormat: TimeFormat.UTC,
         channels: []
     };
 

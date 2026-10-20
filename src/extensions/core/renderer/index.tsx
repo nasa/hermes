@@ -4,24 +4,8 @@ import type { ActivationFunction, RendererContext } from 'vscode-notebook-render
 import { h, render } from 'preact';
 import { useMemo, useState, useEffect } from "preact/hooks";
 
+import { formatTime } from '../common/timeFormat';
 import './style.css';
-
-const localTimeOffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
-
-function formatTime(
-    evr: DisplayEvent,
-    format: TimeFormat
-) {
-    switch (format) {
-        case TimeFormat.UTC:
-            return new Date(evr.time).toISOString();
-        case TimeFormat.LOCAL:
-            return new Date(evr.time - localTimeOffset).toISOString().slice(0, -1);
-        case TimeFormat.SCLK:
-        default:
-            return (evr.sclk ?? (evr.time / 1000)).toFixed(4);
-    }
-}
 
 function EvrRow({
     index, evr, timeFormat
@@ -61,7 +45,7 @@ function EvrRow({
     }
 }
 
-let __timeFormat: TimeFormat = TimeFormat.SCLK;
+let __timeFormat: TimeFormat = TimeFormat.UTC;
 
 function Evrs({ evrs, context }: {
     evrs: DisplayEvent[];
