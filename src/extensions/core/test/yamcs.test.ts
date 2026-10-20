@@ -782,6 +782,19 @@ test('Offline mode keeps a YAMCS dictionary with its id and commands, and removi
     expect(mockFiles.size).toBe(0);
 });
 
+test('Offline mode deletes the file of a removed dictionary only if it saved one', async () => {
+    const offline = await Offline.activate({ storageUri: { path: '/storage' } } as vscode.ExtensionContext, { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } });
+    // Offline mode saves a dictionary added without an id. It keeps the F Prime dictionary built from a YAMCS
+    // dictionary in memory only.
+    const saved = await offline.addDictionary({ head: { name: 'saved', type: 'fprime' } });
+    await offline.addDictionary({ id: 'yamcs:fprime-project:fprime', head: { name: 'fprime-project (F Prime)', type: 'fprime' } });
+    expect(mockFiles.size).toBe(1);
+
+    await offline.removeDictionary(saved);
+    await offline.removeDictionary('yamcs:fprime-project:fprime');
+    expect(mockFiles.size).toBe(0);
+});
+
 test('YAMCS mode connects with its dictionary and warns when it cannot save the dictionary', async () => {
     jest.spyOn(YamcsClient.prototype, 'waitForReady').mockResolvedValue(undefined);
     jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
