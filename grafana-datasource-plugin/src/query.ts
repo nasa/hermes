@@ -165,7 +165,7 @@ export function buildTransformCase(q: ResolvedQuery, column: string): string {
         const conditions = [`p.space_system = ${esc(t.spaceSystem)}`, `p.name = ${esc(t.parameter)}`];
         // A scalar's member path is '', so only undefined means the whole parameter.
         if (t.member !== undefined) {
-            conditions.push(`v.member_path = ${esc(t.member)}`);
+            conditions.push(`p.member_path = ${esc(t.member)}`);
         }
         return `WHEN ${conditions.join(' AND ')} THEN ${bindValueToken(expr, column)}`;
     });
@@ -219,7 +219,7 @@ export function buildTelemetryQuery(q: ResolvedQuery, from?: string, to?: string
             (m) => m.spaceSystem === param.spaceSystem && m.parameter === param.name
         );
         if (members.length) {
-            return `(p.space_system = ${esc(param.spaceSystem)} AND p.name = ${esc(param.name)} AND v.member_path = ANY(${escArr(members.map(m => m.member))}))`;
+            return `(p.space_system = ${esc(param.spaceSystem)} AND p.name = ${esc(param.name)} AND p.member_path = ANY(${escArr(members.map(m => m.member))}))`;
         }
         return `(p.space_system = ${esc(param.spaceSystem)} AND p.name = ${esc(param.name)})`;
     });
@@ -238,7 +238,7 @@ export function buildTelemetryQuery(q: ResolvedQuery, from?: string, to?: string
 
     // Apply transforms to numeric columns ONLY. The recorder stores UINT64 as
     // its raw 64 bits, so we add 2^64 back when int_value comes out negative.
-    const intCol = buildTransformCase(q, "(CASE WHEN v.value_type = 'UINT64' AND v.int_value < 0 THEN v.int_value + 18446744073709551616 ELSE v.int_value END)::double precision");
+    const intCol = buildTransformCase(q, "(CASE WHEN p.value_type = 'UINT64' AND v.int_value < 0 THEN v.int_value + 18446744073709551616 ELSE v.int_value END)::double precision");
     const floatCol = buildTransformCase(q, "v.float_value");
     const boolCol = "v.bool_value::int::double precision";
     const strCol = "v.string_value";
@@ -255,7 +255,9 @@ export function buildTelemetryQuery(q: ResolvedQuery, from?: string, to?: string
     const call = (fn: string) => (col: string) => `${fn}(${col})`;
     const ordered = (fn: string) => (col: string) => `${fn}(${col}, v.${q.timeField})`;
 
-    let groupByExpr = `GROUP BY time_bucket, p.space_system, p.name, p.instance, v.value_type, v.member_path`;
+    // Postgres lets us select p's other columns without grouping by them,
+    // because p.id is its primary key.
+    let groupByExpr = `GROUP BY time_bucket, p.id`;
     let aggInt: string, aggFloat: string, aggBool: string, aggStr: string, aggBytes: string;
     switch (q.aggregation) {
         case "raw":
@@ -290,8 +292,8 @@ export function buildTelemetryQuery(q: ResolvedQuery, from?: string, to?: string
 	p.space_system,
 	p.name,
 	p.instance,
-	v.value_type,
-	v.member_path,
+	p.value_type,
+	p.member_path,
 	%s AS val_int,
 	%s AS val_float,
 	%s AS val_bool,

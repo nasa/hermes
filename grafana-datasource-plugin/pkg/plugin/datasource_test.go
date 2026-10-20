@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"github.com/grafana/grafana-plugin-sdk-go/data/sqlutil"
 	"github.com/nasa/hermes-datasource/pkg/models"
 )
@@ -690,6 +692,40 @@ func TestBuildResponseOneFramePerMember(t *testing.T) {
 	}
 }
 
+func TestBuildResponseOneFramePerValueType(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("sqlmock: %v", err)
+	}
+	defer func() { _ = db.Close() }()
+
+	now := time.Now().Truncate(time.Second)
+	// /c/ch changed from UINT32 to FLOAT and then to STRING, which avg can't use.
+	rows := sqlmock.NewRows([]string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}).
+		AddRow(now, "/c", "ch", "src", "UINT32", "", 7.0, nil, nil, nil, nil).
+		AddRow(now, "/c", "ch", "src", "FLOAT", "", nil, 7.5, nil, nil, nil).
+		AddRow(now, "/c", "ch", "src", "STRING", "", nil, nil, nil, nil, nil).
+		AddRow(now, "/c", "other", "src", "DOUBLE", "", nil, 1.0, nil, nil, nil)
+
+	mock.ExpectQuery("SELECT").WillReturnRows(rows)
+	resultRows, _ := db.Query("SELECT")
+	resp := buildResponse(queryModel{TimeField: "generation_time", Aggregation: "avg"}, resultRows)
+
+	type frame struct{ name, valueType string }
+	var got []frame
+	for _, f := range resp.Frames {
+		got = append(got, frame{f.Name, f.Fields[1].Labels["value_type"]})
+	}
+	want := []frame{{"/c/ch FLOAT", "FLOAT"}, {"/c/ch UINT32", "UINT32"}, {"/c/other", "DOUBLE"}}
+	if !slices.Equal(got, want) {
+		t.Fatalf("got frames %v, want %v", got, want)
+	}
+	meta := resp.Frames[0].Meta
+	if meta == nil || len(meta.Notices) != 1 || meta.Notices[0].Severity != data.NoticeSeverityWarning || !strings.Contains(meta.Notices[0].Text, "STRING") {
+		t.Errorf("expected one warning about the STRING values, got %+v", meta)
+	}
+}
+
 func TestBuildResponseNamesSingleMemberAndInstances(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -897,7 +933,7 @@ func TestResourceHandlerMembers(t *testing.T) {
 
 	ds := &Datasource{db: db}
 
-	mock.ExpectQuery(`(?s)SELECT DISTINCT p.space_system, p.name, m.member_path.*FROM parameter_values v`).
+	mock.ExpectQuery(`(?s)SELECT DISTINCT p.space_system, p.name, p.member_path.*JOIN parameters p`).
 		WithArgs(`[{"spaceSystem":"/CDH","name":"Attitude"},{"spaceSystem":"/Sensors","name":"Attitude"}]`).
 		WillReturnRows(sqlmock.NewRows([]string{"space_system", "name", "member_path"}).
 			AddRow("/CDH", "Attitude", ".x").

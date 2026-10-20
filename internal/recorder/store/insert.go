@@ -20,8 +20,12 @@ type Row struct {
 	Value           Value
 }
 
+func (r Row) definition() Definition {
+	return Definition{Parameter: r.Parameter, MemberPath: r.MemberPath, Type: r.Value.Type}
+}
+
 var copyColumns = []string{
-	"parameter_id", "member_path", "generation_time", "acquisition_time", "value_type",
+	"parameter_id", "generation_time", "acquisition_time",
 	"int_value", "float_value", "bool_value", "string_value", "binary_value",
 }
 
@@ -39,13 +43,13 @@ func Insert(ctx context.Context, db *sql.DB, ids *Resolver, rows []Row) error {
 	// another recorder inserting the same row would hold its own lock on
 	// parameters while it waited for our commit. Our COPY would then wait for it
 	// and it for us, and Postgres would abort one of the two transactions.
-	paramIDs := make(map[Parameter]int32)
+	paramIDs := make(map[Definition]int32)
 	for _, r := range rows {
-		id, err := ids.ID(ctx, db, r.Parameter)
+		id, err := ids.ID(ctx, db, r.definition())
 		if err != nil {
 			return err
 		}
-		paramIDs[r.Parameter] = id
+		paramIDs[r.definition()] = id
 	}
 
 	tx, err := db.BeginTx(ctx, nil)
@@ -68,7 +72,7 @@ func Insert(ctx context.Context, db *sql.DB, ids *Resolver, rows []Row) error {
 			binary = v.Binary
 		}
 		if _, err := stmt.ExecContext(ctx,
-			paramIDs[r.Parameter], r.MemberPath, r.GenerationTime, r.AcquisitionTime, string(v.Type),
+			paramIDs[r.definition()], r.GenerationTime, r.AcquisitionTime,
 			v.Int, v.Float, v.Bool, v.String, binary,
 		); err != nil {
 			return fmt.Errorf("failed to copy parameter value: %w", err)

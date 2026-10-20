@@ -90,7 +90,7 @@ func TestMigrateFreshThenNoOp(t *testing.T) {
 	assert.Equal(t, 1, hypertables)
 
 	for _, name := range []string{
-		"parameters", "parameter_values_param_member_generation_idx", "parameter_values_param_acquisition_idx",
+		"parameters", "parameter_values_param_generation_idx", "parameter_values_param_acquisition_idx",
 	} {
 		var exists bool
 		require.NoError(t, db.QueryRowContext(ctx, `SELECT to_regclass($1) IS NOT NULL`, name).Scan(&exists))

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// ValueType is a YAMCS Value.Type name, stored in parameter_values.value_type.
+// ValueType is a YAMCS Value.Type name, stored in parameters.value_type.
 type ValueType string
 
 const (
