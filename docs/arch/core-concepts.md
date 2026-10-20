@@ -208,10 +208,10 @@ logging but with spacecraft-specific context.
 | Level         | Description                                                                                                                                                   |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | DIAGNOSTIC    | A debug or development log/event has occurred. Typically these are not streamed to the ground in realtime. These are transmitted during high rate data passes |
-| ACTIVITY_LOW  | A minor system or component event has occurred.                                                                                                               |
-| ACTIVITY_HIGH | A major system or component event has occurred.                                                                                                               |
-| WARNING_LOW   | A recoverable system fault or error has occurred.                                                                                                             |
-| WARNING_HIGH  | A major system fault or error has occurred. Typically this halts the system in some way though it is up to the flight software to choose what to do here.     |
+| ACTIVITY_LO   | A minor system or component event has occurred.                                                                                                               |
+| ACTIVITY_HI   | A major system or component event has occurred.                                                                                                               |
+| WARNING_LO    | A recoverable system fault or error has occurred.                                                                                                             |
+| WARNING_HI    | A major system fault or error has occurred. Typically this halts the system in some way though it is up to the flight software to choose what to do here.     |
 | COMMAND       | A command has been dispatch or has finished.                                                                                                                  |
 | FATAL         | An unrecoverable issue has been detected. The flight software typically reboots into a "Safe" mode.                                                           |
 
@@ -260,29 +260,18 @@ Namespaces provide hierarchical organization of dictionary definitions, making i
 manage large flight software systems with many components. Dictionary queries can target specific
 namespaces to retrieve only relevant definitions for a particular subsystem.
 
-## Files
+## YAMCS terms
 
-File transfers track both uplink (ground → spacecraft) and downlink (spacecraft → ground) operations.
-These records capture transfer sessions for audit, debugging incomplete transfers, and data provenance.
+Hermes reaches the flight software through [YAMCS](https://yamcs.org), a mission control server. These YAMCS terms
+come up in the VS Code pages.
 
-**Key Attributes:**
-
-| Attribute        | Type            | Description                                                 |
-| ---------------- | --------------- | ----------------------------------------------------------- |
-| Transfer ID      | UUID            | Unique identifier for this transfer session                 |
-| Direction        | enum            | UPLINK or DOWNLINK                                          |
-| Source Path      | string          | File path on the originating system                         |
-| Destination Path | string          | File path on the receiving system                           |
-| FSW Connection   | string          | Which FSW connection handled the transfer                   |
-| Start Time       | timestamp       | When the transfer began (ground time)                       |
-| End Time         | timestamp       | When the transfer completed or failed                       |
-| Size             | integer         | Total file size in bytes                                    |
-| Status           | enum            | COMPLETED, PARTIAL, CRC_FAILED, or UNKNOWN (downlinks only) |
-| Error Message    | string          | Non-empty if transfer failed                                |
-| Missing Chunks   | byte ranges     | For partial downlinks, which data is missing                |
-| Metadata         | key-value pairs | Additional transfer context                                 |
-
-File transfer records are relatively low volume compared to telemetry and events, but are important for operational tracking and ensuring data products are received completely.
+| Term | Meaning |
+| ---- | ------- |
+| Instance | A self-contained part of a YAMCS server, with its own commands, telemetry and archive. A server can run several, such as one per vehicle. Hermes calls each instance's connection `yamcs:<instance>`. |
+| Processor | The part of an instance that handles live telemetry and commands. Hermes uses the one called `realtime` unless the `hermes.host.yamcs` setting names another. |
+| Qualified name | A command's or parameter's full path in YAMCS, such as `/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP` |
+| Verifier | A check YAMCS runs on returning telemetry to decide whether a command worked. The mission database, which defines an instance's commands, gives each command its verifiers. |
+| Parameter | A telemetry value, such as an F Prime channel. These are not the [Parameters](#parameters) above, which configure the flight software. |
 
 ## Time
 
@@ -351,7 +340,7 @@ which is the nominal time base during the operation of the mission.
 
 ### Non-Linear Time
 
-Most of the concepts of time handling in Hermes are derived from JPL NAIF
+Most of these concepts of time come from JPL NAIF
 [SPICE](https://naif.jpl.nasa.gov). SPICE concepts have been used at JPL to
 manage deep space missions for many decades dating back to the Apollo era.
 
@@ -369,12 +358,9 @@ manage deep space missions for many decades dating back to the Apollo era.
     that it exists; it may be a cause of discrepancies between results produced
     by different sets of software. 
 
-Hermes provides an implementation of SPICE SCLK that is bit-compatible with CSPICE
-and supports loading SCLK time kernels. To understand more about SCLK and SPICE
-time kernels see the NAIF [required reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/sclk.html).
+To understand more about SCLK and SPICE time kernels see the NAIF [required reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/sclk.html).
 
 ### Earth Return Time
 
 Earth return time (ERT) simply means the time (usually in UTC) at which a given piece
-of data reaches the ground system. All Hermes timestamped telemetry will include SCLK
-and ERT and both will be used to analyze the state of the spacecraft.
+of data reaches the ground system.
