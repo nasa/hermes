@@ -25,6 +25,21 @@ export type { ParameterValue__Output as YamcsParameterValue } from './proto/yamc
 export type { Value__Output as YamcsValue } from './proto/yamcs/yamcs/protobuf/Value';
 export type { Timestamp__Output as YamcsTimestamp } from './proto/yamcs/google/protobuf/Timestamp';
 export type { Event__Output as YamcsEvent } from './proto/yamcs/yamcs/protobuf/events/Event';
+
+/**
+ * The component and event name to show for a YAMCS event
+ */
+export function componentAndName(e: Event__Output): { component: string; name: string } {
+    // fprime-yamcs puts an F Prime event's full name, like CdhCore.cmdDisp.OpCodeDispatched,
+    // in its extra fields. We split it into the component and the event name.
+    const full = e.extra?.fprime_event_name;
+    const dot = full?.lastIndexOf('.') ?? -1;
+    if (full && dot > 0) {
+        return { component: full.slice(0, dot), name: full.slice(dot + 1) };
+    }
+    // Other events keep YAMCS's source and type
+    return { component: e.source ?? '', name: e.type ?? '' };
+}
 export type { CommandInfo__Output as YamcsCommandInfo } from './proto/yamcs/yamcs/protobuf/mdb/CommandInfo';
 export type { ArgumentTypeInfo__Output as YamcsArgumentTypeInfo } from './proto/yamcs/yamcs/protobuf/mdb/ArgumentTypeInfo';
 export type { Value as YamcsArgumentValue } from './proto/yamcs/google/protobuf/Value';
