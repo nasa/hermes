@@ -41,10 +41,6 @@ out/yamcs-recorder: out FORCE
 out/downlink-pb-to-json: out FORCE
 	go build ${GO_FLAGS} -o out/downlink-pb-to-json github.com/nasa/hermes/cmd/downlink-pb-to-json
 
-out/hermes-fprime-dictionary: out FORCE
-	cargo build --release --bin hermes-fprime-dictionary
-	cp target/release/hermes-fprime-dictionary out/
-
 vscode: out FORCE
 	yarn build
 
