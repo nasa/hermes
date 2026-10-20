@@ -102,8 +102,9 @@ editor refuses a string that is too long.
 
 Each instance gets a connection called `yamcs:<instance>`. A YAMCS cell runs on the connection picked
 in its status bar, on the processor from `hermes.host.yamcs`, one command at a time. A cell left on
-Automatic refuses to run while several instances are connected. A cell sends the qualified names from
-its language's dictionary, so an instance whose commands have other names refuses them.
+Automatic refuses to run while several instances are connected. To give every cell in a notebook the
+same target, click **Set Target for All Cells** in the notebook's toolbar. A cell sends the qualified
+names from its language's dictionary, so an instance whose commands have other names refuses them.
 
 YAMCS's mission database, which defines an instance's commands, can give a command
 verifiers. These are checks YAMCS runs on the telemetry that comes back, to decide whether the command

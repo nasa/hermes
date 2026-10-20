@@ -98,7 +98,7 @@ export class VscodeHermes implements CoreApi {
             vscode.commands.registerCommand('hermes.applyWorkspaceEdit', vscode.workspace.applyEdit),
 
             // Hermes Notebook support
-            ...NotebookController.registerCommands(),
+            ...NotebookController.registerCommands(this.api),
             vscode.workspace.registerNotebookSerializer('hermes.notebook', new HermesNotebookSerializer()),
             vscode.window.registerCustomEditorProvider('hermes.evr', new EventViewer(this.extensionPath, 'hermes.evr'), {
                 webviewOptions: {
