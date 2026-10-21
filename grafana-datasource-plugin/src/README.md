@@ -4,7 +4,7 @@
 [![Signature](https://img.shields.io/badge/dynamic/json?logo=grafana&query=$.versionSignatureType&url=https://grafana.com/api/plugins/nasa-hermes-datasource&label=Signature&color=brightgreen)](https://grafana.com/grafana/plugins/nasa-hermes-datasource) -->
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue)
 
-# Hermes Datasource
+# Hermes datasource
 
 The Hermes datasource charts the telemetry that
 [yamcs-recorder](https://github.com/nasa/hermes/tree/v6/cmd/yamcs-recorder) records from [YAMCS](https://yamcs.org), a
@@ -23,14 +23,14 @@ query them with Grafana's Loki datasource
 - Grafana 12.3.0 or newer.
 - TimescaleDB with the `parameters` and `parameter_values` tables, which yamcs-recorder creates on start.
 
-## Getting Started
+## Getting started
 
 ### 1. Install the plugin
 
 Hermes releases so far ship an older version of this plugin that reads different tables. Until a release ships this
 one, build it from source:
 
-```bash
+```sh
 git clone https://github.com/nasa/hermes.git
 cd hermes/grafana-datasource-plugin
 npm install && npm run build   # frontend, needs Node.js 22 or newer
@@ -48,33 +48,36 @@ Then:
 
 ### 2. Configure the datasource
 
-Go to Connections > Data sources > Add new data source, search for Hermes, and fill in every field:
+Go to **Connections** > **Data sources** > **Add new data source**, search for Hermes, and fill in every field:
 
-| Field    | Value                                                                                                                                                              |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Host     | `host:port`, for example `localhost:5432`, or `timescaledb:5432` inside Hermes's [`docker-compose.yml`](https://github.com/nasa/hermes/blob/v6/docker-compose.yml) |
-| User     | The database user                                                                                                                                                  |
-| Password | That user's password                                                                                                                                               |
-| Database | The one yamcs-recorder writes to, for example `hermes`                                                                                                             |
+| Field    | Value                            | With Hermes's [`docker-compose.yml`](https://github.com/nasa/hermes/blob/v6/docker-compose.yml) |
+| -------- | -------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Host     | TimescaleDB's `host:port`        | `localhost:5432`, or `timescaledb:5432` from a Grafana in the same compose project              |
+| User     | The database user                | `postgres`                                                                                      |
+| Password | That user's password             | `password`                                                                                      |
+| Database | The one yamcs-recorder writes to | `hermes`                                                                                        |
 
-Click Save & Test to check the connection.
+Click **Save & Test** to check the connection.
 
 ### 3. Query data
 
-Create a panel and pick your Hermes datasource. The Builder / Code toggle at the top of the query editor switches
-modes.
+Create a panel and pick your Hermes datasource. The **Builder** / **Code** toggle at the top of the query editor
+switches modes.
 
-#### Builder
+#### Builder mode
 
-| Field                              | What it does                                                                                                                                                                                                                                                                                                                                    |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Parameter                          | Required. YAMCS parameters, shown as `/space_system/name`, or a dashboard variable. Each parameter, member and instance gets its own series, and so does each value type if a new dictionary changed it.                                                                                                                                                                                                    |
-| Aggregation                        | Reduces each time bucket of the panel's interval to one value, for example `Average` (the default), `Last`, `Sum` or `Count`. `Raw (none)` returns every sample and `Latest Value` only the newest. `Average` and `Sum` don't work on string or enum parameters. On a boolean, `Average` is the fraction of true samples and `Sum` counts them. |
-| Instance                           | YAMCS instances to include. Empty means all.                                                                                                                                                                                                                                                                                                    |
-| Members (one box per parameter)    | Shown for a parameter with several struct members or array elements, for example `.x` or `[0]`. Starts with all selected; remove the ones you don't need. Clearing it removes the parameter from the query.                                                                                                                                     |
-| Generation Time / Acquisition Time | Which time to plot: when the value was produced (the default) or when YAMCS received it.                                                                                                                                                                                                                                                        |
-| Value Transform                    | Collapsible. Rescales values or renames series, per parameter or per member. See below.                                                                                                                                                                                                                                                         |
-| From / To Override                 | Under Advanced. Pins the query to an absolute time range instead of the dashboard's.                                                                                                                                                                                                                                                            |
+| Field                              | What it does                                                                                                                                                                                                |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter                          | Required. YAMCS parameters, shown by their path, such as `/Ref_Ref/CdhCore/version/FrameworkVersion`, or a dashboard variable. Each parameter, member, instance and value type gets its own series.         |
+| Aggregation                        | Reduces each time bucket of the panel's interval to one value. `Average` is the default. `Raw (none)` returns every sample and `Latest Value` only the newest.                                              |
+| Instance                           | YAMCS instances to include. Empty means all.                                                                                                                                                                |
+| Members (one box per parameter)    | Shown for a parameter with several struct members or array elements, for example `.x` or `[0]`. Starts with all selected; remove the ones you don't need. Clearing it removes the parameter from the query. |
+| Generation Time / Acquisition Time | Which time to plot: when the value was produced (the default) or when YAMCS received it.                                                                                                                    |
+| Value Transform                    | Collapsible. Rescales values or renames series, per parameter or per member. See below.                                                                                                                     |
+| From / To Override                 | Under Advanced. Pins the query to an absolute time range instead of the dashboard's.                                                                                                                        |
+
+`Average` and `Sum` don't work on string or enum parameters. On a boolean, `Average` is the fraction of true samples and
+`Sum` counts them.
 
 #### Value Transform
 
@@ -98,17 +101,20 @@ Switching to Code fills a SQL editor with the builder's query. Dashboard variabl
 before it runs; use `${instance:sqlstring}` to have them quoted, for example `WHERE p.instance IN (${instance:sqlstring})`.
 These macros are expanded on the server:
 
-| Macro                   | Expands to                                                          |
-| ----------------------- | ------------------------------------------------------------------- |
-| `$__timeFilter(column)` | `column >= '<from>' AND column <= '<to>'` for the dashboard range   |
-| `$__timeFrom(column)`   | `column >= '<from>'`                                                |
-| `$__timeTo(column)`     | `column <= '<to>'`                                                  |
-| `$__interval`           | The panel interval as a Postgres interval, for use in `time_bucket` |
-| `$__interval_ms`        | The panel interval in milliseconds                                  |
+| Macro                   | Expands to                                                            |
+| ----------------------- | --------------------------------------------------------------------- |
+| `$__timeFilter(column)` | `column >= '<from>' AND column <= '<to>'` for the dashboard range     |
+| `$__timeFrom(column)`   | `column >= '<from>'`                                                  |
+| `$__timeTo(column)`     | `column <= '<to>'`                                                    |
+| `$__interval`           | The panel interval as a PostgreSQL interval, for use in `time_bucket` |
+| `$__interval_ms`        | The panel interval in milliseconds                                    |
 
-SQL that returns the builder's columns is drawn as one series per parameter, member and instance. Any other result
-comes back as a table. A query saved in Code mode reopens in Code mode. Switching back to Builder drops your edits,
-after offering to copy them.
+SQL whose columns are the builder's, in the same order, is drawn as one series per parameter, member and instance.
+Those columns are `time_bucket`, `space_system`, `name`, `instance`, `value_type`, `member_path`, `val_int`,
+`val_float`, `val_bool`, `val_str` and `val_bytes`. Any other result comes back as a table.
+
+A query saved in Code mode reopens in Code mode. Switching back to Builder drops your edits, after offering to copy
+them.
 
 ## License
 

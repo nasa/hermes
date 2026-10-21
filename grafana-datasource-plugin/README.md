@@ -15,31 +15,40 @@ plugin's page, is [src/README.md](src/README.md).
 
 ## Develop
 
+Run these from `grafana-datasource-plugin/`, which uses npm rather than the repository's yarn.
+
 ### 1. Build the frontend
 
-```bash
+In its own terminal, since watch mode keeps running and rebuilds on each change:
+
+```sh
 npm install
-npm run dev       # watch mode, leave it running in its own terminal
+npm run dev
 ```
 
 ### 2. Build the backend
 
-```bash
+```sh
 mage -v
 ```
 
 ### 3. Start Grafana and TimescaleDB
 
-```bash
-npm run server
+The Grafana and TimescaleDB in the root `docker-compose.yml` use the same ports, 3000 and 5432, so stop them first if
+they run. Then start this setup in another terminal, where it keeps running:
+
+```sh
+docker compose stop grafana timescaledb   # from the repository root
+npm run server                            # from grafana-datasource-plugin/
 ```
 
-Grafana runs at [http://localhost:3000](http://localhost:3000) with anonymous admin access. It loads the plugin from
-`dist/` and comes with a datasource for the TimescaleDB container (`timescaledb:5432`, database `hermes`). Stop the
-root `docker-compose.yml` stack first, since both use ports 3000 and 5432.
+Grafana runs at [localhost:3000](http://localhost:3000) with anonymous admin access. It loads the plugin from `dist/`
+and comes with a Hermes datasource for this setup's TimescaleDB. That database starts empty, and has the same port,
+user, password and name as the one in the root `docker-compose.yml`, so the
+[yamcs-recorder](../cmd/yamcs-recorder/README.md#run) command fills it unchanged.
 
-The database starts empty. The [yamcs-recorder](../cmd/yamcs-recorder/README.md#run) command fills it, since this
-TimescaleDB has the same port, user, password and database as the root `docker-compose.yml`.
+This Grafana has no Loki datasource. To search events, add one under **Connections** > **Data sources**. On Docker
+Desktop, the URL `http://host.docker.internal:3100` reaches the Loki from the root `docker-compose.yml`.
 
 ## Test and lint
 

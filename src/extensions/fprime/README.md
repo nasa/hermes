@@ -1,8 +1,8 @@
 # Hermes FPrime
 
-Adds F Prime's command language to [Hermes](https://github.com/nasa/hermes/tree/v6), for `fprime` cells in Hermes
-notebooks, `.seq` sequence files and `.fnb` F Prime notebooks. It needs the
-[Hermes extension](https://github.com/nasa/hermes/tree/v6/src/extensions/core).
+Adds F Prime's command language to [Hermes](https://github.com/nasa/hermes/tree/v6), for F Prime cells in Hermes
+notebooks (`.hermes.md`), `.seq` sequence files and F Prime notebooks (`.fnb`), which save as sequence text instead of
+Markdown. It needs the [Hermes extension](https://github.com/nasa/hermes/tree/v6/src/extensions/core).
 
 ## Features
 
@@ -18,9 +18,11 @@ When [fprime-yamcs](https://github.com/fprime-community/fprime-yamcs) runs a YAM
 commands to it through [YAMCS mode](https://github.com/nasa/hermes/tree/v6/src/extensions/core#yamcs-mode). Hermes
 builds a dictionary called `<instance> (F Prime)` for each such instance.
 
-A cell uses the dictionary of its target, the instance picked in its status bar. A cell on Automatic uses the
-dictionary selected under `{ }`, which Hermes sets to the first instance's. If you select one from `build-artifacts`
-there instead, the cell fails with "has no YAMCS qualified name".
+A cell uses the dictionary of its target, the instance picked in its status bar. A cell on **Automatic**, the default,
+uses the dictionary selected under `{ }`, which Hermes sets to the first instance's. If you select one from
+`build-artifacts` there instead, the cell fails with "has no YAMCS qualified name".
+
+An F Prime cell looks like this:
 
 ```
 R00:00:00 CdhCore.cmdDisp.CMD_NO_OP
@@ -30,7 +32,7 @@ R00:00:05 CdhCore.cmdDisp.CMD_NO_OP_STRING "hello"   ; waits 5 s after the first
 | Part of a line | Example | Meaning |
 | --- | --- | --- |
 | Time tag, required on every line | `R00:00:05` | A relative tag: wait this long after the previous command passes (or the cell starts), then send. The line counts down while it waits, for example `◷ sends in 3.2 s`. |
-| Command | `CdhCore.cmdDisp.CMD_NO_OP_STRING` | The F Prime name: the command's YAMCS path without the deployment, joined with dots. In YAMCS, this example is `/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING`. |
+| Command | `CdhCore.cmdDisp.CMD_NO_OP_STRING` | The F Prime name: the command's YAMCS path, here `/Ref_Ref/CdhCore/cmdDisp/CMD_NO_OP_STRING`, without its top-level part (`/Ref_Ref`) and joined with dots |
 | Arguments | `"hello"` | Separated by spaces or commas |
 | Comment | `; waits 5 s` | Everything after `;` |
 

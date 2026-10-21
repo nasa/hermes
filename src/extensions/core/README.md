@@ -16,6 +16,8 @@ Hermes shows live telemetry and events in VS Code and sends commands from notebo
 
 ## Companion extensions
 
+Command cells come from these extensions, so install at least one of them to send commands:
+
 | Extension | Adds |
 | --- | --- |
 | [Hermes YAMCS](https://github.com/nasa/hermes/tree/v6/src/extensions/yamcs) | YAMCS command cells, which name each command by its full YAMCS path |
@@ -37,12 +39,13 @@ but YAMCS mode isn't released there yet. Until it is, run the extensions from th
 ## Notebooks
 
 1. Create a file whose name ends in `.hermes.md`. It opens as a Hermes notebook.
-2. Add a code cell and set its language to YAMCS (from Hermes YAMCS) or fprime (from Hermes FPrime).
-3. Connect [YAMCS mode](#yamcs-mode) and run the cell.
+2. Add a code cell and set its language to **YAMCS** (from Hermes YAMCS) or **fprime** (from Hermes FPrime).
+3. Connect to YAMCS ([YAMCS mode](#yamcs-mode)) and run the cell.
 
-Each cell sends its commands to its target, shown in the cell's status bar as `yamcs:<instance>`. Click it to pick
-another. A cell on Automatic uses the only instance, and refuses to run while several are connected. "Set Target for
-All Cells" in the notebook toolbar gives every F Prime and YAMCS cell the same target.
+Each cell sends its commands to its target, the [YAMCS instance](#connect) it runs on. The cell's status bar shows
+the target as `yamcs:<instance>`. Click it to pick another. On **Automatic**, the default, a cell uses the only
+connected instance, and refuses to run while several are connected. **Set Target for All Cells** in the notebook
+toolbar gives every F Prime and YAMCS cell the same target.
 
 The [Hermes YAMCS](https://github.com/nasa/hermes/tree/v6/src/extensions/yamcs) and
 [Hermes FPrime](https://github.com/nasa/hermes/tree/v6/src/extensions/fprime) READMEs show what to write in each kind
@@ -52,33 +55,37 @@ of cell.
 
 ### Connect
 
-1. Run "Hermes: Change Backend Mode" from the command palette.
-2. Pick "YAMCS". The other modes in the list don't use YAMCS.
+Hermes starts in Offline mode, with no connection. Cells get completion and argument checks, but don't run. To
+connect:
+
+1. Click **Hermes: Offline** in the status bar, or run **Hermes: Change Backend Mode** from the command palette.
+2. Pick **YAMCS**.
 3. Enter the plugin's address, for example `localhost:8091`.
 
 A YAMCS server can run several instances, each with its own commands, telemetry and archive. Hermes connects to every
-running instance that has the `processor` from [Settings](#settings). The status bar then shows "Hermes: YAMCS" and the
-address. Click the address to connect to another server.
+running instance that has the processor set in [Settings](#settings), `realtime` by default. The status bar then shows
+**Hermes: YAMCS** and the address. Click the address to connect to another server.
 
 If the connection ends, for example because YAMCS stopped, the status bar turns red and the address's tooltip gives
-the reason. Run "Hermes: Reconnect to Backend" to connect again, or to add an instance started after Hermes connected.
+the reason. Run **Hermes: Reconnect to Backend** to connect again, or to add an instance started after Hermes
+connected.
 
 ### Settings
 
-The connect prompt suggests `address`, or the last address you entered in this window.
+Set these as keys of the `hermes.host.yamcs` setting in VS Code's settings:
 
-| Key in `hermes.host.yamcs` | Default | Sets |
+| Key | Default | Sets |
 | --- | --- | --- |
-| `address` | `localhost:8091` | The plugin's `host:port` |
-| `processor` | `realtime` | Which YAMCS processor to subscribe to and send commands through. `realtime` handles live data. |
-| `includeTopLevel` | `false` | Also show parameters directly in a top-level space system, such as `/Ref_Ref/FPrimeTime`, where [fprime-yamcs](https://github.com/fprime-community/fprime-yamcs) puts packet header fields |
+| `address` | `localhost:8091` | The yamcs-grpc plugin's `host:port`, which the connect prompt starts with |
+| `processor` | `realtime` | The YAMCS processor Hermes subscribes to and sends commands through, in every instance. A processor handles an instance's data, and `realtime` handles live data. |
+| `includeTopLevel` | `false` | Also show the parameters directly under a top-level path, such as `/Ref_Ref/FPrimeTime`, which [fprime-yamcs](https://github.com/fprime-community/fprime-yamcs) defines for packet header fields |
 
 ### What you see
 
 | View | In YAMCS mode |
 | --- | --- |
-| Telemetry table and plot | A row for each parameter of each instance, with source `yamcs:<instance>`. Structs and arrays get one row per member or element, for example `comQueueDepth[1]`. Each value is timed by when YAMCS received it. |
-| Events panel | Each instance's newest 100 events in YAMCS's archive, then live ones. An F Prime event shows its component and name, for example `CdhCore.cmdDisp` and `OpCodeDispatched`. Any other event shows YAMCS's source and type. |
+| Telemetry table and plot | A row for each parameter of each instance, timed by when YAMCS received it, with source `yamcs:<instance>`. Structs and arrays get a row per member or element, for example `comQueueDepth[1]`. |
+| Events panel | Each instance's newest 100 events in YAMCS's archive, then live ones. An F Prime event shows its component and name, for example `CdhCore.cmdDisp` and `OpCodeDispatched`, and any other event YAMCS's source and type. |
 | Connections view, in the Hermes sidebar | Each instance's [dictionaries](#dictionaries). Deleting `<instance>` also deletes `<instance> (F Prime)`. |
 | Times | UTC by default, including in cell event lists (`hermes.notebook.evr.timeFormat`). YAMCS values have no spacecraft clock (SCLK) time, so their time is blank when a view is set to SCLK. |
 
@@ -100,13 +107,14 @@ yarn install
 yarn test      # unit tests
 ```
 
-To try a change, open the repository in VS Code and run the `All` launch configuration. It builds the extensions and
-opens a VS Code window with Hermes, Hermes YAMCS and Hermes FPrime loaded.
+To try a change, open the repository in VS Code, pick **All** in the **Run and Debug** view and press F5. It builds
+the extensions and opens a VS Code window with Hermes, Hermes YAMCS and Hermes FPrime loaded.
 
 ### Live tests
 
-These need [fprime-yamcs](https://github.com/fprime-community/fprime-yamcs) running with the yamcs-grpc plugin and an
-F Prime deployment. From the repository root:
+These need [fprime-yamcs](https://github.com/fprime-community/fprime-yamcs) running an F Prime deployment with the
+yamcs-grpc plugin. Start YAMCS first, then boot the deployment: the tests wait for the FrameworkVersion telemetry
+channel, which F Prime sends only at boot. Then, from the repository root:
 
 ```sh
 YAMCS_GRPC_ADDRESS=localhost:8091 yarn jest src/extensions/core/test/yamcs.test.ts
@@ -117,14 +125,12 @@ node src/extensions/core/test/e2e/run.js   # downloads VS Code 1.138.0 on first 
 | Variable | Default | Effect |
 | --- | --- | --- |
 | `YAMCS_GRPC_ADDRESS` | `localhost:8091` (`run.js` only) | The plugin's address. Jest runs the live tests only when it is set. |
-| `YAMCS_INSTANCE` | `fprime-project` | The YAMCS instance the tests check |
+| `YAMCS_INSTANCE` | `fprime-project`, the instance fprime-yamcs creates | The YAMCS instance the tests check |
 | `VSCODE_TEST_CACHE` | `.vscode-test` next to `run.js` | Where `run.js` finds or downloads VS Code |
 | `E2E_HOLD_MS` | `0` | Keeps the `run.js` window open this many milliseconds with the telemetry table showing |
 
-- Boot the F Prime deployment while YAMCS runs. The tests wait for the FrameworkVersion telemetry channel, which
-  F Prime sends only at boot.
-- The jest tests and `run.js` each send `CMD_NO_OP_STRING` to the flight software. The jest tests also raise two events
-  of their own, which stay in the instance's archive.
+The jest tests and `run.js` each send `CMD_NO_OP_STRING` to the flight software. The jest tests also raise two events
+of their own, which stay in the instance's archive.
 
 ## Issues and feedback
 

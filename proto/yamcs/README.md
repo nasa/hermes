@@ -6,7 +6,7 @@ This directory holds `processing.proto`, `events_service.proto`, `commands_servi
 
 ## Who uses them
 
-- The [Hermes VS Code extension](../../src/extensions/core/README.md), through TypeScript bindings.
+- The [Hermes VS Code extensions](../../src/extensions/core/README.md), through TypeScript bindings.
 - [yamcs-recorder](../../cmd/yamcs-recorder/README.md), through Go bindings.
 - grpcurl, as in the [yamcs-grpc plugin's example](../../yamcs-grpc-plugin/README.md#try-it).
 
@@ -16,10 +16,10 @@ these files doesn't change what the server offers.
 ## Update
 
 Copy the same files from the `yamcs/` directory of a newer `yamcs-api` jar, which is a zip archive on
-Maven Central. Then regenerate the bindings from the repo root:
+Maven Central. Then regenerate the bindings from the repository root:
 
-| Command | Generates | Run by `yarn proto` |
+| Command | Generates | Needs |
 | --- | --- | --- |
-| `yarn proto-go-yamcs` | Go code in `internal/yamcspb/` | No, it needs Go and protoc 36.0 exactly |
-| `yarn proto-ts-yamcs` | TypeScript types in `src/modules/rpc/src/proto/yamcs/` | Yes |
-| `yarn proto-json-yamcs` | JSON descriptors in `src/modules/rpc/src/proto/yamcs.json` | Yes |
+| `yarn proto-go-yamcs` | Go code in `internal/yamcspb/` | Go, and protoc 36.0 exactly |
+| `yarn proto-ts-yamcs` | TypeScript types in `src/modules/rpc/src/proto/yamcs/` | `yarn install` |
+| `yarn proto-json-yamcs` | JSON descriptors in `src/modules/rpc/src/proto/yamcs.json` | `yarn install` |
