@@ -10,18 +10,9 @@ import { CoreApi } from '@gov.nasa.jpl.hermes/vscode';
 import { VscodeHermes } from './context';
 import { VscodeApi } from './api';
 import { VSCTransport } from './log';
-import { LocalBackendProvider, LocalTaskProvider } from './api/Local';
-import { RemoteBackendProvider } from './api/Remote';
 import { YamcsBackendProvider } from './api/Yamcs';
 
 export async function activate(context: vscode.ExtensionContext): Promise<CoreApi> {
-    context.subscriptions.push(
-        vscode.tasks.registerTaskProvider(
-            'hermes-local',
-            new LocalTaskProvider(context)
-        )
-    );
-
     const vscodeLogger = new VSCTransport({
         name: "Hermes",
         window: vscode.window,
@@ -74,8 +65,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
         api.onContextRefresh(() => {
             vscodeContext.refresh();
         }),
-        api.registerBackendProvider(new LocalBackendProvider(api)),
-        api.registerBackendProvider(new RemoteBackendProvider(api)),
         api.registerBackendProvider(new YamcsBackendProvider()),
         vscode.commands.registerCommand('hermes.host.set', async <T>(type: string, state: T | null) => {
             try {
@@ -90,13 +79,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<CoreAp
         }),
         vscode.commands.registerCommand('hermes.host.reconnect', () => {
             vscode.commands.executeCommand('hermes.host.set', api.currentProvider.type, api.currentState);
-        }),
-        vscode.commands.registerCommand('hermes.terminal.focusBackend', () => {
-            for (const task of vscode.tasks.taskExecutions) {
-                if (task.task.definition.type === "hermes-local") {
-                    vscode.commands.executeCommand("workbench.action.tasks.showTask", task);
-                }
-            }
         }),
     );
 

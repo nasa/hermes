@@ -8,7 +8,6 @@ import {
 import { FPrimeNotebookSerializer } from './notebook';
 import { FPrimeExtension } from './language';
 import { FprimeNotebookLanguageProvider } from './language/notebook';
-import { FprimeDeploymentProvider } from './task';
 import { FprimeJsonDictionaryProvider, FprimeXmlDictionaryProvider } from './dictionary';
 import { fprimeDictionary, updateFprimeDictionaries } from './yamcs';
 
@@ -67,12 +66,6 @@ export async function activate(context: vscode.ExtensionContext) {
                 }
             }
         }),
-
-        // Register task provider for F Prime deployment auto-discovery
-        vscode.tasks.registerTaskProvider(
-            'hermes-fprime-deployment',
-            new FprimeDeploymentProvider(hermesVSCode.api)
-        ),
 
         vscode.commands.registerCommand(
             "hermes.fprime.uplink.file.cancel",
