@@ -112,8 +112,3 @@ export interface Telemetry {
 
     def: Def.TelemetryRef;
 }
-
-export interface DownlinkedFile {
-    uri: string;
-    fswPath: string;
-}

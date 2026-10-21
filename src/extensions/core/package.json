@@ -28,7 +28,6 @@
         "flight-software"
     ],
     "activationEvents": [
-        "onFileSystem:hermes",
         "onStartupFinished"
     ],
     "main": "./out/extension.js",
