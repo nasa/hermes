@@ -10,18 +10,17 @@ connects Hermes to YAMCS and sends Ref a no-op command, which does nothing but r
 
 !!! abstract "Before you start"
 
-    - Build the yamcs-grpc plugin and set up the Hermes VS Code extensions, as in [Installation](installation.md).
+    - Install the Hermes and Hermes FPrime VS Code extensions, and download the yamcs-grpc plugin, as in
+      [Installation](installation.md).
     - Install F Prime's [system requirements](https://fprime.jpl.nasa.gov/latest/docs/getting-started/installing-fprime/#system-requirements):
       git, a C and C++ compiler, and Python 3.10 or newer with venv and pip. F Prime builds on Linux and macOS. On
-      Windows, run this page's terminal commands in WSL.
+      Windows, run this page's terminal commands in WSL and use VS Code on Windows.
 
 ## Build Ref
 
 In F Prime, each flight software program you build and run is called a deployment. Ref is F Prime's reference
 deployment. It is the only deployment in F Prime's `TestDeploymentsProject` folder, so the commands below build and run
 it.
-
-Run these in a folder outside your Hermes clone:
 
 ```sh title="Get F Prime"
 git clone --branch v4.4.1 https://github.com/nasa/fprime.git
@@ -45,11 +44,11 @@ fprime-util build
 ## Start YAMCS with the plugin
 
 From `fprime/TestDeploymentsProject`, with the virtual environment active, run fprime-yamcs and pass it the plugin's
-jars. Replace `<hermes>` with the path to your Hermes clone. In WSL, a Windows folder such as `C:\Users\me\hermes` is
-`/mnt/c/Users/me/hermes`.
+jars. Replace `<yamcs-grpc>` with the path of the folder that holds the yamcs-grpc plugin's jars. In WSL, a Windows
+folder such as `C:\Users\me\Downloads\yamcs-grpc` is `/mnt/c/Users/me/Downloads/yamcs-grpc`.
 
 ```sh
-fprime-yamcs --yamcs-plugin-jars <hermes>/yamcs-grpc-plugin/out/lib
+fprime-yamcs --yamcs-plugin-jars <yamcs-grpc>
 ```
 
 - fprime-yamcs keeps running in its terminal and prints YAMCS's log. Leave it running while you use Hermes.
@@ -62,8 +61,7 @@ fprime-yamcs --yamcs-plugin-jars <hermes>/yamcs-grpc-plugin/out/lib
 
 ## Connect Hermes
 
-Hermes starts in Offline mode, with no connection to YAMCS. In the VS Code window with Hermes, which is the
-**[Extension Development Host]** window if you run Hermes from the repository:
+Hermes starts in Offline mode, with no connection to YAMCS. To connect it:
 
 1. Click **Hermes: Offline** in the status bar, or run **Hermes: Change Backend Mode** from the command palette.
 2. Pick **YAMCS**.

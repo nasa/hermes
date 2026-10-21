@@ -15,11 +15,6 @@ Hermes lets you command spacecraft flight software and watch its telemetry from 
 in Grafana. It talks to flight software through [YAMCS](https://yamcs.org), an open-source mission control server, and
 has built-in support for [F Prime](https://github.com/nasa/fprime), NASA's flight software framework.
 
-!!! warning "Build Hermes from source"
-
-    The Hermes release on the VS Code Marketplace can't connect to YAMCS yet. These pages describe Hermes built from
-    source, as in [Installation](getting-started/installation.md).
-
 ## What you can do
 
 - Send commands from VS Code notebook cells, with completion, argument checks and a live status for each command.
@@ -55,12 +50,10 @@ flowchart TB
 | yamcs-recorder | Writes telemetry to TimescaleDB, a PostgreSQL database for time series. Sends events to Loki, a log database, through an OpenTelemetry collector, which forwards them. |
 | Grafana | Charts telemetry from TimescaleDB with the Hermes datasource, and searches events in Loki |
 
-The project README lists the [ports](https://github.com/nasa/hermes/tree/v6#ports) each part uses.
-
 ## Get started
 
-1. [Installation](getting-started/installation.md): build the yamcs-grpc plugin and set up the Hermes VS Code
-   extensions.
+1. [Installation](getting-started/installation.md): install the Hermes VS Code extensions and download the
+   yamcs-grpc plugin.
 2. [Quick Start](getting-started/quick-start.md): run F Prime's reference flight software under YAMCS and send it a
    command from VS Code.
 3. [Recording from YAMCS](tlm/recording.md), optional: record telemetry and events, then chart them in
