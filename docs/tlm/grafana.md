@@ -12,22 +12,10 @@ source"), a plugin for one kind of database:
 
 [Recording from YAMCS](recording.md) shows how to start the databases, Grafana and the recorder.
 
-## Build the datasource
-
-No Hermes release has the Hermes datasource yet, so build it from source. Until a release ships it, the Grafana in the
-root `docker-compose.yml` loads this build. From `grafana-datasource-plugin/`:
-
-```sh
-npm install && npm run build   # frontend, needs Node.js 22 or newer
-mage -v                        # backend, needs Go 1.26.5 or newer and Mage
-```
-
-The frontend is the part that runs in your browser, and the backend is the part Grafana runs to query TimescaleDB.
-[Mage](https://magefile.org) is a make-like build tool for Go. Both write to `dist/`.
-
 ## Open Grafana
 
-The `docker compose up -d` in [Start the databases](recording.md#start-the-databases) also starts Grafana. Open
+The `docker compose up -d` in [Start the databases](recording.md#start-the-databases) also starts Grafana, which
+installs the Hermes datasource from the latest Hermes release as it starts. Open
 [localhost:3000](http://localhost:3000) and log in with user `admin` and password `admin`. Both datasources are
 already set up, as `Hermes Datasource` and `Loki`.
 
@@ -35,10 +23,60 @@ already set up, as `Hermes Datasource` and `Loki`.
 
 Your Grafana needs to be version 12.3.0 or newer.
 
-1. Copy `dist/` into it and allow the unsigned plugin, as in
-   [Install the plugin](https://github.com/nasa/hermes/blob/v6/grafana-datasource-plugin/src/README.md#1-install-the-plugin)
-   in the datasource's user guide.
-2. Go to **Connections** > **Data sources**, add a new data source, search for Hermes, and fill in:
+### Install the Hermes datasource
+
+Each Hermes release has the Hermes datasource as `nasa-hermes-datasource.zip`. It isn't in Grafana's plugin catalog and
+Grafana hasn't signed it, so you install it from the release and allow it as an unsigned plugin. Pick the way that
+matches your Grafana.
+
+**Grafana in Docker.** Set these environment variables on the Grafana container, as the `docker-compose.yml` in Hermes
+does. Grafana then downloads the datasource from the latest Hermes release when it starts:
+
+```yaml
+services:
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_INSTALL_PLUGINS: "https://github.com/nasa/hermes/releases/latest/download/nasa-hermes-datasource.zip;nasa-hermes-datasource"
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: nasa-hermes-datasource
+```
+
+To stay on one release instead, point `GF_INSTALL_PLUGINS` at that release's versioned zip. For the release tagged
+`v<version>`:
+
+```yaml
+GF_INSTALL_PLUGINS: "https://github.com/nasa/hermes/releases/download/v<version>/nasa-hermes-datasource-<version>.zip;nasa-hermes-datasource"
+```
+
+**Grafana installed on a machine.**
+
+1. Run the install script, which needs [jq](https://jqlang.github.io/jq/) and unzip. It downloads the datasource from
+   the latest Hermes release into Grafana's plugins folder. On Linux, that folder belongs to the `grafana` user, so
+   run the script with sudo. On a Mac, use `bash` instead of `sudo bash`.
+
+    ```sh
+    curl -fsSL https://raw.githubusercontent.com/nasa/hermes/v6/grafana-datasource-plugin/install.sh | sudo bash
+    ```
+
+    The script finds the plugins folder of Grafana installed from a Linux package or with Homebrew on an Intel Mac.
+    For any other Grafana, give it the folder by replacing `bash` with `bash -s -- <plugins-folder>`. With Homebrew
+    on an Apple silicon Mac, that folder is `/opt/homebrew/var/lib/grafana/plugins`.
+
+2. Open `grafana.ini`. It is `/etc/grafana/grafana.ini` for a Linux package. With Homebrew it is
+   `/opt/homebrew/etc/grafana/grafana.ini`, or `/usr/local/etc/grafana/grafana.ini` on an Intel Mac. In its
+   `[plugins]` section, set this line, and remove the `;` in front of it if there is one:
+
+    ```ini
+    allow_loading_unsigned_plugins = nasa-hermes-datasource
+    ```
+
+3. Restart Grafana, with `sudo systemctl restart grafana-server` on Linux or `brew services restart grafana` on a Mac.
+
+### Add the Hermes datasource
+
+1. Go to **Connections** > **Data sources**, add a new data source and search for Hermes. If Hermes isn't in the list,
+   check that Grafana allows the unsigned plugin.
+2. Fill in:
 
     | Field | Value for the compose TimescaleDB |
     | --- | --- |

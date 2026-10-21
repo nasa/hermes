@@ -15,7 +15,7 @@ flowchart LR
 
 | Part | What it does |
 | --- | --- |
-| yamcs-grpc plugin | A YAMCS plugin that comes with Hermes. The recorder reads from YAMCS through it. |
+| yamcs-grpc plugin | A YAMCS plugin in each Hermes release. The recorder reads from YAMCS through it. |
 | yamcs-recorder | Subscribes to one YAMCS instance, writes its parameter values to TimescaleDB and, with `--otlp`, sends its events to the collector |
 | TimescaleDB | A PostgreSQL database for time series. It stores the parameter values. |
 | OpenTelemetry collector | Passes the recorder's events on to Loki |
@@ -24,5 +24,5 @@ flowchart LR
 
 | Page | What it covers |
 | --- | --- |
-| [Recording from YAMCS](recording.md) | Starting the databases, building yamcs-recorder and having YAMCS run it |
+| [Recording from YAMCS](recording.md) | Starting the databases, downloading yamcs-recorder and having YAMCS run it |
 | [Grafana](grafana.md) | Installing the Hermes datasource, charting telemetry and searching events |
