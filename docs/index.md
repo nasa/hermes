@@ -30,15 +30,26 @@ can chart it later.
 
 ```mermaid
 flowchart TB
-    subgraph yamcs ["YAMCS, for example run by fprime-yamcs"]
-        grpc["yamcs-grpc plugin :8091"]
+    fsw["F Prime flight software"]
+
+    subgraph yamcs ["YAMCS"]
+        grpc["yamcs-grpc plugin"]
     end
-    fsw["F Prime flight software"] <--> yamcs
-    grpc <-->|"telemetry, events, commands"| vsc["Hermes VS Code extensions"]
-    grpc -->|"telemetry, events"| rec["yamcs-recorder"]
-    rec -->|"telemetry"| ts[("TimescaleDB")]
-    rec -->|"events"| otel["OpenTelemetry collector"] --> loki[("Loki")]
-    ts -->|"Hermes datasource"| graf["Grafana"]
+
+    vsc["Hermes for VS Code"]
+    rec["yamcs-recorder"]
+    ts[("TimescaleDB")]
+    otel["OpenTelemetry collector"]
+    loki[("Loki")]
+    graf["Grafana"]
+
+    fsw <--> yamcs
+    grpc <--> vsc
+    grpc --> rec
+    rec -->|"telemetry"| ts
+    rec -->|"events"| otel
+    otel --> loki
+    ts --> graf
     loki --> graf
 ```
 
