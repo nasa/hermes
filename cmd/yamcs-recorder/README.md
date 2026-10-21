@@ -81,8 +81,7 @@ Each event becomes one OpenTelemetry log record.
 
 ## Query events in Grafana
 
-In Grafana, query events with a Loki datasource. To add one to the Hermes datasource's development Grafana, see its
-[README](../../grafana-datasource-plugin/README.md#3-start-grafana-and-timescaledb).
+In Grafana, query events with a Loki datasource. The Grafana in the root `docker-compose.yml` comes with one.
 
 Loki indexes the service name as the `service_name` label and keeps the other fields as structured metadata, with dots
 replaced by underscores. These two queries select the events of one F Prime event type, and the events at level error

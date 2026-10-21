@@ -85,20 +85,22 @@ Each step links to the README with the commands.
 Steps 1 to 3 are enough to command and watch telemetry in VS Code. To record telemetry and events and view them in
 Grafana:
 
-4. Start the databases and Grafana. From the repository root, start Loki and the OpenTelemetry collector:
+4. Build the Hermes datasource once, then start the databases and Grafana from the repository root:
 
    ```sh
-   docker compose up -d loki otel-collector
+   cd grafana-datasource-plugin
+   npm install && npm run build
+   mage -v
+   cd ..
+   docker compose up -d
    ```
 
-   Then start TimescaleDB and Grafana with the Hermes datasource's development setup
-   ([Develop](grafana-datasource-plugin/README.md#develop)). The Grafana in `docker-compose.yml` doesn't start yet,
-   because no Hermes release has this version of the datasource for it to download.
+   Until a Hermes release ships this version of the datasource, the Grafana in `docker-compose.yml` loads your build.
 
 5. Start yamcs-recorder with `--instance` set to your instance ([Run](cmd/yamcs-recorder/README.md#run)).
-6. Open Grafana at [localhost:3000](http://localhost:3000). Chart telemetry with the Hermes datasource
-   ([user guide](grafana-datasource-plugin/src/README.md#3-query-data)) and search events with a Loki datasource
-   ([Query events in Grafana](cmd/yamcs-recorder/README.md#query-events-in-grafana)).
+6. Open Grafana at [localhost:3000](http://localhost:3000) and sign in with user `admin` and password `admin`. Chart
+   telemetry with the Hermes datasource ([user guide](grafana-datasource-plugin/src/README.md#3-query-data)) and search
+   events with a Loki datasource ([Query events in Grafana](cmd/yamcs-recorder/README.md#query-events-in-grafana)).
 
 ### Ports
 
