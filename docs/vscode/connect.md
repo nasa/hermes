@@ -12,7 +12,7 @@ Hermes reaches the flight software through YAMCS, a mission control server. Herm
 
 ## Connect
 
-Hermes connects through the [yamcs-grpc plugin](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin), which
+Hermes connects through the [yamcs-grpc plugin](https://github.com/nasa/hermes/tree/main/yamcs-grpc-plugin), which
 runs inside YAMCS and listens on port 8091. The [Quick Start](../getting-started/quick-start.md) starts YAMCS with it.
 
 1. Click **Hermes: Offline** in the status bar at the bottom of the window, or run **Hermes: Change Backend Mode**
