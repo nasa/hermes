@@ -3,8 +3,6 @@
     "version": "4.0.0",
     "private": true,
     "workspaces": [
-        "src/cli",
-        "src/internal",
         "src/modules/*",
         "src/extensions/*"
     ],
@@ -13,13 +11,12 @@
         "build": "node build build",
         "test": "jest",
         "coverage": "jest --coverage",
-        "typecheck": "yarn typecheck-core-src && yarn typecheck-core-app && yarn typecheck-core-renderer && yarn typecheck-rjsf && yarn typecheck-vscode-browser && yarn typecheck-scripts",
+        "typecheck": "yarn typecheck-core-src && yarn typecheck-core-app && yarn typecheck-core-renderer && yarn typecheck-rjsf && yarn typecheck-vscode-browser",
         "typecheck-core-src": "tsc --noEmit -p src/extensions/core/src/tsconfig.json",
         "typecheck-core-app": "tsc --noEmit -p src/extensions/core/app/tsconfig.json",
         "typecheck-core-renderer": "tsc --noEmit -p src/extensions/core/renderer/tsconfig.json",
         "typecheck-rjsf": "tsc --noEmit -p src/modules/rjsf/tsconfig.json",
         "typecheck-vscode-browser": "tsc --noEmit -p src/modules/vscode/browser/tsconfig.json",
-        "typecheck-scripts": "tsc --noEmit -p src/scripts/tsconfig.json",
         "lint": "NODE_OPTIONS=\"--max-old-space-size=8192\" yarn eslint .",
         "ci:coverage": "jest --coverage --coverageReporters=cobertura",
         "clean": "sh -c 'cd src/extensions/${0} && yarn clean'",
@@ -29,7 +26,6 @@
         "proto-ts-yamcs": "yarn proto-loader-gen-types -I=proto --grpcLib=@grpc/grpc-js --longs=String --enums=String --outDir=src/modules/rpc/src/proto/yamcs yamcs/protobuf/processing/processing.proto yamcs/protobuf/events/events_service.proto yamcs/protobuf/commanding/commands_service.proto yamcs/protobuf/instances/instances_service.proto",
         "proto-json-yamcs": "yarn pbjs -p=proto -t json proto/yamcs/protobuf/processing/processing.proto proto/yamcs/protobuf/events/events_service.proto proto/yamcs/protobuf/commanding/commands_service.proto proto/yamcs/protobuf/instances/instances_service.proto -o src/modules/rpc/src/proto/yamcs.json",
         "proto": "npm run proto-js && npm run proto-ts && npm run proto-ts-yamcs && npm run proto-json-yamcs",
-        "leap-seconds": "curl https://data.iana.org/time-zones/data/leap-seconds.list | tee ./pkg/timeconv/leap-seconds.list | ./src/internal/out/leap-seconds go > ./pkg/timeconv/leap.go",
         "package": "sh -c 'cd src/extensions/${0} && yarn package'",
         "package-all": "yarn package core && yarn package fprime && yarn package yamcs",
         "postinstall": "patch-package"

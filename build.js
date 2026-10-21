@@ -41,24 +41,6 @@ const esbuildProblemMatcherPlugin = {
     }
 };
 
-function executePermissionsPlugins(copyToOut) {
-    return {
-        name: 'chmod +x',
-        setup(build) {
-            build.onEnd(async () => {
-                await fs.chmod(build.initialOptions.outfile, 0o775);
-
-                if (copyToOut) {
-                    await fs.mkdir('out', { recursive: true });
-                    console.log(`[bin] cp ${build.initialOptions.outfile} out/${path.basename(build.initialOptions.outfile)}`);
-                    await fs.copyFile(build.initialOptions.outfile, path.join('out', path.basename(build.initialOptions.outfile)));
-                }
-            });
-
-        },
-    }
-}
-
 function commonOptions() {
     /**
      * @type {esbuild.BuildOptions}
@@ -147,23 +129,6 @@ function browserOptions() {
     };
 }
 
-function cliOptions(copyToOut) {
-    const options = {
-        ...nodeBaseOptions(),
-        plugins: [esbuildProblemMatcherPlugin, executePermissionsPlugins(copyToOut)],
-        banner: {
-            js: '#!/usr/bin/env node'
-        },
-    };
-
-    if (buildTarget === 'watch') {
-        // Enable debugging flags
-        return { ...options, sourcemap: "linked" };
-    } else {
-        return options;
-    }
-}
-
 function extension() {
     /**
      * @type {esbuild.BuildOptions}
@@ -179,17 +144,6 @@ function extension() {
 
 
 const builds = {
-    'src/internal': {
-        'leap-seconds': { ...cliOptions(), outfile: 'out/leap-seconds', entryPoints: ['leap-seconds.ts'] },
-    },
-
-    'src/scripts': {
-        'tcp-relay': { ...cliOptions(true), outfile: 'out/tcp-relay', entryPoints: ['tcp-relay.ts'] },
-        'fprime-xml-dictionary': { ...cliOptions(true), outfile: 'out/fprime-xml-dictionary', entryPoints: ['fprime-xml-dictionary.ts'] },
-        'fprime-json-dictionary': { ...cliOptions(true), outfile: 'out/fprime-json-dictionary', entryPoints: ['fprime-json-dictionary.ts'] },
-        'dictionary-to-protocol': { ...cliOptions(true), outfile: 'out/dictionary-to-protocol', entryPoints: ['dictionary-to-protocol.ts'] },
-    },
-
     'src/extensions/core': {
         'evrs': {
             ...browserOptions(),
