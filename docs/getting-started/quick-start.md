@@ -1,26 +1,47 @@
 ---
-description: Run F Prime flight software under YAMCS and command it from VS Code.
+description: Set up for your F Prime flight-software development workflow.
 icon: fontawesome/solid/play
 ---
 
 # Quick Start
 
-This guide builds Ref, a sample flight software program that comes with F Prime, and runs it under YAMCS. Then it
-connects Hermes to YAMCS and sends Ref a no-op command, which does nothing but report that it ran.
+!!! abstract
 
-!!! abstract "Before you start"
+    This quick start guide is tailored for the [F Prime](https://fprime.jpl.nasa.gov)
+    software framework though much of this guide can be applied to other software frameworks.
 
-    - Install the Hermes and Hermes FPrime VS Code extensions, and download the yamcs-grpc plugin, as in
-      [Installation](installation.md).
-    - Install F Prime's [system requirements](https://fprime.jpl.nasa.gov/latest/docs/getting-started/installing-fprime/#system-requirements):
-      git, a C and C++ compiler, and Python 3.10 or newer with venv and pip. F Prime builds on Linux and macOS. On
-      Windows, run this page's terminal commands in WSL and use VS Code on Windows.
+**Prerequisites**
 
-## Build Ref
+1. [Visual Studio Code](https://code.visualstudio.com/)
+2. [Hermes VSCode Extension](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes)
+3. [Hermes F Prime VSCode Extension](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes-fprime)
+4. The [yamcs-grpc plugin](./installation.md#yamcs-grpc-plugin)
+5. A basic understanding of writing and running [F Prime](https://github.com/nasa/fprime) Flight Software
+6. (Optional) Read through the [core concepts](../arch/core-concepts.md) document to get more context about Hermes.
 
-In F Prime, each flight software program you build and run is called a deployment. Ref is F Prime's reference
-deployment. It is the only deployment in F Prime's `TestDeploymentsProject` folder, so the commands below build and run
-it.
+A detailed guide of the first four steps can be found in the [installation](./installation.md) page.
+
+## Overview
+
+This guide will walk you through:
+
+1. Building and running your F Prime deployment under YAMCS
+2. Connecting Hermes to YAMCS
+3. Sending a command to verify the connection
+
+By the end of this guide, you'll have Hermes connected to your F Prime deployment and ready to send commands and receive telemetry.
+
+## Building Your F Prime Deployment
+
+Before connecting to your flight software, you need to build your F Prime deployment and generate its dictionary. It is recommended to read the F Prime
+[Hello World Tutorial](https://fprime.jpl.nasa.gov/latest/tutorials-hello-world/docs/hello-world/)
+to learn how to develop and iterate on flight software. In the next section we
+will show a quick set of instructions to get started using Ref, the reference deployment that comes with F Prime, as a guide.
+
+### Set up the development environment
+
+First you'll need to clone and perform first time Python Virtual Environment setup
+in the repository.
 
 ```sh title="Get F Prime"
 git clone --branch v4.4.1 https://github.com/nasa/fprime.git
@@ -30,22 +51,22 @@ python3 -m venv fprime-venv
 pip install -r ../requirements.txt
 ```
 
-F Prime's Python requirements install two tools this guide uses:
+F Prime's Python requirements also install [fprime-yamcs](https://github.com/fprime-community/fprime-yamcs), which
+starts YAMCS with the deployment's commands and telemetry loaded, starts the deployment, and connects the two.
 
-- `fprime-util`, F Prime's build tool
-- [fprime-yamcs](https://github.com/fprime-community/fprime-yamcs), which starts YAMCS with the deployment's commands
-  and telemetry loaded, starts the deployment, and connects the two. It brings its own Java runtime for YAMCS.
+### Building Flight Software
+
+Now you can build the F Prime deployment.
 
 ```sh title="Build Ref"
 fprime-util generate
 fprime-util build
 ```
 
-## Start YAMCS with the plugin
+## Running Your F Prime Deployment
 
 From `fprime/TestDeploymentsProject`, with the virtual environment active, run fprime-yamcs and pass it the plugin's
-jars. Replace `<yamcs-grpc>` with the path of the folder that holds the yamcs-grpc plugin's jars. In WSL, a Windows
-folder such as `C:\Users\me\Downloads\yamcs-grpc` is `/mnt/c/Users/me/Downloads/yamcs-grpc`.
+jars. Replace `<yamcs-grpc>` with the path of the folder that holds the yamcs-grpc plugin's jars.
 
 ```sh
 fprime-yamcs --yamcs-plugin-jars <yamcs-grpc>
@@ -53,15 +74,13 @@ fprime-yamcs --yamcs-plugin-jars <yamcs-grpc>
 
 - fprime-yamcs keeps running in its terminal and prints YAMCS's log. Leave it running while you use Hermes.
 - The plugin is ready once the log shows `gRPC API listening on port 8091`.
-- YAMCS keeps Ref's commands, telemetry and events in an instance called `fprime-project`. (One YAMCS server can run
-  several instances.) Hermes calls it `yamcs:fprime-project`, which you'll see below your notebook cell
-  later.
-- YAMCS's own web interface is at [http://localhost:8090](http://localhost:8090).
 - To stop fprime-yamcs, YAMCS and Ref, press ++ctrl+c++.
 
-## Connect Hermes
+## Connecting Hermes to YAMCS
 
-Hermes starts in Offline mode, with no connection to YAMCS. To connect it:
+The Hermes VSCode extension starts in **offline mode** by default. This
+means that there is _no_ connection to the flight software. To connect,
+point Hermes at YAMCS from the status bar item at the bottom of the VSCode window:
 
 1. Click **Hermes: Offline** in the status bar, or run **Hermes: Change Backend Mode** from the command palette.
 2. Pick **YAMCS**.
@@ -70,12 +89,12 @@ Hermes starts in Offline mode, with no connection to YAMCS. To connect it:
 The status bar then shows **Hermes: YAMCS** and the address. If both turn red instead, hover over the address to see
 why.
 
-## Send a command
+## Sending a Command
 
 1. Open a folder and create a file called `noop.hermes.md`. It opens as a Hermes notebook.
 2. Add a code cell. Click the language name at the bottom right of the cell and pick **fprime**. This makes it an
    F Prime cell, which names commands the way F Prime does.
-3. Type this command:
+3. Type this no-op command, which does nothing but report that it ran:
 
     ```
     R00:00:00 CdhCore.cmdDisp.CMD_NO_OP
@@ -88,14 +107,16 @@ why.
 | Where | What you see |
 | --- | --- |
 | End of the command's line | `✓` once YAMCS has sent the command. YAMCS doesn't wait for Ref to run it. |
-| Hover over the `✓` | Each step YAMCS recorded for the command |
 | Cell output | The events YAMCS reported while the cell ran, such as `NoOpReceived` from `CdhCore.cmdDisp`. This one shows that Ref ran the command. |
-| Events panel, in the **Hermes: Events** tab | The same events, plus the newest 100 that YAMCS had stored when Hermes connected |
-| Telemetry table, in the **Hermes: Telemetry** tab | A row for each telemetry channel YAMCS has received, such as `CommandsDispatched`, which counts dispatched commands. Its component is `/Ref_Ref/CdhCore/cmdDisp`, the YAMCS path of `CdhCore.cmdDisp`. |
 
-## Next steps
+!!! success
+    You have now connected Hermes with F Prime flight software!
 
-- [Notebooks](../vscode/notebooks.md): YAMCS cells, time tags, cell targets and command statuses.
-- [Recording from YAMCS](../tlm/recording.md): record telemetry and events, and chart them in Grafana.
-- F Prime's [Hello World tutorial](https://fprime.jpl.nasa.gov/latest/tutorials-hello-world/docs/hello-world/): write
-  and build your own deployment.
+## Next Steps
+
+Now that you have successfully connected your flight software, you can now
+send commands and monitor realtime telemetry and events streaming from your
+system.
+
+You can read about [notebooks](../vscode/notebooks.md) in VSCode and set up
+[telemetry monitoring](../tlm/index.md) infrastructure.

@@ -4,45 +4,36 @@ icon: fontawesome/solid/box
 
 # Installation
 
-To command flight software from VS Code, you need two parts of Hermes: the Hermes VS Code extensions, and the
-yamcs-grpc plugin, which runs inside YAMCS. Both come with each
-[Hermes release](https://github.com/nasa/hermes/releases/latest).
+Hermes can be installed in multiple ways depending on your use case. For most users, the VSCode extension from the marketplace is the recommended approach. To command flight software you also need the yamcs-grpc plugin, which runs inside YAMCS.
 
-## Install the VS Code extensions
+## VSCode Marketplace (Recommended)
 
-Hermes comes as two extensions, named here as VS Code lists them:
+The easiest way to install Hermes is through the [Visual Studio Code](https://code.visualstudio.com/) [marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes)
 
-| Extension | Adds |
-| --- | --- |
-| [Hermes](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes) | Notebooks with YAMCS command cells, the telemetry table and plot, the events panel, and the connection to YAMCS |
-| [Hermes FPrime](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes-fprime) | F Prime command cells, `.seq` sequence files of timed commands, and F Prime dictionaries, which list the flight software's commands and telemetry |
+1. [Install](https://code.visualstudio.com/) & Open Visual Studio Code 1.98 or newer
+2. Go to the Extensions view (`Cmd+Shift+X` on macOS, `Ctrl+Shift+X` on Windows/Linux)
+3. Search for "Hermes"
+4. Install the **Hermes** extension (ID: `jet-propulsion-laboratory.hermes`)
+5. Optionally, install the **Hermes FPrime** [extension](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes-fprime) for F' framework support.
 
-Hermes FPrime is optional, but the [Quick Start](quick-start.md) uses it. Hermes needs
-[VS Code](https://code.visualstudio.com/) 1.98 or newer.
+**What's included:**
 
-=== "VS Code Marketplace (recommended)"
+- Complete VSCode integration with telemetry viewers, command interfaces, and sequence editors
 
-    1. Open the Extensions view in VS Code (++ctrl+shift+x++, or ++cmd+shift+x++ on macOS).
-    2. Search for "Hermes".
-    3. Install **Hermes**, then **Hermes FPrime** if you want F Prime command cells.
+## GitHub Releases (for automation or offline environments)
 
-=== "GitHub release"
+If you need a specific version or want to install manually:
 
-    Use the release files to install a specific version, or on a computer that can't reach the Marketplace.
+1. Go to the [Hermes releases page](https://github.com/nasa/hermes/releases)
+2. Download `hermes-v<version>.vsix`
+3. Optionally download `hermes-fprime-v<version>.vsix` for F' support
+4. Install the extension(s), Hermes first, since Hermes FPrime depends on it:
+   ```bash
+   code --install-extension hermes-v<version>.vsix
+   code --install-extension hermes-fprime-v<version>.vsix
+   ```
 
-    1. On the [releases page](https://github.com/nasa/hermes/releases), download these files from one release:
-        - `hermes-v<version>.vsix`
-        - `hermes-fprime-v<version>.vsix`, if you want Hermes FPrime
-    2. In a terminal, go to the folder you downloaded them to. Install Hermes first, since Hermes FPrime depends on it:
-
-        ```sh
-        code --install-extension hermes-v<version>.vsix
-        code --install-extension hermes-fprime-v<version>.vsix
-        ```
-
-        You can also install each file from VS Code, with **Extensions: Install from VSIX...** in the command palette.
-
-## Download the yamcs-grpc plugin
+## yamcs-grpc Plugin
 
 The plugin runs inside YAMCS and serves YAMCS's API over gRPC, a protocol for calling a server over the network. The
 Hermes VS Code extensions and yamcs-recorder connect to YAMCS through it.
@@ -51,12 +42,12 @@ Hermes VS Code extensions and yamcs-recorder connect to YAMCS through it.
 2. Unzip it into a folder of its own, such as `yamcs-grpc`. That folder holds the plugin's jar (a packaged Java
    library) and the gRPC jars it needs.
 
-The [Quick Start](quick-start.md#start-yamcs-with-the-plugin) loads these jars into YAMCS with fprime-yamcs. For a
+The [Quick Start](quick-start.md#running-your-f-prime-deployment) loads these jars into YAMCS with fprime-yamcs. For a
 YAMCS server you run yourself, copy them into the `lib/ext` folder of your YAMCS installation, then restart YAMCS so it
 loads them. The plugin needs no entry in `yamcs.yaml`.
 
-## Next steps
+## Next Steps
 
-- [Quick Start](quick-start.md): connect Hermes to F Prime flight software and send it a command.
-- [Recording from YAMCS](../tlm/recording.md), optional: download yamcs-recorder to record telemetry and events, and
-  chart them in Grafana with the Hermes datasource.
+- [Getting Started Guide](./quick-start.md) - Connect Hermes to your flight software through YAMCS
+- [Core Concepts](../arch/core-concepts.md) - Learn about Hermes Core Concepts and Design Patterns
+- [Telemetry Monitoring](../tlm/index.md) - Setup your monitoring infrastructure
