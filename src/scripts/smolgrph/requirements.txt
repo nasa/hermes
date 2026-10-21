@@ -1,4 +1,0 @@
-plotext
-matplotlib
-term-image
-termcolor
