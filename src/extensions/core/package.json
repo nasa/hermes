@@ -414,6 +414,13 @@
             {
                 "id": "uplink",
                 "configuration": "./syntax/uplink.language.json"
+            },
+            {
+                "id": "yamcs",
+                "aliases": [
+                    "YAMCS"
+                ],
+                "configuration": "./syntax/yamcs.language.json"
             }
         ],
         "grammars": [

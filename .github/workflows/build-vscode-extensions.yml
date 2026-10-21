@@ -67,9 +67,6 @@ jobs:
           jq --arg version "${{ steps.version.outputs.semver }}" '.version = $version' src/extensions/fprime/package.json > src/extensions/fprime/package.json.tmp
           mv src/extensions/fprime/package.json.tmp src/extensions/fprime/package.json
 
-          jq --arg version "${{ steps.version.outputs.semver }}" '.version = $version' src/extensions/yamcs/package.json > src/extensions/yamcs/package.json.tmp
-          mv src/extensions/yamcs/package.json.tmp src/extensions/yamcs/package.json
-
       - name: Upload versioned package.json files
         uses: actions/upload-artifact@v7
         with:
@@ -78,7 +75,6 @@ jobs:
             package.json
             src/extensions/core/package.json
             src/extensions/fprime/package.json
-            src/extensions/yamcs/package.json
           retention-days: 1
 
   build-typescript:
@@ -222,57 +218,6 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: hermes-fprime-${{ needs.prepare.outputs.version }}.vsix
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  package-yamcs:
-    name: Package YAMCS Extension
-    runs-on: ubuntu-latest
-    needs: [prepare, build-typescript]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Download versioned package.json files
-        uses: actions/download-artifact@v8
-        with:
-          name: package-jsons
-
-      - name: Download TypeScript build
-        uses: actions/download-artifact@v8
-        with:
-          name: typescript-build
-          path: src/extensions
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '22'
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Install vsce
-        run: npm install -g @vscode/vsce
-
-      - name: Package yamcs extension
-        run: |
-          cd src/extensions/yamcs
-          vsce package -o ../../../hermes-yamcs-${{ needs.prepare.outputs.version }}.vsix
-
-      - name: Upload yamcs extension artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: hermes-yamcs-${{ needs.prepare.outputs.version }}
-          path: hermes-yamcs-${{ needs.prepare.outputs.version }}.vsix
-          retention-days: 30
-
-      - name: Upload yamcs extension to release
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v3
-        with:
-          files: hermes-yamcs-${{ needs.prepare.outputs.version }}.vsix
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
