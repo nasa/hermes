@@ -1,21 +1,26 @@
 # Recording and Grafana
 
 Hermes can record what a YAMCS instance receives, so you can chart its telemetry and search its events in Grafana.
-YAMCS calls each telemetry value a parameter.
+A YAMCS server can run several instances, each with its own telemetry, commands and archive. YAMCS calls each
+telemetry value a parameter.
 
 ```mermaid
 flowchart LR
-    yamcs["YAMCS with yamcs-grpc"] -->|"parameters, events"| rec["yamcs-recorder"]
+    yamcs["YAMCS with the yamcs-grpc plugin"] -->|"parameters, events"| rec["yamcs-recorder"]
     rec -->|"parameters"| ts[("TimescaleDB")]
-    rec -->|"events"| otel["OpenTelemetry collector"] --> loki[("Loki")]
+    rec -->|"events, with --otlp"| otel["OpenTelemetry collector"] --> loki[("Loki")]
     ts -->|"Hermes datasource"| graf["Grafana"]
     loki -->|"Loki datasource"| graf
 ```
 
-- `yamcs-recorder` subscribes to one YAMCS instance through the yamcs-grpc plugin. It writes parameter values to
-  TimescaleDB and sends events through an OpenTelemetry collector to Loki.
-- Grafana charts the parameters with the Hermes datasource and searches the events with its Loki datasource.
-- The `docker-compose.yml` at the root of the repo starts TimescaleDB, the collector, Loki and Grafana.
+| Part | What it does |
+| --- | --- |
+| yamcs-grpc plugin | A YAMCS plugin that comes with Hermes. The recorder reads from YAMCS through it. |
+| yamcs-recorder | Subscribes to one YAMCS instance, writes its parameter values to TimescaleDB and, with `--otlp`, sends its events to the collector |
+| TimescaleDB | A PostgreSQL database for time series. It stores the parameter values. |
+| OpenTelemetry collector | Passes the recorder's events on to Loki |
+| Loki | A log database. It stores the events. |
+| Grafana | A web app for charts and dashboards. It reads each database through a datasource, a Grafana plugin for one kind of database. |
 
 | Page | What it covers |
 | --- | --- |

@@ -4,89 +4,96 @@ icon: fontawesome/solid/database
 
 # Recording from YAMCS
 
-`yamcs-recorder` copies one YAMCS instance's telemetry into TimescaleDB and its events into Loki, so you can chart and
-search them in Grafana.
+yamcs-recorder copies one YAMCS instance's telemetry into TimescaleDB and, with `--otlp`, its events into Loki.
 
-## What It Records
+!!! abstract "Before you start"
 
-- The value of every TELEMETERED parameter, meaning one that YAMCS decodes from downlinked telemetry, such as an
-  F Prime telemetry channel. The recorder writes them to the TimescaleDB tables `parameters` and `parameter_values`.
-  fprime-yamcs, which runs YAMCS for an F Prime deployment, also defines a parameter for each packet header field.
-  The recorder leaves those out. To record them anyway, pass `--include-top-level`.
-- With `--otlp`, every event. The recorder sends each one to an OpenTelemetry collector, which forwards it to Loki.
+    - YAMCS running with the yamcs-grpc plugin, as in the [Quick Start](../getting-started/quick-start.md). The
+      recorder reads from YAMCS through the plugin.
+    - [Docker](https://docs.docker.com/get-docker/), to run the databases.
+    - [Go](https://go.dev/dl/) 1.26 or newer and make, to build the recorder.
+    - A Hermes clone. Commands on this page run from its top folder, the repository root, unless they say otherwise:
 
-The recorder only records what arrives while it runs, and doesn't fill gaps from the YAMCS archive later. Loki drops
-an event whose generation time is too far in the future, or too far behind the newest event from the same instance.
-[`config/loki.yml`](https://github.com/nasa/hermes/blob/v6/config/loki.yml) sets how far behind it can be. The
-recorder's README describes
+        ```sh
+        git clone --branch v6 https://github.com/nasa/hermes.git
+        ```
+
+## What it records
+
+| What | Where it goes | When |
+| --- | --- | --- |
+| Values of telemetered parameters, meaning the ones YAMCS decodes from downlinked telemetry, such as F Prime telemetry channels | TimescaleDB tables `parameters` and `parameter_values` | By default |
+| Parameters directly under the top-level path, the first part of a YAMCS path (`/Ref_Ref` in `/Ref_Ref/FPrimeTime`). fprime-yamcs puts one there for each packet header field. | The same tables | Left out unless you pass `--include-top-level` |
+| Every YAMCS event, such as an F Prime event (a log message from the flight software) | Loki, through the OpenTelemetry collector | Only with `--otlp` |
+
+The recorder records only what arrives while it runs. It doesn't fill gaps later from the YAMCS archive, the history
+YAMCS keeps. Its README lists
 [what it writes](https://github.com/nasa/hermes/blob/v6/cmd/yamcs-recorder/README.md#what-it-writes) and its
-[limits](https://github.com/nasa/hermes/blob/v6/cmd/yamcs-recorder/README.md#limits).
+[limits](https://github.com/nasa/hermes/blob/v6/cmd/yamcs-recorder/README.md#limits), such as when Loki drops an event.
 
-## Start the Databases
-
-From the root of a Hermes clone, run:
+## Start the databases
 
 ```sh
-docker compose up -d
+docker compose up -d timescaledb otel-collector loki
 ```
 
 | Service | Address | Details |
 | --- | --- | --- |
 | TimescaleDB | `localhost:5432` | User `postgres`, password `password`, database `hermes` |
-| OpenTelemetry collector | `localhost:4317` | Receives events from the recorder's `--otlp` over gRPC |
-| Loki | `localhost:3100` | Receives events from the collector |
-| Grafana | [localhost:3000](http://localhost:3000) | Login `admin` / `admin`, with a Hermes datasource and a Loki datasource set up |
+| OpenTelemetry collector | `localhost:4317` | Receives the recorder's events and passes them to Loki |
+| Loki | `localhost:3100` | Stores the events |
 
-!!! warning
-    This Grafana downloads the Hermes datasource from the latest Hermes release when it starts. No release has the v6
-    datasource yet, so the download fails and Grafana doesn't start. Until one does, chart telemetry in the
-    datasource's development Grafana, as described in
-    [Install the v6 Datasource](grafana.md#install-the-v6-datasource).
+!!! note
+    `docker-compose.yml` also has a Grafana service, but it can't start yet. It downloads the Hermes datasource from
+    the latest Hermes release, which doesn't include it. To chart telemetry for now, use the
+    [development Grafana](grafana.md#start-the-development-grafana) instead. It replaces this TimescaleDB with its
+    own, so set it up before you start the recorder.
 
-## Get the Recorder
-
-From the root of a Hermes clone on the `v6` branch, build it with Go 1.26 or newer:
+## Build the recorder
 
 ```sh
 make out/yamcs-recorder
 ```
 
-To try it while YAMCS runs with the yamcs-grpc plugin, run it by hand. It connects to the plugin at `localhost:8091`
-by default:
+To try it, run it by hand while YAMCS runs, and stop it with Ctrl+C when you're done:
 
 ```sh
 PGPASSWORD=password out/yamcs-recorder --instance fprime-project \
     --postgresql 'postgres://postgres@localhost:5432/hermes?sslmode=disable' --otlp localhost:4317
 ```
 
-The [Run](https://github.com/nasa/hermes/blob/v6/cmd/yamcs-recorder/README.md#run) section of its README lists every
-flag. To keep it running, copy the binary to a fixed absolute path, such as `/opt/hermes/yamcs-recorder`, and have
-YAMCS run it.
+| Part | What it does |
+| --- | --- |
+| `PGPASSWORD=password` | Gives TimescaleDB's password, which the `--postgresql` URL leaves out |
+| `--instance fprime-project` | Records the instance `fprime-project`, the name fprime-yamcs gives its instance |
+| `--postgresql ...` | Says where TimescaleDB is |
+| `--otlp localhost:4317` | Sends events to the collector over OTLP, OpenTelemetry's protocol. Leave it out to record telemetry only. |
 
-## Run It from YAMCS
+The recorder connects to the yamcs-grpc plugin at `localhost:8091` unless you pass `--yamcs`. Its README lists
+[every flag](https://github.com/nasa/hermes/blob/v6/cmd/yamcs-recorder/README.md#run).
 
-The recorder exits when YAMCS stops or its instance restarts, so something has to start it again. YAMCS can do that
-with its ProcessRunner service, which runs a command next to YAMCS, writes the command's output to the YAMCS log, and
-with `restart: always` starts it again within 5 seconds of it exiting.
+## Run it from YAMCS
 
-The recorder talks to YAMCS through Hermes's
-[yamcs-grpc plugin](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin), so YAMCS must load that plugin too.
+The recorder exits when YAMCS stops or its instance restarts. YAMCS's ProcessRunner service can run the recorder
+alongside YAMCS and, with `restart: always`, restart it within 5 seconds. The recorder's output then goes to the YAMCS
+log.
 
-### Get a YAMCS Config Directory
+### Get a YAMCS config directory
 
-fprime-yamcs starts YAMCS with the config directory you pass to `--yamcs-config-dir`, in place of its built-in one.
-If you don't have your own yet, start from a copy of the built-in one. Run this in the Python environment where
-fprime-yamcs is installed:
+fprime-yamcs starts YAMCS with its built-in config directory unless you pass your own with `--yamcs-config-dir`. If
+you don't have one yet, copy the built-in one. Run this where you start fprime-yamcs, with its Python environment
+active:
 
 ```sh
 config=$(python -c "from importlib.resources import files; print(files('fprime_yamcs') / 'yamcs/src/main/yamcs')")
 cp -r "$config" yamcs-config
 ```
 
-### Add the Recorder
+### Add the recorder
 
-In `yamcs-config/etc/yamcs.yaml`, add this entry to the end of the `services` list, after the `HttpServer` entry that
-is already there:
+Copy `out/yamcs-recorder` to a fixed absolute path, for example `/opt/hermes/yamcs-recorder`. Then, in
+`yamcs-config/etc/yamcs.yaml`, add this entry to the end of the `services` list, after the `HttpServer` entry that is
+already there:
 
 ```yaml
   - class: org.yamcs.ProcessRunner
@@ -100,19 +107,22 @@ is already there:
       restart: always
 ```
 
-- Use an absolute path. If YAMCS cannot run the command, YAMCS itself fails to start and logs `Could not start Yamcs`.
+- If YAMCS can't run the command, YAMCS itself fails to start and logs `Could not start Yamcs`.
 - To keep the password out of the file, leave out `environment` and set `PGPASSWORD` before you start fprime-yamcs.
   YAMCS passes its environment on to the recorder.
-- The recorder connects to the plugin at `localhost:8091`, the plugin's default port. If you set another port under
-  `yamcs-grpc` in the same file, add `--yamcs, localhost:<port>` to the `command` list.
+- If you set a port other than 8091 under `yamcs-grpc` in the same file, add `--yamcs, localhost:<port>` to the
+  `command` list.
 - One recorder records one instance. To record more than one, add one entry per instance, each with its own `name` and
   `--instance`.
 
-Then start fprime-yamcs with `--yamcs-config-dir yamcs-config`, along with the `--yamcs-plugin-jars` option that loads
-the yamcs-grpc plugin. The recorder's output shows up in the YAMCS log, including a `recorder stats` line every 30
-seconds.
+### Start fprime-yamcs
 
-## View It in Grafana
+Restart fprime-yamcs with your config directory. `--yamcs-plugin-jars` loads the yamcs-grpc plugin from
+`yamcs-grpc-plugin/out/lib`, where its `./build.sh` puts the jars. Replace `<hermes>` with the path to your Hermes
+clone:
 
-Chart telemetry with the Hermes datasource and search events with the Loki datasource, as described on the
-[Grafana](grafana.md) page.
+```sh
+fprime-yamcs --yamcs-config-dir yamcs-config --yamcs-plugin-jars <hermes>/yamcs-grpc-plugin/out/lib
+```
+
+The recorder's output shows up in the YAMCS log, including a `recorder stats` line every 30 seconds.

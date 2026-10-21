@@ -4,84 +4,97 @@ icon: brands/grafana
 
 # Grafana
 
-Grafana charts the telemetry that yamcs-recorder writes to TimescaleDB with the Hermes datasource, and searches the
-events it sends to Loki with Grafana's own Loki datasource. [Recording from YAMCS](recording.md) shows how to start
-the databases and the recorder.
+Grafana, a web app for charts and dashboards, reads each database through a datasource (Grafana writes "data
+source"), a plugin for one kind of database:
 
-## Install the v6 Datasource
+- The Hermes datasource charts the telemetry that yamcs-recorder writes to TimescaleDB.
+- Grafana's own Loki datasource searches the events that the recorder sends to Loki.
 
-No Hermes release has the v6 datasource yet, so build it from source. From `grafana-datasource-plugin/` in a clone of
-the `v6` branch:
+[Recording from YAMCS](recording.md) shows how to start the databases and the recorder. This page names three
+Grafanas:
+
+| Grafana | What it is |
+| --- | --- |
+| Compose Grafana | The `grafana` service in the root `docker-compose.yml`. It comes with both datasources, but can't start until a Hermes release ships the Hermes datasource. |
+| Development Grafana | The one `npm run server` starts from `grafana-datasource-plugin/`, with its own TimescaleDB. Use it for now. |
+| Your own Grafana | One you run yourself, version 12.3.0 or newer |
+
+## Build the datasource
+
+No Hermes release has the Hermes datasource yet, so build it from source. From `grafana-datasource-plugin/`:
 
 ```sh
 npm install && npm run build   # frontend, needs Node.js 22 or newer
-mage -v                        # backend, needs Go and Mage (magefile.org)
+mage -v                        # backend, needs Go 1.26.5 or newer and Mage
 ```
 
-Then load it into Grafana 12.3.0 or newer:
+The frontend is the part that runs in your browser, and the backend is the part Grafana runs to query TimescaleDB.
+[Mage](https://magefile.org) is a make-like build tool for Go. Both write to `dist/`.
 
-1. Copy `dist/` into Grafana's plugins directory as `nasa-hermes-datasource`, for example
-   `/var/lib/grafana/plugins/nasa-hermes-datasource`.
-2. Builds from source aren't signed, so allow the plugin with the environment variable
-   `GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=nasa-hermes-datasource`, or in `grafana.ini`:
+## Start the development Grafana
 
-    ```ini
-    [plugins]
-    allow_loading_unsigned_plugins = nasa-hermes-datasource
-    ```
-
-3. Restart Grafana.
-
-!!! tip "Try it in the development Grafana"
-    Until a release has the v6 datasource, the Grafana in the root `docker-compose.yml` fails to download it and
-    doesn't start. The datasource's development setup runs its own Grafana, which loads `dist/` and already has the
-    TimescaleDB connection, but no Loki datasource. It uses the same ports as the Grafana and TimescaleDB in the root
-    `docker-compose.yml`, so stop those first:
+1. From the repository root, stop the compose Grafana and TimescaleDB, which use the same ports (3000 and 5432):
 
     ```sh
-    docker compose stop grafana timescaledb         # from the repo root
-    cd grafana-datasource-plugin && npm run server
+    docker compose stop grafana timescaledb
     ```
 
-    Its database starts empty. It has the same port, user, password and database as the TimescaleDB in
-    `docker-compose.yml`, so yamcs-recorder writes to it with the same flags. See
-    [Develop](https://github.com/nasa/hermes/blob/v6/grafana-datasource-plugin/README.md#develop) in the datasource's
-    README.
+2. From `grafana-datasource-plugin/`, start the development Grafana and its TimescaleDB, and leave it running:
 
-## Connect to TimescaleDB
+    ```sh
+    npm run server
+    ```
 
-The Grafana in `docker-compose.yml` and the development Grafana come with this connection. In another Grafana, go to
-Connections > Data sources > Add new data source, search for Hermes, and fill in:
+3. Open [localhost:3000](http://localhost:3000). There is no login, since every visitor is an admin. The Hermes
+   datasource is already set up as `hermes-datasource`, but there is no Loki datasource.
 
-| Field | Value for the TimescaleDB in `docker-compose.yml` |
-| --- | --- |
-| Host | `localhost:5432` from a Grafana on the same machine, or `timescaledb:5432` from a container in the same compose project |
-| User | `postgres` |
-| Password | `password` |
-| Database | `hermes` |
+The development TimescaleDB starts empty but uses the same address, user, password and database as the compose one,
+so the recorder's flags don't change. Values recorded into the compose TimescaleDB stay there and don't show up here.
 
-Click Save & Test to check the connection.
+## Use your own Grafana
 
-## Chart Telemetry
+1. Copy `dist/` into it and allow the unsigned plugin, as in
+   [Install the plugin](https://github.com/nasa/hermes/blob/v6/grafana-datasource-plugin/src/README.md#1-install-the-plugin)
+   in the datasource's user guide.
+2. Go to **Connections** > **Data sources**, add a new data source, search for Hermes, and fill in:
 
-Create a panel and pick the Hermes datasource. The Builder / Code toggle at the top of the query editor switches
-between picking parameters from lists and writing your own SQL. The datasource's
-[user guide](https://github.com/nasa/hermes/blob/v6/grafana-datasource-plugin/src/README.md) explains each Builder
-field, Value Transform and Code mode.
+    | Field | Value for the compose TimescaleDB |
+    | --- | --- |
+    | Host | `localhost:5432` from a Grafana on the same machine |
+    | User | `postgres` |
+    | Password | `password` |
+    | Database | `hermes` |
 
-## Search Events
+3. Click **Save & test** to check the connection.
 
-In Explore or a panel, pick the Loki datasource. The recorder sends each event with its YAMCS instance as the service
-name, and Loki keeps that as the `service_name` label. This query shows every event from the `fprime-project`
-instance:
+## Chart telemetry
 
-```logql
-{service_name="fprime-project"}
-```
+1. Go to **Dashboards** > **New** > **New dashboard**, add a panel and open it for editing.
+2. Pick the Hermes datasource as the panel's **Data source**.
+3. Pick a parameter in **Parameter**, for example `/Ref_Ref/CdhCore/cmdDisp/CommandsDispatched`.
+4. Save the dashboard.
 
-- The Grafana in `docker-compose.yml` has a Loki datasource, named Loki. In another Grafana, add one whose URL
-  reaches Loki on port 3100. That is `http://localhost:3100` from a Grafana installed on the same machine, or
-  `http://host.docker.internal:3100` from a container on Docker Desktop, such as the development Grafana.
-- To filter by event type or severity, see
-  [Query events in Grafana](https://github.com/nasa/hermes/blob/v6/cmd/yamcs-recorder/README.md#query-events-in-grafana)
-  in the recorder's README.
+The **Builder** / **Code** toggle at the top of the query editor switches between picking parameters from lists and
+writing your own SQL. The datasource's
+[user guide](https://github.com/nasa/hermes/blob/v6/grafana-datasource-plugin/src/README.md#3-query-data) explains
+each field.
+
+## Search events
+
+1. If your Grafana has no Loki datasource, go to **Connections** > **Data sources**, add a new data source of type
+   **Loki**, set its **URL** to one of these, and click **Save & test**:
+    - `http://host.docker.internal:3100` from the development Grafana, which runs in Docker. Without Docker Desktop,
+      for example with Docker Engine on Linux, use your machine's IP address in place of `host.docker.internal`.
+    - `http://localhost:3100` from a Grafana installed on the same machine.
+2. Open **Explore**, Grafana's page for one-off queries, and pick the Loki datasource.
+3. Switch the query editor to **Code** and run this LogQL (Loki's query language) query. It shows every event from the
+   `fprime-project` instance:
+
+    ```logql
+    {service_name="fprime-project"}
+    ```
+
+The recorder tags each event with its YAMCS instance, which Loki keeps as the `service_name` label. To filter by event
+type or severity, see
+[Query events in Grafana](https://github.com/nasa/hermes/blob/v6/cmd/yamcs-recorder/README.md#query-events-in-grafana)
+in the recorder's README.
