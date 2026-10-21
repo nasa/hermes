@@ -11,10 +11,10 @@ FORCE: ;
 clean: FORCE
 	rm -rf out
 
-release: vscode out/yamcs-recorder
+release: out/yamcs-recorder
 
 out/yamcs-recorder: out FORCE
 	go build ${GO_FLAGS} -o out/yamcs-recorder github.com/nasa/hermes/cmd/yamcs-recorder
 
-vscode: out FORCE
+vscode: FORCE
 	yarn build

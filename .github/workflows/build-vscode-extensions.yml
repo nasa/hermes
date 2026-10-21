@@ -120,7 +120,6 @@ jobs:
         with:
           name: typescript-build
           path: |
-            out/
             src/extensions/*/out/
           retention-days: 1
 
@@ -141,6 +140,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: typescript-build
+          path: src/extensions
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
@@ -191,6 +191,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: typescript-build
+          path: src/extensions
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
@@ -241,6 +242,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: typescript-build
+          path: src/extensions
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
