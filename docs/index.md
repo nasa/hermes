@@ -6,51 +6,54 @@ hide:
 ---
 
 <figure markdown="span">
-  ![Screenshot](assets/full-screenshot.png)
+  ![Hermes in YAMCS mode: a notebook cell sends two F Prime commands through YAMCS and shows each command's status and the events they raised, above the telemetry table and a plot of three CPU channels](assets/yamcs-mode.png)
 </figure>
 
-# Hermes - A Command & Telemetry Framework
+# Hermes
 
-!!! warning
+Hermes lets you command spacecraft flight software and watch its telemetry from VS Code, then chart what was recorded
+in Grafana. It talks to flight software through [YAMCS](https://yamcs.org), an open-source mission control server, and
+has built-in support for [F Prime](https://github.com/nasa/fprime), NASA's flight software framework.
 
-    Hermes is currently undergoing migration from our internal deployment to
-    public Github. Documentation is currently under construction and incomplete.
+!!! warning "Hermes v6 has no release yet"
 
-Hermes is a system for spacecraft command and telemetry management, providing a modern interface for ground operators to interact with flight software. It features a [Visual Studio Code](https://code.visualstudio.com/) frontend for commanding and telemetry display, along with a powerful backend for processing and routing data to and from flight software.
+    These pages describe Hermes v6, which you build from the `v6` branch. See [Installation](getting-started/installation.md).
 
-## Architecture
+## What you can do
 
-Hermes uses a backend process to manage the long-lived connection between the ground and your spacecraft or robot.
-A frontend or database may be attached to this backend to capture data or interact with the system. We recommend reading more about the [core concepts](./arch/core-concepts.md) of Hermes to understand the context and design of the software.
+- Send commands from VS Code notebook cells, with completion, argument checks and a live status for each command.
+- Watch live telemetry and events in the telemetry table, plot and events panel in VS Code.
+- Write notebooks and sequences in Offline mode, without a connection. Hermes starts in Offline mode.
+- Record telemetry and events, then chart the telemetry and search the events in Grafana.
 
-## Key Features
+## How it fits together
 
-- **Command Dispatch**: Command and sequence uplink with verification and validation
-- **Telemetry Display**: Real-time visualization of spacecraft telemetry data
-- **File Transfer**: File Uplink and downlink capabilities with integrity verification
-- **CCSDS Protocol Support**: Implementation of space communication standards
-- **Modern Web Interface**: Integrates with commercial time series databases (e.g., InfluxDB, Prometheus)
-- **Extensible Architecture**: Plugin system for supporting various spacecraft and communication protocols
+```mermaid
+flowchart TB
+    subgraph yamcs ["YAMCS, for example run by fprime-yamcs"]
+        grpc["yamcs-grpc plugin :8091"]
+    end
+    fsw["F Prime flight software"] <--> yamcs
+    grpc <-->|"telemetry, events, commands"| vsc["Hermes VS Code extensions"]
+    grpc -->|"telemetry, events"| rec["yamcs-recorder"]
+    rec -->|"telemetry"| ts[("TimescaleDB<br/>(PostgreSQL for time series)")]
+    rec -->|"events"| otel["OpenTelemetry collector"] --> loki[("Loki<br/>(log database)")]
+    ts -->|"Hermes datasource"| graf["Grafana"]
+    loki --> graf
+```
 
-## System Components
+| Part | What it does |
+| --- | --- |
+| yamcs-grpc plugin | Runs inside YAMCS and serves YAMCS's API over gRPC |
+| Hermes VS Code extensions | Notebooks, the telemetry table and plot, and the events panel. Hermes YAMCS and Hermes FPrime add YAMCS and F Prime command cells. |
+| yamcs-recorder | Writes telemetry to TimescaleDB, and events through the OpenTelemetry collector to Loki |
+| Grafana | Charts telemetry from TimescaleDB with the Hermes datasource plugin, and searches events in Loki |
 
-### Frontend
+The project README lists the [ports](https://github.com/nasa/hermes/tree/v6#ports) each part uses.
 
-- Commanding spacecraft systems
-- Visualizing telemetry data in real-time
-- Managing file transfers
-- Configuring system parameters
+## Get started
 
-### Backend
-
-The backend handles:
-
-- Communication with spacecraft systems
-- Protocol implementation (CCSDS, etc.)
-- Data processing and routing
-- Command validation and verification
-- Telemetry processing and storage
-
-## Getting Started
-
-To get started with Hermes, see the [Installation Guide](getting-started/installation.md) and [Quick Start Guide](getting-started/quick-start.md).
+1. [Installation](getting-started/installation.md): build the yamcs-grpc plugin and set up the VS Code extensions.
+2. [Quick Start](getting-started/quick-start.md): run an F Prime deployment under YAMCS and send it a command from
+   VS Code.
+3. [Recording](tlm/recording.md): record telemetry and events, then chart them in [Grafana](tlm/grafana.md).
