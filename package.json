@@ -27,7 +27,7 @@
         "proto-json-yamcs": "yarn pbjs -p=proto -t json proto/yamcs/protobuf/processing/processing.proto proto/yamcs/protobuf/events/events_service.proto proto/yamcs/protobuf/commanding/commands_service.proto proto/yamcs/protobuf/instances/instances_service.proto -o src/modules/rpc/src/proto/yamcs.json",
         "proto": "npm run proto-js && npm run proto-ts && npm run proto-ts-yamcs && npm run proto-json-yamcs",
         "package": "sh -c 'cd src/extensions/${0} && yarn package'",
-        "package-all": "yarn package core && yarn package fprime && yarn package yamcs",
+        "package-all": "yarn package core && yarn package fprime",
         "postinstall": "patch-package"
     },
     "dependencies": {

@@ -53,8 +53,7 @@ flowchart TB
 | Component | What it does | Docs |
 | --- | --- | --- |
 | yamcs-grpc plugin | Runs inside YAMCS and serves YAMCS's API over gRPC, a protocol for calling a server's methods | [yamcs-grpc-plugin/](yamcs-grpc-plugin/README.md) |
-| Hermes (VS Code extension) | Telemetry table and plot, events panel, notebooks, and the YAMCS connection | [src/extensions/core/](src/extensions/core/README.md) |
-| Hermes YAMCS (VS Code extension) | YAMCS command cells | [src/extensions/yamcs/](src/extensions/yamcs/README.md) |
+| Hermes (VS Code extension) | Telemetry table and plot, events panel, notebooks with YAMCS command cells, and the YAMCS connection | [src/extensions/core/](src/extensions/core/README.md) |
 | Hermes FPrime (VS Code extension) | F Prime command cells and sequence files | [src/extensions/fprime/](src/extensions/fprime/README.md) |
 | yamcs-recorder | Writes telemetry to TimescaleDB, a PostgreSQL database for time series. Can also send events through an OpenTelemetry collector, which forwards them to Loki, a log database. | [cmd/yamcs-recorder/](cmd/yamcs-recorder/README.md) |
 | Hermes datasource (Grafana plugin) | Charts the telemetry yamcs-recorder writes to TimescaleDB | [User guide](grafana-datasource-plugin/src/README.md), [Development](grafana-datasource-plugin/README.md) |

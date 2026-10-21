@@ -37,7 +37,7 @@ R00:00:05 CdhCore.cmdDisp.CMD_NO_OP_STRING "hello"   ; waits 5 s after the first
 | Comment | `; waits 5 s` | Everything after `;` |
 
 Commands pass, fail and show their status as in
-[YAMCS cells](https://github.com/nasa/hermes/tree/v6/src/extensions/yamcs#run-a-cell), and the cell lists events the
+[YAMCS cells](https://github.com/nasa/hermes/tree/v6/src/extensions/core#run-a-cell), and the cell lists events the
 same way.
 
 fprime-yamcs gives commands no verifiers, the checks YAMCS runs on returning telemetry to decide whether a command

@@ -3,5 +3,6 @@
 !package.json
 !icons/*
 !out/*
+!syntax/*
 !LICENSE.txt
 !README.md

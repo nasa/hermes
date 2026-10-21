@@ -23,6 +23,7 @@ import { eventMessaging } from './notebook/evrMessaging';
 import { ShellScriptLanguageProvider } from './kernels/shellscript';
 import { PythonLanguageProvider } from './kernels/python';
 import { UplinkLanguageProvider } from './kernels/uplink';
+import { YamcsLanguage, YamcsNotebookLanguageProvider } from './kernels/yamcs';
 import { DownlinkProvider } from './components/DownlinkViewer';
 import { UplinkProvider } from './components/UplinkViewer';
 import { VscodeApi } from './api';
@@ -92,6 +93,15 @@ export class VscodeHermes implements CoreApi {
         this.telemetryTablePanel = new TelemetryTablePanel(this.telemetryDb, this.extensionPath);
         this.telemetryPlotPanel = new TelemetryPlotPanel(this.telemetryDb, this.extensionPath);
 
+        const yamcsDictionaryItem = new DictionaryLanguageItem(
+            this.extensionContext,
+            this.api,
+            'yamcs',
+            (head) => head.type === 'yamcs',
+        );
+        const yamcsLanguage = new YamcsLanguage(yamcsDictionaryItem);
+        const yamcsNotebook = new YamcsNotebookLanguageProvider(this.api, yamcsLanguage);
+
         this.subscriptions.push(
             this.registerShellscriptBinPath(path.join(this.extensionPath, 'out', 'bin')),
 
@@ -120,6 +130,19 @@ export class VscodeHermes implements CoreApi {
             this.registerNotebookLanguageProvider('python', new PythonLanguageProvider(this)),
             this.registerNotebookLanguageProvider('shellscript', new ShellScriptLanguageProvider(this)),
             this.registerNotebookLanguageProvider('uplink', new UplinkLanguageProvider(this.api)),
+            this.registerNotebookLanguageProvider('yamcs', yamcsNotebook),
+            this.registerLanguageDictionaryItem(yamcsDictionaryItem),
+            // Each YAMCS mode connection holds the id of the dictionary built from its instance. We select the first
+            // connection's dictionary whenever YAMCS mode connects.
+            this.api.onFswChange((fsws) => {
+                const dictionary = fsws.find((f) => f.type === 'yamcs')?.dictionary;
+                if (dictionary) {
+                    yamcsDictionaryItem.set(dictionary);
+                }
+            }),
+            yamcsDictionaryItem,
+            yamcsLanguage,
+            yamcsNotebook,
 
             eventMessaging(),
         );
