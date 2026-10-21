@@ -43,10 +43,10 @@ jobs:
           cache: true
 
       - name: Run tests
-        # The recorder store and pkg/timescaledb database tests skip without this.
+        # The recorder's database tests skip without this.
         env:
           HERMES_TEST_TIMESCALE_DSN: postgres://postgres:password@localhost:5432/postgres?sslmode=disable
-        run: go test ./pkg/... ./internal/... ./cmd/yamcs-recorder/...
+        run: go test ./internal/... ./cmd/yamcs-recorder/...
 
   build:
     name: Build ${{ matrix.goos }}-${{ matrix.goarch }}

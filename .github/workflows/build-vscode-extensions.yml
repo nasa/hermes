@@ -124,96 +124,10 @@ jobs:
             src/extensions/*/out/
           retention-days: 1
 
-  build-backend:
-    name: Build Backend ${{ matrix.platform }}
-    runs-on: ubuntu-latest
-    needs: prepare
-    strategy:
-      matrix:
-        platform:
-          - linux-x64
-          - linux-arm64
-          - darwin-x64
-          - darwin-arm64
-          - win32-x64
-          - win32-arm64
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Set up Go
-        uses: actions/setup-go@v7
-        with:
-          go-version-file: 'go.mod'
-          cache: true
-
-      - name: Map VSCode platform to Go platform
-        id: go-platform
-        run: |
-          PLATFORM="${{ matrix.platform }}"
-
-          case "$PLATFORM" in
-            linux-x64)
-              GOOS="linux"
-              GOARCH="amd64"
-              ;;
-            linux-arm64)
-              GOOS="linux"
-              GOARCH="arm64"
-              ;;
-            darwin-x64)
-              GOOS="darwin"
-              GOARCH="amd64"
-              ;;
-            darwin-arm64)
-              GOOS="darwin"
-              GOARCH="arm64"
-              ;;
-            win32-x64)
-              GOOS="windows"
-              GOARCH="amd64"
-              ;;
-            win32-arm64)
-              GOOS="windows"
-              GOARCH="arm64"
-              ;;
-            *)
-              echo "Unknown platform: $PLATFORM"
-              exit 1
-              ;;
-          esac
-
-          echo "goos=$GOOS" >> $GITHUB_OUTPUT
-          echo "goarch=$GOARCH" >> $GITHUB_OUTPUT
-
-      - name: Build backend binary
-        env:
-          GOOS: ${{ steps.go-platform.outputs.goos }}
-          GOARCH: ${{ steps.go-platform.outputs.goarch }}
-          CGO_ENABLED: 0
-          GO_FLAGS: -trimpath -ldflags="-s -w"
-        run: make out/backend
-
-      - name: Upload backend binary
-        uses: actions/upload-artifact@v7
-        with:
-          name: backend-${{ matrix.platform }}
-          path: out/backend*
-          retention-days: 1
-
   package-core:
-    name: Package Core ${{ matrix.platform }}
+    name: Package Core
     runs-on: ubuntu-latest
-    needs: [prepare, build-typescript, build-backend]
-    strategy:
-      matrix:
-        platform:
-          - linux-x64
-          - linux-arm64
-          - darwin-x64
-          - darwin-arm64
-          - win32-x64
-          - win32-arm64
+    needs: [prepare, build-typescript]
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -228,12 +142,6 @@ jobs:
         with:
           name: typescript-build
 
-      - name: Download backend binary
-        uses: actions/download-artifact@v8
-        with:
-          name: backend-${{ matrix.platform }}
-          path: out/
-
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
@@ -246,37 +154,23 @@ jobs:
       - name: Install vsce
         run: npm install -g @vscode/vsce
 
-      - name: Map platform for backend file extension
-        id: platform-map
-        run: |
-          if [[ "${{ matrix.platform }}" == win32-* ]]; then
-            echo "backend_file=backend.exe" >> $GITHUB_OUTPUT
-          else
-            echo "backend_file=backend" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Copy backend to extension directory
-        run: |
-          mkdir -p src/extensions/core/out
-          cp out/backend src/extensions/core/out/${{ steps.platform-map.outputs.backend_file }}
-
       - name: Package core extension
         run: |
           cd src/extensions/core
-          vsce package --yarn --target ${{ matrix.platform }} -o ../../../hermes-${{ needs.prepare.outputs.version }}-${{ matrix.platform }}.vsix
+          vsce package --yarn -o ../../../hermes-${{ needs.prepare.outputs.version }}.vsix
 
       - name: Upload core extension artifact
         uses: actions/upload-artifact@v7
         with:
-          name: hermes-${{ needs.prepare.outputs.version }}-${{ matrix.platform }}
-          path: hermes-${{ needs.prepare.outputs.version }}-${{ matrix.platform }}.vsix
+          name: hermes-${{ needs.prepare.outputs.version }}
+          path: hermes-${{ needs.prepare.outputs.version }}.vsix
           retention-days: 30
 
       - name: Upload core extension to release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v3
         with:
-          files: hermes-${{ needs.prepare.outputs.version }}-${{ matrix.platform }}.vsix
+          files: hermes-${{ needs.prepare.outputs.version }}.vsix
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -385,26 +279,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare, package-core]
     if: github.event_name == 'release'
-    strategy:
-      matrix:
-        platform:
-          - linux-x64
-          - linux-arm64
-          - darwin-x64
-          - darwin-arm64
-          - win32-x64
-          - win32-arm64
     steps:
       - name: Download core extension artifact
         uses: actions/download-artifact@v8
         with:
-          name: hermes-${{ needs.prepare.outputs.version }}-${{ matrix.platform }}
+          name: hermes-${{ needs.prepare.outputs.version }}
 
       - name: Install vsce
         run: npm install -g @vscode/vsce
 
       - name: Publish core extension
-        run: vsce publish --packagePath hermes-${{ needs.prepare.outputs.version }}-${{ matrix.platform }}.vsix ${{ needs.prepare.outputs.prerelease_flag }}
+        run: vsce publish --packagePath hermes-${{ needs.prepare.outputs.version }}.vsix ${{ needs.prepare.outputs.prerelease_flag }}
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 

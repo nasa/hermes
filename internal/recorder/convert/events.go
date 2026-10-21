@@ -10,10 +10,9 @@ import (
 	"github.com/nasa/hermes/internal/yamcspb/protobuf/events"
 )
 
-// fprimeSeverities gives each F Prime severity the level that LogLevel in
-// pkg/pb/log.go gives it, as an OpenTelemetry severity number that Loki turns
-// into the level Grafana shows. Higher numbers are more severe, so queries can
-// filter on severity_number.
+// fprimeSeverities gives each F Prime severity an OpenTelemetry severity
+// number that Loki turns into the level Grafana shows. Higher numbers are more
+// severe, so queries can filter on severity_number.
 var fprimeSeverities = map[string]otellog.Severity{
 	"DIAGNOSTIC":  otellog.SeverityTrace1,
 	"COMMAND":     otellog.SeverityDebug1,

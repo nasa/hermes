@@ -31,6 +31,5 @@
     "protobuf.protoc.options": [
         "--proto_path=${workspaceFolder}/proto/pb",
         "-I=${workspaceFolder}/proto/pb",
-        "-I=${workspaceFolder}/proto/grpc",
     ]
 }
