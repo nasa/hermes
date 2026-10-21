@@ -25,7 +25,7 @@ Add a code cell, then click the language name at the bottom right of the cell to
 
 | Language to pick | VS Code extension | Names a command by |
 | --- | --- | --- |
-| **YAMCS** | Hermes YAMCS | Its [qualified name](../arch/core-concepts.md#yamcs-terms), the command's full path in YAMCS |
+| **YAMCS** | Hermes | Its [qualified name](../arch/core-concepts.md#yamcs-terms), the command's full path in YAMCS |
 | **fprime** | Hermes FPrime | Its F Prime name, after a time tag that says when to send it |
 
 ## YAMCS cells
