@@ -48,16 +48,6 @@
         ],
         "commands": [
             {
-                "command": "hermes.downlink.clear",
-                "title": "Clear Downlink Listing",
-                "icon": "$(clear-all)"
-            },
-            {
-                "command": "hermes.downlink.open",
-                "title": "Open File",
-                "icon": "$(go-to-file)"
-            },
-            {
                 "command": "hermes.uplink.add",
                 "title": "Open File to Uplink",
                 "icon": "$(plus)"
@@ -190,21 +180,11 @@
                     "id": "hermes.uplink",
                     "name": "Uplink",
                     "icon": "$(radio-tower)"
-                },
-                {
-                    "id": "hermes.downlink",
-                    "name": "Downlink",
-                    "icon": "$(cloud-download)"
                 }
             ]
         },
         "menus": {
             "view/title": [
-                {
-                    "command": "hermes.downlink.clear",
-                    "when": "view == hermes.downlink",
-                    "group": "navigation@1"
-                },
                 {
                     "command": "hermes.uplink.clear",
                     "when": "view == hermes.uplink",
@@ -249,11 +229,6 @@
                 }
             ],
             "view/item/context": [
-                {
-                    "command": "hermes.downlink.open",
-                    "when": "view == hermes.downlink && viewItem == hermes.downlink.file",
-                    "group": "inline"
-                },
                 {
                     "command": "hermes.uplink.targetEdit",
                     "when": "view == hermes.uplink && viewItem == hermes.uplink.target",

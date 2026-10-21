@@ -24,7 +24,6 @@ import { ShellScriptLanguageProvider } from './kernels/shellscript';
 import { PythonLanguageProvider } from './kernels/python';
 import { UplinkLanguageProvider } from './kernels/uplink';
 import { YamcsLanguage, YamcsNotebookLanguageProvider } from './kernels/yamcs';
-import { DownlinkProvider } from './components/DownlinkViewer';
 import { UplinkProvider } from './components/UplinkViewer';
 import { VscodeApi } from './api';
 import { DebounceEmitter } from './utils/DebounceEmitter';
@@ -36,7 +35,6 @@ export class VscodeHermes implements CoreApi {
     private telemetryTablePanel?: TelemetryTablePanel;
     private telemetryPlotPanel?: TelemetryPlotPanel;
     private connectionViewer?: ConnectionViewer;
-    private downlinkProvider?: DownlinkProvider;
     private uplinkProvider?: UplinkProvider;
 
     private notebookLanguages: NotebookLanguageManager;
@@ -86,7 +84,6 @@ export class VscodeHermes implements CoreApi {
 
         // Viewers
         this.connectionViewer = new ConnectionViewer(this.extensionPath, this.api, this);
-        this.downlinkProvider = new DownlinkProvider(this.api);
         this.uplinkProvider = new UplinkProvider(this.api);
         this.eventPanel = new EventPanel(this.api, this.extensionPath);
         this.telemetryDb = new TelemetryDatabase(this.api);
@@ -157,10 +154,6 @@ export class VscodeHermes implements CoreApi {
         if (this.connectionViewer) {
             this.log.info('Refreshing connection viewer');
             this.connectionViewer.refresh();
-        }
-        if (this.downlinkProvider) {
-            this.log.info('Refreshing downlink provider');
-            this.downlinkProvider.refresh();
         }
         if (this.uplinkProvider) {
             this.log.info('Refreshing uplink provider');
