@@ -55,7 +55,7 @@ GF_INSTALL_PLUGINS: "https://github.com/nasa/hermes/releases/download/v<version>
    run the script with sudo. On a Mac, use `bash` instead of `sudo bash`.
 
     ```sh
-    curl -fsSL https://raw.githubusercontent.com/nasa/hermes/v6/grafana-datasource-plugin/install.sh | sudo bash
+    curl -fsSL https://raw.githubusercontent.com/nasa/hermes/main/grafana-datasource-plugin/install.sh | sudo bash
     ```
 
     The script finds the plugins folder of Grafana installed from a Linux package or with Homebrew on an Intel Mac.
@@ -96,7 +96,7 @@ GF_INSTALL_PLUGINS: "https://github.com/nasa/hermes/releases/download/v<version>
 
 The **Builder** / **Code** toggle at the top of the query editor switches between picking parameters from lists and
 writing your own SQL. The datasource's
-[user guide](https://github.com/nasa/hermes/blob/v6/grafana-datasource-plugin/src/README.md#3-query-data) explains
+[user guide](https://github.com/nasa/hermes/blob/main/grafana-datasource-plugin/src/README.md#3-query-data) explains
 each field.
 
 ## Search events
@@ -114,5 +114,5 @@ each field.
 
 The recorder tags each event with its YAMCS instance, which Loki keeps as the `service_name` label. To filter by event
 type or severity, see
-[Query events in Grafana](https://github.com/nasa/hermes/blob/v6/cmd/yamcs-recorder/README.md#query-events-in-grafana)
+[Query events in Grafana](https://github.com/nasa/hermes/blob/main/cmd/yamcs-recorder/README.md#query-events-in-grafana)
 in the recorder's README.

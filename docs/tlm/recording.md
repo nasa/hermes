@@ -15,7 +15,7 @@ yamcs-recorder copies one YAMCS instance's telemetry into TimescaleDB and, with 
     - A Hermes clone. Its `docker-compose.yml` and `config` folder start the databases and Grafana:
 
         ```sh
-        git clone --branch v6 https://github.com/nasa/hermes.git
+        git clone https://github.com/nasa/hermes.git
         ```
 
 ## What it records
@@ -27,8 +27,8 @@ yamcs-recorder copies one YAMCS instance's telemetry into TimescaleDB and, with 
 | Every YAMCS event, such as an F Prime event (a log message from the flight software) | Loki, through the OpenTelemetry collector | Only with `--otlp` |
 
 The recorder's README lists
-[what it writes](https://github.com/nasa/hermes/blob/v6/cmd/yamcs-recorder/README.md#what-it-writes) and its
-[limits](https://github.com/nasa/hermes/blob/v6/cmd/yamcs-recorder/README.md#limits).
+[what it writes](https://github.com/nasa/hermes/blob/main/cmd/yamcs-recorder/README.md#what-it-writes) and its
+[limits](https://github.com/nasa/hermes/blob/main/cmd/yamcs-recorder/README.md#limits).
 
 ## Start the databases
 
@@ -73,7 +73,7 @@ PGPASSWORD=password ./yamcs-recorder --instance fprime-project \
 | `--otlp localhost:4317` | Sends events to the collector over OTLP, OpenTelemetry's protocol. Leave it out to record telemetry only. |
 
 The recorder connects to the yamcs-grpc plugin at `localhost:8091` unless you pass `--yamcs`. Its README lists
-[every flag](https://github.com/nasa/hermes/blob/v6/cmd/yamcs-recorder/README.md#run).
+[every flag](https://github.com/nasa/hermes/blob/main/cmd/yamcs-recorder/README.md#run).
 
 ## Run it from YAMCS
 
