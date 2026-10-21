@@ -1,9 +1,28 @@
-# Telemetry Monitoring
+# Recording and Grafana
 
-## Database
+Hermes can record what a YAMCS instance receives, so you can chart its telemetry and search its events in Grafana.
+A YAMCS server can run several instances, each with its own telemetry, commands and archive. YAMCS calls each
+telemetry value a parameter.
 
-Hermes does not come with a database, but rather, offers supports pushing data to multiple different databases. In addition, Hermes supports Grafana for live data monitoring. The recommended stack is a TimescaleDB instance with a Grafana instance with the Hermes datasource plugin installed. To get started, see the [TimescaleDB](./db/timescaledb) page.
+```mermaid
+flowchart LR
+    yamcs["YAMCS with the yamcs-grpc plugin"] -->|"parameters, events"| rec["yamcs-recorder"]
+    rec -->|"parameters"| ts[("TimescaleDB")]
+    rec -->|"events, with --otlp"| otel["OpenTelemetry collector"] --> loki[("Loki")]
+    ts -->|"Hermes datasource"| graf["Grafana"]
+    loki -->|"Loki datasource"| graf
+```
 
-## Grafana Plugin Only
+| Part | What it does |
+| --- | --- |
+| yamcs-grpc plugin | A YAMCS plugin in each Hermes release. The recorder reads from YAMCS through it. |
+| yamcs-recorder | Subscribes to one YAMCS instance, writes its parameter values to TimescaleDB and, with `--otlp`, sends its events to the collector |
+| TimescaleDB | A PostgreSQL database for time series. It stores the parameter values. |
+| OpenTelemetry collector | Passes the recorder's events on to Loki |
+| Loki | A log database. It stores the events. |
+| Grafana | A web app for charts and dashboards. It reads each database through a datasource, a Grafana plugin for one kind of database. |
 
-Alternatively, if you only want to install the Hermes Grafana datasource plugin, see the [Grafana](./grafana) page.
+| Page | What it covers |
+| --- | --- |
+| [Recording from YAMCS](recording.md) | Starting the databases, downloading yamcs-recorder and having YAMCS run it |
+| [Grafana](grafana.md) | Installing the Hermes datasource, charting telemetry and searching events |

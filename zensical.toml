@@ -19,17 +19,10 @@ nav = [
     { "Architecture" = [
         "arch/core-concepts.md",
     ] },
-    { "Telemetry Monitoring" = [
+    { "Recording and Grafana" = [
         "tlm/index.md",
+        "tlm/recording.md",
         "tlm/grafana.md",
-        { "Datastore" = [
-            "tlm/db/index.md",
-            "tlm/db/open-telemetry.md",
-            "tlm/db/clickhouse.md",
-            "tlm/db/influxdb.md",
-            "tlm/db/timescaledb.md",
-            "tlm/db/sqlite.md",
-        ] },
     ] },
 ]
 
