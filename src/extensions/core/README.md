@@ -83,7 +83,7 @@ checking a command as a step, such as `Sent`.
 | Status (example) | Meaning |
 | --- | --- |
 | `● Sent · 0.4 s` | In flight, with the newest step YAMCS recorded for it and the time so far |
-| `✓ Sent · 0.1 s` | Passed, with the newest step and the time it took |
+| `✓ completed · 0.1 s` | Passed, with the time it took |
 | `✗ failed · EXECUTION_ERROR` | Failed, with YAMCS's reason |
 | `○ not sent` | Waiting for the commands before it, or the cell ended before sending it, or YAMCS refused it |
 | `? Sent · 1.5 s` | Result unknown: the cell stopped while the command was in flight, or a verifier failed and YAMCS didn't fail the command |
