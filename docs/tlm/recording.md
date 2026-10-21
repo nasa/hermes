@@ -10,8 +10,10 @@ yamcs-recorder copies one YAMCS instance's telemetry into TimescaleDB and, with 
 
     - YAMCS running with the yamcs-grpc plugin, as in the [Quick Start](../getting-started/quick-start.md). The
       recorder reads from YAMCS through the plugin.
-    - [Docker](https://docs.docker.com/get-docker/), to run the databases.
+    - [Docker](https://docs.docker.com/get-docker/), to run the databases and Grafana.
     - [Go](https://go.dev/dl/) 1.26 or newer and make, to build the recorder.
+    - [Node.js](https://nodejs.org/) 22 or newer and [Mage](https://magefile.org), to build the Hermes datasource for
+      Grafana.
     - A Hermes clone. Commands on this page run from its top folder, the repository root, unless they say otherwise:
 
         ```sh
@@ -33,8 +35,11 @@ YAMCS keeps. Its README lists
 
 ## Start the databases
 
+First build the Hermes datasource once, as in [Build the datasource](grafana.md#build-the-datasource), so Grafana can
+load it. Then start the databases, the collector and Grafana:
+
 ```sh
-docker compose up -d timescaledb otel-collector loki
+docker compose up -d
 ```
 
 | Service | Address | Details |
@@ -42,12 +47,7 @@ docker compose up -d timescaledb otel-collector loki
 | TimescaleDB | `localhost:5432` | User `postgres`, password `password`, database `hermes` |
 | OpenTelemetry collector | `localhost:4317` | Receives the recorder's events and passes them to Loki |
 | Loki | `localhost:3100` | Stores the events |
-
-!!! note
-    `docker-compose.yml` also has a Grafana service, but it can't start yet. It downloads the Hermes datasource from
-    the latest Hermes release, which doesn't include it. To chart telemetry for now, use the
-    [development Grafana](grafana.md#start-the-development-grafana) instead. It replaces this TimescaleDB with its
-    own, so set it up before you start the recorder.
+| Grafana | `localhost:3000` | User `admin`, password `admin`. See [Grafana](grafana.md). |
 
 ## Build the recorder
 
