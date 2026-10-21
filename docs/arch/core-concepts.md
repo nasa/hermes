@@ -359,7 +359,7 @@ manage deep space missions for many decades dating back to the Apollo era.
 
 To understand more about SCLK and SPICE time kernels see the NAIF [required reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/sclk.html).
 
-### Earth Return Time
+### Earth Received Time
 
-Earth return time (ERT) simply means the time (usually in UTC) at which a given piece
-of data reaches the ground system.
+Earth received time (ERT) simply means the time (usually in UTC) at which a given piece
+of data reaches the ground system. YAMCS calls it the reception or acquisition time.
