@@ -9,6 +9,7 @@ import { BackendProvider, Settings } from '@gov.nasa.jpl.hermes/vscode';
 
 import { Offline } from './Offline';
 import { commandComplete, commandSent, commandState, Verifier, yamcsArguments, yamcsDictionary } from './yamcsCommands';
+import { buildLinks, LINK_PARAMETER, LinkHealth } from './yamcsLinks';
 
 export type YamcsParameterHandler = (instance: string, values: Rpc.YamcsParameterValue[]) => void;
 
@@ -50,6 +51,7 @@ export function inTopLevelSpaceSystem(qualifiedName: string): boolean {
 interface Instance {
     name: string;
     parameters: readonly string[];
+    linkParameters: readonly string[];
     dictionary: Proto.IDictionary;
 }
 
@@ -97,8 +99,8 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
 
     /**
      * Connects to the yamcs-grpc plugin at state.address. We wait up to 5 s for the
-     * plugin to answer, then list the running instances and each one's parameters and
-     * commands, then load the workspace's dictionaries as Offline mode does, plus one
+     * plugin to answer, then list the running instances and each one's parameters,
+     * commands and links, then load the workspace's dictionaries as Offline mode does, plus one
      * built from each instance's commands, which we also save to workspace storage. The
      * parameter subscriptions open later, when the first handler calls onYamcsParameters.
      */
@@ -175,6 +177,24 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
                     this.cancelEvents?.();
                     this.cancelEvents = undefined;
                 }
+            }
+        };
+    }
+
+    // Shows the health of each instance's links in the status bar, until the returned disposable is disposed
+    showLinkHealth(): vscode.Disposable {
+        const health = new LinkHealth(this.state, this.instances.map(({ name }) => name));
+        const cancels = this.instances.map(({ name, linkParameters }) => this.client.subscribeParameters(
+            name,
+            this.state.processor,
+            linkParameters,
+            (values) => health.update(name, buildLinks(values)),
+            (err) => this.exit(err),
+        ));
+        return {
+            dispose: () => {
+                cancels.forEach((cancel) => cancel());
+                health.dispose();
             }
         };
     }
@@ -350,7 +370,7 @@ export class YamcsBackendProvider implements BackendProvider<Settings.Yamcs> {
     }
 }
 
-// Lists an instance's parameters and commands
+// Lists an instance's parameters, commands and links
 async function loadInstance(client: Rpc.YamcsClient, name: string, state: Settings.Yamcs, log: Hermes.Log): Promise<Instance> {
     const all = await client.listTelemetered(name);
     // Parameters directly in a top-level space system are packet header fields in fprime-yamcs, not channels
@@ -359,7 +379,9 @@ async function loadInstance(client: Rpc.YamcsClient, name: string, state: Settin
 
     const commands = await client.listCommands(name);
     log.info(`Found ${commands.length} commands in YAMCS instance ${name}`);
-    return { name, parameters, dictionary: yamcsDictionary(name, commands) };
+
+    const linkParameters = (await client.listLinkParameters(name)).filter((parameter) => LINK_PARAMETER.test(parameter));
+    return { name, parameters, linkParameters, dictionary: yamcsDictionary(name, commands) };
 }
 
 function delay(ms: number): Promise<void> {
