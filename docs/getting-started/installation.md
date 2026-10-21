@@ -10,22 +10,21 @@ yamcs-grpc plugin, which runs inside YAMCS. Both come with each
 
 ## Install the VS Code extensions
 
-Hermes comes as three extensions, named here as VS Code lists them:
+Hermes comes as two extensions, named here as VS Code lists them:
 
 | Extension | Adds |
 | --- | --- |
-| [Hermes](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes) | Notebooks, the telemetry table and plot, the events panel, and the connection to YAMCS |
-| [Hermes YAMCS](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes-yamcs) | YAMCS command cells |
+| [Hermes](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes) | Notebooks with YAMCS command cells, the telemetry table and plot, the events panel, and the connection to YAMCS |
 | [Hermes FPrime](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes-fprime) | F Prime command cells, `.seq` sequence files of timed commands, and F Prime dictionaries, which list the flight software's commands and telemetry |
 
-Command cells come from Hermes YAMCS and Hermes FPrime, so install at least one of them. The
-[Quick Start](quick-start.md) uses Hermes FPrime. Hermes needs [VS Code](https://code.visualstudio.com/) 1.98 or newer.
+Hermes FPrime is optional, but the [Quick Start](quick-start.md) uses it. Hermes needs
+[VS Code](https://code.visualstudio.com/) 1.98 or newer.
 
 === "VS Code Marketplace (recommended)"
 
     1. Open the Extensions view in VS Code (++ctrl+shift+x++, or ++cmd+shift+x++ on macOS).
     2. Search for "Hermes".
-    3. Install **Hermes**, then **Hermes YAMCS**, **Hermes FPrime** or both.
+    3. Install **Hermes**, then **Hermes FPrime** if you want F Prime command cells.
 
 === "GitHub release"
 
@@ -34,12 +33,11 @@ Command cells come from Hermes YAMCS and Hermes FPrime, so install at least one 
     1. On the [releases page](https://github.com/nasa/hermes/releases), download these files from one release:
         - `hermes-v<version>-<platform>.vsix`, where `<platform>` is `linux-x64`, `linux-arm64`, `darwin-x64` (Intel
           Mac), `darwin-arm64` (Apple silicon Mac), `win32-x64` or `win32-arm64`
-        - `hermes-yamcs-v<version>.vsix`, `hermes-fprime-v<version>.vsix` or both
-    2. In a terminal, go to the folder you downloaded them to. Install Hermes first, since the other two depend on it:
+        - `hermes-fprime-v<version>.vsix`, if you want Hermes FPrime
+    2. In a terminal, go to the folder you downloaded them to. Install Hermes first, since Hermes FPrime depends on it:
 
         ```sh
         code --install-extension hermes-v<version>-<platform>.vsix
-        code --install-extension hermes-yamcs-v<version>.vsix
         code --install-extension hermes-fprime-v<version>.vsix
         ```
 
