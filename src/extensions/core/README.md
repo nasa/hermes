@@ -2,10 +2,10 @@
 
 Hermes shows live telemetry and events in VS Code and sends commands from notebook cells. It connects to
 [YAMCS](https://yamcs.org/), a mission control server, through the
-[yamcs-grpc plugin](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin). The
-[project README](https://github.com/nasa/hermes/tree/v6) shows how the parts of Hermes fit together.
+[yamcs-grpc plugin](https://github.com/nasa/hermes/tree/main/yamcs-grpc-plugin). The
+[project README](https://github.com/nasa/hermes/tree/main) shows how the parts of Hermes fit together.
 
-![A Hermes notebook cell in YAMCS mode with each command's status and the events it raised, above the telemetry table and a telemetry plot](https://github.com/nasa/hermes/raw/v6/docs/assets/yamcs-mode.png)
+![A Hermes notebook cell in YAMCS mode with each command's status and the events it raised, above the telemetry table and a telemetry plot](https://github.com/nasa/hermes/raw/main/docs/assets/yamcs-mode.png)
 
 ## Features
 
@@ -16,13 +16,13 @@ Hermes shows live telemetry and events in VS Code and sends commands from notebo
 
 ## Companion extensions
 
-[Hermes FPrime](https://github.com/nasa/hermes/tree/v6/src/extensions/fprime) adds F Prime command cells, `.seq`
+[Hermes FPrime](https://github.com/nasa/hermes/tree/main/src/extensions/fprime) adds F Prime command cells, `.seq`
 sequences and F Prime dictionaries.
 
 ## Requirements
 
 - VS Code 1.98 or newer
-- A YAMCS server that runs the [yamcs-grpc plugin](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin) and
+- A YAMCS server that runs the [yamcs-grpc plugin](https://github.com/nasa/hermes/tree/main/yamcs-grpc-plugin) and
   doesn't require a login. Hermes sends no credentials, so a server that requires one refuses it with
   `UNAUTHENTICATED`.
 
@@ -54,7 +54,7 @@ spaces or commas. Lines starting with `#` are comments.
 ```
 
 Completion, hovers and argument checks use the cell's [dictionary](#dictionaries). To write F Prime names and time
-tags instead, use an F Prime cell from [Hermes FPrime](https://github.com/nasa/hermes/tree/v6/src/extensions/fprime).
+tags instead, use an F Prime cell from [Hermes FPrime](https://github.com/nasa/hermes/tree/main/src/extensions/fprime).
 
 ### Run a cell
 
@@ -83,7 +83,7 @@ checking a command as a step, such as `Sent`.
 | Status (example) | Meaning |
 | --- | --- |
 | `● Sent · 0.4 s` | In flight, with the newest step YAMCS recorded for it and the time so far |
-| `✓ Sent · 0.1 s` | Passed, with the newest step and the time it took |
+| `✓ completed · 0.1 s` | Passed, with the time it took |
 | `✗ failed · EXECUTION_ERROR` | Failed, with YAMCS's reason |
 | `○ not sent` | Waiting for the commands before it, or the cell ended before sending it, or YAMCS refused it |
 | `? Sent · 1.5 s` | Result unknown: the cell stopped while the command was in flight, or a verifier failed and YAMCS didn't fail the command |

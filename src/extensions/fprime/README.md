@@ -1,8 +1,8 @@
 # Hermes FPrime
 
-Adds F Prime's command language to [Hermes](https://github.com/nasa/hermes/tree/v6), for F Prime cells in Hermes
+Adds F Prime's command language to [Hermes](https://github.com/nasa/hermes/tree/main), for F Prime cells in Hermes
 notebooks (`.hermes.md`), `.seq` sequence files and F Prime notebooks (`.fnb`), which save as sequence text instead of
-Markdown. It needs the [Hermes extension](https://github.com/nasa/hermes/tree/v6/src/extensions/core).
+Markdown. It needs the [Hermes extension](https://github.com/nasa/hermes/tree/main/src/extensions/core).
 
 ## Features
 
@@ -15,7 +15,7 @@ Markdown. It needs the [Hermes extension](https://github.com/nasa/hermes/tree/v6
 ## F Prime cells in YAMCS mode
 
 When [fprime-yamcs](https://github.com/fprime-community/fprime-yamcs) runs a YAMCS instance, F Prime cells can send
-commands to it through [YAMCS mode](https://github.com/nasa/hermes/tree/v6/src/extensions/core#yamcs-mode). Hermes
+commands to it through [YAMCS mode](https://github.com/nasa/hermes/tree/main/src/extensions/core#yamcs-mode). Hermes
 builds a dictionary called `<instance> (F Prime)` for each such instance.
 
 A cell uses the dictionary of its target, the instance picked in its status bar. A cell on **Automatic**, the default,
@@ -37,7 +37,7 @@ R00:00:05 CdhCore.cmdDisp.CMD_NO_OP_STRING "hello"   ; waits 5 s after the first
 | Comment | `; waits 5 s` | Everything after `;` |
 
 Commands pass, fail and show their status as in
-[YAMCS cells](https://github.com/nasa/hermes/tree/v6/src/extensions/core#run-a-cell), and the cell lists events the
+[YAMCS cells](https://github.com/nasa/hermes/tree/main/src/extensions/core#run-a-cell), and the cell lists events the
 same way.
 
 fprime-yamcs gives commands no verifiers, the checks YAMCS runs on returning telemetry to decide whether a command

@@ -27,13 +27,13 @@ use Hermes with YAMCS, follow the READMEs linked below.
 
 ```mermaid
 flowchart TB
-    fsw["Flight software, such as an F Prime deployment"]
+    fsw["F Prime flight software"]
 
-    subgraph yamcs ["YAMCS, run by fprime-yamcs or on its own"]
+    subgraph yamcs ["YAMCS"]
         grpc["yamcs-grpc plugin"]
     end
 
-    vsc["Hermes VS Code extensions"]
+    vsc["Hermes for VS Code"]
     rec["yamcs-recorder"]
     ts[("TimescaleDB")]
     otel["OpenTelemetry collector"]

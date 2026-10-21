@@ -7,16 +7,16 @@
 # Hermes datasource
 
 The Hermes datasource charts the telemetry that
-[yamcs-recorder](https://github.com/nasa/hermes/tree/v6/cmd/yamcs-recorder) records from [YAMCS](https://yamcs.org), a
+[yamcs-recorder](https://github.com/nasa/hermes/tree/main/cmd/yamcs-recorder) records from [YAMCS](https://yamcs.org), a
 mission control server, into [TimescaleDB](https://www.timescale.com/). It is part of NASA's
-[Hermes](https://github.com/nasa/hermes/tree/v6) ground data system and has two query modes:
+[Hermes](https://github.com/nasa/hermes/tree/main) ground data system and has two query modes:
 
 - Builder: pick parameters, instances and struct members from lists, with no SQL.
 - Code: write your own SQL.
 
 Events are not in TimescaleDB. With `--otlp`, yamcs-recorder sends them through an OpenTelemetry collector to Loki, so
 query them with Grafana's Loki datasource
-([examples](https://github.com/nasa/hermes/tree/v6/cmd/yamcs-recorder#query-events-in-grafana)).
+([examples](https://github.com/nasa/hermes/tree/main/cmd/yamcs-recorder#query-events-in-grafana)).
 
 ## Requirements
 
@@ -50,7 +50,7 @@ Then:
 
 Go to **Connections** > **Data sources** > **Add new data source**, search for Hermes, and fill in every field:
 
-| Field    | Value                            | With Hermes's [`docker-compose.yml`](https://github.com/nasa/hermes/blob/v6/docker-compose.yml) |
+| Field    | Value                            | With Hermes's [`docker-compose.yml`](https://github.com/nasa/hermes/blob/main/docker-compose.yml) |
 | -------- | -------------------------------- | ----------------------------------------------------------------------------------------------- |
 | Host     | TimescaleDB's `host:port`        | `localhost:5432`, or `timescaledb:5432` from a Grafana in the same compose project              |
 | User     | The database user                | `postgres`                                                                                      |

@@ -9,7 +9,7 @@ yamcs-recorder copies one YAMCS instance's telemetry into TimescaleDB and, with 
 !!! abstract "Before you start"
 
     - YAMCS running with the yamcs-grpc plugin, as in
-      [Start YAMCS with the plugin](../getting-started/quick-start.md#start-yamcs-with-the-plugin). The recorder reads
+      [Running Your F Prime Deployment](../getting-started/quick-start.md#running-your-f-prime-deployment). The recorder reads
       from YAMCS through the plugin.
     - [Docker](https://docs.docker.com/get-docker/), to run the databases and Grafana.
     - A Hermes clone. Its `docker-compose.yml` and `config` folder start the databases and Grafana:
@@ -128,7 +128,7 @@ entry that is already there:
 
 Stop fprime-yamcs with Ctrl+C. Then start it again from the folder that holds `yamcs-config`, this time with your
 config directory. Replace `<yamcs-grpc>` with the yamcs-grpc plugin folder, as in
-[Start YAMCS with the plugin](../getting-started/quick-start.md#start-yamcs-with-the-plugin):
+[Running Your F Prime Deployment](../getting-started/quick-start.md#running-your-f-prime-deployment):
 
 ```sh
 fprime-yamcs --yamcs-config-dir yamcs-config --yamcs-plugin-jars <yamcs-grpc>
