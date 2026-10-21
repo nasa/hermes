@@ -37,7 +37,8 @@ npm install && npm run build   # frontend, needs Node.js 22 or newer
 mage -v                        # backend, needs Go and Mage (magefile.org)
 ```
 
-Then:
+To use the Grafana in Hermes's `docker-compose.yml`, run `docker compose up -d` from the repository root. It loads the
+plugin from `dist/`. To install it in another Grafana:
 
 1. Copy `dist/` into Grafana's plugins directory as `nasa-hermes-datasource`, for example
    `/var/lib/grafana/plugins/nasa-hermes-datasource`.
