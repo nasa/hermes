@@ -31,13 +31,12 @@ Hermes FPrime is optional, but the [Quick Start](quick-start.md) uses it. Hermes
     Use the release files to install a specific version, or on a computer that can't reach the Marketplace.
 
     1. On the [releases page](https://github.com/nasa/hermes/releases), download these files from one release:
-        - `hermes-v<version>-<platform>.vsix`, where `<platform>` is `linux-x64`, `linux-arm64`, `darwin-x64` (Intel
-          Mac), `darwin-arm64` (Apple silicon Mac), `win32-x64` or `win32-arm64`
+        - `hermes-v<version>.vsix`
         - `hermes-fprime-v<version>.vsix`, if you want Hermes FPrime
     2. In a terminal, go to the folder you downloaded them to. Install Hermes first, since Hermes FPrime depends on it:
 
         ```sh
-        code --install-extension hermes-v<version>-<platform>.vsix
+        code --install-extension hermes-v<version>.vsix
         code --install-extension hermes-fprime-v<version>.vsix
         ```
 
