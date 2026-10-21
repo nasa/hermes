@@ -115,7 +115,7 @@ such as Queued, Released and Sent. Once YAMCS has the command, its status names 
 | --- | --- |
 | `◷ sends in 3.2 s` | Waiting out its time tag |
 | `● Sent · 0.4 s` | In flight, with the time so far |
-| `✓ Sent · 0.1 s` | Passed, with the time it took |
+| `✓ completed · 0.1 s` | Passed, with the time it took |
 | `✗ failed · EXECUTION_ERROR` | Failed, with YAMCS's reason |
 | `○ not sent` | Waiting for the commands before it, or the cell ended before sending it, or YAMCS refused it |
 | `? Sent · 1.5 s` | Result unknown: the cell stopped while the command was in flight, or a verifier failed and YAMCS didn't fail the command |
