@@ -1,8 +1,8 @@
+import { randomBytes } from 'crypto';
 import * as vscode from 'vscode';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { Proto } from '@gov.nasa.jpl.hermes/types';
-import { generateShortUid } from '@gov.nasa.jpl.hermes/util';
 
 const nullDisposable: vscode.Disposable = { dispose: () => { } };
 
@@ -133,7 +133,7 @@ export class Offline implements Hermes.Api {
             // YAMCS mode's dictionaries have an id, and we save them so Offline mode keeps them
             save = dict.head?.type === 'yamcs';
         } else {
-            id = generateShortUid();
+            id = randomBytes(4).toString('hex');
             save = true;
         }
 
