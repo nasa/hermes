@@ -4,125 +4,76 @@ icon: fontawesome/solid/box
 
 # Installation
 
-Hermes can be installed in multiple ways depending on your use case. For most users, the VSCode extension from the marketplace is the recommended approach as it includes everything needed to get started.
+Hermes v6 has no release yet. The Hermes extensions on the VS Code Marketplace are v5, so until v6 is released, build
+the parts you need from the `v6` branch.
 
-Typically the method will
-depend on the context you are running in. Flight software developers and
-small teams should use the [VSCode marketplace](#vscode-marketplace-recommended) while production environments and mission
-operations will use a [standalone binary](#standalone-backend-binary)
+## Prerequisites
 
-## VSCode Marketplace (Recommended)
+| Tool | Needed for |
+| --- | --- |
+| [Docker](https://docs.docker.com/get-docker/) | Building the yamcs-grpc plugin, which compiles inside a YAMCS image, so you don't need Java or Maven |
+| curl and a POSIX shell (Git Bash or WSL on Windows) | Building the yamcs-grpc plugin |
+| [VS Code](https://code.visualstudio.com/) 1.98 or newer | The Hermes extensions |
+| [Node.js](https://nodejs.org/) 22 and [Yarn 1](https://classic.yarnpkg.com/en/docs/install) | Running the Hermes extensions from the repository |
 
-The easiest way to install Hermes is through the [Visual Studio Code](https://code.visualstudio.com/) [marketplace](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes)
+## Get the code
 
-![alt text](../assets/marketplace.png)
-
-1. [Install](https://code.visualstudio.com/) & Open Visual Studio Code
-2. Go to the Extensions view (`Cmd+Shift+X` on macOS, `Ctrl+Shift+X` on Windows/Linux)
-3. Search for "Hermes"
-4. Install the **Hermes** extension (ID: `jet-propulsion-laboratory.hermes`)
-5. Optionally, install the **Hermes FPrime** [extension](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes-fprime) for F' framework support.
-
-**What's included:**
-
-- Complete VSCode integration with telemetry viewers, command interfaces, and sequence editors
-- Backend binary bundled for your platform (automatically selected)
-- Local backend mode enabled by default - no additional setup required
-
-**Supported platforms:**
-
-- macOS (Intel, Apple Silicon)
-- Linux (x64, ARM64)
-- Windows (x64, ARM64)
-
-!!! info "Windows Support"
-
-    Windows build is supported however we do not run regression tests for the
-    backend services on Windows. It is recommended to run the Hermes backend
-    on a Linux or macOS host for the best support.
-
-## Standalone Backend Binary
-
-For running Hermes backend as a standalone service (testbed environments, CI/CD, mission operations):
-
-1. Go to the [Hermes releases page](https://github.com/nasa/hermes/releases)
-2. Download the backend binary for your platform `hermes-<version>-<platform>.tar.gz`:
-3. Untar the backend:
-   ```bash
-   tar -xvf hermes-<version>-<platform>.tar.gz
-   ```
-4. Run the backend:
-   ```bash
-   ./backend --bind-type tcp --bind :6880
-   ```
-
-See more detailed setup and configuration instructions on
-backend configuration and setup for production environment [here](../prod/index.md)
-
-**When to use standalone backend:**
-
-- Running backend on a dedicated server or testbed computer
-- Connecting multiple VSCode instances to a shared backend
-- Integrating Hermes into existing ground system infrastructure
-- CI/CD environments for automated testing
-
-**Connecting VSCode to remote backend:**
-
-1. Install the VSCode extension
-2. Change from "local" to "remote"
-3. Set "hermes.host.url" to your backend URL (e.g., `http://0.0.0.0:6880`)
-
-## GitHub Releases (for automation or offline environments)
-
-If you need a specific version or want to install manually:
-
-1. Go to the [Hermes releases page](https://github.com/nasa/hermes/releases)
-2. Download the `.vsix` file for your platform:
-3. Optionally download `hermes-fprime-<version>.vsix` for F' support
-4. Install the extension(s):
-   ```bash
-   code --install-extension hermes-core-<version>-<platform>.vsix
-   code --install-extension hermes-fprime-<version>.vsix
-   ```
-
-**Note:** Each platform-specific `.vsix` file includes the backend binary compiled for that platform. Make sure to download the correct version for your system.
-
-## Build from Source (for developers)
-
-For development or customization:
-
-**Prerequisites:**
-
-- Go 1.25 or later
-- Node.js 20 or later
-- Yarn package manager
-
-**Build steps:**
-
-```bash
-# Clone the repository
-git clone https://github.com/nasa/hermes.git
+```sh
+git clone --branch v6 https://github.com/nasa/hermes.git
 cd hermes
-
-# Install the NodeJS dependencies
-yarn install
-
-# Build everything
-make all
-
-# Or build components separately
-make go              # Build all Go binaries
-yarn build           # Build VSCode extensions
 ```
 
-**Outputs:**
+## Build the yamcs-grpc plugin
 
-- Go binaries: `out/backend`, `out/uplink`, `out/sqlrecord`, etc.
-- NodeJS scripts: `out/*.js`
-- VSCode bundled sources: `src/extensions/out/*.js`
+The plugin runs inside YAMCS and serves YAMCS's API over gRPC. The Hermes extensions and yamcs-recorder connect to
+YAMCS through it.
 
-## Next Steps
+```sh
+cd yamcs-grpc-plugin
+./build.sh
+```
 
-- [Getting Started Guide](./quick-start.md) - Create your first profile and connect to flight software
-- [Core Concepts](../arch/core-concepts.md) - Learn about Hermes Core Concepts and Design Patterns
-- [Telemetry Monitoring](../tlm/index.md) - Setup your monitoring infrastructure
+`yamcs-grpc-plugin/out/lib/` then holds the plugin jar and the gRPC jars it needs. The
+[Quick Start](quick-start.md#start-yamcs-with-the-plugin) loads them into YAMCS. To run the plugin in stock YAMCS
+instead, see the [plugin README](https://github.com/nasa/hermes/tree/v6/yamcs-grpc-plugin#run).
+
+## Install the VS Code extensions
+
+Hermes comes as three extensions:
+
+| Extension | Adds |
+| --- | --- |
+| Hermes | Notebooks, the telemetry table and plot, the events panel, and the connection to YAMCS |
+| Hermes YAMCS | YAMCS command cells |
+| Hermes FPrime | F Prime command cells, `.seq` sequences and F Prime dictionaries |
+
+=== "Run from the repository"
+
+    From the repository root:
+
+    ```sh
+    yarn install
+    ```
+
+    Then open the repository in VS Code, pick the **All** configuration in the Run and Debug view, and press ++f5++.
+    VS Code builds the extensions and opens a second window with all three loaded. Use Hermes in that window.
+
+=== "Install CI builds"
+
+    The [Build VSCode Extensions](https://github.com/nasa/hermes/actions/workflows/build-vscode-extensions.yml)
+    workflow packages the extensions on pull requests. To build `v6`, start it with **Run workflow**, which needs
+    write access to the repository.
+
+    1. Open a run and download three artifacts: `hermes-dev-…` for your platform, such as `hermes-dev-…-linux-x64`,
+       then `hermes-fprime-dev-…` and `hermes-yamcs-dev-…`. Each one is a zip holding a `.vsix` file.
+    2. In VS Code, run **Extensions: Install from VSIX...** for each `.vsix`. Install Hermes first, since the other two
+       depend on it.
+
+## Recording and Grafana
+
+To record telemetry and events and chart them, see [Recording](../tlm/recording.md) and
+[Grafana](../tlm/grafana.md).
+
+## Next steps
+
+- [Quick Start](quick-start.md): connect Hermes to an F Prime deployment and send it a command.
