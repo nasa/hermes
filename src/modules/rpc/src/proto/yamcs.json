@@ -5815,6 +5815,1456 @@
                   }
                 }
               }
+            },
+            "buckets": {
+              "options": {
+                "java_package": "org.yamcs.protobuf",
+                "java_outer_classname": "BucketsProto",
+                "java_multiple_files": true
+              },
+              "nested": {
+                "BucketsApi": {
+                  "edition": "proto2",
+                  "options": {
+                    "(yamcs.api.markdown)": true
+                  },
+                  "methods": {
+                    "ListBuckets": {
+                      "requestType": "ListBucketsRequest",
+                      "responseType": "ListBucketsResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/storage/buckets",
+                        "(yamcs.api.route).additional_bindings.get": "/api/buckets/{instance}",
+                        "(yamcs.api.route).additional_bindings.deprecated": true
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/storage/buckets",
+                            "additional_bindings": {
+                              "get": "/api/buckets/{instance}",
+                              "deprecated": true
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "GetBucket": {
+                      "requestType": "GetBucketRequest",
+                      "responseType": "BucketInfo",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/storage/buckets/{bucketName}",
+                        "(yamcs.api.route).additional_bindings.get": "/api/buckets/{instance}/{bucketName}",
+                        "(yamcs.api.route).additional_bindings.deprecated": true
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/storage/buckets/{bucketName}",
+                            "additional_bindings": {
+                              "get": "/api/buckets/{instance}/{bucketName}",
+                              "deprecated": true
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "CreateBucket": {
+                      "requestType": "CreateBucketRequest",
+                      "responseType": "BucketInfo",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/storage/buckets",
+                        "(yamcs.api.route).body": "*",
+                        "(yamcs.api.route).additional_bindings.post": "/api/buckets/{instance}",
+                        "(yamcs.api.route).additional_bindings.body": "*",
+                        "(yamcs.api.route).additional_bindings.deprecated": true
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/storage/buckets",
+                            "body": "*",
+                            "additional_bindings": {
+                              "post": "/api/buckets/{instance}",
+                              "body": "*",
+                              "deprecated": true
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "DeleteBucket": {
+                      "requestType": "DeleteBucketRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).delete": "/api/storage/buckets/{bucketName}",
+                        "(yamcs.api.route).additional_bindings.delete": "/api/buckets/{instance}/{bucketName}",
+                        "(yamcs.api.route).additional_bindings.deprecated": true
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "delete": "/api/storage/buckets/{bucketName}",
+                            "additional_bindings": {
+                              "delete": "/api/buckets/{instance}/{bucketName}",
+                              "deprecated": true
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "GetObject": {
+                      "requestType": "GetObjectRequest",
+                      "responseType": "yamcs.api.HttpBody",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/storage/buckets/{bucketName}/objects/{objectName*}",
+                        "(yamcs.api.route).additional_bindings.get": "/api/buckets/{instance}/{bucketName}/objects/{objectName*}",
+                        "(yamcs.api.route).additional_bindings.deprecated": true
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/storage/buckets/{bucketName}/objects/{objectName*}",
+                            "additional_bindings": {
+                              "get": "/api/buckets/{instance}/{bucketName}/objects/{objectName*}",
+                              "deprecated": true
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "GetObjectInfo": {
+                      "requestType": "GetObjectInfoRequest",
+                      "responseType": "ObjectInfo",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/storage/buckets/{bucketName}/objectInfo/{objectName*}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/storage/buckets/{bucketName}/objectInfo/{objectName*}"
+                          }
+                        }
+                      ]
+                    },
+                    "UploadObject": {
+                      "requestType": "UploadObjectRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/storage/buckets/{bucketName}/objects/{objectName**}",
+                        "(yamcs.api.route).body": "data",
+                        "(yamcs.api.route).max_body_size": 5242880,
+                        "(yamcs.api.route).additional_bindings.post": "/api/buckets/{instance}/{bucketName}/objects/{objectName**}",
+                        "(yamcs.api.route).additional_bindings.body": "data",
+                        "(yamcs.api.route).additional_bindings.max_body_size": 5242880,
+                        "(yamcs.api.route).additional_bindings.deprecated": true
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/storage/buckets/{bucketName}/objects/{objectName**}",
+                            "body": "data",
+                            "max_body_size": 5242880,
+                            "additional_bindings": {
+                              "post": "/api/buckets/{instance}/{bucketName}/objects/{objectName**}",
+                              "body": "data",
+                              "max_body_size": 5242880,
+                              "deprecated": true
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "ListObjects": {
+                      "requestType": "ListObjectsRequest",
+                      "responseType": "ListObjectsResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/storage/buckets/{bucketName}/objects",
+                        "(yamcs.api.route).field_mask_root": "objects",
+                        "(yamcs.api.route).additional_bindings.get": "/api/buckets/{instance}/{bucketName}/objects",
+                        "(yamcs.api.route).additional_bindings.field_mask_root": "objects",
+                        "(yamcs.api.route).additional_bindings.deprecated": true
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/storage/buckets/{bucketName}/objects",
+                            "field_mask_root": "objects",
+                            "additional_bindings": {
+                              "get": "/api/buckets/{instance}/{bucketName}/objects",
+                              "field_mask_root": "objects",
+                              "deprecated": true
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "DeleteObject": {
+                      "requestType": "DeleteObjectRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).delete": "/api/storage/buckets/{bucketName}/objects/{objectName*}",
+                        "(yamcs.api.route).additional_bindings.delete": "/api/buckets/{instance}/{bucketName}/objects/{objectName*}",
+                        "(yamcs.api.route).additional_bindings.deprecated": true
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "delete": "/api/storage/buckets/{bucketName}/objects/{objectName*}",
+                            "additional_bindings": {
+                              "delete": "/api/buckets/{instance}/{bucketName}/objects/{objectName*}",
+                              "deprecated": true
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "CreateBucketRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "DeleteBucketRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "bucketName": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "GetObjectRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "bucketName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "objectName": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "GetObjectInfoRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "bucketName": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "objectName": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "DeleteObjectRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "bucketName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "objectName": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "UploadObjectRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "bucketName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "objectName": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "data": {
+                      "type": "yamcs.api.HttpBody",
+                      "id": 4
+                    }
+                  }
+                },
+                "BucketInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "size": {
+                      "type": "uint64",
+                      "id": 2
+                    },
+                    "numObjects": {
+                      "type": "uint32",
+                      "id": 3
+                    },
+                    "maxSize": {
+                      "type": "uint64",
+                      "id": 4
+                    },
+                    "maxObjects": {
+                      "type": "uint32",
+                      "id": 5
+                    },
+                    "created": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 6
+                    },
+                    "directory": {
+                      "type": "string",
+                      "id": 7
+                    },
+                    "location": {
+                      "type": "BucketLocation",
+                      "id": 8
+                    }
+                  }
+                },
+                "BucketLocation": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "description": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "ObjectInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "created": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 2
+                    },
+                    "size": {
+                      "type": "uint64",
+                      "id": 3
+                    },
+                    "metadata": {
+                      "keyType": "string",
+                      "type": "string",
+                      "id": 4
+                    },
+                    "contentType": {
+                      "type": "string",
+                      "id": 5
+                    }
+                  }
+                },
+                "ListBucketsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    }
+                  }
+                },
+                "GetBucketRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "bucketName": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "ListBucketsResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "buckets": {
+                      "rule": "repeated",
+                      "type": "BucketInfo",
+                      "id": 1
+                    }
+                  }
+                },
+                "ListObjectsRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1,
+                      "options": {
+                        "deprecated": true
+                      }
+                    },
+                    "bucketName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "delimiter": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "prefix": {
+                      "type": "string",
+                      "id": 4
+                    }
+                  }
+                },
+                "ListObjectsResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "prefixes": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 1
+                    },
+                    "objects": {
+                      "rule": "repeated",
+                      "type": "ObjectInfo",
+                      "id": 2
+                    }
+                  }
+                }
+              }
+            },
+            "filetransfer": {
+              "options": {
+                "java_package": "org.yamcs.protobuf",
+                "java_outer_classname": "FileTransferProto",
+                "java_multiple_files": true
+              },
+              "nested": {
+                "FileTransferApi": {
+                  "edition": "proto2",
+                  "options": {
+                    "(yamcs.api.markdown)": true
+                  },
+                  "methods": {
+                    "ListFileTransferServices": {
+                      "requestType": "ListFileTransferServicesRequest",
+                      "responseType": "ListFileTransferServicesResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/filetransfer/{instance}/services"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/filetransfer/{instance}/services"
+                          }
+                        }
+                      ]
+                    },
+                    "GetFileTransferService": {
+                      "requestType": "GetFileTransferServiceRequest",
+                      "responseType": "FileTransferServiceInfo",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/filetransfer/{instance}/services/{serviceName}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/filetransfer/{instance}/services/{serviceName}"
+                          }
+                        }
+                      ]
+                    },
+                    "ListTransfers": {
+                      "requestType": "ListTransfersRequest",
+                      "responseType": "ListTransfersResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/filetransfer/{instance}/{serviceName}/transfers"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/filetransfer/{instance}/{serviceName}/transfers"
+                          }
+                        }
+                      ]
+                    },
+                    "GetTransfer": {
+                      "requestType": "GetTransferRequest",
+                      "responseType": "TransferInfo",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/filetransfer/{instance}/{serviceName}/transfers/{id}"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/filetransfer/{instance}/{serviceName}/transfers/{id}"
+                          }
+                        }
+                      ]
+                    },
+                    "CreateTransfer": {
+                      "requestType": "CreateTransferRequest",
+                      "responseType": "TransferInfo",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/filetransfer/{instance}/{serviceName}/transfers",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/filetransfer/{instance}/{serviceName}/transfers",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "PauseTransfer": {
+                      "requestType": "PauseTransferRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/filetransfer/{instance}/{serviceName}/transfers/{id}:pause"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/filetransfer/{instance}/{serviceName}/transfers/{id}:pause"
+                          }
+                        }
+                      ]
+                    },
+                    "CancelTransfer": {
+                      "requestType": "CancelTransferRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/filetransfer/{instance}/{serviceName}/transfers/{id}:cancel"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/filetransfer/{instance}/{serviceName}/transfers/{id}:cancel"
+                          }
+                        }
+                      ]
+                    },
+                    "ResumeTransfer": {
+                      "requestType": "ResumeTransferRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/filetransfer/{instance}/{serviceName}/transfers/{id}:resume"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/filetransfer/{instance}/{serviceName}/transfers/{id}:resume"
+                          }
+                        }
+                      ]
+                    },
+                    "SubscribeTransfers": {
+                      "requestType": "SubscribeTransfersRequest",
+                      "responseType": "TransferInfo",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.websocket).topic": "file-transfers"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.websocket)": {
+                            "topic": "file-transfers"
+                          }
+                        }
+                      ]
+                    },
+                    "SubscribeRemoteFileList": {
+                      "requestType": "SubscribeTransfersRequest",
+                      "responseType": "ListFilesResponse",
+                      "responseStream": true,
+                      "options": {
+                        "(yamcs.api.websocket).topic": "remote-file-list"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.websocket)": {
+                            "topic": "remote-file-list"
+                          }
+                        }
+                      ]
+                    },
+                    "FetchFileList": {
+                      "requestType": "ListFilesRequest",
+                      "responseType": "google.protobuf.Empty",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/filetransfer/{instance}/{serviceName}/files:sync",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/filetransfer/{instance}/{serviceName}/files:sync",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    },
+                    "GetFileList": {
+                      "requestType": "ListFilesRequest",
+                      "responseType": "ListFilesResponse",
+                      "options": {
+                        "(yamcs.api.route).get": "/api/filetransfer/{instance}/{serviceName}/files",
+                        "(yamcs.api.route).field_mask_root": "files"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "get": "/api/filetransfer/{instance}/{serviceName}/files",
+                            "field_mask_root": "files"
+                          }
+                        }
+                      ]
+                    },
+                    "RunFileAction": {
+                      "requestType": "RunFileActionRequest",
+                      "responseType": "google.protobuf.Struct",
+                      "options": {
+                        "(yamcs.api.route).post": "/api/filetransfer/{instance}/{serviceName}/files:runFileAction",
+                        "(yamcs.api.route).body": "*"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(yamcs.api.route)": {
+                            "post": "/api/filetransfer/{instance}/{serviceName}/files:runFileAction",
+                            "body": "*"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "TransferDirection": {
+                  "edition": "proto2",
+                  "values": {
+                    "UPLOAD": 1,
+                    "DOWNLOAD": 2
+                  }
+                },
+                "TransferState": {
+                  "edition": "proto2",
+                  "values": {
+                    "RUNNING": 1,
+                    "PAUSED": 2,
+                    "FAILED": 3,
+                    "COMPLETED": 4,
+                    "QUEUED": 5,
+                    "CANCELLING": 6
+                  }
+                },
+                "TransactionId": {
+                  "edition": "proto2",
+                  "fields": {
+                    "sequenceNumber": {
+                      "type": "uint32",
+                      "id": 1
+                    },
+                    "initiatorEntity": {
+                      "type": "uint64",
+                      "id": 2
+                    }
+                  }
+                },
+                "ListFileTransferServicesRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "GetFileTransferServiceRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "serviceName": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "ListFileTransferServicesResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "services": {
+                      "rule": "repeated",
+                      "type": "FileTransferServiceInfo",
+                      "id": 1
+                    }
+                  }
+                },
+                "FileTransferCapabilities": {
+                  "edition": "proto2",
+                  "fields": {
+                    "upload": {
+                      "type": "bool",
+                      "id": 1
+                    },
+                    "download": {
+                      "type": "bool",
+                      "id": 2
+                    },
+                    "remotePath": {
+                      "type": "bool",
+                      "id": 4
+                    },
+                    "fileList": {
+                      "type": "bool",
+                      "id": 5
+                    },
+                    "hasTransferType": {
+                      "type": "bool",
+                      "id": 6
+                    },
+                    "pauseResume": {
+                      "type": "bool",
+                      "id": 9
+                    },
+                    "fileListExtraColumns": {
+                      "rule": "repeated",
+                      "type": "ExtraColumnInfo",
+                      "id": 7
+                    },
+                    "fileActions": {
+                      "rule": "repeated",
+                      "type": "yamcs.protobuf.actions.ActionInfo",
+                      "id": 8
+                    }
+                  }
+                },
+                "ExtraColumnInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "id": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "label": {
+                      "type": "string",
+                      "id": 2
+                    }
+                  }
+                },
+                "FileTransferServiceInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "localEntities": {
+                      "rule": "repeated",
+                      "type": "EntityInfo",
+                      "id": 3
+                    },
+                    "remoteEntities": {
+                      "rule": "repeated",
+                      "type": "EntityInfo",
+                      "id": 4
+                    },
+                    "capabilities": {
+                      "type": "FileTransferCapabilities",
+                      "id": 5
+                    },
+                    "transferOptions": {
+                      "rule": "repeated",
+                      "type": "FileTransferOption",
+                      "id": 6
+                    }
+                  }
+                },
+                "EntityInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "id": {
+                      "type": "uint64",
+                      "id": 2
+                    }
+                  }
+                },
+                "TransferInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "id": {
+                      "type": "uint64",
+                      "id": 1
+                    },
+                    "startTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 2
+                    },
+                    "state": {
+                      "type": "TransferState",
+                      "id": 3
+                    },
+                    "bucket": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "objectName": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "remotePath": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "direction": {
+                      "type": "TransferDirection",
+                      "id": 7
+                    },
+                    "totalSize": {
+                      "type": "uint64",
+                      "id": 8
+                    },
+                    "sizeTransferred": {
+                      "type": "uint64",
+                      "id": 9
+                    },
+                    "reliable": {
+                      "type": "bool",
+                      "id": 10
+                    },
+                    "failureReason": {
+                      "type": "string",
+                      "id": 11
+                    },
+                    "transactionId": {
+                      "type": "TransactionId",
+                      "id": 12
+                    },
+                    "creationTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 13
+                    },
+                    "transferType": {
+                      "type": "string",
+                      "id": 14
+                    },
+                    "localEntity": {
+                      "type": "EntityInfo",
+                      "id": 15
+                    },
+                    "remoteEntity": {
+                      "type": "EntityInfo",
+                      "id": 16
+                    }
+                  }
+                },
+                "CreateTransferRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "serviceName": {
+                      "type": "string",
+                      "id": 8
+                    },
+                    "direction": {
+                      "type": "TransferDirection",
+                      "id": 2
+                    },
+                    "bucket": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "objectName": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "remotePath": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "source": {
+                      "type": "string",
+                      "id": 9
+                    },
+                    "destination": {
+                      "type": "string",
+                      "id": 10
+                    },
+                    "options": {
+                      "type": "google.protobuf.Struct",
+                      "id": 11
+                    }
+                  }
+                },
+                "PauseTransferRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "serviceName": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "id": {
+                      "type": "int64",
+                      "id": 2
+                    }
+                  }
+                },
+                "CancelTransferRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "serviceName": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "id": {
+                      "type": "int64",
+                      "id": 2
+                    }
+                  }
+                },
+                "ResumeTransferRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "serviceName": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "id": {
+                      "type": "int64",
+                      "id": 2
+                    }
+                  }
+                },
+                "ListTransfersRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "serviceName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "start": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 3
+                    },
+                    "stop": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 4
+                    },
+                    "localEntityId": {
+                      "type": "int64",
+                      "id": 5
+                    },
+                    "remoteEntityId": {
+                      "type": "int64",
+                      "id": 6
+                    },
+                    "state": {
+                      "rule": "repeated",
+                      "type": "TransferState",
+                      "id": 7
+                    },
+                    "direction": {
+                      "type": "TransferDirection",
+                      "id": 8
+                    },
+                    "limit": {
+                      "type": "int32",
+                      "id": 9
+                    },
+                    "order": {
+                      "type": "string",
+                      "id": 10
+                    }
+                  }
+                },
+                "GetTransferRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "serviceName": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "id": {
+                      "type": "int64",
+                      "id": 2
+                    }
+                  }
+                },
+                "ListTransfersResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "transfers": {
+                      "rule": "repeated",
+                      "type": "TransferInfo",
+                      "id": 1
+                    }
+                  }
+                },
+                "SubscribeTransfersRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "serviceName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "ongoingOnly": {
+                      "type": "bool",
+                      "id": 3
+                    }
+                  }
+                },
+                "ListFilesRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "serviceName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "source": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "destination": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "remotePath": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "options": {
+                      "type": "google.protobuf.Struct",
+                      "id": 6
+                    }
+                  }
+                },
+                "RemoteFile": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "displayName": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "isDirectory": {
+                      "type": "bool",
+                      "id": 2
+                    },
+                    "size": {
+                      "type": "uint64",
+                      "id": 3
+                    },
+                    "modified": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 4
+                    },
+                    "extra": {
+                      "type": "google.protobuf.Struct",
+                      "id": 6
+                    }
+                  }
+                },
+                "ListFilesResponse": {
+                  "edition": "proto2",
+                  "fields": {
+                    "files": {
+                      "rule": "repeated",
+                      "type": "RemoteFile",
+                      "id": 1
+                    },
+                    "destination": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "remotePath": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "listTime": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 4
+                    },
+                    "state": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "progressMessage": {
+                      "type": "string",
+                      "id": 6
+                    }
+                  }
+                },
+                "RunFileActionRequest": {
+                  "edition": "proto2",
+                  "fields": {
+                    "instance": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "serviceName": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "remoteEntity": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "file": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "action": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "message": {
+                      "type": "google.protobuf.Struct",
+                      "id": 6
+                    }
+                  }
+                },
+                "FileTransferOption": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "type": {
+                      "type": "Type",
+                      "id": 2
+                    },
+                    "title": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "description": {
+                      "type": "string",
+                      "id": 4
+                    },
+                    "associatedText": {
+                      "type": "string",
+                      "id": 5
+                    },
+                    "default": {
+                      "type": "string",
+                      "id": 6
+                    },
+                    "values": {
+                      "rule": "repeated",
+                      "type": "Value",
+                      "id": 7
+                    },
+                    "allowCustomOption": {
+                      "type": "bool",
+                      "id": 8
+                    }
+                  },
+                  "nested": {
+                    "Type": {
+                      "values": {
+                        "BOOLEAN": 0,
+                        "DOUBLE": 1,
+                        "STRING": 2
+                      }
+                    },
+                    "Value": {
+                      "fields": {
+                        "value": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "verboseName": {
+                          "type": "string",
+                          "id": 2
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "actions": {
+              "options": {
+                "java_package": "org.yamcs.protobuf.actions",
+                "java_outer_classname": "ActionsProto",
+                "java_multiple_files": true
+              },
+              "nested": {
+                "ActionInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "id": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "label": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "style": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "enabled": {
+                      "type": "bool",
+                      "id": 4
+                    },
+                    "checked": {
+                      "type": "bool",
+                      "id": 5
+                    },
+                    "spec": {
+                      "type": "yamcs.protobuf.config.SpecInfo",
+                      "id": 6
+                    }
+                  }
+                }
+              }
+            },
+            "config": {
+              "options": {
+                "java_package": "org.yamcs.protobuf.config",
+                "java_outer_classname": "ConfigProto",
+                "java_multiple_files": true
+              },
+              "nested": {
+                "OptionType": {
+                  "edition": "proto2",
+                  "values": {
+                    "ANY": 1,
+                    "BOOLEAN": 2,
+                    "INTEGER": 3,
+                    "FLOAT": 4,
+                    "LIST": 5,
+                    "LIST_OR_ELEMENT": 6,
+                    "MAP": 7,
+                    "STRING": 8
+                  }
+                },
+                "SpecInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "options": {
+                      "rule": "repeated",
+                      "type": "OptionInfo",
+                      "id": 1
+                    },
+                    "allowUnknownKeys": {
+                      "type": "bool",
+                      "id": 2
+                    },
+                    "requiredOneOf": {
+                      "rule": "repeated",
+                      "type": "OptionGroupInfo",
+                      "id": 3
+                    },
+                    "requireTogether": {
+                      "rule": "repeated",
+                      "type": "OptionGroupInfo",
+                      "id": 4
+                    },
+                    "whenConditions": {
+                      "rule": "repeated",
+                      "type": "WhenConditionInfo",
+                      "id": 5
+                    }
+                  }
+                },
+                "OptionGroupInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "keys": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 1
+                    }
+                  }
+                },
+                "WhenConditionInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "key": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "value": {
+                      "type": "google.protobuf.Value",
+                      "id": 2
+                    },
+                    "requiredKeys": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                },
+                "OptionInfo": {
+                  "edition": "proto2",
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "type": {
+                      "type": "OptionType",
+                      "id": 2
+                    },
+                    "title": {
+                      "type": "string",
+                      "id": 3
+                    },
+                    "default": {
+                      "type": "google.protobuf.Value",
+                      "id": 4
+                    },
+                    "required": {
+                      "type": "bool",
+                      "id": 5
+                    },
+                    "hidden": {
+                      "type": "bool",
+                      "id": 6
+                    },
+                    "secret": {
+                      "type": "bool",
+                      "id": 7
+                    },
+                    "versionAdded": {
+                      "type": "string",
+                      "id": 8
+                    },
+                    "deprecationMessage": {
+                      "type": "string",
+                      "id": 9
+                    },
+                    "description": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 10
+                    },
+                    "elementType": {
+                      "type": "OptionType",
+                      "id": 11
+                    },
+                    "spec": {
+                      "type": "SpecInfo",
+                      "id": 12
+                    },
+                    "choices": {
+                      "rule": "repeated",
+                      "type": "google.protobuf.Value",
+                      "id": 13
+                    },
+                    "applySpecDefaults": {
+                      "type": "bool",
+                      "id": 14
+                    },
+                    "aliases": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 15
+                    }
+                  }
+                }
+              }
             }
           }
         },

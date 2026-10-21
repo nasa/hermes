@@ -1,8 +1,9 @@
 # YAMCS protos
 
 This directory holds `processing.proto`, `events_service.proto`, `commands_service.proto`,
-`instances_service.proto` and everything they import, copied unchanged from the `yamcs/` directory of
-`org.yamcs:yamcs-api:5.13.5` on Maven Central. YAMCS licenses them under the LGPL-3.0.
+`instances_service.proto`, `buckets.proto`, `filetransfer.proto` and everything they import, copied
+unchanged from the `yamcs/` directory of `org.yamcs:yamcs-api:5.13.5` on Maven Central. YAMCS licenses
+them under the LGPL-3.0.
 
 ## Who uses them
 
