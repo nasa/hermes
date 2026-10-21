@@ -16,9 +16,9 @@ nav = [
         "getting-started/quick-start.md",
     ] },
     { "VS Code" = [
+        "vscode/connect.md",
         "vscode/notebooks.md",
         "vscode/telemetry-and-events.md",
-        "vscode/offline-mode.md",
     ] },
     { "Architecture" = [
         "arch/core-concepts.md",

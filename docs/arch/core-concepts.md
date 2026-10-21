@@ -24,7 +24,7 @@ entire command and telemetry interface. Ground software loads this dictionary to
 - **Format event messages**: Combine event IDs with their arguments to produce readable log messages
 - **Validate data**: Ensure values are within expected ranges and types match specifications
 
-A dictionary is divided into **namespaces** whos use is defined by the project or
+A dictionary is divided into **namespaces** whose use is defined by the project or
 framework. Dictionaries will always include the main or default namespace `""`.
 
 Dictionaries are versioned and can evolve as flight software is updated. Ground systems may
@@ -99,7 +99,7 @@ Fields are serialized in the order they are defined.
 | Fields    | ordered list | Named members with their types and optional metadata |
 
 Each field has a name, type, and optional constant value. Objects can contain any
-type including other object, enabling nested data structures.
+type including other objects, enabling nested data structures.
 
 #### Arrays
 
@@ -212,7 +212,7 @@ logging but with spacecraft-specific context.
 | ACTIVITY_HI   | A major system or component event has occurred.                                                                                                               |
 | WARNING_LO    | A recoverable system fault or error has occurred.                                                                                                             |
 | WARNING_HI    | A major system fault or error has occurred. Typically this halts the system in some way though it is up to the flight software to choose what to do here.     |
-| COMMAND       | A command has been dispatch or has finished.                                                                                                                  |
+| COMMAND       | A command has been dispatched or has finished.                                                                                                                |
 | FATAL         | An unrecoverable issue has been detected. The flight software typically reboots into a "Safe" mode.                                                           |
 
 Events are lower volume than telemetry but critical for understanding
@@ -243,7 +243,7 @@ commands or fixed at compile-time depending on the flight software implementatio
 ### Namespaces
 
 Namespaces are organizational containers within a dictionary that group related definitions together.
-Many dictionaries will include a single _main_ namespace called `""`. 
+Many dictionaries have only the _main_ namespace, `""`.
 
 **Key Attributes:**
 
@@ -267,16 +267,15 @@ come up in the VS Code pages.
 
 | Term | Meaning |
 | ---- | ------- |
-| Instance | A self-contained part of a YAMCS server, with its own commands, telemetry and archive. A server can run several, such as one per vehicle. Hermes calls each instance's connection `yamcs:<instance>`. |
-| Processor | The part of an instance that handles live telemetry and commands. Hermes uses the one called `realtime` unless the `hermes.host.yamcs` setting names another. |
-| Qualified name | A command's or parameter's full path in YAMCS, such as `/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP` |
+| Instance | A self-contained part of a YAMCS server, with its own commands, telemetry and archive. A server can run several, such as one per vehicle. Hermes names each instance `yamcs:<instance>`. Cells pick it as their target, and the telemetry table and events panel show it as each row's source. |
+| Processor | The part of an instance that handles live telemetry and commands. Hermes uses the one called `realtime` unless the `processor` key of the `hermes.host.yamcs` setting names another. |
+| Qualified name | A command's or parameter's full path in YAMCS, such as `/Ref_Ref/CdhCore/cmdDisp/CMD_NO_OP` |
 | Verifier | A check YAMCS runs on returning telemetry to decide whether a command worked. The mission database, which defines an instance's commands, gives each command its verifiers. |
 | Parameter | A telemetry value, such as an F Prime channel. These are not the [Parameters](#parameters) above, which configure the flight software. |
 
 ## Time
 
-You obviously know all about time. But you may not know that time is actually far more
-complex than a readout on a clock. A spacecraft or mission as a whole typically has
+Time is more complex than a readout on a clock. A spacecraft or mission as a whole typically has
 more than one source of time. It is important for operators to understand and manage
 these sources of time to understand the state of the spacecraft and plan accordingly.
 To illustrate this important point, we will consider a spacecraft in deep-space with
@@ -288,13 +287,13 @@ In this example mission there are a couple time sources at play:
 | ---- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | SCLK | Spacecraft's onboard clock | Monotonically increasing, high precision time relative to a fixed epoch.                                                                                                                                                            |
 | TAI  | Earth Atomic Time          | Monotonically increasing, high precision time kept by about 400 atomic clocks around the globe.                                                                                                                                     |
-| UTC  | Universal Coordinated Time | A [discontinous offset](https://en.wikipedia.org/wiki/Leap_second) of TAI which aligns solar noon with 12:00 due to fluctuations in the earths rotation rate. This is the standard time reported by most computer systems on Earth. |
+| UTC  | Universal Coordinated Time | A [discontinuous offset](https://en.wikipedia.org/wiki/Leap_second) of TAI which aligns solar noon with 12:00 due to fluctuations in the Earth's rotation rate. This is the standard time reported by most computer systems on Earth. |
 
 ### Epoch
 
 The spacecraft's on-board clock is typically a crystal oscillator or some other
 high precision mechanism for measuring _relative_ time deltas. The spacecraft clock
-keeps time using a numeric value that increments a specified rate.
+keeps time using a numeric value that increments at a specified rate.
 The value represents the time elapsed since some "zero time" or **Epoch**.
 
 JPL uses two major epochs:
@@ -331,7 +330,7 @@ You'll notice between the fourth and fifth event there is a time skip of about 2
 years. This happens because the source of on-board time changes when the flight
 software synchronizes with the "proper" time source. The first field in this
 example indicates the "time base" of the SCLK. The time base is defined by the
-mission and should include enough cardinality to encompass all the continous
+mission and should include enough cardinality to encompass all the continuous
 time scales.
 
 In this example the `0` time base indicates the raw on-board clock which is tied
