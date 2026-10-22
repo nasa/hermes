@@ -3,13 +3,16 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"log/slog"
 	"net"
+	"slices"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	otellog "go.opentelemetry.io/otel/log"
@@ -18,9 +21,14 @@ import (
 	commonpb "go.opentelemetry.io/proto/otlp/common/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/nasa/hermes/internal/recorder/convert"
 	"github.com/nasa/hermes/internal/recorder/store"
+	"github.com/nasa/hermes/internal/yamcspb/protobuf"
 	"github.com/nasa/hermes/internal/yamcspb/protobuf/events"
+	"github.com/nasa/hermes/internal/yamcspb/protobuf/processing"
+	"github.com/nasa/hermes/internal/yamcspb/protobuf/pvalue"
 )
 
 func TestRecordedParametersExcludesTopLevel(t *testing.T) {
@@ -82,9 +90,14 @@ func TestStatsLineNamesEachCount(t *testing.T) {
 	st.events.Add(4)
 	st.incomplete.Add(3)
 	st.alreadyStored.Add(2)
+	st.droppedRows.Add(1)
+	queue := make(chan []store.Row, maxQueuedMessages)
+	queue <- nil
+	queue <- nil
 	var logs bytes.Buffer
-	st.log(slog.New(slog.NewTextHandler(&logs, nil)))
-	assert.Contains(t, logs.String(), "rows=0 events=4 unmapped=0 incomplete=3 already_stored=2 insert_errors=0")
+	st.log(slog.New(slog.NewTextHandler(&logs, nil)), queue)
+	assert.Contains(t, logs.String(),
+		"rows=0 events=4 unmapped=0 incomplete=3 already_stored=2 insert_errors=0 dropped_rows=1 queued_messages=2/1024")
 }
 
 // scriptedEvents returns the events in queue from Recv, then io.EOF. It embeds
@@ -119,6 +132,131 @@ func TestExportEventsEmitsEachEvent(t *testing.T) {
 		assert.Equal(t, e.GetMessage(), records[i].Body().AsString())
 	}
 	assert.EqualValues(t, len(sent), st.events.Load())
+}
+
+// row returns a row that holds value, so we can tell rows apart.
+func row(value float64) store.Row {
+	return store.Row{Value: store.DoubleValue(value)}
+}
+
+// queueOf returns a closed queue holding a one-row message for each value.
+func queueOf(values ...float64) chan []store.Row {
+	queue := make(chan []store.Row, len(values))
+	for _, v := range values {
+		queue <- []store.Row{row(v)}
+	}
+	close(queue)
+	return queue
+}
+
+// scriptedDatabase stands in for TimescaleDB. It keeps the rows of each
+// insert, fails each insert with the next of errs, then accepts the rest.
+type scriptedDatabase struct {
+	errs    []error
+	inserts [][]store.Row
+}
+
+func (db *scriptedDatabase) insert(_ context.Context, rows []store.Row) error {
+	db.inserts = append(db.inserts, rows)
+	if len(db.errs) == 0 {
+		return nil
+	}
+	err := db.errs[0]
+	db.errs = db.errs[1:]
+	return err
+}
+
+func TestWriteStoresWaitingMessagesInOneInsert(t *testing.T) {
+	db := &scriptedDatabase{}
+	r := &recorder{insert: db.insert}
+
+	r.write(context.Background(), queueOf(1, 2, 3))
+
+	assert.Equal(t, [][]store.Row{{row(1), row(2), row(3)}}, db.inserts)
+}
+
+func TestWriteDropsOnlyTheMessageTheDatabaseRejects(t *testing.T) {
+	var inserts [][]store.Row
+	r := &recorder{insert: func(_ context.Context, rows []store.Row) error {
+		inserts = append(inserts, rows)
+		// The database rejects any insert that holds row 2.
+		if slices.ContainsFunc(rows, func(got store.Row) bool { return got.Value.Float.Float64 == 2 }) {
+			return &pq.Error{Code: "22008"} // datetime_field_overflow
+		}
+		return nil
+	}}
+
+	r.write(context.Background(), queueOf(1, 2, 3))
+
+	// The insert of all three fails, so we insert each message alone.
+	assert.Equal(t, [][]store.Row{{row(1), row(2), row(3)}, {row(1)}, {row(2)}, {row(3)}}, inserts)
+	assert.EqualValues(t, 2, r.stats.rows.Load())
+	assert.EqualValues(t, 1, r.stats.droppedRows.Load())
+}
+
+func TestWriteRetriesWhileDatabaseIsUnreachable(t *testing.T) {
+	db := &scriptedDatabase{errs: []error{
+		errors.New("dial tcp 127.0.0.1:5432: connect: connection refused"),
+		&pq.Error{Code: "08006"}, // connection_failure
+		&pq.Error{Code: "53100"}, // disk_full
+		&pq.Error{Code: "57P03"}, // cannot_connect_now, while the database starts up
+	}}
+	r := &recorder{insert: db.insert}
+
+	r.write(context.Background(), queueOf(1, 2))
+
+	// We tried both messages together five times: once for each error, then
+	// once more when the database accepted them.
+	assert.Equal(t, slices.Repeat([][]store.Row{{row(1), row(2)}}, 5), db.inserts)
+	assert.EqualValues(t, 4, r.stats.insertErrors.Load())
+	assert.Zero(t, r.stats.droppedRows.Load())
+	assert.EqualValues(t, 2, r.stats.rows.Load())
+}
+
+// scriptedParameters returns the messages in queue from Recv, then io.EOF.
+type scriptedParameters struct {
+	processing.ProcessingApi_SubscribeParametersClient
+	queue []*processing.SubscribeParametersData
+}
+
+func (s *scriptedParameters) Recv() (*processing.SubscribeParametersData, error) {
+	if len(s.queue) == 0 {
+		return nil, io.EOF
+	}
+	data := s.queue[0]
+	s.queue = s.queue[1:]
+	return data, nil
+}
+
+// threeMessages returns a stream of three messages with one value each.
+func threeMessages() *scriptedParameters {
+	data := &processing.SubscribeParametersData{
+		Mapping: map[uint32]*protobuf.NamedObjectId{1: {Name: proto.String("/Ref/systemResources/CPU")}},
+		Values: []*pvalue.ParameterValue{{
+			NumericId:      proto.Uint32(1),
+			GenerationTime: timestamppb.Now(),
+			EngValue:       &protobuf.Value{Type: protobuf.Value_DOUBLE.Enum(), DoubleValue: proto.Float64(1)},
+		}},
+	}
+	return &scriptedParameters{queue: []*processing.SubscribeParametersData{data, data, data}}
+}
+
+func TestRecordParametersStoresWhatItReadBeforeReturning(t *testing.T) {
+	r := &recorder{
+		conv: convert.New("fprime-project", slog.New(slog.DiscardHandler)),
+		insert: func(ctx context.Context, _ []store.Row) error {
+			// Each insert takes a moment, so the stream ends while the first
+			// one is still in flight. Like a real insert, it fails if ctx is
+			// cancelled.
+			time.Sleep(10 * time.Millisecond)
+			return ctx.Err()
+		},
+	}
+
+	err := recordParameters(context.Background(), threeMessages(), r, make(chan []store.Row, maxQueuedMessages))
+
+	assert.ErrorIs(t, err, io.EOF)
+	assert.EqualValues(t, 3, r.stats.rows.Load())
 }
 
 // logsReceiver stands in for the OpenTelemetry collector. It accepts OTLP log
