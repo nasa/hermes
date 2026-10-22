@@ -63,6 +63,7 @@ We recommend reading more about the [core concepts](./arch/core-concepts.md) of 
 
 - **Command Dispatch**: Command uplink from VS Code notebooks, with completion, argument checks and a live status for each command
 - **Telemetry Display**: Real-time visualization of spacecraft telemetry data
+- **File Upload**: Sends files to the flight software from VS Code, through YAMCS
 - **Telemetry Recording**: Records telemetry and events, to chart and search in Grafana
 
 ## Getting Started

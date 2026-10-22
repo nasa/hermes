@@ -19,6 +19,7 @@ nav = [
         "vscode/connect.md",
         "vscode/notebooks.md",
         "vscode/telemetry-and-events.md",
+        "vscode/upload-files.md",
     ] },
     { "Architecture" = [
         "arch/core-concepts.md",
