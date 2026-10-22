@@ -168,9 +168,10 @@ func run(ctx context.Context, cfg config, logger *slog.Logger) error {
 		insert: func(ctx context.Context, rows []store.Row) error {
 			return store.Insert(ctx, db, ids, rows)
 		},
-		conv:   convert.New(cfg.instance, logger),
-		stored: stored,
-		logger: logger,
+		conv:            convert.New(cfg.instance, logger),
+		stored:          stored,
+		includeTopLevel: cfg.includeTopLevel,
+		logger:          logger,
 	}
 	// recordParameters passes each message's rows to the database through queue,
 	// and the stats line logs how many are waiting.
@@ -239,12 +240,15 @@ func subscribe(ctx context.Context, conn grpc.ClientConnInterface, cfg config, l
 // recordedParameters returns the names to subscribe to. Unless includeTopLevel
 // is set, it leaves out parameters directly in a top-level space system, which
 // fprime-yamcs uses for packet header fields. Those describe each packet
-// rather than the spacecraft.
+// rather than the spacecraft. We keep FPrimeTime, the packet's time tag, to
+// give the other values their SCLK.
 func recordedParameters(names []string, includeTopLevel bool) (kept []string, excluded int) {
 	if includeTopLevel {
 		return names, 0
 	}
-	kept = slices.DeleteFunc(names, inTopLevelSpaceSystem)
+	kept = slices.DeleteFunc(names, func(name string) bool {
+		return inTopLevelSpaceSystem(name) && !strings.HasSuffix(name, "/FPrimeTime")
+	})
 	return kept, len(names) - len(kept)
 }
 
@@ -338,9 +342,10 @@ type recorder struct {
 	// stored holds the newest generation time each parameter had in the
 	// database when we started. dropStored uses it to skip the values YAMCS
 	// re-sends when the subscription opens.
-	stored map[store.Parameter]time.Time
-	stats  stats
-	logger *slog.Logger
+	stored          map[store.Parameter]time.Time
+	includeTopLevel bool
+	stats           stats
+	logger          *slog.Logger
 }
 
 // rows returns the rows to store for one message from YAMCS.
@@ -349,6 +354,11 @@ func (r *recorder) rows(data *processing.SubscribeParametersData) []store.Row {
 		r.logger.Warn("YAMCS rejected parameters", "count", len(invalid), "first", invalid[0].GetName())
 	}
 	rows, unmapped, incomplete := r.conv.Rows(data)
+	// We subscribe to FPrimeTime only for the SCLK of the other values, so we
+	// store its rows only with includeTopLevel.
+	if !r.includeTopLevel {
+		rows = slices.DeleteFunc(rows, func(row store.Row) bool { return convert.IsFPrimeTime(row.Parameter) })
+	}
 	rows, alreadyStored := dropStored(rows, r.stored)
 	r.stats.values.Add(int64(len(data.GetValues())))
 	r.stats.unmapped.Add(int64(unmapped))
