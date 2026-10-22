@@ -1,4 +1,4 @@
-import type { YamcsTimestamp, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
+import type { YamcsParameterValue, YamcsTimestamp, YamcsValue } from '@gov.nasa.jpl.hermes/rpc';
 
 export interface YamcsLeaf {
     /**
@@ -32,6 +32,17 @@ export function splitName(qualifiedName: string): [spaceSystem: string, name: st
  */
 export function millis(ts?: YamcsTimestamp): number | undefined {
     return ts ? Number(ts.seconds ?? 0) * 1000 + (ts.nanos ?? 0) / 1e6 : undefined;
+}
+
+/**
+ * The SCLK in seconds of a packet's values, from the packet's FPrimeTime, or NaN without one
+ */
+export function packetSclk(fprimeTime?: YamcsParameterValue): number {
+    if (!fprimeTime) {
+        return NaN;
+    }
+    const tag = Object.fromEntries(leaves(fprimeTime.engValue).map((leaf) => [leaf.memberPath, leaf.valueNum]));
+    return (tag['.seconds'] * 1e6 + tag['.useconds']) / 1e6;
 }
 
 /**

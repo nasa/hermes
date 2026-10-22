@@ -62,4 +62,6 @@ stores. Then it adds new events as YAMCS reports them.
 The table, the plot and the events panel show times in UTC. You can switch the table and the panel to Local or SCLK.
 Telemetry shows each value's [Earth received time](../arch/core-concepts.md#earth-received-time) (ERT), when YAMCS
 received it. Events show their generation time, when the flight software raised them.
-YAMCS reports times in UTC and has no SCLK, so under SCLK the time is blank.
+Under SCLK, telemetry shows the flight software's clock reading, in seconds, from the packet that carried each value. A
+value YAMCS already held when Hermes connected has no SCLK, so its row stays blank until a new value arrives. YAMCS
+events have no SCLK, so under SCLK their time is blank.

@@ -10,7 +10,7 @@ import { FrontendTableMessage, BackendTableMessage, FrontendPlotMessage, Backend
 import { cullTelemetrySeriesData } from '../../common/telemetryTimeWindow';
 import { DebounceEmitter } from '../utils/DebounceEmitter';
 import { YamcsParameterSource } from '../api/Yamcs';
-import { leaves, millis, splitName } from './yamcsRows';
+import { leaves, millis, packetSclk, splitName } from './yamcsRows';
 
 const MAX_POINTS_PER_CHANNEL = 10000; // ~10 minutes at 10Hz
 
@@ -125,7 +125,7 @@ export class TelemetryDatabase implements vscode.Disposable {
         });
 
         // Only YAMCS mode sends parameter values, so in every other mode this subscription stays quiet
-        this.yamcsSubscription = this.api.onYamcsParameters?.((instance, values) => this.addYamcs(instance, values));
+        this.yamcsSubscription = this.api.onYamcsParameters?.((instance, values, fprimeTime) => this.addYamcs(instance, values, fprimeTime));
     }
 
     /**
@@ -133,8 +133,9 @@ export class TelemetryDatabase implements vscode.Disposable {
      * member path. Points use the value's acquisition time, when YAMCS received
      * it, as F Prime telemetry uses the time it reached the extension.
      */
-    private addYamcs(instance: string, values: YamcsParameterValue[]) {
+    private addYamcs(instance: string, values: YamcsParameterValue[], fprimeTime?: YamcsParameterValue) {
         const source = `yamcs:${instance}`;
+        const sclk = packetSclk(fprimeTime);
         for (const pv of values) {
             const time = millis(pv.acquisitionTime);
             if (!pv.id?.name || time === undefined) {
@@ -166,8 +167,7 @@ export class TelemetryDatabase implements vscode.Disposable {
                 if (data.time.length > 0 && (time < newestTime || (time === newestTime && leaf.valueStr === newestValue))) {
                     continue;
                 }
-                // YAMCS values have no SCLK
-                appendPoint(data, time, NaN, leaf.valueStr, leaf.valueNum);
+                appendPoint(data, time, sclk, leaf.valueStr, leaf.valueNum);
                 this.yamcsDebouncer.fire(key);
             }
         }

@@ -167,6 +167,18 @@ const comQueueDepth: YamcsValue = {
     type: 'ARRAY',
     arrayValue: [{ type: 'UINT32', uint32Value: 0 }, { type: 'UINT32', uint32Value: 2 }],
 };
+const fprimeTime = (seconds: number): YamcsValue => ({
+    type: 'AGGREGATE',
+    aggregateValue: {
+        name: ['timeBase', 'timeContext', 'seconds', 'useconds'],
+        value: [
+            { type: 'ENUMERATED', stringValue: 'TB_WORKSTATION_TIME', sint64Value: '2' },
+            { type: 'UINT32', uint32Value: 0 },
+            { type: 'UINT32', uint32Value: seconds },
+            { type: 'UINT32', uint32Value: 145838 },
+        ],
+    },
+});
 
 function pv(name: string, ms: number, engValue: YamcsValue): YamcsParameterValue {
     return {
@@ -495,12 +507,12 @@ describe('yamcsEventRows', () => {
 
 describe('YAMCS event source', () => {
     // A YAMCS backend connected to the running instances in names, whose event subscriptions and listings the test drives
-    async function backend(names = ['fprime-project']) {
+    async function backend(names = ['fprime-project'], includeTopLevel = false) {
         const warn = jest.fn();
         jest.spyOn(YamcsClient.prototype, 'waitForReady').mockResolvedValue(undefined);
         jest.spyOn(YamcsClient.prototype, 'listInstances')
             .mockResolvedValue(names.map((name) => ({ name, state: 'RUNNING', processors: [{ name: 'realtime' }] })));
-        jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockImplementation(async (instance) => [`/${instance}/Demo/x`]);
+        jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockImplementation(async (instance) => [`/${instance}/Demo/x`, `/${instance}/FPrimeTime`]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([]);
         jest.spyOn(YamcsClient.prototype, 'listLinkParameters').mockResolvedValue([]);
         jest.spyOn(YamcsClient.prototype, 'listFileTransferServices').mockResolvedValue([]);
@@ -515,7 +527,7 @@ describe('YAMCS event source', () => {
             listings.push({ resolve, reject });
         }));
         const api = await new YamcsBackendProvider().provideBackendApi(
-            { address: 'localhost:1', processor: 'realtime' },
+            { address: 'localhost:1', processor: 'realtime', includeTopLevel },
             {} as vscode.ExtensionContext,
             { debug: () => { }, info: () => { }, warn, error: () => { } },
         ) as Hermes.Api & YamcsEventSource & YamcsParameterSource;
@@ -583,6 +595,26 @@ describe('YAMCS event source', () => {
         parameters.dispose();
         events.dispose();
         api.dispose();
+    });
+
+    test('gives each channel the SCLK of FPrimeTime after the cached values, and shows FPrimeTime only with includeTopLevel', async () => {
+        // The subscription first sends the cached values, then one packet, each with a value for every name it was given
+        jest.spyOn(YamcsClient.prototype, 'subscribeParameters').mockImplementation((_instance, _processor, names, onValues) => {
+            for (const ms of [1000, 2000]) {
+                onValues(names.map((name) => pv(name, ms, name.endsWith('/FPrimeTime') ? fprimeTime(ms) : comQueueDepth)));
+            }
+            return () => { };
+        });
+        for (const includeTopLevel of [false, true]) {
+            const { api } = await backend(['bigdata-a', 'ref'], includeTopLevel);
+            const db = new TelemetryDatabase(api);
+            for (const instance of ['bigdata-a', 'ref']) {
+                expect(db.get(`yamcs:${instance}:/${instance}/Demo/x[1]`)!.sclk).toEqual([NaN, 2000.145838]);
+                expect(db.series.has(`yamcs:${instance}:/${instance}/FPrimeTime.seconds`)).toBe(includeTopLevel);
+            }
+            db.dispose();
+            api.dispose();
+        }
     });
 
     test('refuses to connect when no instance is running', async () => {
@@ -1719,7 +1751,11 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
 
             expect(version.valueStr![0]).not.toBe('');
             expect(version.time[0]).toBeLessThan(subscribed);
+            // FrameworkVersion only arrives among the cached values, which have no SCLK
+            expect(version.sclk[0]).toBeNaN();
             expect(db.get(cpuKey)!.valueNum!.every(Number.isFinite)).toBe(true);
+            // Every CPU value after the cached one has an SCLK
+            expect(db.get(cpuKey)!.sclk.slice(1).every(Number.isFinite)).toBe(true);
             expect(db.series.get(depthKey)?.name).toBe('comQueueDepth[1]');
             expect(db.get(depthKey)!.valueNum!.every(Number.isInteger)).toBe(true);
             expect(db.get(buffKey)!.valueNum!.every(Number.isInteger)).toBe(true);
