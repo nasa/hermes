@@ -6,7 +6,7 @@ import type { Readable } from 'stream';
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import * as Rpc from '@gov.nasa.jpl.hermes/rpc';
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
-import type { Proto } from '@gov.nasa.jpl.hermes/types';
+import type { Proto, ProtoGoogle } from '@gov.nasa.jpl.hermes/types';
 import { BackendProvider, Settings } from '@gov.nasa.jpl.hermes/vscode';
 
 import { Offline } from './Offline';
@@ -86,6 +86,11 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
     // YAMCS puts this in each command's id too. Without it YAMCS uses our IP address, which every window on one
     // machine shares, so we send our hostname and the process id of this window's extension host.
     private readonly origin = `${os.hostname()}:${process.pid}`;
+
+    // The uploads this window has run, which the Uplink view lists until someone clears them
+    private readonly uplinks: Proto.IFileUplink[] = [];
+    private readonly uplinksChanged = new vscode.EventEmitter<Proto.IFileTransferState>();
+    onFileTransfer = this.uplinksChanged.event;
 
     constructor(
         context: vscode.ExtensionContext,
@@ -324,12 +329,33 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
         return true;
     }
 
+    // Uplinks the file, and once YAMCS finishes, adds it to the uploads the Uplink view lists, with the error if it
+    // failed. fprime-yamcs can't cancel a transfer, so cancelling only stops us waiting, and we still list the upload.
+    private uplink(instance: string, header: Hermes.FileHeader, file: Readable, progress: vscode.Progress<number>, token?: vscode.CancellationToken): Promise<void> {
+        const timeStart = new Date();
+        const list = (error: string) => {
+            this.uplinks.push({
+                timeStart: timestamp(timeStart),
+                timeEnd: timestamp(new Date()),
+                fswId: `yamcs:${instance}`,
+                sourcePath: header.sourcePath,
+                destinationPath: header.destinationPath,
+                size: header.size,
+                error,
+            });
+            this.uplinksChanged.fire({ uplinkCompleted: [...this.uplinks] });
+        };
+        const sent = this.transfer(instance, header, file, progress);
+        sent.then(() => list(''), (err: Error) => list(err.message));
+        return cancellable(sent, token);
+    }
+
     /**
      * Puts the file in UPLINK_BUCKET and has YAMCS uplink it, then checks the transfer every 250 ms, reporting the
      * bytes sent, until it finishes. COMPLETED only means fprime-yamcs sent every packet, not that the flight software
      * saved the file.
      */
-    private async uplink(instance: string, header: Hermes.FileHeader, file: Readable, progress: vscode.Progress<number>, token?: vscode.CancellationToken): Promise<void> {
+    private async transfer(instance: string, header: Hermes.FileHeader, file: Readable, progress: vscode.Progress<number>): Promise<void> {
         const chunks: Buffer[] = [];
         for await (const chunk of file) {
             chunks.push(chunk);
@@ -349,10 +375,18 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
             if (transfer.state === 'FAILED') {
                 throw new Error(`YAMCS could not uplink ${objectName}: ${transfer.failureReason}`);
             }
-            // fprime-yamcs can't cancel a transfer, so cancelling only stops us waiting
-            await cancellable(delay(250), token);
-            transfer = await cancellable(this.client.getTransfer(instance, transfer.id!), token);
+            await delay(250);
+            transfer = await this.client.getTransfer(instance, transfer.id!);
         }
+    }
+
+    async getFileTransferState(): Promise<Proto.IFileTransferState> {
+        return { uplinkCompleted: [...this.uplinks] };
+    }
+
+    async clearUplinkTransferState(): Promise<void> {
+        this.uplinks.length = 0;
+        this.uplinksChanged.fire({ uplinkCompleted: [] });
     }
 
     dispose(): void {
@@ -360,6 +394,7 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
         this.parameters.dispose();
         this.cancelEvents?.();
         this.events.dispose();
+        this.uplinksChanged.dispose();
         this.client.close();
         super.dispose();
     }
@@ -427,6 +462,10 @@ async function loadInstance(client: Rpc.YamcsClient, name: string, state: Settin
 
 function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function timestamp(date: Date): ProtoGoogle.protobuf.ITimestamp {
+    return { seconds: Math.floor(date.getTime() / 1000), nanos: date.getMilliseconds() * 1e6 };
 }
 
 // Waits for promise, but rejects as soon as token is cancelled

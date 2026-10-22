@@ -164,10 +164,11 @@ VS Code has a folder open.
 
 Hermes can send a file to an instance that fprime-yamcs runs. In the **Uplink** view of the Hermes sidebar, click
 **+** and pick the file. Use the pencil buttons under it to set **Destination**, the path on the spacecraft, and
-**Target**, if the instance isn't the first one that can upload. Then click the file's **Uplink File** button. The
-file leaves the view once YAMCS has sent it, or Hermes shows why YAMCS couldn't. A cell in the `uplink` notebook
-language sends one file per line, written `<target> <file> <destination>`, with `<file>` relative to the first
-workspace folder, for example `yamcs:ref hello.txt /tmp/uplink/hello.txt`.
+**Target**, if the instance isn't the first one that can upload. Then click the file's **Uplink File** button. Once
+the upload ends, the view lists the file with its details, and YAMCS's reason if it failed, until you click **Clear
+Uplink Listing**. A cell in the `uplink` notebook language sends one file per line, written
+`<target> <file> <destination>`, with `<file>` relative to the first workspace folder, for example
+`yamcs:ref hello.txt /tmp/uplink/hello.txt`.
 
 - A finished upload only means fprime-yamcs sent every packet. F Prime's `FileReceived` event tells you it saved
   the file.
@@ -175,6 +176,8 @@ workspace folder, for example `yamcs:ref hello.txt /tmp/uplink/hello.txt`.
   `/tmp/uplink/`.
 - Files over about 4 MiB fail, because they exceed the yamcs-grpc plugin's default gRPC message size.
 - fprime-yamcs sends one file at a time, at about 20 KiB/s.
+- Stopping an `uplink` cell only stops Hermes waiting. fprime-yamcs still sends the file, and the Uplink view lists
+  it once YAMCS has.
 
 ## Develop
 

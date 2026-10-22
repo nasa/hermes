@@ -74,14 +74,14 @@ class UplinkFileEntry implements TreeEntry {
         const startDate = timestampToDate(this.data.timeStart);
         const endDate = timestampToDate(this.data.timeEnd);
         const elapsedMs = endDate.getTime() - startDate.getTime();
-        const elapsedS = (elapsedMs / 1e3).toFixed(0);
+        const elapsedS = (elapsedMs / 1e3).toFixed(1);
 
         const out = [
             new GeneralEntry(this, "Target FSW", this.data.fswId ?? ""),
             new GeneralEntry(this, "Source Path", this.data.sourcePath ?? ""),
             new GeneralEntry(this, "Destination Path", this.data.destinationPath ?? ""),
-            new GeneralEntry(this, "Downlink Start", startDate.toLocaleTimeString(), { tooltip: startDate.toString() }),
-            new GeneralEntry(this, "Downlink Finish", endDate.toLocaleTimeString(), { tooltip: endDate.toString() }),
+            new GeneralEntry(this, "Uplink Start", startDate.toLocaleTimeString(), { tooltip: startDate.toString() }),
+            new GeneralEntry(this, "Uplink Finish", endDate.toLocaleTimeString(), { tooltip: endDate.toString() }),
             new GeneralEntry(this, "Duration", `${elapsedS} seconds`, { tooltip: `${elapsedMs} ms` }),
             new GeneralEntry(this, "Size", size, { tooltip: `${this.data.size} bytes` }),
             // new GeneralEntry(this, "Metadata", ), TODO(tumbar) This is also a tree
@@ -391,7 +391,7 @@ export class UplinkProvider implements vscode.TreeDataProvider<TreeEntry>, vscod
             return [
                 ...this.pending,
                 ...this.inProgress.map((file) => new UplinkFileTransferEntry(file)),
-                ...this.complete.reverse().map((file) => new UplinkFileEntry(file)),
+                ...[...this.complete].reverse().map((file) => new UplinkFileEntry(file)),
             ];
         }
     }

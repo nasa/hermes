@@ -1584,6 +1584,51 @@ describe('YAMCS commands', () => {
             .rejects.toThrow('YAMCS could not uplink hello.txt: link down');
         api.dispose();
     });
+
+    test('lists every uplink the window ran, with the error of one that failed, until they are cleared', async () => {
+        const { api, fsw } = await backend();
+        jest.spyOn(YamcsClient.prototype, 'putObject').mockResolvedValue(undefined);
+        jest.spyOn(YamcsClient.prototype, 'upload')
+            .mockResolvedValueOnce({ id: '7', state: 'COMPLETED', sizeTransferred: '10' })
+            .mockResolvedValueOnce({ id: '8', state: 'FAILED', failureReason: 'link down' });
+        const listed = jest.fn();
+        api.onFileTransfer(listed);
+
+        await fsw.uplink!(header, Readable.from([]), { report: () => { } });
+        await expect(fsw.uplink!(header, Readable.from([]), { report: () => { } })).rejects.toThrow();
+        const uplink = { fswId: 'yamcs:fprime-project', ...header };
+        expect(listed).toHaveBeenLastCalledWith({
+            uplinkCompleted: [
+                expect.objectContaining({ ...uplink, error: '' }),
+                expect.objectContaining({ ...uplink, error: 'YAMCS could not uplink hello.txt: link down' }),
+            ],
+        });
+
+        await api.clearUplinkTransferState();
+        expect(listed).toHaveBeenLastCalledWith({ uplinkCompleted: [] });
+        api.dispose();
+    });
+
+    test('lists a stopped uplink once YAMCS finishes it, since stopping only stops us waiting', async () => {
+        const { api, fsw } = await backend();
+        jest.spyOn(YamcsClient.prototype, 'putObject').mockResolvedValue(undefined);
+        const upload = jest.spyOn(YamcsClient.prototype, 'upload').mockResolvedValue({ id: '7', state: 'RUNNING', sizeTransferred: '0' });
+        const getTransfer = jest.spyOn(YamcsClient.prototype, 'getTransfer').mockResolvedValue({ id: '7', state: 'RUNNING', sizeTransferred: '4' });
+        const listed = jest.fn();
+        api.onFileTransfer(listed);
+        const stop = tokenSource();
+
+        const uplink = fsw.uplink!(header, Readable.from([]), { report: () => { } }, stop.token);
+        await waitFor(() => upload.mock.calls.length, 1000);
+        stop.cancel();
+        await expect(uplink).rejects.toThrow('Cancelled');
+        expect(listed).not.toHaveBeenCalled();
+
+        getTransfer.mockResolvedValue({ id: '7', state: 'COMPLETED', sizeTransferred: '10' });
+        await waitFor(() => listed.mock.calls.length, 1000);
+        expect(listed).toHaveBeenLastCalledWith({ uplinkCompleted: [expect.objectContaining({ error: '' })] });
+        api.dispose();
+    });
 });
 
 // Live checks against a YAMCS server running the yamcs-grpc plugin, e.g.
