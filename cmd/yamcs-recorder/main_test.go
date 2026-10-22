@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"net"
+	"slices"
 	"sync"
 	"testing"
 	"time"
@@ -133,85 +134,93 @@ func TestExportEventsEmitsEachEvent(t *testing.T) {
 	assert.EqualValues(t, len(sent), st.events.Load())
 }
 
-func TestWriteStoresWaitingMessagesInOneInsert(t *testing.T) {
-	row := func(value float64) store.Row { return store.Row{Value: store.DoubleValue(value)} }
-	ctx, cancel := context.WithCancel(context.Background())
-	queue := make(chan []store.Row, 3)
-	var inserts [][]store.Row
-	r := &recorder{insert: func(insertCtx context.Context, rows []store.Row) error {
-		inserts = append(inserts, rows)
-		switch len(inserts) {
-		case 1:
-			// While the first insert is in flight, three more messages arrive.
-			// Then statement_timeout cancels the insert. A retry would be
-			// cancelled too, so we drop its row.
-			queue <- []store.Row{row(2)}
-			queue <- []store.Row{row(3)}
-			queue <- []store.Row{row(4)}
-			close(queue)
-			return &pq.Error{Code: "57014"} // query_canceled
-		case 2, 4:
-			// The database rejects message 3, so it rejects the insert of all
-			// three messages and then the insert of message 3 alone.
-			return &pq.Error{Code: "22008"} // datetime_field_overflow
-		}
-		// A signal arrives while we insert message 2. The inserts of messages
-		// 2 and 4 fail only if the signal cancelled their context.
-		cancel()
-		return insertCtx.Err()
-	}}
-	queue <- []store.Row{row(1)}
-
-	r.write(ctx, queue)
-
-	assert.Equal(t, [][]store.Row{{row(1)}, {row(2), row(3), row(4)}, {row(2)}, {row(3)}, {row(4)}}, inserts)
-	assert.EqualValues(t, 3, r.stats.insertErrors.Load())
-	assert.EqualValues(t, 2, r.stats.droppedRows.Load())
-	assert.EqualValues(t, 2, r.stats.rows.Load())
+// row returns a row that holds value, so we can tell rows apart.
+func row(value float64) store.Row {
+	return store.Row{Value: store.DoubleValue(value)}
 }
 
-func TestWriteRetriesWhileDatabaseIsUnreachable(t *testing.T) {
-	rows := []store.Row{{Value: store.DoubleValue(1)}, {Value: store.DoubleValue(2)}}
-	// Both messages wait on queue, so each attempt inserts them together.
-	queue := make(chan []store.Row, 2)
-	queue <- rows[:1]
-	queue <- rows[1:]
-	close(queue)
-	errs := []error{
-		errors.New("dial tcp 127.0.0.1:5432: connect: connection refused"),
-		&pq.Error{Code: "08006"}, // connection_failure
-		&pq.Error{Code: "53100"}, // disk_full
-		&pq.Error{Code: "57P03"}, // cannot_connect_now, while the database starts up
+// queueOf returns a closed queue holding a one-row message for each value.
+func queueOf(values ...float64) chan []store.Row {
+	queue := make(chan []store.Row, len(values))
+	for _, v := range values {
+		queue <- []store.Row{row(v)}
 	}
-	attempts := 0
-	r := &recorder{insert: func(_ context.Context, got []store.Row) error {
-		attempts++
-		assert.Equal(t, rows, got)
-		if attempts <= len(errs) {
-			return errs[attempts-1]
+	close(queue)
+	return queue
+}
+
+// scriptedDatabase stands in for TimescaleDB. It keeps the rows of each
+// insert, fails each insert with the next of errs, then accepts the rest.
+type scriptedDatabase struct {
+	errs    []error
+	inserts [][]store.Row
+}
+
+func (db *scriptedDatabase) insert(_ context.Context, rows []store.Row) error {
+	db.inserts = append(db.inserts, rows)
+	if len(db.errs) == 0 {
+		return nil
+	}
+	err := db.errs[0]
+	db.errs = db.errs[1:]
+	return err
+}
+
+func TestWriteStoresWaitingMessagesInOneInsert(t *testing.T) {
+	db := &scriptedDatabase{}
+	r := &recorder{insert: db.insert}
+
+	r.write(context.Background(), queueOf(1, 2, 3))
+
+	assert.Equal(t, [][]store.Row{{row(1), row(2), row(3)}}, db.inserts)
+}
+
+func TestWriteDropsOnlyTheMessageTheDatabaseRejects(t *testing.T) {
+	var inserts [][]store.Row
+	r := &recorder{insert: func(_ context.Context, rows []store.Row) error {
+		inserts = append(inserts, rows)
+		// The database rejects any insert that holds row 2.
+		if slices.ContainsFunc(rows, func(got store.Row) bool { return got.Value.Float.Float64 == 2 }) {
+			return &pq.Error{Code: "22008"} // datetime_field_overflow
 		}
 		return nil
 	}}
 
-	r.write(context.Background(), queue)
+	r.write(context.Background(), queueOf(1, 2, 3))
 
-	assert.Equal(t, len(errs)+1, attempts)
-	assert.EqualValues(t, len(errs), r.stats.insertErrors.Load())
+	// The insert of all three fails, so we insert each message alone.
+	assert.Equal(t, [][]store.Row{{row(1), row(2), row(3)}, {row(1)}, {row(2)}, {row(3)}}, inserts)
+	assert.EqualValues(t, 2, r.stats.rows.Load())
+	assert.EqualValues(t, 1, r.stats.droppedRows.Load())
+}
+
+func TestWriteRetriesWhileDatabaseIsUnreachable(t *testing.T) {
+	db := &scriptedDatabase{errs: []error{
+		errors.New("dial tcp 127.0.0.1:5432: connect: connection refused"),
+		&pq.Error{Code: "08006"}, // connection_failure
+		&pq.Error{Code: "53100"}, // disk_full
+		&pq.Error{Code: "57P03"}, // cannot_connect_now, while the database starts up
+	}}
+	r := &recorder{insert: db.insert}
+
+	r.write(context.Background(), queueOf(1, 2))
+
+	// We tried both messages together five times: once for each error, then
+	// once more when the database accepted them.
+	assert.Equal(t, slices.Repeat([][]store.Row{{row(1), row(2)}}, 5), db.inserts)
+	assert.EqualValues(t, 4, r.stats.insertErrors.Load())
 	assert.Zero(t, r.stats.droppedRows.Load())
 	assert.EqualValues(t, 2, r.stats.rows.Load())
 }
 
-// scriptedParameters returns the messages in queue from Recv, then closes ended
-// and returns io.EOF.
+// scriptedParameters returns the messages in queue from Recv, then io.EOF.
 type scriptedParameters struct {
 	processing.ProcessingApi_SubscribeParametersClient
 	queue []*processing.SubscribeParametersData
-	ended chan struct{}
 }
 
 func (s *scriptedParameters) Recv() (*processing.SubscribeParametersData, error) {
 	if len(s.queue) == 0 {
-		close(s.ended)
 		return nil, io.EOF
 	}
 	data := s.queue[0]
@@ -229,45 +238,25 @@ func threeMessages() *scriptedParameters {
 			EngValue:       &protobuf.Value{Type: protobuf.Value_DOUBLE.Enum(), DoubleValue: proto.Float64(1)},
 		}},
 	}
-	return &scriptedParameters{queue: []*processing.SubscribeParametersData{data, data, data}, ended: make(chan struct{})}
+	return &scriptedParameters{queue: []*processing.SubscribeParametersData{data, data, data}}
 }
 
 func TestRecordParametersStoresWhatItReadBeforeReturning(t *testing.T) {
-	stream := threeMessages()
 	r := &recorder{
 		conv: convert.New("fprime-project", slog.New(slog.DiscardHandler)),
 		insert: func(ctx context.Context, _ []store.Row) error {
-			// The first insert finishes only after the subscription ends, and
-			// like a real insert, it fails if ctx is cancelled.
-			<-stream.ended
+			// Each insert takes a moment, so the stream ends while the first
+			// one is still in flight. Like a real insert, it fails if ctx is
+			// cancelled.
+			time.Sleep(10 * time.Millisecond)
 			return ctx.Err()
 		},
 	}
 
-	err := recordParameters(context.Background(), stream, r, make(chan []store.Row, maxQueuedMessages))
+	err := recordParameters(context.Background(), threeMessages(), r, make(chan []store.Row, maxQueuedMessages))
+
 	assert.ErrorIs(t, err, io.EOF)
 	assert.EqualValues(t, 3, r.stats.rows.Load())
-	assert.Zero(t, r.stats.droppedRows.Load())
-}
-
-func TestRecordParametersTriesToStoreWhatItReadBeforeReturning(t *testing.T) {
-	stream := threeMessages()
-	r := &recorder{
-		conv: convert.New("fprime-project", slog.New(slog.DiscardHandler)),
-		insert: func(context.Context, []store.Row) error {
-			// The database is down for the whole test, and each insert takes a
-			// moment to fail.
-			time.Sleep(10 * time.Millisecond)
-			return errors.New("dial tcp 127.0.0.1:5432: connect: connection refused")
-		},
-	}
-
-	// Once the subscription ends, we try the rows once more, drop them and
-	// return rather than wait for the database.
-	err := recordParameters(context.Background(), stream, r, make(chan []store.Row, maxQueuedMessages))
-	assert.ErrorIs(t, err, io.EOF)
-	assert.EqualValues(t, 3, r.stats.droppedRows.Load())
-	assert.Zero(t, r.stats.rows.Load())
 }
 
 // logsReceiver stands in for the OpenTelemetry collector. It accepts OTLP log
