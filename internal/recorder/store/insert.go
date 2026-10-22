@@ -11,12 +11,14 @@ import (
 
 // Row is one leaf of a parameter value. MemberPath is "" for a whole value,
 // ".name" for an aggregate member and "[i]" for an array element, combined as
-// needed ("[0].x").
+// needed ("[0].x"). SCLK is the flight software's clock reading from the
+// header of the packet the value came from, in microseconds.
 type Row struct {
 	Parameter       Parameter
 	MemberPath      string
 	GenerationTime  time.Time
 	AcquisitionTime sql.NullTime
+	SCLK            sql.NullInt64
 	Value           Value
 }
 
@@ -25,7 +27,7 @@ func (r Row) definition() Definition {
 }
 
 var copyColumns = []string{
-	"parameter_id", "generation_time", "acquisition_time",
+	"parameter_id", "generation_time", "acquisition_time", "sclk_us",
 	"int_value", "float_value", "bool_value", "string_value", "binary_value",
 }
 
@@ -72,7 +74,7 @@ func Insert(ctx context.Context, db *sql.DB, ids *Resolver, rows []Row) error {
 			binary = v.Binary
 		}
 		if _, err := stmt.ExecContext(ctx,
-			paramIDs[r.definition()], r.GenerationTime, r.AcquisitionTime,
+			paramIDs[r.definition()], r.GenerationTime, r.AcquisitionTime, r.SCLK,
 			v.Int, v.Float, v.Bool, v.String, binary,
 		); err != nil {
 			return fmt.Errorf("failed to copy parameter value: %w", err)

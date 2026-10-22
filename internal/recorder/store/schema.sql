@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS parameter_values (
     parameter_id     INTEGER NOT NULL REFERENCES parameters (id),
     generation_time  TIMESTAMPTZ NOT NULL,
     acquisition_time TIMESTAMPTZ,
+    sclk_us          BIGINT,
     int_value        BIGINT,
     float_value      DOUBLE PRECISION,
     bool_value       BOOLEAN,

@@ -49,10 +49,17 @@ On start it creates the `timescaledb` extension and its tables if they are missi
 | Where | Holds |
 | --- | --- |
 | `parameters` table | A row for each scalar the recorder has stored a value for, unique by instance, space system (the path above the name, such as `/Ref_Ref/CdhCore/version`), name, `member_path` and value type |
-| `parameter_values` table | Each scalar value, pointing at its `parameters` row |
+| `parameter_values` table | Each scalar value, pointing at its `parameters` row, with its SCLK in `sclk_us` |
 | Loki, with `--otlp` | Each event, as described in [Events](#events) |
 
 `member_path` names a struct member or array element, for example `.x` or `[0]`, and is empty for a whole value.
+
+`sclk_us` is the flight software's clock reading from the packet the value came from, in microseconds, such as
+`1792788948675946`. It is NULL for:
+
+- Values from outside F Prime.
+- The values YAMCS sends from its cache when the recorder subscribes, such as the `FrameworkVersion` Ref sent at boot.
+  They come from different packets, so the recorder can't tell which time tag goes with which.
 
 ## Events
 
