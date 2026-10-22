@@ -20,6 +20,7 @@ import (
 	collogspb "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	commonpb "go.opentelemetry.io/proto/otlp/common/v1"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -36,19 +37,50 @@ func TestRecordedParametersExcludesTopLevel(t *testing.T) {
 	names := func() []string {
 		return []string{
 			"/Dep/FPrimeTime",
+			"/Dep/CCSDS_Packet_ID",
 			"/Dep/CdhCore/version/FrameworkVersion",
 			"/Dep/systemResources/CPU",
 			"/P",
 		}
 	}
 
+	// We keep FPrimeTime for the SCLK of the other values.
 	kept, excluded := recordedParameters(names(), false)
-	assert.Equal(t, []string{"/Dep/CdhCore/version/FrameworkVersion", "/Dep/systemResources/CPU", "/P"}, kept)
+	assert.Equal(t, []string{"/Dep/FPrimeTime", "/Dep/CdhCore/version/FrameworkVersion", "/Dep/systemResources/CPU", "/P"}, kept)
 	assert.Equal(t, 1, excluded)
 
 	kept, excluded = recordedParameters(names(), true)
 	assert.Equal(t, names(), kept)
 	assert.Zero(t, excluded)
+}
+
+// We subscribe to FPrimeTime for the SCLK of the other values, but store its
+// rows only with includeTopLevel.
+func TestRowsStoresFPrimeTimeOnlyWithIncludeTopLevel(t *testing.T) {
+	for _, includeTopLevel := range []bool{false, true} {
+		r := &recorder{conv: convert.New("ref", slog.New(slog.DiscardHandler)), includeTopLevel: includeTopLevel}
+		var names []string
+		for _, msg := range []string{
+			`{"mapping": {"1": {"name": "/Dep/FPrimeTime"}, "2": {"name": "/Dep/A/B"}}}`,
+			`{"values": [
+				{"numericId": 1, "generationTime": "2026-10-06T23:08:59.699Z", "engValue": {"type": "AGGREGATE",
+					"aggregateValue": {"name": ["seconds"], "value": [{"type": "UINT32", "uint32Value": 1791328138}]}}},
+				{"numericId": 2, "generationTime": "2026-10-06T23:08:59.699Z", "engValue": {"type": "UINT32", "uint32Value": 1}}
+			]}`,
+		} {
+			data := &processing.SubscribeParametersData{}
+			require.NoError(t, protojson.Unmarshal([]byte(msg), data))
+			for _, row := range r.rows(data) {
+				names = append(names, row.Parameter.Name+row.MemberPath)
+				assert.True(t, row.SCLK.Valid)
+			}
+		}
+		if includeTopLevel {
+			assert.Equal(t, []string{"FPrimeTime.seconds", "B"}, names)
+		} else {
+			assert.Equal(t, []string{"B"}, names)
+		}
+	}
 }
 
 func TestDropStoredKeepsNewerRows(t *testing.T) {

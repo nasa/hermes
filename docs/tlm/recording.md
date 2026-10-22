@@ -23,6 +23,7 @@ yamcs-recorder copies one YAMCS instance's telemetry into TimescaleDB and, with 
 | What | Where it goes | When |
 | --- | --- | --- |
 | Values of telemetered parameters, meaning the ones YAMCS decodes from downlinked telemetry, such as F Prime telemetry channels | TimescaleDB tables `parameters` and `parameter_values` | By default |
+| The SCLK of each F Prime value, the flight software's clock reading from the header of the packet the value came from | The `sclk` column of `parameter_values` | By default |
 | Parameters directly under the top-level path, the first part of a YAMCS path (`/Ref_Ref` in `/Ref_Ref/FPrimeTime`). fprime-yamcs puts one there for each packet header field. | The same tables | Left out unless you pass `--include-top-level` |
 | Every YAMCS event, such as an F Prime event (a log message from the flight software) | Loki, through the OpenTelemetry collector | Only with `--otlp` |
 

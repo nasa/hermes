@@ -160,6 +160,31 @@ func TestRowsUsesMappingFromEarlierMessage(t *testing.T) {
 	assert.Equal(t, ref+"/Ref/systemResources", cpu.Parameter.SpaceSystem)
 	assert.Equal(t, store.FloatValue(0.37377486), cpu.Value)
 	assert.Equal(t, utc("2026-10-06T23:08:59.699Z"), cpu.GenerationTime)
+	// SCLK comes from FPrimeTime, which here reads a second earlier than the
+	// generation time.
+	assert.Equal(t, sql.NullTime{Time: utc("2026-10-06T23:08:58.699375Z"), Valid: true}, cpu.SCLK)
+}
+
+// The message with the mapping holds the cached value of each parameter, which
+// can come from different packets. Each later message holds one packet.
+func TestRowsLeavesSCLKOfCachedValuesNull(t *testing.T) {
+	c := newConverter()
+	fprimeTime := `{"numericId": 1, "generationTime": "2026-10-06T23:08:59.699Z", "engValue": {"type": "AGGREGATE", "aggregateValue": {
+		"name": ["seconds", "useconds"], "value": [{"type": "UINT32", "uint32Value": 1791328138}, {"type": "UINT32", "uint32Value": 699375}]}}}`
+	b := `{"numericId": 2, "generationTime": "2026-10-06T23:08:59.699Z", "engValue": {"type": "UINT32", "uint32Value": 1}}`
+
+	cached := byPath(t, must(c.Rows(parseMessage(t, `{
+		"mapping": {"1": {"name": "`+ref+`/FPrimeTime"}, "2": {"name": "`+ref+`/A/B"}},
+		"values": [`+fprimeTime+`, `+b+`]
+	}`))))["B"]
+	assert.False(t, cached.SCLK.Valid)
+
+	later := byPath(t, must(c.Rows(parseMessage(t, `{"values": [`+fprimeTime+`, `+b+`]}`))))["B"]
+	assert.Equal(t, sql.NullTime{Time: utc("2026-10-06T23:08:58.699375Z"), Valid: true}, later.SCLK)
+
+	// A message without FPrimeTime, like one from outside F Prime, gives no SCLK.
+	alone := byPath(t, must(c.Rows(parseMessage(t, `{"values": [`+b+`]}`))))["B"]
+	assert.False(t, alone.SCLK.Valid)
 }
 
 // Captured from Ref: a STRING and UINT64 from the deployment plus SINT64,

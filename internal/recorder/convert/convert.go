@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/nasa/hermes/internal/recorder/store"
 	"github.com/nasa/hermes/internal/yamcspb/protobuf"
@@ -66,7 +67,45 @@ func (c *Converter) Rows(data *processing.SubscribeParametersData) (rows []store
 		}
 		rows = c.appendValue(rows, p, pv)
 	}
+	// YAMCS sends each packet's values in one message with that packet's
+	// FPrimeTime. The message with the mapping is the exception: it holds the
+	// cached value of each parameter, from many packets, so we leave its SCLK NULL.
+	if len(data.GetMapping()) == 0 {
+		setSCLK(rows)
+	}
 	return rows, unmapped, c.incomplete
+}
+
+// IsFPrimeTime reports whether p is the FPrimeTime that fprime-yamcs defines in
+// a deployment's top-level space system, such as /Ref_Ref. YAMCS decodes it from
+// the time tag in the header of every F Prime packet.
+func IsFPrimeTime(p store.Parameter) bool {
+	return p.Name == "FPrimeTime" && strings.Count(p.SpaceSystem, "/") == 1
+}
+
+// setSCLK sets the SCLK of each row to the seconds and useconds of the
+// FPrimeTime among them, read as Unix time. Without an FPrimeTime, the rows keep
+// a NULL SCLK.
+func setSCLK(rows []store.Row) {
+	var seconds, useconds sql.NullInt64
+	for _, r := range rows {
+		if !IsFPrimeTime(r.Parameter) {
+			continue
+		}
+		switch r.MemberPath {
+		case ".seconds":
+			seconds = r.Value.Int
+		case ".useconds":
+			useconds = r.Value.Int
+		}
+	}
+	if !seconds.Valid {
+		return
+	}
+	sclk := sql.NullTime{Time: time.Unix(seconds.Int64, useconds.Int64*1000).UTC(), Valid: true}
+	for i := range rows {
+		rows[i].SCLK = sclk
+	}
 }
 
 func (c *Converter) appendValue(rows []store.Row, p store.Parameter, pv *pvalue.ParameterValue) []store.Row {
