@@ -90,10 +90,13 @@ func TestStatsLineNamesEachCount(t *testing.T) {
 	st.incomplete.Add(3)
 	st.alreadyStored.Add(2)
 	st.droppedRows.Add(1)
+	queue := make(chan []store.Row, maxQueuedMessages)
+	queue <- nil
+	queue <- nil
 	var logs bytes.Buffer
-	st.log(slog.New(slog.NewTextHandler(&logs, nil)))
+	st.log(slog.New(slog.NewTextHandler(&logs, nil)), queue)
 	assert.Contains(t, logs.String(),
-		"rows=0 events=4 unmapped=0 incomplete=3 already_stored=2 insert_errors=0 dropped_rows=1")
+		"rows=0 events=4 unmapped=0 incomplete=3 already_stored=2 insert_errors=0 dropped_rows=1 queued_messages=2/1024")
 }
 
 // scriptedEvents returns the events in queue from Recv, then io.EOF. It embeds
@@ -241,7 +244,7 @@ func TestRecordParametersStoresWhatItReadBeforeReturning(t *testing.T) {
 		},
 	}
 
-	err := recordParameters(context.Background(), stream, r)
+	err := recordParameters(context.Background(), stream, r, make(chan []store.Row, maxQueuedMessages))
 	assert.ErrorIs(t, err, io.EOF)
 	assert.EqualValues(t, 3, r.stats.rows.Load())
 	assert.Zero(t, r.stats.droppedRows.Load())
@@ -261,7 +264,7 @@ func TestRecordParametersTriesToStoreWhatItReadBeforeReturning(t *testing.T) {
 
 	// Once the subscription ends, we try the rows once more, drop them and
 	// return rather than wait for the database.
-	err := recordParameters(context.Background(), stream, r)
+	err := recordParameters(context.Background(), stream, r, make(chan []store.Row, maxQueuedMessages))
 	assert.ErrorIs(t, err, io.EOF)
 	assert.EqualValues(t, 3, r.stats.droppedRows.Load())
 	assert.Zero(t, r.stats.rows.Load())

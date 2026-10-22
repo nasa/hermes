@@ -172,8 +172,11 @@ func run(ctx context.Context, cfg config, logger *slog.Logger) error {
 		stored: stored,
 		logger: logger,
 	}
-	go r.stats.logEvery(ctx, logger)
-	defer r.stats.log(logger)
+	// recordParameters passes each message's rows to the database through queue,
+	// and the stats line logs how many are waiting.
+	queue := make(chan []store.Row, maxQueuedMessages)
+	go r.stats.logEvery(ctx, logger, queue)
+	defer r.stats.log(logger, queue)
 
 	// Both subscriptions run on ctx, so when the first one ends we cancel ctx to
 	// end the other. That is also how the event stream ends when the instance
@@ -181,7 +184,7 @@ func run(ctx context.Context, cfg config, logger *slog.Logger) error {
 	// error, but only after both loops are done, so the deferred flush, stats
 	// line and database close come after the last emit and insert.
 	done := make(chan error, 2)
-	go func() { done <- recordParameters(ctx, stream, r) }()
+	go func() { done <- recordParameters(ctx, stream, r, queue) }()
 	if eventStream != nil {
 		go func() { done <- exportEvents(ctx, eventStream, eventLogger, &r.stats) }()
 	}
@@ -282,12 +285,12 @@ func newLoggerProvider(ctx context.Context, addr, instance string) (*sdklog.Logg
 // stop reading from YAMCS.
 const maxQueuedMessages = 1024
 
-// recordParameters stores the values that stream delivers until it ends.
-func recordParameters(ctx context.Context, stream processing.ProcessingApi_SubscribeParametersClient, r *recorder) error {
+// recordParameters stores the values that stream delivers until it ends,
+// passing them to the database through queue.
+func recordParameters(ctx context.Context, stream processing.ProcessingApi_SubscribeParametersClient, r *recorder, queue chan []store.Row) error {
 	ctx, cancel := context.WithCancel(ctx)
 	// A second goroutine writes to the database, so we keep reading from YAMCS
 	// while an insert is in flight.
-	queue := make(chan []store.Row, maxQueuedMessages)
 	var writer sync.WaitGroup
 	writer.Go(func() { r.write(ctx, queue) })
 	// Before we return, we wait for that goroutine to store the rows still in
@@ -467,11 +470,14 @@ type stats struct {
 	lastInsertError atomic.Pointer[string]
 }
 
-func (s *stats) log(logger *slog.Logger) {
+func (s *stats) log(logger *slog.Logger, queue <-chan []store.Row) {
 	attrs := []any{
 		"values", s.values.Load(), "rows", s.rows.Load(), "events", s.events.Load(), "unmapped", s.unmapped.Load(),
 		"incomplete", s.incomplete.Load(), "already_stored", s.alreadyStored.Load(), "insert_errors", s.insertErrors.Load(),
 		"dropped_rows", s.droppedRows.Load(),
+		// Unlike the totals, this is how many messages are queued behind the
+		// write in progress. At the maximum, we stop reading from YAMCS.
+		"queued_messages", fmt.Sprintf("%d/%d", len(queue), maxQueuedMessages),
 	}
 	// Swap clears the error, so each line shows only the newest one since the previous line.
 	if msg := s.lastInsertError.Swap(nil); msg != nil {
@@ -480,7 +486,7 @@ func (s *stats) log(logger *slog.Logger) {
 	logger.Info("recorder stats", attrs...)
 }
 
-func (s *stats) logEvery(ctx context.Context, logger *slog.Logger) {
+func (s *stats) logEvery(ctx context.Context, logger *slog.Logger, queue <-chan []store.Row) {
 	ticker := time.NewTicker(statsInterval)
 	defer ticker.Stop()
 	for {
@@ -488,7 +494,7 @@ func (s *stats) logEvery(ctx context.Context, logger *slog.Logger) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			s.log(logger)
+			s.log(logger, queue)
 		}
 	}
 }
