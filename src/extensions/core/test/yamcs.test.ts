@@ -431,7 +431,7 @@ describe('TelemetryDatabase with YAMCS parameters', () => {
     });
 });
 
-// Events as the live fprime-project instance sent them
+// Events as the live fprime-project instance sent them. We added the SCLK fields fprime-yamcs puts on F Prime events.
 const opCodeDispatched: YamcsEvent = {
     source: 'FPrimeEventProcessor',
     generationTime: { seconds: '1790873434', nanos: 505000000 },
@@ -441,7 +441,10 @@ const opCodeDispatched: YamcsEvent = {
     message: '[OpCodeDispatched] Opcode 0x10005001 dispatched to port 0',
     severity: 'INFO',
     createdBy: 'guest',
-    extra: { Opcode: '268455937', port: '0', fprime_severity: 'COMMAND', fprime_event_id: '16777217', fprime_event_name: 'CdhCore.cmdDisp.OpCodeDispatched' },
+    extra: {
+        Opcode: '268455937', port: '0', fprime_severity: 'COMMAND', fprime_event_id: '16777217', fprime_event_name: 'CdhCore.cmdDisp.OpCodeDispatched',
+        fprime_sclk: '1790873434.505713', fprime_time_base: 'TB_WORKSTATION_TIME', fprime_time_context: '0',
+    },
 };
 const seqCountJump: YamcsEvent = {
     source: 'FprimePacketPreprocessor',
@@ -458,7 +461,7 @@ describe('yamcsEventRows', () => {
         expect(yamcsEventRows('fprime-project', [opCodeDispatched, seqCountJump], new Set())).toEqual([
             {
                 time: 1790873434505,
-                sclk: NaN,
+                sclk: 1790873434.505713,
                 source: 'yamcs:fprime-project',
                 component: 'CdhCore.cmdDisp',
                 name: 'OpCodeDispatched',
@@ -689,13 +692,13 @@ describe('YAMCS event source', () => {
         };
         expect(events.split('\n').map((row) => JSON.parse(row))).toEqual([seqCountJumpRow, seqCountJumpRow]);
 
-        // With evrCommand on, a cell also lists opCodeDispatched, under its F Prime component and event name
+        // With evrCommand on, a cell also lists opCodeDispatched, with its SCLK, under its F Prime component and event name
         mockSettings['hermes.notebook.evrCommand'] = true;
         const evrCommandOn = notebookCell();
         evrCommandOn.cell.metadata = { hermes: { fsw: 'yamcs:fprime-project' } };
         await cells.execute(evrCommandOn.cell, evrCommandOn.execution, tokenSource().token);
         const rows = evrCommandOn.outputs()[0].split('\n').map((row) => JSON.parse(row));
-        expect(rows).toMatchObject([seqCountJumpRow, { component: 'CdhCore.cmdDisp', name: 'OpCodeDispatched' }, seqCountJumpRow]);
+        expect(rows).toMatchObject([seqCountJumpRow, { sclk: 1790873434.505713, component: 'CdhCore.cmdDisp', name: 'OpCodeDispatched' }, seqCountJumpRow]);
 
         // A cell whose connection is gone, as it is while YAMCS mode reconnects, lists no event raised after that
         sequence.mockImplementation(async () => {

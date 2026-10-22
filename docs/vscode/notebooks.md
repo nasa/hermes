@@ -132,7 +132,8 @@ commands or clients caused. It keeps listing for one second after the last comma
   `WARNING_HI`. Any other event, such as one YAMCS raises itself, shows YAMCS's source, type and severity.
 - To hide F Prime events of one severity, turn off that severity's setting, such as `hermes.notebook.evrWarningHigh`
   for `WARNING_HI`. Other events always show.
-- Times are in UTC. To show local time, set `hermes.notebook.evr.timeFormat` to `local`.
+- Times are in UTC. To show local time or an F Prime event's SCLK, set `hermes.notebook.evr.timeFormat` to `local`
+  or `sclk`.
 
 To see events outside a cell's run, use the [events panel](telemetry-and-events.md#events-panel).
 

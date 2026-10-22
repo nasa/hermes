@@ -147,7 +147,7 @@ Set these as keys of the `hermes.host.yamcs` setting in VS Code's settings:
 | Telemetry table and plot | A row for each parameter of each instance, timed by when YAMCS received it, with source `yamcs:<instance>`. Structs and arrays get a row per member or element, for example `comQueueDepth[1]`. |
 | Events panel | Each instance's newest 100 events in YAMCS's archive, then live ones. An F Prime event shows its component and name, for example `CdhCore.cmdDisp` and `OpCodeDispatched`, and any other event YAMCS's source and type. |
 | Connections view, in the Hermes sidebar | Each instance's [dictionaries](#dictionaries). Deleting `<instance>` also deletes `<instance> (F Prime)`. |
-| Times | UTC by default, including in cell event lists (`hermes.notebook.evr.timeFormat`). When a view is set to spacecraft clock (SCLK) time, a telemetry value shows the flight software's clock reading from the packet that carried it, or a blank time if YAMCS already held the value when Hermes connected. Events show a blank time. |
+| Times | UTC by default, including in cell event lists (`hermes.notebook.evr.timeFormat`). When a view is set to spacecraft clock (SCLK) time, a telemetry value shows the flight software's clock reading from the packet that carried it, or a blank time if YAMCS already held the value when Hermes connected. An F Prime event shows the clock reading from when the flight software raised it, and other events a blank time. |
 
 ### Dictionaries
 
