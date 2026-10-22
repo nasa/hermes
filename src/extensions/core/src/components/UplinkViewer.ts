@@ -153,7 +153,8 @@ class PendingFileUplink implements TreeEntry, vscode.Progress<number> {
 
         const stat = await vscode.workspace.fs.stat(this.uri);
 
-        target.uplink({
+        this.provider.didChangeTreeData.fire(this);
+        await target.uplink({
             sourcePath: this.uri.fsPath,
             destinationPath: this.destination,
             size: stat.size,
@@ -161,8 +162,6 @@ class PendingFileUplink implements TreeEntry, vscode.Progress<number> {
             .finally(() => {
                 this.delete();
             });
-
-        this.provider.didChangeTreeData.fire(this);
     }
 
     async setTarget() {

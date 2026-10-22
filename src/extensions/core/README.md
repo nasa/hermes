@@ -160,6 +160,22 @@ A cell uses its target's dictionary. A cell on Automatic uses the one selected u
 Hermes sets to the first instance's when it connects. In Offline mode the dictionaries stay available, as long as
 VS Code has a folder open.
 
+### Upload files
+
+Hermes can send a file to an instance that fprime-yamcs runs. In the **Uplink** view of the Hermes sidebar, click
+**+** and pick the file. Use the pencil buttons under it to set **Destination**, the path on the spacecraft, and
+**Target**, if the instance isn't the first one that can upload. Then click the file's **Uplink File** button. The
+file leaves the view once YAMCS has sent it, or Hermes shows why YAMCS couldn't. A cell in the `uplink` notebook
+language sends one file per line, written `<target> <file> <destination>`, with `<file>` relative to the first
+workspace folder, for example `yamcs:ref hello.txt /tmp/uplink/hello.txt`.
+
+- A finished upload only means fprime-yamcs sent every packet. F Prime's `FileReceived` event tells you it saved
+  the file.
+- The deployment decides which destination paths it accepts. The F Prime Ref deployment saves files only under
+  `/tmp/uplink/`.
+- Files over about 4 MiB fail, because they exceed the yamcs-grpc plugin's default gRPC message size.
+- fprime-yamcs sends one file at a time, at about 20 KiB/s.
+
 ## Develop
 
 ```sh
