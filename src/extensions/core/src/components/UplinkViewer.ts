@@ -130,10 +130,6 @@ class PendingFileUplink implements TreeEntry, vscode.Progress<number> {
         this.provider.didChangeTreeData.fire(null);
     }
 
-    cancel() {
-        this._cancel?.cancel();
-    }
-
     report(value: number): void {
         this.progress += value;
         this.provider.didChangeTreeData.fire(this);

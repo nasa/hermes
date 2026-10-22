@@ -73,11 +73,6 @@
                 "icon": "$(trash)"
             },
             {
-                "command": "hermes.uplink.cancel",
-                "title": "Cancel File Uplink",
-                "icon": "$(debug-stop)"
-            },
-            {
                 "command": "hermes.uplink.clear",
                 "title": "Clear Uplink Listing",
                 "icon": "$(clear-all)"
@@ -237,11 +232,6 @@
                 {
                     "command": "hermes.uplink.destinationEdit",
                     "when": "view == hermes.uplink && viewItem == hermes.uplink.destination",
-                    "group": "inline"
-                },
-                {
-                    "command": "hermes.uplink.cancel",
-                    "when": "view == hermes.uplink && viewItem == hermes.uplink.active",
                     "group": "inline"
                 },
                 {
