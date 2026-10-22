@@ -3,8 +3,8 @@ import { TimeFormat } from '@gov.nasa.jpl.hermes/types';
 
 import { formatTime } from '../common/timeFormat';
 
-test('formatTime shows a YAMCS event in UTC, and no time under SCLK', () => {
-    // The events panel and a cell's event list receive a YAMCS event as JSON. Hermes stores its SCLK as NaN, which JSON writes as null.
+test('formatTime shows a YAMCS event without an SCLK in UTC, and no time under SCLK', () => {
+    // The events panel and a cell's event list receive a YAMCS event as JSON. Hermes stores a missing SCLK as NaN, which JSON writes as null.
     const yamcsEvent = JSON.parse(JSON.stringify({ time: 1790722468095, sclk: NaN }));
     const localModeEvent = { time: 1790722468095, sclk: 1234.5 };
 

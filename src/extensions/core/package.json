@@ -292,7 +292,7 @@
                         "default": "OPERATOR NAME"
                     },
                     "hermes.notebook.evr.timeFormat": {
-                        "description": "Time format of events in notebook outputs. YAMCS events have no SCLK, so they show no time under SCLK.",
+                        "description": "Time format of events in notebook outputs. In YAMCS mode only F Prime events have an SCLK, so other events show no time under SCLK.",
                         "type": "string",
                         "default": "utc",
                         "enum": [
