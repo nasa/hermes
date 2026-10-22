@@ -121,6 +121,7 @@ jest.mock('vscode', () => {
 });
 
 import { EventEmitter as NodeEventEmitter } from 'events';
+import { Readable } from 'stream';
 import * as vscode from 'vscode';
 import Long from 'long';
 import type * as Hermes from '@gov.nasa.jpl.hermes/api';
@@ -502,6 +503,7 @@ describe('YAMCS event source', () => {
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockImplementation(async (instance) => [`/${instance}/Demo/x`]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([]);
         jest.spyOn(YamcsClient.prototype, 'listLinkParameters').mockResolvedValue([]);
+        jest.spyOn(YamcsClient.prototype, 'listFileTransferServices').mockResolvedValue([]);
         const live = new vscode.EventEmitter<YamcsEvent>();
         const subscribe = jest.spyOn(YamcsClient.prototype, 'subscribeEvents').mockImplementation((_, onEvent) => {
             const subscription = live.event(onEvent);
@@ -925,6 +927,7 @@ test('YAMCS mode connects with its dictionary and warns when it cannot save the 
     jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
     jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([noOpString]);
     jest.spyOn(YamcsClient.prototype, 'listLinkParameters').mockResolvedValue([]);
+    jest.spyOn(YamcsClient.prototype, 'listFileTransferServices').mockResolvedValue([]);
     jest.spyOn(vscode.workspace.fs, 'writeFile').mockRejectedValue(new Error('disk full'));
     const warn = jest.fn();
     const api = await new YamcsBackendProvider().provideBackendApi(
@@ -1107,6 +1110,9 @@ describe('YAMCS commands', () => {
         jest.spyOn(YamcsClient.prototype, 'listTelemetered').mockResolvedValue([]);
         jest.spyOn(YamcsClient.prototype, 'listCommands').mockResolvedValue([noOpString]);
         jest.spyOn(YamcsClient.prototype, 'listLinkParameters').mockResolvedValue([]);
+        // fprime-project's first file transfer service can upload, and other-instance has none
+        jest.spyOn(YamcsClient.prototype, 'listFileTransferServices')
+            .mockImplementation(async (instance) => instance === 'fprime-project' ? [{ capabilities: { upload: true } }] : []);
         // A cell subscribes to YAMCS's events while it runs, and these tests raise none
         jest.spyOn(YamcsClient.prototype, 'subscribeEvents').mockReturnValue(() => { });
         jest.spyOn(YamcsClient.prototype, 'listEvents').mockResolvedValue([]);
@@ -1122,12 +1128,12 @@ describe('YAMCS commands', () => {
         return { api, fsw: (await api.allFsw())[0], issue, get };
     }
 
-    test('offers one connection per running instance with the processor, with the dictionary built from its commands', async () => {
+    test('offers one connection per running instance with the processor, with the dictionary built from its commands and an uplink if it can upload', async () => {
         const { api } = await backend();
         const fsws = await api.allFsw();
-        expect(fsws.map(({ id, type, dictionary }) => ({ id, type, dictionary }))).toEqual([
-            { id: 'yamcs:fprime-project', type: 'yamcs', dictionary: 'yamcs:fprime-project' },
-            { id: 'yamcs:other-instance', type: 'yamcs', dictionary: 'yamcs:other-instance' },
+        expect(fsws.map(({ id, type, dictionary, uplink }) => ({ id, type, dictionary, uplink: !!uplink }))).toEqual([
+            { id: 'yamcs:fprime-project', type: 'yamcs', dictionary: 'yamcs:fprime-project', uplink: true },
+            { id: 'yamcs:other-instance', type: 'yamcs', dictionary: 'yamcs:other-instance', uplink: false },
         ]);
         expect(await api.getFsw('yamcs:other-instance')).toBe(fsws[1]);
         expect((await api.allDictionaries())['yamcs:other-instance']).toMatchObject({ name: 'other-instance', type: 'yamcs' });
@@ -1548,6 +1554,79 @@ describe('YAMCS commands', () => {
             return true;
         });
         await cells.execute(cell, execution, tokenSource().token);
+        api.dispose();
+    });
+
+    const header = { sourcePath: '/home/ops/hello.txt', destinationPath: '/tmp/uplink/hello.txt', size: 10 };
+
+    test('uplinks a file through the guest bucket, reporting the bytes YAMCS has sent, until the transfer completes', async () => {
+        const { api, fsw } = await backend();
+        const put = jest.spyOn(YamcsClient.prototype, 'putObject').mockResolvedValue(undefined);
+        const upload = jest.spyOn(YamcsClient.prototype, 'upload').mockResolvedValue({ id: '7', state: 'RUNNING', sizeTransferred: '0' });
+        jest.spyOn(YamcsClient.prototype, 'getTransfer')
+            .mockResolvedValueOnce({ id: '7', state: 'RUNNING', sizeTransferred: '4' })
+            .mockResolvedValueOnce({ id: '7', state: 'COMPLETED', sizeTransferred: '10' });
+        const report = jest.fn();
+
+        await fsw.uplink!(header, Readable.from([Buffer.from('hello '), Buffer.from('ops!')]), { report });
+        expect(put).toHaveBeenCalledWith('user.guest', 'hello.txt', Buffer.from('hello ops!'));
+        expect(upload).toHaveBeenCalledWith('fprime-project', 'user.guest', 'hello.txt', '/tmp/uplink/hello.txt');
+        expect(report.mock.calls).toEqual([[0], [4], [6]]);
+        api.dispose();
+    });
+
+    test('rejects an uplink with YAMCS\'s reason when the transfer fails', async () => {
+        const { api, fsw } = await backend();
+        jest.spyOn(YamcsClient.prototype, 'putObject').mockResolvedValue(undefined);
+        jest.spyOn(YamcsClient.prototype, 'upload').mockResolvedValue({ id: '7', state: 'FAILED', failureReason: 'link down' });
+
+        await expect(fsw.uplink!(header, Readable.from([]), { report: () => { } }))
+            .rejects.toThrow('YAMCS could not uplink hello.txt: link down');
+        api.dispose();
+    });
+
+    test('lists every uplink the window ran, with the error of one that failed, until they are cleared', async () => {
+        const { api, fsw } = await backend();
+        jest.spyOn(YamcsClient.prototype, 'putObject').mockResolvedValue(undefined);
+        jest.spyOn(YamcsClient.prototype, 'upload')
+            .mockResolvedValueOnce({ id: '7', state: 'COMPLETED', sizeTransferred: '10' })
+            .mockResolvedValueOnce({ id: '8', state: 'FAILED', failureReason: 'link down' });
+        const listed = jest.fn();
+        api.onFileTransfer(listed);
+
+        await fsw.uplink!(header, Readable.from([]), { report: () => { } });
+        await expect(fsw.uplink!(header, Readable.from([]), { report: () => { } })).rejects.toThrow();
+        const uplink = { fswId: 'yamcs:fprime-project', ...header };
+        expect(listed).toHaveBeenLastCalledWith({
+            uplinkCompleted: [
+                expect.objectContaining({ ...uplink, error: '' }),
+                expect.objectContaining({ ...uplink, error: 'YAMCS could not uplink hello.txt: link down' }),
+            ],
+        });
+
+        await api.clearUplinkTransferState();
+        expect(listed).toHaveBeenLastCalledWith({ uplinkCompleted: [] });
+        api.dispose();
+    });
+
+    test('lists a stopped uplink once YAMCS finishes it, since stopping only stops us waiting', async () => {
+        const { api, fsw } = await backend();
+        jest.spyOn(YamcsClient.prototype, 'putObject').mockResolvedValue(undefined);
+        const upload = jest.spyOn(YamcsClient.prototype, 'upload').mockResolvedValue({ id: '7', state: 'RUNNING', sizeTransferred: '0' });
+        const getTransfer = jest.spyOn(YamcsClient.prototype, 'getTransfer').mockResolvedValue({ id: '7', state: 'RUNNING', sizeTransferred: '4' });
+        const listed = jest.fn();
+        api.onFileTransfer(listed);
+        const stop = tokenSource();
+
+        const uplink = fsw.uplink!(header, Readable.from([]), { report: () => { } }, stop.token);
+        await waitFor(() => upload.mock.calls.length, 1000);
+        stop.cancel();
+        await expect(uplink).rejects.toThrow('Cancelled');
+        expect(listed).not.toHaveBeenCalled();
+
+        getTransfer.mockResolvedValue({ id: '7', state: 'COMPLETED', sizeTransferred: '10' });
+        await waitFor(() => listed.mock.calls.length, 1000);
+        expect(listed).toHaveBeenLastCalledWith({ uplinkCompleted: [expect.objectContaining({ error: '' })] });
         api.dispose();
     });
 });

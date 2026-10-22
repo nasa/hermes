@@ -6,13 +6,20 @@ import type { ProtoGrpcType } from './proto/yamcs/processing';
 import type { ProtoGrpcType as EventsProtoGrpcType } from './proto/yamcs/events_service';
 import type { ProtoGrpcType as CommandsProtoGrpcType } from './proto/yamcs/commands_service';
 import type { ProtoGrpcType as InstancesProtoGrpcType } from './proto/yamcs/instances_service';
+import type { ProtoGrpcType as BucketsProtoGrpcType } from './proto/yamcs/buckets';
+import type { ProtoGrpcType as FileTransferProtoGrpcType } from './proto/yamcs/filetransfer';
 import type { Value as ArgumentValue } from './proto/yamcs/google/protobuf/Value';
+import type { BucketsApiClient } from './proto/yamcs/yamcs/protobuf/buckets/BucketsApi';
 import type { CommandHistoryEntry__Output } from './proto/yamcs/yamcs/protobuf/commanding/CommandHistoryEntry';
 import type { CommandsApiClient } from './proto/yamcs/yamcs/protobuf/commanding/CommandsApi';
 import type { IssueCommandResponse__Output } from './proto/yamcs/yamcs/protobuf/commanding/IssueCommandResponse';
 import type { EventsApiClient } from './proto/yamcs/yamcs/protobuf/events/EventsApi';
 import type { Event__Output } from './proto/yamcs/yamcs/protobuf/events/Event';
 import type { ListEventsResponse__Output } from './proto/yamcs/yamcs/protobuf/events/ListEventsResponse';
+import type { FileTransferApiClient } from './proto/yamcs/yamcs/protobuf/filetransfer/FileTransferApi';
+import type { FileTransferServiceInfo__Output } from './proto/yamcs/yamcs/protobuf/filetransfer/FileTransferServiceInfo';
+import type { ListFileTransferServicesResponse__Output } from './proto/yamcs/yamcs/protobuf/filetransfer/ListFileTransferServicesResponse';
+import type { TransferInfo__Output } from './proto/yamcs/yamcs/protobuf/filetransfer/TransferInfo';
 import type { InstancesApiClient } from './proto/yamcs/yamcs/protobuf/instances/InstancesApi';
 import type { ListInstancesResponse__Output } from './proto/yamcs/yamcs/protobuf/instances/ListInstancesResponse';
 import type { YamcsInstance__Output } from './proto/yamcs/yamcs/protobuf/instances/YamcsInstance';
@@ -58,7 +65,8 @@ const yamcsDefinition = protoLoader.fromJSON(yamcsDescriptor as any, {
     longs: String,
     enums: String,
 });
-const yamcsPackage = grpc.loadPackageDefinition(yamcsDefinition) as unknown as ProtoGrpcType & EventsProtoGrpcType & CommandsProtoGrpcType & InstancesProtoGrpcType;
+const yamcsPackage = grpc.loadPackageDefinition(yamcsDefinition) as unknown as ProtoGrpcType & EventsProtoGrpcType & CommandsProtoGrpcType & InstancesProtoGrpcType
+    & BucketsProtoGrpcType & FileTransferProtoGrpcType;
 
 /**
  * Client for the YAMCS API that the yamcs-grpc plugin serves over gRPC.
@@ -69,6 +77,8 @@ export class YamcsClient {
     private readonly events: EventsApiClient;
     private readonly commands: CommandsApiClient;
     private readonly instances: InstancesApiClient;
+    private readonly buckets: BucketsApiClient;
+    private readonly fileTransfer: FileTransferApiClient;
 
     constructor(address: string) {
         const credentials = grpc.credentials.createInsecure();
@@ -78,8 +88,7 @@ export class YamcsClient {
             // more often than that.
             'grpc.keepalive_time_ms': 5 * 60 * 1000,
         });
-        // MdbApi, EventsApi, CommandsApi and InstancesApi share ProcessingApi's channel, so we only need
-        // to wait on and close processing.
+        // The other APIs share ProcessingApi's channel, so we only need to wait on and close processing.
         this.mdb = new yamcsPackage.yamcs.protobuf.mdb.MdbApi(address, credentials, {
             channelOverride: this.processing.getChannel(),
         });
@@ -90,6 +99,12 @@ export class YamcsClient {
             channelOverride: this.processing.getChannel(),
         });
         this.instances = new yamcsPackage.yamcs.protobuf.instances.InstancesApi(address, credentials, {
+            channelOverride: this.processing.getChannel(),
+        });
+        this.buckets = new yamcsPackage.yamcs.protobuf.buckets.BucketsApi(address, credentials, {
+            channelOverride: this.processing.getChannel(),
+        });
+        this.fileTransfer = new yamcsPackage.yamcs.protobuf.filetransfer.FileTransferApi(address, credentials, {
             channelOverride: this.processing.getChannel(),
         });
     }
@@ -325,6 +340,42 @@ export class YamcsClient {
     getCommand(instance: string, id: string): Promise<CommandHistoryEntry__Output> {
         return new Promise((resolve, reject) => {
             this.commands.GetCommand({ instance, id }, (err, res) => err ? reject(err) : resolve(res!));
+        });
+    }
+
+    /**
+     * The running file transfer services of instance. The calls below name
+     * no service, so YAMCS uses the instance's first one.
+     */
+    async listFileTransferServices(instance: string): Promise<FileTransferServiceInfo__Output[]> {
+        const res = await new Promise<ListFileTransferServicesResponse__Output>((resolve, reject) => {
+            this.fileTransfer.ListFileTransferServices({ instance }, (err, res) => err ? reject(err) : resolve(res!));
+        });
+        return res.services ?? [];
+    }
+
+    /**
+     * Store data in bucket as objectName, replacing any object with that name
+     */
+    async putObject(bucket: string, objectName: string, data: Buffer): Promise<void> {
+        await new Promise((resolve, reject) => {
+            this.buckets.UploadObject({ bucketName: bucket, objectName, data: { data } }, (err, res) => err ? reject(err) : resolve(res));
+        });
+    }
+
+    /**
+     * Start uplinking the object objectName in bucket to remotePath on the
+     * spacecraft. YAMCS replies once it has created the transfer.
+     */
+    upload(instance: string, bucket: string, objectName: string, remotePath: string): Promise<TransferInfo__Output> {
+        return new Promise((resolve, reject) => {
+            this.fileTransfer.CreateTransfer({ instance, direction: 'UPLOAD', bucket, objectName, remotePath }, (err, res) => err ? reject(err) : resolve(res!));
+        });
+    }
+
+    getTransfer(instance: string, id: string): Promise<TransferInfo__Output> {
+        return new Promise((resolve, reject) => {
+            this.fileTransfer.GetTransfer({ instance, id }, (err, res) => err ? reject(err) : resolve(res!));
         });
     }
 

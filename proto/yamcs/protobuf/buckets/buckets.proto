@@ -1,0 +1,366 @@
+syntax="proto2";
+  
+package yamcs.protobuf.buckets;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "BucketsProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
+
+// Methods related to object storage.
+//
+// Buckets represent a simple mechanism for storing user objects (binary data
+// chunks such as images, monitoring lists, displays...) together with some
+// metadata.
+//
+// The metadata is represented by simple (key,value) pairs where both key and
+// value are strings.
+//
+// The following limitations are implemented in order to prevent disk over
+// consumption and keep the service responsive:
+//
+// *   The maximum size of an upload including data and metadata is 5MB.
+// *   The maximum number of objects in one bucket is 1000.
+// *   The maximum size of an bucket 100MB (counted as the sum of the size of
+//     the objects within the bucket).
+// *   The maximum size of the metadata is 16KB (counted as the sum of the
+//     length of the keys and values).
+service BucketsApi {
+  option (yamcs.api.markdown) = true;
+
+  // List buckets
+  rpc ListBuckets(ListBucketsRequest) returns (ListBucketsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/storage/buckets"
+      additional_bindings {
+        get: "/api/buckets/{instance}"
+        deprecated: true
+      }
+    };
+  }
+  
+  // Get a bucket
+  rpc GetBucket(GetBucketRequest) returns (BucketInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/storage/buckets/{bucketName}"
+      additional_bindings {
+        get: "/api/buckets/{instance}/{bucketName}"
+        deprecated: true
+      }
+    };
+  }
+  
+  // Create a bucket
+  rpc CreateBucket(CreateBucketRequest) returns (BucketInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/storage/buckets"
+      body: "*"
+      additional_bindings {
+        post: "/api/buckets/{instance}"
+        body: "*"
+        deprecated: true
+      }
+    };
+  }
+  
+  // Delete a bucket
+  //
+  // Deleting a bucket means also deleting all objects that are part of it.
+  rpc DeleteBucket(DeleteBucketRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/storage/buckets/{bucketName}"
+      additional_bindings {
+        delete: "/api/buckets/{instance}/{bucketName}"
+        deprecated: true
+      }
+    };
+  }
+  
+  // Get an object
+  //
+  // The body of the response represents the object data. The `Content-Type`
+  // header is set to the content type of the object specified when uploading
+  // the object. If no `Content-Type` was specified when creating the object,
+  // the `Content-Type` of the response is set to
+  // `application/octet-stream`.
+  rpc GetObject(GetObjectRequest) returns (yamcs.api.HttpBody) {
+    option (yamcs.api.route) = {
+      get: "/api/storage/buckets/{bucketName}/objects/{objectName*}"
+      additional_bindings {
+        get: "/api/buckets/{instance}/{bucketName}/objects/{objectName*}"
+        deprecated: true
+      }
+    };
+  }
+
+  // Get object info
+  rpc GetObjectInfo(GetObjectInfoRequest) returns (ObjectInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/storage/buckets/{bucketName}/objectInfo/{objectName*}"
+    };
+  }
+
+  // Upload an object
+  //
+  // **Simple upload**:
+  // 
+  // In case of simple upload, the object name has to be specified as part of the URL
+  // and the `Content-Type` header has to be set to the type of the object. The body
+  // of the request is the object data.
+  // 
+  // 
+  // **Form upload**:
+  // 
+  // The form-based upload can be used to upload an object from an HTML form. In this
+  // case the `Content-Type` of the request is set to `multipart/form-data`, and the
+  // body will contain at least one part which is the object data. This part includes
+  // a filename which is used as the object name as well as a `Content-Type` header.
+  //
+  // The name attribute for the file part is ignored.
+  //
+  // Additional parts (which do not specify a filename) will be used as metadata: the
+  // name is specified as part of the `Content-Disposition` and the value is the body
+  // of the part.
+  // 
+  // This can be tested with curl using the `-F` option.
+  // 
+  // ```http
+  // POST /api/storage/buckets/my_bucket/objects HTTP/1.1
+  // Host: localhost:8090
+  // User-Agent: curl/7.58.0
+  // Accept: */*
+  // Content-Length: 1090
+  // Content-Type: multipart/form-data; boundary=------------------------7109c709802f7ae4
+  // 
+  // --------------------------7109c709802f7ae4
+  // Content-Disposition: form-data; name="file"; filename="object/name"
+  // Content-Type: text/plain
+  // 
+  // [object data]
+  // --------------------------7109c709802f7ae4
+  // Content-Disposition: form-data; name="name1"
+  // 
+  // value1
+  // --------------------------7109c709802f7ae4
+  // Content-Disposition: form-data; name="name2"
+  // 
+  // value2
+  // --------------------------7109c709802f7ae4--
+  // ```
+  // 
+  // This will create an object named `object/name` with two metadata properties:
+  // 
+  // ```json
+  // {
+  //   "name1": "value1",
+  //   "name2": "value2"
+  // }
+  // ```
+  rpc UploadObject(UploadObjectRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/storage/buckets/{bucketName}/objects/{objectName**}"
+      body: "data"
+      max_body_size: 5242880
+      additional_bindings {
+        post: "/api/buckets/{instance}/{bucketName}/objects/{objectName**}"
+        body: "data"
+        max_body_size: 5242880
+        deprecated: true
+      }
+    };
+  }
+  
+  // List objects
+  rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/storage/buckets/{bucketName}/objects"
+      field_mask_root: "objects"
+      additional_bindings {
+        get: "/api/buckets/{instance}/{bucketName}/objects"
+        field_mask_root: "objects"
+        deprecated: true
+      }
+    };
+  }
+  
+  // Delete an object
+  rpc DeleteObject(DeleteObjectRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/storage/buckets/{bucketName}/objects/{objectName*}"
+      additional_bindings {
+        delete: "/api/buckets/{instance}/{bucketName}/objects/{objectName*}"
+        deprecated: true
+      }
+    };
+  }
+}
+
+message CreateBucketRequest {
+  // Yamcs instance name. Or _global.
+  optional string instance = 1 [deprecated = true];
+  
+  // Bucket name
+  optional string name = 2;
+}
+
+message DeleteBucketRequest {
+  // Yamcs instance name. Or _global.
+  optional string instance = 1 [deprecated = true];
+  
+  // Bucket name
+  optional string bucketName = 2;
+}
+
+message GetObjectRequest {
+  // Yamcs instance name. Or _global.
+  optional string instance = 1 [deprecated = true];
+  
+  // Bucket name
+  optional string bucketName = 2;
+  
+  // Object name
+  optional string objectName = 3;
+}
+
+message GetObjectInfoRequest {
+  // Bucket name
+  optional string bucketName = 1;
+
+  // Object name
+  optional string objectName = 2;
+}
+
+message DeleteObjectRequest {
+  // Yamcs instance name. Or _global.
+  optional string instance = 1 [deprecated = true];
+  
+  // Bucket name
+  optional string bucketName = 2;
+  
+  // Object name
+  optional string objectName = 3;
+}
+
+message UploadObjectRequest {
+  // Yamcs instance name. Or _global.
+  optional string instance = 1 [deprecated = true];
+  
+  // Bucket name.
+  optional string bucketName = 2;
+  
+  // Object name.
+  //
+  // This parameter may be omitted when using form-based uploads. 
+  optional string objectName = 3;
+  
+  optional yamcs.api.HttpBody data = 4;
+}
+
+message BucketInfo {
+  // Bucket name
+  optional string name = 1;
+  
+  // Total size in bytes of all objects in the bucket (metadata is not counted)
+  optional uint64 size = 2;
+  
+  // Number of objects in the bucket
+  optional uint32 numObjects = 3;
+  
+  // Maximum allowed total size of all objects
+  optional uint64 maxSize = 4;
+  
+  // Maximum allowed number of objects
+  optional uint32 maxObjects = 5;
+  
+  // Creation time of this bucket
+  optional google.protobuf.Timestamp created = 6;
+
+  // Bucket root directory. This field is only set when the
+  // bucket is mapped to the file system. Therefore it is not
+  // set for buckets that store objects in RocksDB.
+  optional string directory = 7;
+
+  // Bucket location
+  optional BucketLocation location = 8;
+}
+
+message BucketLocation {
+  // Location name
+  optional string name = 1;
+
+  // Location description
+  optional string description = 2;
+}
+
+message ObjectInfo {
+  // Object name
+  optional string name = 1;
+
+  // Creation time
+  optional google.protobuf.Timestamp created = 2;
+  
+  // Size in bytes
+  optional uint64 size = 3;
+
+  // Object metadata
+  map<string, string> metadata = 4;
+
+  // Content type
+  optional string contentType = 5;
+}
+
+message ListBucketsRequest {
+  // Yamcs instance name. Or _global.
+  optional string instance = 1 [deprecated = true];
+}
+
+message GetBucketRequest {
+  // Yamcs instance name. Or _global.
+  optional string instance = 1 [deprecated = true];
+
+  // Bucket name
+  optional string bucketName = 2;
+}
+
+message ListBucketsResponse {
+  repeated BucketInfo buckets = 1;
+}
+
+message ListObjectsRequest {
+  // Yamcs instance name. Or _global.
+  optional string instance = 1 [deprecated = true];
+  
+  // Bucket name
+  optional string bucketName = 2;
+  
+  // Return only objects whose name do not contain the delimiter after the
+  // prefix. For the other objects, the response contains (in the prefix
+  // response parameter) the name truncated after the delimiter. Duplicates
+  // are omitted.
+  //
+  // Together with `prefix` this parameter provides filtering capabilities.
+  // These work similar to Google Cloud Storage and Amazon S3.
+  //
+  // The `delimiter` allows the list to work in a directory mode despite
+  // the object namespace being flat. For example if the delimiter is set to
+  // "/", then listing the bucket containing objects "a/b", "a/c", "d", "e"
+  // and "e/f" returns objects "d" and "e" and prefixes "a/" and "e/".
+  optional string delimiter = 3;
+  
+  // List only objects whose name start with prefix
+  optional string prefix = 4;
+}
+
+message ListObjectsResponse {
+  // Object name prefixes for objects that matched the request but were
+  // excluded from `objects` because of a delimiter.
+  repeated string prefixes = 1;
+  
+  // The list of objects
+  repeated ObjectInfo objects = 2;
+}

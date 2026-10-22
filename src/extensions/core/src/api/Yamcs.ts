@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
 import * as os from 'os';
+import * as path from 'path';
+import type { Readable } from 'stream';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import * as Rpc from '@gov.nasa.jpl.hermes/rpc';
 import type { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
-import type { Proto } from '@gov.nasa.jpl.hermes/types';
+import type { Proto, ProtoGoogle } from '@gov.nasa.jpl.hermes/types';
 import { BackendProvider, Settings } from '@gov.nasa.jpl.hermes/vscode';
 
 import { Offline } from './Offline';
@@ -37,6 +39,10 @@ export interface YamcsEventSource {
 // events panel would start empty.
 const RECENT_EVENTS = 100;
 
+// The bucket we put a file in for YAMCS to uplink. Hermes sends no credentials, so YAMCS runs our calls as its guest
+// user, and creates the guest's bucket the first time we write to it.
+const UPLINK_BUCKET = 'user.guest';
+
 /**
  * Whether a parameter sits directly in a top-level space system, YAMCS's
  * folder-like group of parameters, so its name has exactly two slashes, like
@@ -53,11 +59,13 @@ interface Instance {
     parameters: readonly string[];
     linkParameters: readonly string[];
     dictionary: Proto.IDictionary;
+    // Whether the instance's first file transfer service can upload, as fprime-yamcs's can
+    canUpload: boolean;
 }
 
-// Telemetry and events straight from YAMCS, and commands to it, through the yamcs-grpc plugin.
-// Telemetry and events are named by YAMCS, so they don't need a Hermes dictionary. Commands go
-// through one flight software connection per instance, using a dictionary built from that
+// Telemetry and events straight from YAMCS, and commands and files to it, through the yamcs-grpc plugin.
+// Telemetry and events are named by YAMCS, so they don't need a Hermes dictionary. Commands and files go
+// through one flight software connection per instance, and commands use a dictionary built from that
 // instance's mission database. Everything else behaves as in Offline mode.
 export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSource {
     private readonly parameters = new vscode.EventEmitter<{ instance: string; values: Rpc.YamcsParameterValue[] }>();
@@ -79,6 +87,11 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
     // machine shares, so we send our hostname and the process id of this window's extension host.
     private readonly origin = `${os.hostname()}:${process.pid}`;
 
+    // The uploads this window has run, which the Uplink view lists until someone clears them
+    private readonly uplinks: Proto.IFileUplink[] = [];
+    private readonly uplinksChanged = new vscode.EventEmitter<Proto.IFileTransferState>();
+    onFileTransfer = this.uplinksChanged.event;
+
     constructor(
         context: vscode.ExtensionContext,
         log: Hermes.Log,
@@ -87,20 +100,21 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
         readonly instances: readonly Instance[],
     ) {
         super(context, log);
-        this.fsws = instances.map(({ name, dictionary }) => ({
+        this.fsws = instances.map(({ name, dictionary, canUpload }) => ({
             id: `yamcs:${name}`,
             type: 'yamcs',
             profileId: '',
             dictionary: dictionary.id!,
             command: (value, token, onState) => this.command(name, value, token, onState),
             sequence: (value, token, onState) => this.sequence(name, value, token, onState),
+            uplink: canUpload ? (header, file, progress, token) => this.uplink(name, header, file, progress, token) : undefined,
         }));
     }
 
     /**
      * Connects to the yamcs-grpc plugin at state.address. We wait up to 5 s for the
      * plugin to answer, then list the running instances and each one's parameters,
-     * commands and links, then load the workspace's dictionaries as Offline mode does, plus one
+     * commands, links and file transfer services, then load the workspace's dictionaries as Offline mode does, plus one
      * built from each instance's commands, which we also save to workspace storage. The
      * parameter subscriptions open later, when the first handler calls onYamcsParameters.
      */
@@ -315,11 +329,72 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
         return true;
     }
 
+    // Uplinks the file, and once YAMCS finishes, adds it to the uploads the Uplink view lists, with the error if it
+    // failed. fprime-yamcs can't cancel a transfer, so cancelling only stops us waiting, and we still list the upload.
+    private uplink(instance: string, header: Hermes.FileHeader, file: Readable, progress: vscode.Progress<number>, token?: vscode.CancellationToken): Promise<void> {
+        const timeStart = new Date();
+        const list = (error: string) => {
+            this.uplinks.push({
+                timeStart: timestamp(timeStart),
+                timeEnd: timestamp(new Date()),
+                fswId: `yamcs:${instance}`,
+                sourcePath: header.sourcePath,
+                destinationPath: header.destinationPath,
+                size: header.size,
+                error,
+            });
+            this.uplinksChanged.fire({ uplinkCompleted: [...this.uplinks] });
+        };
+        const sent = this.transfer(instance, header, file, progress);
+        sent.then(() => list(''), (err: Error) => list(err.message));
+        return cancellable(sent, token);
+    }
+
+    /**
+     * Puts the file in UPLINK_BUCKET and has YAMCS uplink it, then checks the transfer every 250 ms, reporting the
+     * bytes sent, until it finishes. COMPLETED only means fprime-yamcs sent every packet, not that the flight software
+     * saved the file.
+     */
+    private async transfer(instance: string, header: Hermes.FileHeader, file: Readable, progress: vscode.Progress<number>): Promise<void> {
+        const chunks: Buffer[] = [];
+        for await (const chunk of file) {
+            chunks.push(chunk);
+        }
+        // fprime-yamcs reads the object when we create the transfer, so the next file with this name can replace it
+        const objectName = path.basename(header.sourcePath);
+        await this.client.putObject(UPLINK_BUCKET, objectName, Buffer.concat(chunks));
+        let transfer = await this.client.upload(instance, UPLINK_BUCKET, objectName, header.destinationPath);
+        let reported = 0;
+        for (; ;) {
+            const sent = Number(transfer.sizeTransferred ?? 0);
+            progress.report(sent - reported);
+            reported = sent;
+            if (transfer.state === 'COMPLETED') {
+                return;
+            }
+            if (transfer.state === 'FAILED') {
+                throw new Error(`YAMCS could not uplink ${objectName}: ${transfer.failureReason}`);
+            }
+            await delay(250);
+            transfer = await this.client.getTransfer(instance, transfer.id!);
+        }
+    }
+
+    async getFileTransferState(): Promise<Proto.IFileTransferState> {
+        return { uplinkCompleted: [...this.uplinks] };
+    }
+
+    async clearUplinkTransferState(): Promise<void> {
+        this.uplinks.length = 0;
+        this.uplinksChanged.fire({ uplinkCompleted: [] });
+    }
+
     dispose(): void {
         this.cancel?.();
         this.parameters.dispose();
         this.cancelEvents?.();
         this.events.dispose();
+        this.uplinksChanged.dispose();
         this.client.close();
         super.dispose();
     }
@@ -370,7 +445,7 @@ export class YamcsBackendProvider implements BackendProvider<Settings.Yamcs> {
     }
 }
 
-// Lists an instance's parameters, commands and links
+// Lists an instance's parameters, commands, links and file transfer services
 async function loadInstance(client: Rpc.YamcsClient, name: string, state: Settings.Yamcs, log: Hermes.Log): Promise<Instance> {
     const all = await client.listTelemetered(name);
     // Parameters directly in a top-level space system are packet header fields in fprime-yamcs, not channels
@@ -381,11 +456,16 @@ async function loadInstance(client: Rpc.YamcsClient, name: string, state: Settin
     log.info(`Found ${commands.length} commands in YAMCS instance ${name}`);
 
     const linkParameters = (await client.listLinkParameters(name)).filter((parameter) => LINK_PARAMETER.test(parameter));
-    return { name, parameters, linkParameters, dictionary: yamcsDictionary(name, commands) };
+    const canUpload = (await client.listFileTransferServices(name))[0]?.capabilities?.upload === true;
+    return { name, parameters, linkParameters, dictionary: yamcsDictionary(name, commands), canUpload };
 }
 
 function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function timestamp(date: Date): ProtoGoogle.protobuf.ITimestamp {
+    return { seconds: Math.floor(date.getTime() / 1000), nanos: date.getMilliseconds() * 1e6 };
 }
 
 // Waits for promise, but rejects as soon as token is cancelled

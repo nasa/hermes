@@ -211,9 +211,7 @@ export class Offline implements Hermes.Api {
         return nullDisposable;
     }
 
-    onFileTransfer() {
-        return nullDisposable;
-    }
+    onFileTransfer: vscode.Event<Proto.IFileTransferState> = () => { return nullDisposable; };
 
     dispose() { }
 }

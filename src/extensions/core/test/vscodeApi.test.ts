@@ -49,6 +49,7 @@ const quiet: Partial<Hermes.Api> = {
     onFileUplink: none,
     onFileTransfer: none,
     allDictionaries: async () => ({}),
+    getFileTransferState: async () => ({}),
     dispose: () => { },
 };
 
@@ -76,17 +77,19 @@ test('says the connections are gone when it drops a backend, before the next bac
     }
 });
 
-test('sends the dictionaries of a new backend to listeners that subscribed before it connected', async () => {
+test('sends the dictionaries and uploads of a new backend to listeners that subscribed before it connected', async () => {
     const dictionaries = { 'yamcs:fprime-project': { name: 'fprime-project', type: 'yamcs' } };
-    // Like Offline mode, this backend has its dictionaries before anyone listens, and reports only later changes
-    const backend: Partial<Hermes.Api> = { ...quiet, allDictionaries: async () => dictionaries };
+    const uploads = { uplinkCompleted: [{ sourcePath: '/home/ops/hello.txt' }] };
+    // This backend has its dictionaries and uploads before anyone listens, and reports only later changes
+    const backend: Partial<Hermes.Api> = { ...quiet, allDictionaries: async () => dictionaries, getFileTransferState: async () => uploads };
     const api = new VscodeApi({} as vscode.ExtensionContext, log);
     api.registerBackendProvider({ type: 'test', title: 'Test', icon: 'beaker', promptForState: async () => ({}), provideBackendApi: async () => backend as Hermes.Api });
     const reports: unknown[] = [];
     api.onDictionaryChange((all) => reports.push(all));
+    api.onFileTransfer((state) => reports.push(state));
 
     await api.update('test', {});
-    // update returns before the backend's allDictionaries resolves, so we wait for it
+    // update returns before the backend's allDictionaries and getFileTransferState resolve, so we wait for them
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(reports).toEqual([dictionaries]);
+    expect(reports).toEqual([dictionaries, uploads]);
 });

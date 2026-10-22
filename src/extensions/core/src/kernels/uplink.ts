@@ -56,8 +56,8 @@ export class UplinkLanguageProvider implements NotebookLanguageProvider {
                     text = text.substring(0, metadataIdx - 1);
                 }
 
-                const spl = text.split(/[\s]+/);
-                if (spl.length === 0) {
+                const spl = text.trim().split(/[\s]+/);
+                if (spl[0] === '') {
                     continue;
                 }
 
@@ -130,7 +130,8 @@ export class UplinkLanguageProvider implements NotebookLanguageProvider {
                             report: (value) => {
                                 progress.report({
                                     message: `Uplinking ${upl.srcPath} to ${upl.dstPath}`,
-                                    increment: value
+                                    // uplink reports bytes, and a notification counts to 100
+                                    increment: value / size * 100
                                 });
                             }
                         }, token);
