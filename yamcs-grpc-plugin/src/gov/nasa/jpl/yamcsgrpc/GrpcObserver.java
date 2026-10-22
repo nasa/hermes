@@ -98,6 +98,8 @@ final class GrpcObserver implements Observer<Message> {
         backlog.add(message);
         backlogBytes += message.getSerializedSize();
         if (backlogBytes > MAX_BACKLOG_BYTES) {
+            log.warn("Client fell more than {} MiB behind, so we dropped its {} queued messages ({} bytes) "
+                    + "and ended the call", MAX_BACKLOG_BYTES / (1024 * 1024), backlog.size(), backlogBytes);
             dropBacklog();
             completed = true;
             out.onError(Status.RESOURCE_EXHAUSTED.withDescription("client fell too far behind").asRuntimeException());
