@@ -23,8 +23,9 @@ export function yamcsEventRows(instance: string, events: readonly YamcsEvent[], 
 
         rows.push({
             time,
-            // YAMCS has no SCLK
-            sclk: NaN,
+            // fprime-yamcs puts an F Prime event's SCLK, in seconds, in its extra fields. Any other
+            // event has none, so Number gives NaN, which shows a blank SCLK.
+            sclk: Number(e.extra?.fprime_sclk),
             source,
             ...componentAndName(e),
             // fprime-yamcs puts an F Prime event's own severity, like ACTIVITY_HI, in its extra fields

@@ -60,8 +60,9 @@ stores. Then it adds new events as YAMCS reports them.
 ## Times
 
 The table, the plot and the events panel show times in UTC. You can switch the table and the panel to Local or SCLK.
-Telemetry shows each value's [Earth received time](../arch/core-concepts.md#earth-received-time) (ERT), when YAMCS
-received it. Events show their generation time, when the flight software raised them.
-Under SCLK, telemetry shows the flight software's clock reading, in seconds, from the packet that carried each value. A
-value YAMCS already held when Hermes connected has no SCLK, so its row stays blank until a new value arrives. YAMCS
-events have no SCLK, so under SCLK their time is blank.
+
+| Row | UTC or Local | SCLK, in seconds |
+| --- | --- | --- |
+| Telemetry value | When YAMCS received it, its [Earth received time](../arch/core-concepts.md#earth-received-time) (ERT) | The flight software's clock reading from the packet that carried it. Blank until the value updates after Hermes connects. |
+| F Prime event | When the flight software raised it | The flight software's clock reading from when it raised it |
+| Other event | When it was raised | Blank |
