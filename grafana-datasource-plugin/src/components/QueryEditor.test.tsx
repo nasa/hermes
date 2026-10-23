@@ -543,11 +543,12 @@ describe('withDefaults', () => {
 });
 
 describe('QueryEditor — Time field toggle', () => {
-  it('renders Generation Time/Acquisition Time radio buttons for telemetry', async () => {
+  it('renders Generation Time/Acquisition Time/SCLK radio buttons for telemetry', async () => {
     await act(async () => { render(<QueryEditor {...buildProps()} />); });
 
     expect(screen.getByRole('radio', { name: /Generation Time/ })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /Acquisition Time/ })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /SCLK/ })).toBeInTheDocument();
   });
 
   it('defaults to Generation Time when timeField is not set', async () => {

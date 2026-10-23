@@ -15,6 +15,7 @@ interface BuilderEditorProps {
 const TIME_FIELD_OPTIONS: Array<SelectableValue<TimeField>> = [
   { label: 'Generation Time', value: 'generation_time' },
   { label: 'Acquisition Time', value: 'acquisition_time' },
+  { label: 'SCLK', value: 'sclk' },
 ];
 
 export function BuilderEditor({ query, onChange, onRunQuery, datasource }: BuilderEditorProps) {

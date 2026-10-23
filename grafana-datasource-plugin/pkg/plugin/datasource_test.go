@@ -778,28 +778,32 @@ func TestBuildResponseAcquisitionTimeField(t *testing.T) {
 	}
 }
 
-func TestQueryTelemetryAcquisitionTimeField(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("sqlmock: %v", err)
-	}
-	defer func() { _ = db.Close() }()
+func TestQueryTelemetryTimeFields(t *testing.T) {
+	for _, timeField := range []string{"acquisition_time", "sclk"} {
+		t.Run(timeField, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("sqlmock: %v", err)
+			}
+			defer func() { _ = db.Close() }()
 
-	ds := Datasource{db: db}
-	mock.ExpectQuery("SELECT").WillReturnRows(sqlmock.NewRows([]string{"time", "value"}))
+			ds := Datasource{db: db}
+			mock.ExpectQuery("SELECT").WillReturnRows(sqlmock.NewRows([]string{"time", "value"}))
 
-	rawSql := "SELECT * FROM parameter_values"
-	qJSON, _ := json.Marshal(queryModel{TimeField: "acquisition_time", Aggregation: "avg", RawSql: &rawSql})
-	resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
-		Queries: []backend.DataQuery{
-			{RefID: "A", JSON: qJSON},
-		},
-	})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if resp.Responses["A"].Status != 0 {
-		t.Errorf("expected no error for acquisition_time, got status %v", resp.Responses["A"].Status)
+			rawSql := "SELECT * FROM parameter_values"
+			qJSON, _ := json.Marshal(queryModel{TimeField: timeField, Aggregation: "avg", RawSql: &rawSql})
+			resp, err := ds.QueryData(context.Background(), &backend.QueryDataRequest{
+				Queries: []backend.DataQuery{
+					{RefID: "A", JSON: qJSON},
+				},
+			})
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if resp.Responses["A"].Status != 0 {
+				t.Errorf("expected no error for %s, got status %v", timeField, resp.Responses["A"].Status)
+			}
+		})
 	}
 }
 
