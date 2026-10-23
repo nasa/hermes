@@ -79,6 +79,15 @@ switches modes.
 `Average` and `Sum` don't work on string or enum parameters. On a boolean, `Average` is the fraction of true samples and
 `Sum` counts them.
 
+Each point also carries its SCLK, the flight software's clock reading, in seconds. A time bucket takes the SCLK of its
+first value, and a value recorded without an SCLK shows none. Where SCLK shows depends on the panel:
+
+- Time series: in the tooltip when Tooltip mode is All, never in the graph or legend.
+- Table: hidden unless an override turns off Hide in table for it.
+- Stat, Gauge and Bar gauge: as a value of its own, and their scale stretches to fit it. A Filter fields by name
+  transformation with the SCLK fields unticked keeps it out.
+- Explore: nowhere.
+
 #### Value Transform
 
 Enter a plain number to multiply by it, or a PostgreSQL expression with `$__value` in place of the stored value. The
@@ -111,7 +120,7 @@ These macros are expanded on the server:
 
 SQL whose columns are the builder's, in the same order, is drawn as one series per parameter, member and instance.
 Those columns are `time_bucket`, `space_system`, `name`, `instance`, `value_type`, `member_path`, `val_int`,
-`val_float`, `val_bool`, `val_str` and `val_bytes`. Any other result comes back as a table.
+`val_float`, `val_bool`, `val_str`, `val_bytes` and `sclk_us`. Any other result comes back as a table.
 
 A query saved in Code mode reopens in Code mode. Switching back to Builder drops your edits, after offering to copy
 them.

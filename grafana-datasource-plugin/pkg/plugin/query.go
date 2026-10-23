@@ -136,7 +136,7 @@ func isNumericAggregate(aggregation, dbValueType string) bool {
 }
 
 // builderColumns are the columns of the SQL that query.ts builds, in the order buildResponse scans them.
-var builderColumns = []string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes"}
+var builderColumns = []string{"time_bucket", "space_system", "name", "instance", "value_type", "member_path", "val_int", "val_float", "val_bool", "val_str", "val_bytes", "sclk_us"}
 
 func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 	frames := make(map[string]*data.Frame)
@@ -149,7 +149,8 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 		var vInt, vFloat, vBool sql.NullFloat64
 		var vStr sql.NullString
 		var vBytes []byte
-		if err := rows.Scan(&t, &spaceSystem, &parameter, &instance, &dbValueType, &member, &vInt, &vFloat, &vBool, &vStr, &vBytes); err != nil {
+		var sclkUs sql.NullInt64
+		if err := rows.Scan(&t, &spaceSystem, &parameter, &instance, &dbValueType, &member, &vInt, &vFloat, &vBool, &vStr, &vBytes, &sclkUs); err != nil {
 			return backend.ErrDataResponse(backend.StatusInternal, fmt.Sprintf("telemetry row scan failure: %v", err.Error()))
 		}
 
@@ -191,18 +192,23 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 				"timeField":    qm.TimeField,
 				"value_type":   dbValueType,
 			}
-			frame.Fields = append(frame.Fields, valueField)
+			frame.Fields = append(frame.Fields, valueField, newSCLKField())
 			frames[frameId] = frame
+		}
+
+		var sclk *float64
+		if sclkUs.Valid {
+			s := float64(sclkUs.Int64) / 1e6
+			sclk = &s
 		}
 
 		// Append the row, or for "latest" overwrite row 0 so only the most
 		// recent value survives (rows arrive ordered by time ascending).
 		appendRow := func(val interface{}) {
 			if qm.Aggregation == "latest" && frame.Fields[0].Len() > 0 {
-				frame.Fields[0].Set(0, t)
-				frame.Fields[1].Set(0, val)
+				frame.SetRow(0, t, val, sclk)
 			} else {
-				frame.AppendRow(t, val)
+				frame.AppendRow(t, val, sclk)
 			}
 		}
 
@@ -318,6 +324,18 @@ func buildResponse(qm queryModel, rows *sql.Rows) backend.DataResponse {
 		response.Frames[0].AppendNotices(data.Notice{Severity: data.NoticeSeverityWarning, Text: skipped.Error()})
 	}
 	return response
+}
+
+// newSCLKField makes the field that holds each point's SCLK in seconds.
+func newSCLKField() *data.Field {
+	decimals := uint16(6)
+	return data.NewField("SCLK", nil, []*float64{}).SetConfig(&data.FieldConfig{
+		Decimals: &decimals,
+		// We set a unit of our own so the panel's unit is not applied to SCLK.
+		Unit: "none",
+		// We hide it from the graph and legend, so a time series panel shows it only in the tooltip.
+		Custom: map[string]interface{}{"hideFrom": map[string]bool{"viz": true, "legend": true, "tooltip": false}},
+	})
 }
 
 // seriesKey identifies one parameter member in one instance, whatever its value type.

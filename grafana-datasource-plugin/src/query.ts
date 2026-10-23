@@ -229,11 +229,14 @@ export function buildTelemetryQuery(q: ResolvedQuery, from?: string, to?: string
     const fromBound = from ? `v.${q.timeField} >= ${escDate(from)}` : `$__timeFrom(v.${q.timeField})`;
     const toBound = to ? `v.${q.timeField} <= ${escDate(to)}` : `$__timeTo(v.${q.timeField})`;
 
-    let intervalExpr;
+    let intervalExpr, sclkExpr;
     if (q.aggregation !== "raw" && q.aggregation !== "deriv" && q.aggregation !== "latest") {
         intervalExpr = `time_bucket($__interval, v.${q.timeField})`;
+        // A time bucket carries the SCLK of its first value.
+        sclkExpr = `first(v.sclk_us, v.${q.timeField})`;
     } else {
         intervalExpr = `v.${q.timeField}`;
+        sclkExpr = "v.sclk_us";
     }
 
     // Apply transforms to numeric columns ONLY. The recorder stores UINT64 as
@@ -298,7 +301,8 @@ export function buildTelemetryQuery(q: ResolvedQuery, from?: string, to?: string
 	%s AS val_float,
 	%s AS val_bool,
 	%s AS val_str,
-	%s AS val_bytes
+	%s AS val_bytes,
+	%s AS sclk_us
 FROM parameters p
 JOIN parameter_values v ON v.parameter_id = p.id
 WHERE (%s)
@@ -306,7 +310,7 @@ WHERE (%s)
   AND %s AND %s
 %s
 ORDER BY time_bucket ASC;`,
-        intervalExpr, aggInt, aggFloat, aggBool, aggStr, aggBytes,
+        intervalExpr, aggInt, aggFloat, aggBool, aggStr, aggBytes, sclkExpr,
         parameterPredicate, escArr(q.instances), escArr(q.instances),
         fromBound, toBound, groupByExpr);
 

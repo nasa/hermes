@@ -179,6 +179,7 @@ describe('buildTelemetryQuery — aggregations', () => {
     expect(sql).toContain(`${fn}(v.float_value) AS val_float`);
     expect(sql).toContain(`${fn}(v.bool_value::int::double precision) AS val_bool`);
     expect(sql).toContain('time_bucket($__interval, v.generation_time)');
+    expect(sql).toContain('first(v.sclk_us, v.generation_time) AS sclk_us');
     expect(sql).toContain('GROUP BY time_bucket, p.id');
   });
 
@@ -219,6 +220,7 @@ describe('buildTelemetryQuery — aggregations', () => {
     expect(sql).toContain(`${agg}(v.bool_value::int::double precision, v.generation_time) AS val_bool`);
     expect(sql).toContain(`${agg}(v.string_value, v.generation_time) AS val_str`);
     expect(sql).toContain(`${agg}(v.binary_value, v.generation_time) AS val_bytes`);
+    expect(sql).toContain('first(v.sclk_us, v.generation_time) AS sclk_us');
     expect(sql).toContain('GROUP BY time_bucket');
   });
 
@@ -236,6 +238,7 @@ describe('buildTelemetryQuery — aggregations', () => {
     expect(sql).toContain(`${INT_COL} AS val_int`);
     expect(sql).toContain('v.string_value AS val_str');
     expect(sql).toContain('v.binary_value AS val_bytes');
+    expect(sql).toContain('v.sclk_us AS sclk_us');
     expect(sql).not.toContain('GROUP BY');
     expect(sql).not.toContain('time_bucket($__interval');
     expect(sql).toContain('v.generation_time AS time_bucket');
