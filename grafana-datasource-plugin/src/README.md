@@ -72,12 +72,17 @@ switches modes.
 | Aggregation                        | Reduces each time bucket of the panel's interval to one value. `Average` is the default. `Raw (none)` returns every sample and `Latest Value` only the newest.                                              |
 | Instance                           | YAMCS instances to include. Empty means all.                                                                                                                                                                |
 | Members (one box per parameter)    | Shown for a parameter with several struct members or array elements, for example `.x` or `[0]`. Starts with all selected; remove the ones you don't need. Clearing it removes the parameter from the query. |
-| Generation Time / Acquisition Time | Which time to plot: when the value was produced (the default) or when YAMCS received it.                                                                                                                    |
+| Generation / Acquisition / SCLK    | Which time to plot: when the value was produced (the default), when YAMCS received it, or the flight software's clock (SCLK). See below.                                                                    |
 | Value Transform                    | Collapsible. Rescales values or renames series, per parameter or per member. See below.                                                                                                                     |
 | From / To Override                 | Under Advanced. Pins the query to an absolute time range instead of the dashboard's.                                                                                                                        |
 
 `Average` and `Sum` don't work on string or enum parameters. On a boolean, `Average` is the fraction of true samples and
 `Sum` counts them.
+
+SCLK plots each value at the flight software's clock reading, taken as seconds since 1970. For flight software that
+keeps Unix time (`TB_WORKSTATION_TIME`), SCLK matches Generation Time. On a board that counts seconds from boot, the
+values land in early 1970, so set the dashboard range to cover them. Each boot starts the clock again, so values
+from different boots overlap and get aggregated together. Values recorded without an SCLK are left out.
 
 #### Value Transform
 

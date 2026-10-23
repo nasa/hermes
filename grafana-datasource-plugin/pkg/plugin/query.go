@@ -84,6 +84,7 @@ func (d *Datasource) query(ctx context.Context, _ backend.PluginContext, query b
 	switch qm.TimeField {
 	case "generation_time":
 	case "acquisition_time":
+	case "sclk":
 	default:
 		return backend.ErrDataResponse(backend.StatusBadRequest, fmt.Sprintf("invalid time type: %s", qm.TimeField))
 	}
