@@ -27,14 +27,19 @@ class AnnotatedMultiSelect extends VscodeMultiSelect {
         super();
 
         (this as any)._renderLabel = () => {
-            switch (this._opts.selectedIndexes.length) {
+            const selected = this._opts.selectedIndexes.map((i) => this._opts.options[i]);
+            // The All option is selected only while every other option is, so we name it instead of counting it
+            if (selected.some((option) => option.value === '*')) {
+                return html`<span class="select-face-badge">All ${this.multipleLabel}</span>`;
+            }
+            switch (selected.length) {
                 case 0:
                     return html`<span class="select-face-badge no-item"></span>`;
                 case 1:
-                    return html`<span class="select-face-badge">${this._opts.options[this._opts.selectedIndexes[0]].label}</span>`;
+                    return html`<span class="select-face-badge">${selected[0].label}</span>`;
                 default:
                     return html`<span class="select-face-badge"
-                  >${this._opts.selectedIndexes.length} ${this.multipleLabel}</span
+                  >${selected.length} ${this.multipleLabel}</span
                 >`;
             }
         };
