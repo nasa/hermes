@@ -6,7 +6,6 @@ import "google/protobuf/empty.proto";
 
 import "dictionary.proto";
 import "fsw.proto";
-import "profile.proto";
 import "file.proto";
 
 message Id { string id = 1; }
@@ -17,20 +16,6 @@ message Reply { bool success = 1; }
 message SequenceReply {
     bool success = 1;
     int32 command_index = 2;
-}
-
-message StatefulProfile {
-    Profile value = 1;
-    ProfileState state = 2;
-    bool runtime_only = 3;
-}
-
-message ProfileList { map<string, StatefulProfile> all = 1; }
-message ProfileProviderList { repeated ProfileProvider all = 1; }
-
-message ProfileUpdate {
-    string id = 1;
-    string settings = 2;
 }
 
 message DictionaryList {
@@ -74,8 +59,7 @@ message UplinkReply {
 message FswInitialPacket {
     Fsw info = 1;
 
-    // Profile name that this FSW should be grouped with
-    string profile = 2;
+    reserved 2;
 }
 
 message FswConnectionPacket {

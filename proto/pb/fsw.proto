@@ -37,9 +37,7 @@ message Fsw {
   // FSW type
   string type = 2;
 
-  // Profile that this connection belongs to
-  // Empty if this is not from a managed profile
-  string profile_id = 3;
+  reserved 3;
 
   // Telemetry from these FSW IDs should be treated as though they
   // also came from this FSW. Useful for when you need a custom language
