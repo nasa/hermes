@@ -349,7 +349,7 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
             {
                 iconPath: new vscode.ThemeIcon("sync"),
                 label: "Reconnect",
-                description: "Reconnect/Rerun the current backend",
+                description: "Connect again with the same mode and address",
                 reconnect: true,
             }
         ];
