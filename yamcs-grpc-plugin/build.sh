@@ -1,5 +1,5 @@
 #!/bin/sh
-# Builds the plugin against the YAMCS 5.13.5 jars inside the yamcs/example-simulation image.
+# Builds the plugin against the YAMCS jars inside the yamcs/example-simulation image.
 # out/lib ends up holding the plugin jar plus the grpc-java jars it needs; mount it at /opt/yamcs/lib/ext.
 set -e
 cd "$(dirname "$0")"
