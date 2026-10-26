@@ -57,28 +57,6 @@ body {
     }
 }
 
-section.active,
-section.active .entry-actions>.actions-container>li>a {
-    background-color: #92e58e;
-    color: #000;
-}
-
-
-section.invalid,
-section.invalid .entry-actions>.actions-container>li>a {
-    background-color: #ed3c3c;
-    color: #fff;
-}
-
-section.active .entry-actions>.actions-container>li>a:hover {
-    background-color: var(--vscode-charts-green);
-}
-
 .connection-profile {
     position: relative;
-}
-
-.connection {
-    display: flex;
-    margin: calc(var(--design-unit) * 1px) 0;
 }

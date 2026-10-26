@@ -98,26 +98,6 @@
                 "title": "Hermes: Reconnect to Backend",
                 "category": "Hermes",
                 "icon": "$(refresh)"
-            },
-            {
-                "command": "hermes.connections.array.removeItem",
-                "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasRemove",
-                "title": "Delete"
-            },
-            {
-                "command": "hermes.connections.array.copyItem",
-                "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasCopy",
-                "title": "Duplicate"
-            },
-            {
-                "command": "hermes.connections.array.moveUp",
-                "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasMoveUp",
-                "title": "Move up"
-            },
-            {
-                "command": "hermes.connections.array.moveDown",
-                "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasMoveDown",
-                "title": "Move down"
             }
         ],
         "viewsContainers": {
@@ -203,24 +183,6 @@
                     "command": "hermes.testbed.signoff",
                     "when": "notebookType == hermes.notebook && notebookCellType == markup && !notebookCellMarkdownEditMode",
                     "group": "inline/cell@0"
-                }
-            ],
-            "webview/context": [
-                {
-                    "command": "hermes.connections.array.copyItem",
-                    "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasCopy"
-                },
-                {
-                    "command": "hermes.connections.array.moveUp",
-                    "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasMoveUp"
-                },
-                {
-                    "command": "hermes.connections.array.moveDown",
-                    "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasMoveDown"
-                },
-                {
-                    "command": "hermes.connections.array.removeItem",
-                    "when": "webviewId == 'hermes.connections' && webviewSection == 'arrayItem' && hasRemove"
                 }
             ],
             "view/item/context": [
@@ -429,9 +391,6 @@
         "package": "vsce package --yarn"
     },
     "devDependencies": {
-        "@rjsf/core": "5.18.6",
-        "@rjsf/utils": "5.18.6",
-        "@rjsf/validator-ajv8": "5.18.6",
         "@tanstack/react-virtual": "^3.14.10",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
