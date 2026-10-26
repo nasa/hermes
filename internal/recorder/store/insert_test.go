@@ -22,7 +22,7 @@ func simParam(name string) Parameter {
 func readRows(t *testing.T, db *sql.DB) map[string]Row {
 	t.Helper()
 	rows, err := db.Query(`
-		SELECT p.instance, p.space_system, p.name, p.member_path, v.generation_time, v.acquisition_time,
+		SELECT p.instance, p.space_system, p.name, p.member_path, v.generation_time, v.acquisition_time, v.sclk_us,
 		       p.value_type, v.int_value, v.float_value, v.bool_value, v.string_value, v.binary_value
 		FROM parameter_values v JOIN parameters p ON p.id = v.parameter_id`)
 	require.NoError(t, err)
@@ -34,7 +34,7 @@ func readRows(t *testing.T, db *sql.DB) map[string]Row {
 		var valueType string
 		require.NoError(t, rows.Scan(
 			&r.Parameter.Instance, &r.Parameter.SpaceSystem, &r.Parameter.Name, &r.MemberPath,
-			&r.GenerationTime, &r.AcquisitionTime, &valueType,
+			&r.GenerationTime, &r.AcquisitionTime, &r.SCLK, &valueType,
 			&r.Value.Int, &r.Value.Float, &r.Value.Bool, &r.Value.String, &r.Value.Binary,
 		))
 		r.Value.Type = ValueType(valueType)
@@ -81,6 +81,7 @@ func TestInsertRoundTripsEveryType(t *testing.T) {
 		want[i].GenerationTime = gen
 		if i%2 == 0 {
 			want[i].AcquisitionTime = acq
+			want[i].SCLK = sql.NullInt64{Int64: 1792690838385048, Valid: true}
 		}
 	}
 
