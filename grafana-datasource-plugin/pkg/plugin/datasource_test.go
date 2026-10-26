@@ -14,6 +14,7 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"github.com/grafana/grafana-plugin-sdk-go/data/sqlutil"
+	"github.com/lib/pq"
 	"github.com/nasa/hermes-datasource/pkg/models"
 )
 
@@ -622,6 +623,22 @@ func TestCheckHealth(t *testing.T) {
 			t.Errorf("expected 'Internal database connection is null', got '%s'", res.Message)
 		}
 	})
+}
+
+func TestConnectionStringBlankUser(t *testing.T) {
+	cfg, err := pq.NewConfig(connectionString(&models.PluginSettings{
+		Host:     "timescaledb:5432",
+		Database: "hermes",
+		Secrets:  &models.SecretPluginSettings{Password: "pass word"},
+	}))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	defaults, _ := pq.NewConfig("")
+	if cfg.User != defaults.User || cfg.Password != "pass word" || cfg.Database != "hermes" {
+		t.Errorf("got user %q, password %q, dbname %q", cfg.User, cfg.Password, cfg.Database)
+	}
 }
 
 func TestBuildResponseMultiSpaceSystem(t *testing.T) {

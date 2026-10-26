@@ -34,19 +34,7 @@ func NewDatasource(_ context.Context, settings backend.DataSourceInstanceSetting
 		return nil, fmt.Errorf("unable to load settings")
 	}
 
-	host := config.Host
-	port := "5432"
-	if strings.Contains(host, ":") {
-		h, p, err := net.SplitHostPort(host)
-		if err == nil {
-			host, port = h, p
-		}
-	}
-
-	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, config.User, config.Secrets.Password, config.Database)
-
-	db, err := sql.Open("postgres", connectionString)
+	db, err := sql.Open("postgres", connectionString(config))
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize postgres database driver: %w", err)
 	}
@@ -63,6 +51,33 @@ func NewDatasource(_ context.Context, settings backend.DataSourceInstanceSetting
 	ds.CallResourceHandler = httpadapter.New(mux)
 
 	return ds, nil
+}
+
+func connectionString(config *models.PluginSettings) string {
+	host := config.Host
+	port := "5432"
+	if strings.Contains(host, ":") {
+		h, p, err := net.SplitHostPort(host)
+		if err == nil {
+			host, port = h, p
+		}
+	}
+
+	quote := strings.NewReplacer(`\`, `\\`, `'`, `\'`)
+	var parts []string
+	add := func(key, value string) {
+		// We leave out blank values so lib/pq uses its defaults, like the OS user for a blank user.
+		if value != "" {
+			parts = append(parts, key+"='"+quote.Replace(value)+"'")
+		}
+	}
+	add("host", host)
+	add("port", port)
+	add("user", config.User)
+	add("password", config.Secrets.Password)
+	add("dbname", config.Database)
+	add("sslmode", "disable")
+	return strings.Join(parts, " ")
 }
 
 // Datasource is an example datasource which can respond to data queries, reports
