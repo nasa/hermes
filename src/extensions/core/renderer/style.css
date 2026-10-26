@@ -22,8 +22,11 @@ tr {
     border: 1px solid rgba(0, 0, 0, 0);
 }
 
+/* fprime-yamcs converts each F Prime severity to a YAMCS one, such as ACTIVITY_HI to WATCH, so we color both the same. */
+
 .fatal,
-.critical {
+.critical,
+.severe {
     background-color: #ff5e66 !important;
     color: #f1f1f2;
 }
@@ -33,12 +36,13 @@ tr {
 }
 
 .fatal:hover,
-.critical:hover {
+.critical:hover,
+.severe:hover {
     background-color: #ff2b36 !important;
 }
 
 .warning_hi,
-.warning {
+.distress {
     background-color: #FEA500 !important;
 }
 
@@ -47,12 +51,12 @@ tr {
 }
 
 .warning_hi:hover,
-.warning:hover {
+.distress:hover {
     background-color: #cb8400 !important;
 }
 
 .warning_lo,
-.watch {
+.warning {
     background-color: #F0F001 !important;
 }
 
@@ -61,11 +65,12 @@ tr {
 }
 
 .warning_lo:hover,
-.watch:hover {
+.warning:hover {
     background-color: #bdbd01 !important;
 }
 
-.activity_hi {
+.activity_hi,
+.watch {
     background-color: #666666 !important;
     color: #f1f1f2;
 }
@@ -74,7 +79,8 @@ tr {
     background-color: #333 !important;
 }
 
-.activity_hi:hover {
+.activity_hi:hover,
+.watch:hover {
     background-color: #4d4d4d !important;
 }
 
@@ -115,23 +121,4 @@ tr {
 
 .diagnostic:hover {
     background-color: #64e666 !important;
-}
-
-/* YAMCS severities. INFO, WATCH, WARNING and CRITICAL share the rules above. */
-
-.distress {
-    background-color: #FF6A00 !important;
-}
-
-.distress:hover {
-    background-color: #cc5500 !important;
-}
-
-.severe {
-    background-color: #b3000c !important;
-    color: #f1f1f2;
-}
-
-.severe:hover {
-    background-color: #8f000a !important;
 }
