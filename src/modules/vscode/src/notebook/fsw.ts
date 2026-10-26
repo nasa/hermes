@@ -44,8 +44,9 @@ function yamcsDisplayEvent(source: string, event: YamcsEvent): Omit<DisplayEvent
     const time = event.generationTime;
     return {
         time: Number(time?.seconds ?? 0) * 1000 + (time?.nanos ?? 0) / 1e6,
-        // YAMCS has no SCLK
-        sclk: NaN,
+        // fprime-yamcs puts an F Prime event's SCLK, in seconds, in extra.fprime_sclk. Any other event has none,
+        // so Number gives NaN, which shows a blank SCLK.
+        sclk: Number(event.extra?.fprime_sclk),
         source,
         ...componentAndName(event),
         // fprime-yamcs puts an F Prime event's own severity in extra.fprime_severity. We show that one, because

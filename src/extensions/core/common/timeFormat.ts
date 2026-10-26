@@ -8,8 +8,8 @@ export function formatTime(row: { time: number, sclk: number }, format: TimeForm
         case TimeFormat.LOCAL:
             return new Date(row.time - localTimeOffset).toISOString().slice(0, -1);
         case TimeFormat.SCLK:
-            // YAMCS rows have no SCLK, so we leave their time blank. Rows arrive as JSON, which turns
-            // their NaN into null, and isNaN(null) is false, so we check Number.isFinite instead.
+            // A row without an SCLK has NaN, and we leave its time blank. Rows arrive as JSON, which turns
+            // NaN into null, and isNaN(null) is false, so we check Number.isFinite instead.
             return Number.isFinite(row.sclk) ? row.sclk.toFixed(4) : '';
         case TimeFormat.UTC:
         default:

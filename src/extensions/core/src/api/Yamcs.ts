@@ -13,7 +13,8 @@ import { Offline } from './Offline';
 import { commandComplete, commandSent, commandState, Verifier, yamcsArguments, yamcsDictionary } from './yamcsCommands';
 import { buildLinks, LINK_PARAMETER, LinkHealth } from './yamcsLinks';
 
-export type YamcsParameterHandler = (instance: string, values: Rpc.YamcsParameterValue[]) => void;
+// fprimeTime is the FPrimeTime of the packet that carried values, when we know it
+export type YamcsParameterHandler = (instance: string, values: Rpc.YamcsParameterValue[], fprimeTime?: Rpc.YamcsParameterValue) => void;
 
 /**
  * A backend that streams YAMCS parameter values as YAMCS sends them
@@ -53,6 +54,11 @@ export function inTopLevelSpaceSystem(qualifiedName: string): boolean {
     return qualifiedName.split('/').length === 3;
 }
 
+// Whether a parameter holds each F Prime packet's time tag, like /Ref_Ref/FPrimeTime
+function isFPrimeTime(qualifiedName: string): boolean {
+    return inTopLevelSpaceSystem(qualifiedName) && qualifiedName.endsWith('/FPrimeTime');
+}
+
 // A running YAMCS instance, with the parameters we subscribe to and a dictionary built from its commands
 interface Instance {
     name: string;
@@ -68,7 +74,7 @@ interface Instance {
 // through one flight software connection per instance, and commands use a dictionary built from that
 // instance's mission database. Everything else behaves as in Offline mode.
 export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSource {
-    private readonly parameters = new vscode.EventEmitter<{ instance: string; values: Rpc.YamcsParameterValue[] }>();
+    private readonly parameters = new vscode.EventEmitter<{ instance: string; values: Rpc.YamcsParameterValue[]; fprimeTime?: Rpc.YamcsParameterValue }>();
     // Handlers share one YAMCS subscription per instance, opened for the first handler and cancelled when the last one is disposed
     private listeners = 0;
     private cancel?: () => void;
@@ -154,15 +160,25 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
     }
 
     onYamcsParameters(handler: YamcsParameterHandler): vscode.Disposable {
-        const subscription = this.parameters.event(({ instance, values }) => handler(instance, values));
+        const subscription = this.parameters.event(({ instance, values, fprimeTime }) => handler(instance, values, fprimeTime));
         if (this.listeners++ === 0) {
-            const cancels = this.instances.map(({ name, parameters }) => this.client.subscribeParameters(
-                name,
-                this.state.processor,
-                parameters,
-                (values) => this.parameters.fire({ instance: name, values }),
-                (err) => this.exit(err),
-            ));
+            const cancels = this.instances.map(({ name, parameters }) => {
+                let first = true;
+                return this.client.subscribeParameters(
+                    name,
+                    this.state.processor,
+                    parameters,
+                    (values) => {
+                        // YAMCS sends each packet's values in one message with that packet's FPrimeTime. Its first
+                        // message is the exception: it holds the cached value of each parameter, from many packets.
+                        const fprimeTime = first ? undefined : values.find((pv) => isFPrimeTime(pv.id!.name!));
+                        first = false;
+                        const shown = this.state.includeTopLevel ? values : values.filter((pv) => !isFPrimeTime(pv.id!.name!));
+                        this.parameters.fire({ instance: name, values: shown, fprimeTime });
+                    },
+                    (err) => this.exit(err),
+                );
+            });
             this.cancel = () => cancels.forEach((cancel) => cancel());
         }
 
@@ -448,8 +464,9 @@ export class YamcsBackendProvider implements BackendProvider<Settings.Yamcs> {
 // Lists an instance's parameters, commands, links and file transfer services
 async function loadInstance(client: Rpc.YamcsClient, name: string, state: Settings.Yamcs, log: Hermes.Log): Promise<Instance> {
     const all = await client.listTelemetered(name);
-    // Parameters directly in a top-level space system are packet header fields in fprime-yamcs, not channels
-    const parameters = state.includeTopLevel ? all : all.filter((parameter) => !inTopLevelSpaceSystem(parameter));
+    // Parameters directly in a top-level space system are packet header fields in fprime-yamcs, not channels.
+    // We keep FPrimeTime, since it gives each channel value its SCLK.
+    const parameters = state.includeTopLevel ? all : all.filter((parameter) => !inTopLevelSpaceSystem(parameter) || isFPrimeTime(parameter));
     log.info(`Found ${all.length} TELEMETERED parameters in YAMCS instance ${name}, subscribing to ${parameters.length}`);
 
     const commands = await client.listCommands(name);
