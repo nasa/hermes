@@ -349,7 +349,7 @@ export function EvrTable() {
                         placeholder='Filter Events'
                         style={{ flexGrow: 1, fontWeight: 400 }}
                         value={filter}
-                        onChange={(e: any) => setFilter(e.target.value)}
+                        onInput={(e: any) => setFilter(e.target.value)}
                     />
                 </div>
                 <VscodeCheckbox

@@ -215,7 +215,7 @@ export class YamcsClient {
         };
         watch.on('data', (info: ProcessorInfo__Output) => {
             if (info.state === 'STOPPING' || info.state === 'TERMINATED' || info.state === 'FAILED') {
-                end(new Error(`YAMCS processor ${processor} is ${info.state}`));
+                end(new Error(`YAMCS processor ${processor} in instance ${instance} is ${info.state}`));
             }
         });
         // For both streams, 'status' arrives once however the call ends. 'error'

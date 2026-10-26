@@ -70,7 +70,7 @@ export class MnemonicToken extends TerminalToken<
         if (!this.def) {
             const diag = new vscode.Diagnostic(
                 this.token.range,
-                `Command '${this.token.text}' could not found`,
+                `Command '${this.token.text}' could not be found`,
                 vscode.DiagnosticSeverity.Error
             );
 

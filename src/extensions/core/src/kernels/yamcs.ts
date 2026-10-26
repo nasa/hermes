@@ -74,7 +74,7 @@ export class YamcsNotebookLanguageProvider extends FswNotebookLanguageProvider {
                 yield [expr.parse(), Seq.range(expr)!];
             } catch (err) {
                 const r = Seq.range(expr);
-                throw r ? new Error(`line: ${r.start.line + 1}: ${err}`, { cause: err }) : err;
+                throw r ? new Error(`line: ${r.start.line + 1}: ${err instanceof Error ? err.message : err}`, { cause: err }) : err;
             }
         }
     }

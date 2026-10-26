@@ -340,7 +340,8 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
                 case 'snapshot': {
                     const uri = vscode.Uri.joinPath(
                         vscode.workspace.workspaceFolders?.[0].uri ?? vscode.Uri.file(tmpdir),
-                        "telemetry-plot-" + (new Date()).toISOString() + ".png"
+                        // Windows does not allow colons in file names
+                        "telemetry-plot-" + (new Date()).toISOString().replace(/:/g, "-") + ".png"
                     );
 
                     vscode.workspace.fs.writeFile(
@@ -352,6 +353,8 @@ export class TelemetryPlotPanel extends WebViewPanelBase implements vscode.Webvi
                                 vscode.commands.executeCommand("vscode.open", uri);
                             }
                         });
+                    }, (err) => {
+                        vscode.window.showErrorMessage(`Failed to save telemetry plot screenshot: ${err}`);
                     });
                 }
             }
