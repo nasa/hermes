@@ -796,7 +796,7 @@ describe('YamcsClient.subscribeParameters', () => {
         watch.emit('data', { state: 'RUNNING' });
         expect(onEnd).not.toHaveBeenCalled();
         watch.emit('data', { state });
-        expect(onEnd.mock.calls).toEqual([[new Error(`YAMCS processor realtime is ${state}`)]]);
+        expect(onEnd.mock.calls).toEqual([[new Error(`YAMCS processor realtime in instance fprime-project is ${state}`)]]);
         expect(call.cancel).toHaveBeenCalled();
         expect(watch.cancel).toHaveBeenCalled();
     });
