@@ -1,6 +1,9 @@
-name: Test YAMCS gRPC Plugin
+name: Build YAMCS gRPC Plugin
 
 on:
+  release:
+    types: [published]
+  workflow_dispatch:
   pull_request:
     paths:
       - 'yamcs-grpc-plugin/**'
@@ -22,3 +25,42 @@ jobs:
 
       - name: Run tests
         run: mvn -B -f yamcs-grpc-plugin/pom.xml test
+
+  build:
+    name: Build Plugin Zip
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Get version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          else
+            VERSION="dev-$(git rev-parse --short HEAD)"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build plugin
+        run: yamcs-grpc-plugin/build.sh
+
+      - name: Create archive
+        run: zip -j yamcs-grpc-${{ steps.version.outputs.version }}.zip yamcs-grpc-plugin/out/lib/*.jar
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: yamcs-grpc-${{ steps.version.outputs.version }}
+          path: yamcs-grpc-${{ steps.version.outputs.version }}.zip
+          retention-days: 30
+
+      - name: Upload to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v3
+        with:
+          files: yamcs-grpc-${{ steps.version.outputs.version }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
