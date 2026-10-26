@@ -184,7 +184,6 @@ class PendingFileUplink implements TreeEntry, vscode.Progress<number> {
             pick.items = all.map((fsw) => ({
                 label: fsw.id,
                 description: fsw.type,
-                detail: fsw.profileId
             }));
         }
 

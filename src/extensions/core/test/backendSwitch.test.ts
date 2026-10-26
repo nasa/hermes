@@ -35,8 +35,6 @@ const log = { debug: () => { }, info: () => { }, warn: () => { }, error: () => {
 const none = () => ({ dispose: () => { } });
 const yamcsBackend: Partial<Hermes.Api> = {
     onFswChange: none,
-    onProvidersChange: none,
-    onProfilesChange: none,
     onDictionaryChange: none,
     onFileDownlink: none,
     onFileUplink: none,

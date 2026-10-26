@@ -75,34 +75,6 @@ export class Offline implements Hermes.Api {
         return [];
     }
 
-    startProfile(id: string): Promise<void> {
-        throw new Error(`No profile with id ${id}`);
-    }
-
-    stopProfile(id: string): Promise<void> {
-        throw new Error(`No profile with id ${id}`);
-    }
-
-    updateProfile(id: string): Promise<void> {
-        throw new Error(`No profile with id ${id}`);
-    }
-
-    addProfile(): Promise<string> {
-        throw new Error(`Cannot add profile in local mode, connect to a host first`);
-
-    }
-    removeProfile(id: string): Promise<void> {
-        throw new Error(`No profile with id ${id}`);
-    }
-
-    async allProfiles(): Promise<Record<string, Proto.IStatefulProfile>> {
-        return {};
-    }
-
-    async allProviders(): Promise<Proto.IProfileProvider[]> {
-        return [];
-    }
-
     async getFileTransferState(): Promise<Proto.IFileTransferState> {
         return {};
     }
@@ -189,8 +161,6 @@ export class Offline implements Hermes.Api {
     }
 
     onFswChange: vscode.Event<Hermes.Fsw[]> = () => { return nullDisposable; };
-    onProvidersChange = () => { return nullDisposable; };
-    onProfilesChange = () => { return nullDisposable; };
 
     dictionaryChanged = new vscode.EventEmitter<Record<string, Proto.IDictionaryHead>>();
     onDictionaryChange = this.dictionaryChanged.event;
