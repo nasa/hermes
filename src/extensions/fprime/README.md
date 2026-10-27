@@ -46,4 +46,4 @@ how the flight software responded.
 
 ## Limits
 
-- Hermes ignores absolute time tags (`A...`). A command with one sends as soon as the previous command passes.
+- Cells ignore absolute time tags (`A...`). In a cell, a command with one sends as soon as the previous command passes.

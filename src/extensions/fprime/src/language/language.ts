@@ -167,7 +167,7 @@ export class TimeSpecifierToken extends Seq.TerminalToken<
             out.push(
                 new vscode.Diagnostic(
                     this.token.range,
-                    'Hermes ignores absolute time tags. This command sends as soon as the previous one passes.',
+                    'Cells ignore absolute time tags. When a cell runs, this command sends as soon as the previous one passes.',
                     vscode.DiagnosticSeverity.Warning
                 )
             );

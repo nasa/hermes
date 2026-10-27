@@ -218,7 +218,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
                     if (value) {
                         if (value.selectCustom) {
                             vscode.window.showInputBox({
-                                title: 'Connection Name',
+                                title: 'Cell target',
                                 placeHolder: 'yamcs:<instance>',
                                 prompt: 'Target ID, such as yamcs:fprime-project'
                             }).then((manualId) => {
