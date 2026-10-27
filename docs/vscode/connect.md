@@ -73,6 +73,8 @@ activity bar on the left.
 
 - To load an F Prime dictionary from a file, pick **F Prime (JSON, >=4.0)** for F Prime 4.0 and later, or **F Prime
   (XML, <4.0)** for older versions, in the dropdown at the top of the view. Then click **Open Dictionary**.
+- To load a Hermes dictionary file (`.dictionary.pb`), pick **Hermes dictionary** and click **Open Dictionary**.
+  Cells that target the dictionary's instance then use it. Hermes also builds `<instance> (F Prime)` from it.
 - To delete a dictionary, click its trash icon. Deleting `<instance>` also deletes `<instance> (F Prime)`.
 - Some deletions don't last. Hermes builds `<instance> (F Prime)` again from `<instance>`, and a dictionary from
   `build-artifacts` comes back the next time Hermes changes mode or restarts.
