@@ -79,6 +79,20 @@ activity bar on the left.
 - Some deletions don't last. Hermes builds `<instance> (F Prime)` again from `<instance>`, and a dictionary from
   `build-artifacts` comes back the next time Hermes changes mode or restarts.
 
+### Save dictionaries without VS Code
+
+To write cells for an instance in a workspace that has never connected to YAMCS, save the dictionaries with the
+`save-dictionaries.js` script from the [latest release](https://github.com/nasa/hermes/releases/latest). It needs
+only Node.js. While YAMCS runs:
+
+```sh
+node save-dictionaries.js --address localhost:8091 --out dictionaries
+```
+
+This writes one `.dictionary.pb` file per running instance into `dictionaries`. Load each one with **Hermes
+dictionary** as [above](#load-or-delete-a-dictionary). Without the options, the script uses `localhost:8091` and the
+current folder. In a clone of this repository, `yarn save-dictionaries` builds and runs the same script.
+
 ## Cells in Offline mode
 
 Running a cell in Offline mode fails with "No target FSW set on this cell (or connected)", where FSW means flight

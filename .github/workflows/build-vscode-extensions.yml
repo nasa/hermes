@@ -221,6 +221,40 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  save-dictionaries:
+    name: Bundle save-dictionaries Script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Bundle the script
+        run: yarn build-save-dictionaries
+
+      - name: Upload script artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: save-dictionaries
+          path: out/save-dictionaries.js
+          retention-days: 30
+
+      - name: Upload script to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v3
+        with:
+          files: out/save-dictionaries.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   publish-core:
     name: Publish Core to Marketplace
     runs-on: ubuntu-latest
