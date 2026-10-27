@@ -46,4 +46,4 @@ how the flight software responded.
 
 ## Limits
 
-- An absolute time tag (`A...`) doesn't wait. The command sends right away.
+- Hermes ignores absolute time tags (`A...`). A command with one sends as soon as the previous command passes.
