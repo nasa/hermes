@@ -108,6 +108,10 @@ function TelemetryPlot() {
 
     const plotContainerRef = useRef<HTMLDivElement>(null);
 
+    // We prefix each label with its source when the plot shows series from more than one source
+    const multiSource = new Set(Object.values(plotInfo).map((info) => info.source)).size > 1;
+    const seriesLabel = (info: TelemetrySeries) => `${multiSource ? `${info.source} ` : ''}${info.component}.${info.name}`;
+
     // Initialize messages
     useEffect(() => {
         messages.postMessage({ type: 'refresh' });
@@ -308,7 +312,7 @@ function TelemetryPlot() {
 
             builder.addSeries({
                 scaleKey: 'y',
-                label: `${info.component}.${info.name}`,
+                label: seriesLabel(info),
                 stroke: palette[seriesIndex],
                 lineInterpolation: interpolationMode,
                 width: 2,
@@ -379,7 +383,7 @@ function TelemetryPlot() {
 
         for (const [channelKey, info] of Object.entries(plotInfo)) {
             const data = plotData[channelKey];
-            const label = `${info.component}.${info.name}`;
+            const label = seriesLabel(info);
             const isDisabled = disabledSeries.has(channelKey);
 
             // Only increment color index for enabled series to match plot
