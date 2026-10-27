@@ -79,10 +79,8 @@ fprime-yamcs --yamcs-plugin-jars <yamcs-grpc>
 ## Connecting Hermes to YAMCS
 
 The Hermes VSCode extension starts in **offline mode** by default. This
-means that there is _no_ connection to the flight software. Open the folder you
-will work in before you connect, since opening a folder restarts Hermes in
-offline mode. To connect, point Hermes at YAMCS from the status bar item at the
-bottom of the VSCode window:
+means that there is _no_ connection to the flight software. To connect,
+point Hermes at YAMCS from the status bar item at the bottom of the VSCode window:
 
 1. Click **Hermes: Offline** in the status bar, or run **Hermes: Change Backend Mode** from the command palette.
 2. Pick **YAMCS**.
@@ -93,7 +91,7 @@ why.
 
 ## Sending a Command
 
-1. In the folder you opened, create a file called `noop.hermes.md`. It opens as a Hermes notebook.
+1. Open a folder and create a file called `noop.hermes.md`. It opens as a Hermes notebook.
 2. Add a code cell. Click the language name at the bottom right of the cell and pick **fprime**. This makes it an
    F Prime cell, which names commands the way F Prime does.
 3. Type this no-op command, which does nothing but report that it ran:
