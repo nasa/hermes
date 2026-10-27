@@ -11,7 +11,6 @@ interface UplinkRequest {
     fsw: Fsw;
     srcPath: string;
     dstPath: string;
-    metadata?: Record<string, string>;
 }
 
 export class UplinkLanguageProvider implements NotebookLanguageProvider {
@@ -30,32 +29,10 @@ export class UplinkLanguageProvider implements NotebookLanguageProvider {
         const fsws = await this.api.allFsw(token);
 
         for (let lineNo = 0; lineNo < code.document.lineCount; lineNo++) {
-            const line = code.document.lineAt(lineNo);
-            let text = line.text;
-            let metadata: Record<string, string> | undefined;
+            // We ignore everything after '@', which the uplink language uses for comments
+            const text = code.document.lineAt(lineNo).text.split('@')[0];
 
             try {
-                // Extract metadata
-                const metadataIdx = text.indexOf('@');
-                if (metadataIdx >= 0) {
-                    metadata = Object.fromEntries(
-                        text.substring(metadataIdx + 1).split(',').map(v => {
-                            const mdItem = v.trim();
-                            if (!mdItem) {
-                                return undefined;
-                            }
-
-                            const mdPrm = mdItem.split('=', 2);
-                            if (mdPrm.length !== 2) {
-                                throw new Error(`Invalid metadata item '${v}'`);
-                            }
-
-                            return mdPrm.map(v => v.trim());
-                        }).filter(v => v !== undefined)
-                    );
-                    text = text.substring(0, metadataIdx - 1);
-                }
-
                 const spl = text.trim().split(/[\s]+/);
                 if (spl[0] === '') {
                     continue;
@@ -86,7 +63,6 @@ export class UplinkLanguageProvider implements NotebookLanguageProvider {
                     fsw,
                     srcPath: srcPath.fsPath,
                     dstPath: spl[2],
-                    metadata,
                 });
             } catch (err) {
                 throw new Error(`Invalid command on line ${lineNo + 1}: ${err}`, { cause: err });
@@ -125,7 +101,6 @@ export class UplinkLanguageProvider implements NotebookLanguageProvider {
                             sourcePath: upl.srcPath,
                             destinationPath: upl.dstPath,
                             size,
-                            metadata: upl.metadata,
                         }, fs.createReadStream(upl.srcPath), {
                             report: (value) => {
                                 progress.report({
