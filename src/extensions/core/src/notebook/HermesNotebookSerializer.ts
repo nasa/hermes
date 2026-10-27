@@ -123,6 +123,11 @@ export class HermesNotebookSerializer implements vscode.NotebookSerializer {
 
         const file = contents.split('\n');
 
+        // A Markdown file that Hermes didn't write has no tags, so we open all of its text as one Markdown cell
+        if (contents.trim() !== '' && !file.some((line) => line.startsWith('<!-- hermes: '))) {
+            return new vscode.NotebookData([new vscode.NotebookCellData(vscode.NotebookCellKind.Markup, contents, 'markdown')]);
+        }
+
         const parseMeta = (line: string) => {
             if (!line.startsWith('<!-- hermes: ')) {
                 return null;
