@@ -150,21 +150,6 @@ message EventDef {
   FormatString format = 8;
 }
 
-message EventRef {
-  // Was the dictionary's raw ID. Removed: providers that build refs from
-  // string names (F Prime packets) leave it unset, so it cannot identify a
-  // ref. Defs are keyed by (component, name) instead.
-  reserved 1;
-
-  string          name      = 2;
-  string          component = 3;
-  EvrSeverity     severity  = 4;
-  repeated string arguments = 5;
-
-  // (optional) dictionary ID this comes from
-  string dictionary = 10;
-}
-
 message TelemetryDef {
   /**
    * Raw ID used for identifying incoming serialized telemetry
@@ -189,20 +174,6 @@ message TelemetryDef {
   reserved 5;
 
   string metadata = 6;
-}
-
-// Lightweight reference for passing dictionary items through message busses
-message TelemetryRef {
-  // Was the dictionary's raw ID. Removed: providers that build refs from
-  // string names (F Prime packets) leave it unset, so it cannot identify a
-  // ref. Defs are keyed by (component, name) instead.
-  reserved 1;
-
-  string name      = 2;
-  string component = 3;
-
-  // (optional) dictionary ID this comes from
-  string dictionary = 10;
 }
 
 message DictionaryHead {
