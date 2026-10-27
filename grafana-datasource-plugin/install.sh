@@ -23,7 +23,7 @@ fi
 
 VERSION=$(echo "$RELEASE_JSON" | jq -r '.tag_name')
 ZIP_URL=$(echo "$RELEASE_JSON" \
-    | jq -r '.assets[] | select(.name | contains("nasa-hermes-datasource") and (.name | endswith(".zip"))) | .browser_download_url' | head -1)
+    | jq -r '.assets[] | select(.name | contains("nasa-hermes-datasource") and endswith(".zip")) | .browser_download_url' | head -1)
 
 if [ -z "$ZIP_URL" ] || [ "$ZIP_URL" = "null" ]; then
     echo "Error: Could not find a plugin zip in release ${VERSION}. Check https://github.com/${REPO}/releases"
@@ -45,7 +45,7 @@ elif [ -d "/usr/local/var/lib/grafana/plugins" ]; then
 elif [ -d "$HOME/grafana/plugins" ]; then
     PLUGINS_DIR="$HOME/grafana/plugins"
 else
-    read -rp "Grafana plugins directory: " PLUGINS_DIR
+    read -rp "Grafana plugins directory: " PLUGINS_DIR < /dev/tty
 fi
 
 if [ ! -d "$PLUGINS_DIR" ]; then
