@@ -26,18 +26,10 @@
         "Other"
     ],
     "activationEvents": [
-        "onStartupFinished",
-        "onFileSystem:fprimeprm",
-        "onFileSystem:fprimeschema"
+        "onStartupFinished"
     ],
     "main": "./out/extension.js",
     "contributes": {
-        "commands": [
-            {
-                "command": "hermes.fprime.prm.open",
-                "title": "Open as FPrime Parameter Database"
-            }
-        ],
         "configuration": [
             {
                 "title": "Hermes - FPrime",
@@ -46,18 +38,6 @@
                         "description": "Uplink directory for compiled sequence",
                         "type": "string",
                         "default": "/seq"
-                    },
-                    "hermes.fprime.prmDb.numDbEntries": {
-                        "description": "Maximum number of parameter entries in prmDb",
-                        "type": "number",
-                        "default": 25
-                    },
-                    "hermes.fprime.prmDb.entryDelimiter": {
-                        "description": "Byte value that should precede each parameter in file. Sanity check against file integrity.",
-                        "type": "number",
-                        "default": 165,
-                        "minimum": 0,
-                        "maximum": 255
                     }
                 }
             }
@@ -93,12 +73,6 @@
                     "light": "./icons/rocket-black.svg"
                 },
                 "configuration": "./syntax/fprime.language.json"
-            },
-            {
-                "id": "json",
-                "extensions": [
-                    ".dat"
-                ]
             }
         ],
         "menus": {
@@ -108,21 +82,8 @@
                     "when": "notebookType == fprime-notebook && notebookCellType == markup && !notebookCellMarkdownEditMode",
                     "group": "inline/cell@0"
                 }
-            ],
-            "explorer/context": [
-                {
-                    "command": "hermes.fprime.prm.open",
-                    "when": "resourceExtname == .dat",
-                    "group": "navigation@20"
-                }
             ]
-        },
-        "jsonValidation": [
-            {
-                "fileMatch": "*.dat",
-                "url": "fprimeschema:///parameter-database"
-            }
-        ]
+        }
     },
     "scripts": {
         "vscode:prepublish": "yarn clean && yarn compile",

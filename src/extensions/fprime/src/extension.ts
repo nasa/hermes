@@ -67,18 +67,6 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         }),
 
-        // Parameter Database
-        // vscode.workspace.registerFileSystemProvider("fprimeprm", new ParamDbFsSerializer(dict)),
-        // vscode.workspace.registerTextDocumentContentProvider("fprimeschema", new FPrimeParameterJsonSchemaProvider(dict)),
-        // vscode.commands.registerCommand("hermes.fprime.prm.open", async (t: vscode.Uri) => {
-        //     try {
-        //         const doc = await vscode.workspace.openTextDocument(vscode.Uri.from({ scheme: "fprimeprm", path: t.path }));
-        //         await vscode.window.showTextDocument(doc, { preview: false });
-        //     } catch (e) {
-        //         vscode.window.showErrorMessage(`${e}`);
-        //     }
-        // }),
-
         // Notebook
         hermesVSCode.registerNotebookType("fprime-notebook"),
         vscode.workspace.registerNotebookSerializer('fprime-notebook', new FPrimeNotebookSerializer()),
