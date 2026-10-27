@@ -218,6 +218,7 @@ export function TelemetryTable() {
 
     const onClickClear = useCallback(() => {
         messages.postMessage({ type: 'clear' });
+        setChannels([]);
         setSelectedChannels(new Set());
     }, []);
 
