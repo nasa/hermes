@@ -90,12 +90,12 @@
             },
             {
                 "command": "hermes.host.changeMode",
-                "title": "Hermes: Change Backend Mode",
+                "title": "Change Backend Mode",
                 "category": "Hermes"
             },
             {
                 "command": "hermes.host.reconnect",
-                "title": "Hermes: Reconnect to Backend",
+                "title": "Reconnect to Backend",
                 "category": "Hermes",
                 "icon": "$(refresh)"
             }
@@ -206,6 +206,28 @@
                     "when": "view == hermes.uplink && viewItem == hermes.uplink.pending",
                     "group": "inline"
                 }
+            ],
+            "commandPalette": [
+                {
+                    "command": "hermes.uplink.start",
+                    "when": "false"
+                },
+                {
+                    "command": "hermes.uplink.targetEdit",
+                    "when": "false"
+                },
+                {
+                    "command": "hermes.uplink.destinationEdit",
+                    "when": "false"
+                },
+                {
+                    "command": "hermes.uplink.delete",
+                    "when": "false"
+                },
+                {
+                    "command": "hermes.testbed.signoff",
+                    "when": "false"
+                }
             ]
         },
         "configuration": [
@@ -269,37 +291,37 @@
                         ]
                     },
                     "hermes.notebook.evrDiagnostic": {
-                        "markdownDescription": "Show `DIAGNOSTIC` EVRs in testbed procedures",
+                        "markdownDescription": "Show `DIAGNOSTIC` events in notebook outputs",
                         "type": "boolean",
                         "default": true
                     },
                     "hermes.notebook.evrCommand": {
-                        "markdownDescription": "Show `COMMAND` EVRs in testbed procedures",
+                        "markdownDescription": "Show `COMMAND` events in notebook outputs",
                         "type": "boolean",
                         "default": true
                     },
                     "hermes.notebook.evrActivityLow": {
-                        "markdownDescription": "Show `ACTIVITY_LO` EVRs in testbed procedures",
+                        "markdownDescription": "Show `ACTIVITY_LO` events in notebook outputs",
                         "type": "boolean",
                         "default": true
                     },
                     "hermes.notebook.evrActivityHigh": {
-                        "markdownDescription": "Show `ACTIVITY_HI` EVRs in testbed procedures",
+                        "markdownDescription": "Show `ACTIVITY_HI` events in notebook outputs",
                         "type": "boolean",
                         "default": true
                     },
                     "hermes.notebook.evrWarningLow": {
-                        "markdownDescription": "Show `WARNING_LO` EVRs in testbed procedures",
+                        "markdownDescription": "Show `WARNING_LO` events in notebook outputs",
                         "type": "boolean",
                         "default": true
                     },
                     "hermes.notebook.evrWarningHigh": {
-                        "markdownDescription": "Show `WARNING_HI` EVRs in testbed procedures",
+                        "markdownDescription": "Show `WARNING_HI` events in notebook outputs",
                         "type": "boolean",
                         "default": true
                     },
                     "hermes.notebook.evrFatal": {
-                        "markdownDescription": "Show `FATAL` EVRs in testbed procedures",
+                        "markdownDescription": "Show `FATAL` events in notebook outputs",
                         "type": "boolean",
                         "default": true
                     }
