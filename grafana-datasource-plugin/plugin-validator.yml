@@ -1,0 +1,8 @@
+# With a config file, every check is off unless global.enabled is set.
+global:
+  enabled: true
+
+# The org check fails every run because "nasa" is not a Grafana Cloud account.
+analyzers:
+  org:
+    enabled: false

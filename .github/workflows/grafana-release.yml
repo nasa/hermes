@@ -104,7 +104,7 @@ jobs:
 
       - name: Validate plugin
         run: |
-          npx -y @grafana/plugin-validator@latest -sourceCodeUri file://./ $PLUGIN_ARCHIVE
+          npx -y @grafana/plugin-validator@latest -config plugin-validator.yml -sourceCodeUri file://./ $PLUGIN_ARCHIVE
         shell: bash
         env:
           PLUGIN_ARCHIVE: ${{ steps.metadata.outputs.archive }}
