@@ -79,8 +79,6 @@ switches modes.
 - `Average` and `Sum` don't work on string or enum parameters. On a boolean, `Average` is the fraction of true samples
   and `Sum` counts them.
 - `Derivative` is the change per second between consecutive samples, whatever the panel's interval.
-- A dashboard variable in Parameter must hold one full parameter path, such as
-  `/Ref_Ref/CdhCore/version/FrameworkVersion`. Any other value matches no parameter.
 - fprime-yamcs reads each packet's F Prime time tag as Unix time, so Generation Time is right only if the flight clock
   counts from 1970.
 
