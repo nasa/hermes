@@ -4,7 +4,6 @@ import * as Hermes from '@gov.nasa.jpl.hermes/api';
 import { componentAndName, type YamcsEvent } from '@gov.nasa.jpl.hermes/rpc';
 import {
     DisplayEvent,
-    Proto,
 } from '@gov.nasa.jpl.hermes/types';
 import { CommandValue } from '@gov.nasa.jpl.hermes/sequence';
 import { showEvr } from '../settings';
@@ -168,7 +167,7 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
 
     constructor(
         readonly id: string,
-        readonly connectionPredicate: (fsw: Proto.IFsw) => boolean,
+        readonly connectionPredicate: (fsw: Hermes.Fsw) => boolean,
         readonly api: Hermes.Api,
     ) {
         this.commandStatuses = new CommandStatuses(id);

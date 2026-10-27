@@ -119,466 +119,6 @@ export namespace hermes {
         public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
-    /** SourceContext enum. */
-    enum SourceContext {
-        REALTIME = 0,
-        RECORDED = 1
-    }
-
-    /** Properties of an Event. */
-    interface IEvent {
-
-        /** Event ref */
-        ref?: (hermes.IEventRef|null);
-
-        /** Event time */
-        time?: (hermes.ITime|null);
-
-        /** Event message */
-        message?: (string|null);
-
-        /** Event args */
-        args?: (hermes.IValue[]|null);
-
-        /** Event tags */
-        tags?: ({ [k: string]: hermes.IValue }|null);
-    }
-
-    /** Represents an Event. */
-    class Event implements IEvent {
-
-        /**
-         * Constructs a new Event.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IEvent);
-
-        /** Event ref. */
-        public ref?: (hermes.IEventRef|null);
-
-        /** Event time. */
-        public time?: (hermes.ITime|null);
-
-        /** Event message. */
-        public message: string;
-
-        /** Event args. */
-        public args: hermes.IValue[];
-
-        /** Event tags. */
-        public tags: { [k: string]: hermes.IValue };
-
-        /**
-         * Creates a new Event instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns Event instance
-         */
-        public static create(properties?: hermes.IEvent): hermes.Event;
-
-        /**
-         * Encodes the specified Event message. Does not implicitly {@link hermes.Event.verify|verify} messages.
-         * @param message Event message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IEvent, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified Event message, length delimited. Does not implicitly {@link hermes.Event.verify|verify} messages.
-         * @param message Event message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IEvent, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an Event message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns Event
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.Event;
-
-        /**
-         * Decodes an Event message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns Event
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.Event;
-
-        /**
-         * Verifies an Event message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an Event message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns Event
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.Event;
-
-        /**
-         * Creates a plain object from an Event message. Also converts values to other types if specified.
-         * @param message Event
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.Event, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this Event to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for Event
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a Telemetry. */
-    interface ITelemetry {
-
-        /** Telemetry ref */
-        ref?: (hermes.ITelemetryRef|null);
-
-        /** Telemetry time */
-        time?: (hermes.ITime|null);
-
-        /** Telemetry value */
-        value?: (hermes.IValue|null);
-
-        /** Telemetry labels */
-        labels?: ({ [k: string]: string }|null);
-    }
-
-    /** Represents a Telemetry. */
-    class Telemetry implements ITelemetry {
-
-        /**
-         * Constructs a new Telemetry.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.ITelemetry);
-
-        /** Telemetry ref. */
-        public ref?: (hermes.ITelemetryRef|null);
-
-        /** Telemetry time. */
-        public time?: (hermes.ITime|null);
-
-        /** Telemetry value. */
-        public value?: (hermes.IValue|null);
-
-        /** Telemetry labels. */
-        public labels: { [k: string]: string };
-
-        /**
-         * Creates a new Telemetry instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns Telemetry instance
-         */
-        public static create(properties?: hermes.ITelemetry): hermes.Telemetry;
-
-        /**
-         * Encodes the specified Telemetry message. Does not implicitly {@link hermes.Telemetry.verify|verify} messages.
-         * @param message Telemetry message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.ITelemetry, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified Telemetry message, length delimited. Does not implicitly {@link hermes.Telemetry.verify|verify} messages.
-         * @param message Telemetry message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.ITelemetry, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a Telemetry message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns Telemetry
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.Telemetry;
-
-        /**
-         * Decodes a Telemetry message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns Telemetry
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.Telemetry;
-
-        /**
-         * Verifies a Telemetry message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a Telemetry message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns Telemetry
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.Telemetry;
-
-        /**
-         * Creates a plain object from a Telemetry message. Also converts values to other types if specified.
-         * @param message Telemetry
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.Telemetry, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this Telemetry to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for Telemetry
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a SourcedEvent. */
-    interface ISourcedEvent {
-
-        /** SourcedEvent event */
-        event?: (hermes.IEvent|null);
-
-        /** SourcedEvent source */
-        source?: (string|null);
-
-        /** SourcedEvent context */
-        context?: (hermes.SourceContext|null);
-    }
-
-    /** Represents a SourcedEvent. */
-    class SourcedEvent implements ISourcedEvent {
-
-        /**
-         * Constructs a new SourcedEvent.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.ISourcedEvent);
-
-        /** SourcedEvent event. */
-        public event?: (hermes.IEvent|null);
-
-        /** SourcedEvent source. */
-        public source: string;
-
-        /** SourcedEvent context. */
-        public context: hermes.SourceContext;
-
-        /**
-         * Creates a new SourcedEvent instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns SourcedEvent instance
-         */
-        public static create(properties?: hermes.ISourcedEvent): hermes.SourcedEvent;
-
-        /**
-         * Encodes the specified SourcedEvent message. Does not implicitly {@link hermes.SourcedEvent.verify|verify} messages.
-         * @param message SourcedEvent message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.ISourcedEvent, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified SourcedEvent message, length delimited. Does not implicitly {@link hermes.SourcedEvent.verify|verify} messages.
-         * @param message SourcedEvent message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.ISourcedEvent, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a SourcedEvent message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns SourcedEvent
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.SourcedEvent;
-
-        /**
-         * Decodes a SourcedEvent message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns SourcedEvent
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.SourcedEvent;
-
-        /**
-         * Verifies a SourcedEvent message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a SourcedEvent message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns SourcedEvent
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.SourcedEvent;
-
-        /**
-         * Creates a plain object from a SourcedEvent message. Also converts values to other types if specified.
-         * @param message SourcedEvent
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.SourcedEvent, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this SourcedEvent to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for SourcedEvent
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a SourcedTelemetry. */
-    interface ISourcedTelemetry {
-
-        /** SourcedTelemetry telemetry */
-        telemetry?: (hermes.ITelemetry|null);
-
-        /** SourcedTelemetry source */
-        source?: (string|null);
-
-        /** SourcedTelemetry context */
-        context?: (hermes.SourceContext|null);
-    }
-
-    /** Represents a SourcedTelemetry. */
-    class SourcedTelemetry implements ISourcedTelemetry {
-
-        /**
-         * Constructs a new SourcedTelemetry.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.ISourcedTelemetry);
-
-        /** SourcedTelemetry telemetry. */
-        public telemetry?: (hermes.ITelemetry|null);
-
-        /** SourcedTelemetry source. */
-        public source: string;
-
-        /** SourcedTelemetry context. */
-        public context: hermes.SourceContext;
-
-        /**
-         * Creates a new SourcedTelemetry instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns SourcedTelemetry instance
-         */
-        public static create(properties?: hermes.ISourcedTelemetry): hermes.SourcedTelemetry;
-
-        /**
-         * Encodes the specified SourcedTelemetry message. Does not implicitly {@link hermes.SourcedTelemetry.verify|verify} messages.
-         * @param message SourcedTelemetry message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.ISourcedTelemetry, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified SourcedTelemetry message, length delimited. Does not implicitly {@link hermes.SourcedTelemetry.verify|verify} messages.
-         * @param message SourcedTelemetry message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.ISourcedTelemetry, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a SourcedTelemetry message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns SourcedTelemetry
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.SourcedTelemetry;
-
-        /**
-         * Decodes a SourcedTelemetry message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns SourcedTelemetry
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.SourcedTelemetry;
-
-        /**
-         * Verifies a SourcedTelemetry message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a SourcedTelemetry message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns SourcedTelemetry
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.SourcedTelemetry;
-
-        /**
-         * Creates a plain object from a SourcedTelemetry message. Also converts values to other types if specified.
-         * @param message SourcedTelemetry
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.SourcedTelemetry, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this SourcedTelemetry to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for SourcedTelemetry
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
     /** FileDownlinkCompletionStatus enum. */
     enum FileDownlinkCompletionStatus {
         DOWNLINK_COMPLETED = 0,
@@ -1240,6 +780,1251 @@ export namespace hermes {
         public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
+    /** Properties of a ParameterDef. */
+    interface IParameterDef {
+
+        /** ParameterDef id */
+        id?: (number|null);
+
+        /** Component or module that owns this parameter */
+        component?: (string|null);
+
+        /**
+         * Name of the parameter
+         * Scoped by its component
+         */
+        name?: (string|null);
+
+        /** ParameterDef type */
+        type?: (hermes.IType|null);
+
+        /** ParameterDef metadata */
+        metadata?: (string|null);
+    }
+
+    /** Represents a ParameterDef. */
+    class ParameterDef implements IParameterDef {
+
+        /**
+         * Constructs a new ParameterDef.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.IParameterDef);
+
+        /** ParameterDef id. */
+        public id: number;
+
+        /** Component or module that owns this parameter */
+        public component: string;
+
+        /**
+         * Name of the parameter
+         * Scoped by its component
+         */
+        public name: string;
+
+        /** ParameterDef type. */
+        public type?: (hermes.IType|null);
+
+        /** ParameterDef metadata. */
+        public metadata: string;
+
+        /**
+         * Creates a new ParameterDef instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns ParameterDef instance
+         */
+        public static create(properties?: hermes.IParameterDef): hermes.ParameterDef;
+
+        /**
+         * Encodes the specified ParameterDef message. Does not implicitly {@link hermes.ParameterDef.verify|verify} messages.
+         * @param message ParameterDef message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.IParameterDef, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified ParameterDef message, length delimited. Does not implicitly {@link hermes.ParameterDef.verify|verify} messages.
+         * @param message ParameterDef message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.IParameterDef, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a ParameterDef message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns ParameterDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.ParameterDef;
+
+        /**
+         * Decodes a ParameterDef message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns ParameterDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.ParameterDef;
+
+        /**
+         * Verifies a ParameterDef message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a ParameterDef message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns ParameterDef
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.ParameterDef;
+
+        /**
+         * Creates a plain object from a ParameterDef message. Also converts values to other types if specified.
+         * @param message ParameterDef
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.ParameterDef, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this ParameterDef to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for ParameterDef
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a CommandDef. */
+    interface ICommandDef {
+
+        /** CommandDef opcode */
+        opcode?: (number|null);
+
+        /**
+         * Mnemonic command used to identify this command.
+         * FSW may or may not include the module name in the mnemonic and its
+         * up to the language parsing software to identify the proper command from mnemonic information.
+         *
+         * This may have varying meaning across missions
+         */
+        mnemonic?: (string|null);
+
+        /** Parent component or module owning this command */
+        component?: (string|null);
+
+        /** Command arguments */
+        "arguments"?: (hermes.IField[]|null);
+
+        /** CommandDef metadata */
+        metadata?: (string|null);
+    }
+
+    /** Represents a CommandDef. */
+    class CommandDef implements ICommandDef {
+
+        /**
+         * Constructs a new CommandDef.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.ICommandDef);
+
+        /** CommandDef opcode. */
+        public opcode: number;
+
+        /**
+         * Mnemonic command used to identify this command.
+         * FSW may or may not include the module name in the mnemonic and its
+         * up to the language parsing software to identify the proper command from mnemonic information.
+         *
+         * This may have varying meaning across missions
+         */
+        public mnemonic: string;
+
+        /** Parent component or module owning this command */
+        public component: string;
+
+        /** Command arguments */
+        public arguments: hermes.IField[];
+
+        /** CommandDef metadata. */
+        public metadata: string;
+
+        /**
+         * Creates a new CommandDef instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns CommandDef instance
+         */
+        public static create(properties?: hermes.ICommandDef): hermes.CommandDef;
+
+        /**
+         * Encodes the specified CommandDef message. Does not implicitly {@link hermes.CommandDef.verify|verify} messages.
+         * @param message CommandDef message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.ICommandDef, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified CommandDef message, length delimited. Does not implicitly {@link hermes.CommandDef.verify|verify} messages.
+         * @param message CommandDef message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.ICommandDef, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a CommandDef message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns CommandDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.CommandDef;
+
+        /**
+         * Decodes a CommandDef message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns CommandDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.CommandDef;
+
+        /**
+         * Verifies a CommandDef message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a CommandDef message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns CommandDef
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.CommandDef;
+
+        /**
+         * Creates a plain object from a CommandDef message. Also converts values to other types if specified.
+         * @param message CommandDef
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.CommandDef, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this CommandDef to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for CommandDef
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** EvrSeverity enum. */
+    enum EvrSeverity {
+        EVR_DIAGNOSTIC = 0,
+        EVR_ACTIVITY_LOW = 1,
+        EVR_ACTIVITY_HIGH = 2,
+        EVR_WARNING_LOW = 3,
+        EVR_WARNING_HIGH = 4,
+        EVR_COMMAND = 5,
+        EVR_FATAL = 6
+    }
+
+    /** FormatSpecifierType enum. */
+    enum FormatSpecifierType {
+        FMT_DEFAULT = 0,
+        FMT_CHAR = 1,
+        FMT_DECIMAL = 2,
+        FMT_HEX_LOWER = 3,
+        FMT_HEX_UPPER = 4,
+        FMT_OCTAL = 5,
+        FMT_EXP_LOWER = 6,
+        FMT_EXP_UPPER = 7,
+        FMT_FIXED_LOWER = 8,
+        FMT_FIXED_UPPER = 9,
+        FMT_GENERAL_LOWER = 10,
+        FMT_GENERAL_UPPER = 11
+    }
+
+    /** Properties of a FormatSpecifier. */
+    interface IFormatSpecifier {
+
+        /** FormatSpecifier type */
+        type?: (hermes.FormatSpecifierType|null);
+
+        /** FormatSpecifier precision */
+        precision?: (number|null);
+
+        /** FormatSpecifier argumentIndex */
+        argumentIndex?: (number|null);
+    }
+
+    /** Represents a FormatSpecifier. */
+    class FormatSpecifier implements IFormatSpecifier {
+
+        /**
+         * Constructs a new FormatSpecifier.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.IFormatSpecifier);
+
+        /** FormatSpecifier type. */
+        public type: hermes.FormatSpecifierType;
+
+        /** FormatSpecifier precision. */
+        public precision?: (number|null);
+
+        /** FormatSpecifier argumentIndex. */
+        public argumentIndex: number;
+
+        /** FormatSpecifier _precision. */
+        public _precision?: "precision";
+
+        /**
+         * Creates a new FormatSpecifier instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns FormatSpecifier instance
+         */
+        public static create(properties?: hermes.IFormatSpecifier): hermes.FormatSpecifier;
+
+        /**
+         * Encodes the specified FormatSpecifier message. Does not implicitly {@link hermes.FormatSpecifier.verify|verify} messages.
+         * @param message FormatSpecifier message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.IFormatSpecifier, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified FormatSpecifier message, length delimited. Does not implicitly {@link hermes.FormatSpecifier.verify|verify} messages.
+         * @param message FormatSpecifier message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.IFormatSpecifier, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a FormatSpecifier message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns FormatSpecifier
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.FormatSpecifier;
+
+        /**
+         * Decodes a FormatSpecifier message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns FormatSpecifier
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.FormatSpecifier;
+
+        /**
+         * Verifies a FormatSpecifier message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a FormatSpecifier message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns FormatSpecifier
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.FormatSpecifier;
+
+        /**
+         * Creates a plain object from a FormatSpecifier message. Also converts values to other types if specified.
+         * @param message FormatSpecifier
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.FormatSpecifier, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this FormatSpecifier to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for FormatSpecifier
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a FormatFragment. */
+    interface IFormatFragment {
+
+        /** FormatFragment text */
+        text?: (string|null);
+
+        /** FormatFragment specifier */
+        specifier?: (hermes.IFormatSpecifier|null);
+    }
+
+    /** Represents a FormatFragment. */
+    class FormatFragment implements IFormatFragment {
+
+        /**
+         * Constructs a new FormatFragment.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.IFormatFragment);
+
+        /** FormatFragment text. */
+        public text?: (string|null);
+
+        /** FormatFragment specifier. */
+        public specifier?: (hermes.IFormatSpecifier|null);
+
+        /** FormatFragment fragment. */
+        public fragment?: ("text"|"specifier");
+
+        /**
+         * Creates a new FormatFragment instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns FormatFragment instance
+         */
+        public static create(properties?: hermes.IFormatFragment): hermes.FormatFragment;
+
+        /**
+         * Encodes the specified FormatFragment message. Does not implicitly {@link hermes.FormatFragment.verify|verify} messages.
+         * @param message FormatFragment message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.IFormatFragment, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified FormatFragment message, length delimited. Does not implicitly {@link hermes.FormatFragment.verify|verify} messages.
+         * @param message FormatFragment message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.IFormatFragment, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a FormatFragment message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns FormatFragment
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.FormatFragment;
+
+        /**
+         * Decodes a FormatFragment message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns FormatFragment
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.FormatFragment;
+
+        /**
+         * Verifies a FormatFragment message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a FormatFragment message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns FormatFragment
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.FormatFragment;
+
+        /**
+         * Creates a plain object from a FormatFragment message. Also converts values to other types if specified.
+         * @param message FormatFragment
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.FormatFragment, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this FormatFragment to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for FormatFragment
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a FormatString. */
+    interface IFormatString {
+
+        /** FormatString fragments */
+        fragments?: (hermes.IFormatFragment[]|null);
+
+        /** FormatString original */
+        original?: (string|null);
+    }
+
+    /** Represents a FormatString. */
+    class FormatString implements IFormatString {
+
+        /**
+         * Constructs a new FormatString.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.IFormatString);
+
+        /** FormatString fragments. */
+        public fragments: hermes.IFormatFragment[];
+
+        /** FormatString original. */
+        public original: string;
+
+        /**
+         * Creates a new FormatString instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns FormatString instance
+         */
+        public static create(properties?: hermes.IFormatString): hermes.FormatString;
+
+        /**
+         * Encodes the specified FormatString message. Does not implicitly {@link hermes.FormatString.verify|verify} messages.
+         * @param message FormatString message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.IFormatString, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified FormatString message, length delimited. Does not implicitly {@link hermes.FormatString.verify|verify} messages.
+         * @param message FormatString message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.IFormatString, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a FormatString message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns FormatString
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.FormatString;
+
+        /**
+         * Decodes a FormatString message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns FormatString
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.FormatString;
+
+        /**
+         * Verifies a FormatString message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a FormatString message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns FormatString
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.FormatString;
+
+        /**
+         * Creates a plain object from a FormatString message. Also converts values to other types if specified.
+         * @param message FormatString
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.FormatString, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this FormatString to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for FormatString
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of an EventDef. */
+    interface IEventDef {
+
+        /** EventDef id */
+        id?: (number|null);
+
+        /** Component or module */
+        component?: (string|null);
+
+        /**
+         * Name of the EVR.
+         * Scoped by its component
+         */
+        name?: (string|null);
+
+        /**
+         * Log severity usually stored in the FSW event dictionary
+         * For the most part this information is not held in the
+         * EVR packet since its redundant for ground software.
+         */
+        severity?: (hermes.EvrSeverity|null);
+
+        /**
+         * DEPRECATED: Use format instead
+         * printf format string that will be formatted via sprintf
+         */
+        formatString?: (string|null);
+
+        /** Arguments used inside the format string */
+        "arguments"?: (hermes.IField[]|null);
+
+        /** EventDef metadata */
+        metadata?: (string|null);
+
+        /** Structured format string with parsed fragments */
+        format?: (hermes.IFormatString|null);
+    }
+
+    /** Represents an EventDef. */
+    class EventDef implements IEventDef {
+
+        /**
+         * Constructs a new EventDef.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.IEventDef);
+
+        /** EventDef id. */
+        public id: number;
+
+        /** Component or module */
+        public component: string;
+
+        /**
+         * Name of the EVR.
+         * Scoped by its component
+         */
+        public name: string;
+
+        /**
+         * Log severity usually stored in the FSW event dictionary
+         * For the most part this information is not held in the
+         * EVR packet since its redundant for ground software.
+         */
+        public severity: hermes.EvrSeverity;
+
+        /**
+         * DEPRECATED: Use format instead
+         * printf format string that will be formatted via sprintf
+         */
+        public formatString: string;
+
+        /** Arguments used inside the format string */
+        public arguments: hermes.IField[];
+
+        /** EventDef metadata. */
+        public metadata: string;
+
+        /** Structured format string with parsed fragments */
+        public format?: (hermes.IFormatString|null);
+
+        /**
+         * Creates a new EventDef instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns EventDef instance
+         */
+        public static create(properties?: hermes.IEventDef): hermes.EventDef;
+
+        /**
+         * Encodes the specified EventDef message. Does not implicitly {@link hermes.EventDef.verify|verify} messages.
+         * @param message EventDef message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.IEventDef, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified EventDef message, length delimited. Does not implicitly {@link hermes.EventDef.verify|verify} messages.
+         * @param message EventDef message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.IEventDef, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes an EventDef message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns EventDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.EventDef;
+
+        /**
+         * Decodes an EventDef message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns EventDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.EventDef;
+
+        /**
+         * Verifies an EventDef message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates an EventDef message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns EventDef
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.EventDef;
+
+        /**
+         * Creates a plain object from an EventDef message. Also converts values to other types if specified.
+         * @param message EventDef
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.EventDef, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this EventDef to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for EventDef
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a TelemetryDef. */
+    interface ITelemetryDef {
+
+        /** Raw ID used for identifying incoming serialized telemetry */
+        id?: (number|null);
+
+        /** Telemetry name */
+        name?: (string|null);
+
+        /** Component or module that owns this telemetry */
+        component?: (string|null);
+
+        /** Serialization type */
+        type?: (hermes.IType|null);
+
+        /** TelemetryDef metadata */
+        metadata?: (string|null);
+    }
+
+    /** Represents a TelemetryDef. */
+    class TelemetryDef implements ITelemetryDef {
+
+        /**
+         * Constructs a new TelemetryDef.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.ITelemetryDef);
+
+        /** Raw ID used for identifying incoming serialized telemetry */
+        public id: number;
+
+        /** Telemetry name */
+        public name: string;
+
+        /** Component or module that owns this telemetry */
+        public component: string;
+
+        /** Serialization type */
+        public type?: (hermes.IType|null);
+
+        /** TelemetryDef metadata. */
+        public metadata: string;
+
+        /**
+         * Creates a new TelemetryDef instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns TelemetryDef instance
+         */
+        public static create(properties?: hermes.ITelemetryDef): hermes.TelemetryDef;
+
+        /**
+         * Encodes the specified TelemetryDef message. Does not implicitly {@link hermes.TelemetryDef.verify|verify} messages.
+         * @param message TelemetryDef message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.ITelemetryDef, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified TelemetryDef message, length delimited. Does not implicitly {@link hermes.TelemetryDef.verify|verify} messages.
+         * @param message TelemetryDef message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.ITelemetryDef, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a TelemetryDef message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns TelemetryDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.TelemetryDef;
+
+        /**
+         * Decodes a TelemetryDef message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns TelemetryDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.TelemetryDef;
+
+        /**
+         * Verifies a TelemetryDef message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a TelemetryDef message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns TelemetryDef
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.TelemetryDef;
+
+        /**
+         * Creates a plain object from a TelemetryDef message. Also converts values to other types if specified.
+         * @param message TelemetryDef
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.TelemetryDef, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this TelemetryDef to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for TelemetryDef
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a DictionaryHead. */
+    interface IDictionaryHead {
+
+        /**
+         * Type associated with the Fsw.type
+         * This will filter the user's selection
+         * of dictionaries that can be tracked.
+         *
+         * This is set by the provider.
+         */
+        type?: (string|null);
+
+        /** DictionaryHead name */
+        name?: (string|null);
+
+        /** DictionaryHead version */
+        version?: (string|null);
+    }
+
+    /** Represents a DictionaryHead. */
+    class DictionaryHead implements IDictionaryHead {
+
+        /**
+         * Constructs a new DictionaryHead.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.IDictionaryHead);
+
+        /**
+         * Type associated with the Fsw.type
+         * This will filter the user's selection
+         * of dictionaries that can be tracked.
+         *
+         * This is set by the provider.
+         */
+        public type: string;
+
+        /** DictionaryHead name. */
+        public name: string;
+
+        /** DictionaryHead version. */
+        public version: string;
+
+        /**
+         * Creates a new DictionaryHead instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns DictionaryHead instance
+         */
+        public static create(properties?: hermes.IDictionaryHead): hermes.DictionaryHead;
+
+        /**
+         * Encodes the specified DictionaryHead message. Does not implicitly {@link hermes.DictionaryHead.verify|verify} messages.
+         * @param message DictionaryHead message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.IDictionaryHead, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified DictionaryHead message, length delimited. Does not implicitly {@link hermes.DictionaryHead.verify|verify} messages.
+         * @param message DictionaryHead message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.IDictionaryHead, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a DictionaryHead message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns DictionaryHead
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.DictionaryHead;
+
+        /**
+         * Decodes a DictionaryHead message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns DictionaryHead
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.DictionaryHead;
+
+        /**
+         * Verifies a DictionaryHead message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a DictionaryHead message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns DictionaryHead
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.DictionaryHead;
+
+        /**
+         * Creates a plain object from a DictionaryHead message. Also converts values to other types if specified.
+         * @param message DictionaryHead
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.DictionaryHead, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this DictionaryHead to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for DictionaryHead
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a DictionaryNamespace. */
+    interface IDictionaryNamespace {
+
+        /** DictionaryNamespace commands */
+        commands?: ({ [k: string]: hermes.ICommandDef }|null);
+
+        /** DictionaryNamespace events */
+        events?: ({ [k: string]: hermes.IEventDef }|null);
+
+        /** DictionaryNamespace telemetry */
+        telemetry?: ({ [k: string]: hermes.ITelemetryDef }|null);
+
+        /** DictionaryNamespace parameters */
+        parameters?: ({ [k: string]: hermes.IParameterDef }|null);
+
+        /** DictionaryNamespace types */
+        types?: ({ [k: string]: hermes.IType }|null);
+    }
+
+    /** Represents a DictionaryNamespace. */
+    class DictionaryNamespace implements IDictionaryNamespace {
+
+        /**
+         * Constructs a new DictionaryNamespace.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.IDictionaryNamespace);
+
+        /** DictionaryNamespace commands. */
+        public commands: { [k: string]: hermes.ICommandDef };
+
+        /** DictionaryNamespace events. */
+        public events: { [k: string]: hermes.IEventDef };
+
+        /** DictionaryNamespace telemetry. */
+        public telemetry: { [k: string]: hermes.ITelemetryDef };
+
+        /** DictionaryNamespace parameters. */
+        public parameters: { [k: string]: hermes.IParameterDef };
+
+        /** DictionaryNamespace types. */
+        public types: { [k: string]: hermes.IType };
+
+        /**
+         * Creates a new DictionaryNamespace instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns DictionaryNamespace instance
+         */
+        public static create(properties?: hermes.IDictionaryNamespace): hermes.DictionaryNamespace;
+
+        /**
+         * Encodes the specified DictionaryNamespace message. Does not implicitly {@link hermes.DictionaryNamespace.verify|verify} messages.
+         * @param message DictionaryNamespace message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.IDictionaryNamespace, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified DictionaryNamespace message, length delimited. Does not implicitly {@link hermes.DictionaryNamespace.verify|verify} messages.
+         * @param message DictionaryNamespace message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.IDictionaryNamespace, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a DictionaryNamespace message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns DictionaryNamespace
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.DictionaryNamespace;
+
+        /**
+         * Decodes a DictionaryNamespace message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns DictionaryNamespace
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.DictionaryNamespace;
+
+        /**
+         * Verifies a DictionaryNamespace message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a DictionaryNamespace message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns DictionaryNamespace
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.DictionaryNamespace;
+
+        /**
+         * Creates a plain object from a DictionaryNamespace message. Also converts values to other types if specified.
+         * @param message DictionaryNamespace
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.DictionaryNamespace, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this DictionaryNamespace to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for DictionaryNamespace
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
+    /** Properties of a Dictionary. */
+    interface IDictionary {
+
+        /** Dictionary head */
+        head?: (hermes.IDictionaryHead|null);
+
+        /** Dictionary content */
+        content?: ({ [k: string]: hermes.IDictionaryNamespace }|null);
+
+        /** Dictionary metadata */
+        metadata?: ({ [k: string]: string }|null);
+
+        /** Dictionary id */
+        id?: (string|null);
+    }
+
+    /** Represents a Dictionary. */
+    class Dictionary implements IDictionary {
+
+        /**
+         * Constructs a new Dictionary.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: hermes.IDictionary);
+
+        /** Dictionary head. */
+        public head?: (hermes.IDictionaryHead|null);
+
+        /** Dictionary content. */
+        public content: { [k: string]: hermes.IDictionaryNamespace };
+
+        /** Dictionary metadata. */
+        public metadata: { [k: string]: string };
+
+        /** Dictionary id. */
+        public id: string;
+
+        /**
+         * Creates a new Dictionary instance using the specified properties.
+         * @param [properties] Properties to set
+         * @returns Dictionary instance
+         */
+        public static create(properties?: hermes.IDictionary): hermes.Dictionary;
+
+        /**
+         * Encodes the specified Dictionary message. Does not implicitly {@link hermes.Dictionary.verify|verify} messages.
+         * @param message Dictionary message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: hermes.IDictionary, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified Dictionary message, length delimited. Does not implicitly {@link hermes.Dictionary.verify|verify} messages.
+         * @param message Dictionary message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: hermes.IDictionary, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a Dictionary message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns Dictionary
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.Dictionary;
+
+        /**
+         * Decodes a Dictionary message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns Dictionary
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.Dictionary;
+
+        /**
+         * Verifies a Dictionary message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a Dictionary message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns Dictionary
+         */
+        public static fromObject(object: { [k: string]: any }): hermes.Dictionary;
+
+        /**
+         * Creates a plain object from a Dictionary message. Also converts values to other types if specified.
+         * @param message Dictionary
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: hermes.Dictionary, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this Dictionary to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for Dictionary
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
+    }
+
     /** IntKind enum. */
     enum IntKind {
         INT_U8 = 0,
@@ -1272,14 +2057,6 @@ export namespace hermes {
         UINT_U16 = 1,
         UINT_U32 = 2,
         UINT_U64 = 3
-    }
-
-    /** SIntKind enum. */
-    enum SIntKind {
-        SINT_I8 = 0,
-        SINT_I16 = 1,
-        SINT_I32 = 2,
-        SINT_I64 = 3
     }
 
     /** FloatKind enum. */
@@ -3503,4069 +4280,6 @@ export namespace hermes {
          */
         public static getTypeUrl(typeUrlPrefix?: string): string;
     }
-
-    /** Properties of a ParameterDef. */
-    interface IParameterDef {
-
-        /** ParameterDef id */
-        id?: (number|null);
-
-        /** Component or module that owns this parameter */
-        component?: (string|null);
-
-        /**
-         * Name of the parameter
-         * Scoped by its component
-         */
-        name?: (string|null);
-
-        /** ParameterDef type */
-        type?: (hermes.IType|null);
-
-        /** ParameterDef metadata */
-        metadata?: (string|null);
-    }
-
-    /** Represents a ParameterDef. */
-    class ParameterDef implements IParameterDef {
-
-        /**
-         * Constructs a new ParameterDef.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IParameterDef);
-
-        /** ParameterDef id. */
-        public id: number;
-
-        /** Component or module that owns this parameter */
-        public component: string;
-
-        /**
-         * Name of the parameter
-         * Scoped by its component
-         */
-        public name: string;
-
-        /** ParameterDef type. */
-        public type?: (hermes.IType|null);
-
-        /** ParameterDef metadata. */
-        public metadata: string;
-
-        /**
-         * Creates a new ParameterDef instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns ParameterDef instance
-         */
-        public static create(properties?: hermes.IParameterDef): hermes.ParameterDef;
-
-        /**
-         * Encodes the specified ParameterDef message. Does not implicitly {@link hermes.ParameterDef.verify|verify} messages.
-         * @param message ParameterDef message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IParameterDef, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified ParameterDef message, length delimited. Does not implicitly {@link hermes.ParameterDef.verify|verify} messages.
-         * @param message ParameterDef message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IParameterDef, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a ParameterDef message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns ParameterDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.ParameterDef;
-
-        /**
-         * Decodes a ParameterDef message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns ParameterDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.ParameterDef;
-
-        /**
-         * Verifies a ParameterDef message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a ParameterDef message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns ParameterDef
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.ParameterDef;
-
-        /**
-         * Creates a plain object from a ParameterDef message. Also converts values to other types if specified.
-         * @param message ParameterDef
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.ParameterDef, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this ParameterDef to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for ParameterDef
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a CommandDef. */
-    interface ICommandDef {
-
-        /** CommandDef opcode */
-        opcode?: (number|null);
-
-        /**
-         * Mnemonic command used to identify this command.
-         * FSW may or may not include the module name in the mnemonic and its
-         * up to the language parsing software to identify the proper command from mnemonic information.
-         *
-         * This may have varying meaning across missions
-         */
-        mnemonic?: (string|null);
-
-        /** Parent component or module owning this command */
-        component?: (string|null);
-
-        /** Command arguments */
-        "arguments"?: (hermes.IField[]|null);
-
-        /** CommandDef metadata */
-        metadata?: (string|null);
-    }
-
-    /** Represents a CommandDef. */
-    class CommandDef implements ICommandDef {
-
-        /**
-         * Constructs a new CommandDef.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.ICommandDef);
-
-        /** CommandDef opcode. */
-        public opcode: number;
-
-        /**
-         * Mnemonic command used to identify this command.
-         * FSW may or may not include the module name in the mnemonic and its
-         * up to the language parsing software to identify the proper command from mnemonic information.
-         *
-         * This may have varying meaning across missions
-         */
-        public mnemonic: string;
-
-        /** Parent component or module owning this command */
-        public component: string;
-
-        /** Command arguments */
-        public arguments: hermes.IField[];
-
-        /** CommandDef metadata. */
-        public metadata: string;
-
-        /**
-         * Creates a new CommandDef instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns CommandDef instance
-         */
-        public static create(properties?: hermes.ICommandDef): hermes.CommandDef;
-
-        /**
-         * Encodes the specified CommandDef message. Does not implicitly {@link hermes.CommandDef.verify|verify} messages.
-         * @param message CommandDef message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.ICommandDef, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified CommandDef message, length delimited. Does not implicitly {@link hermes.CommandDef.verify|verify} messages.
-         * @param message CommandDef message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.ICommandDef, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a CommandDef message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns CommandDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.CommandDef;
-
-        /**
-         * Decodes a CommandDef message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns CommandDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.CommandDef;
-
-        /**
-         * Verifies a CommandDef message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a CommandDef message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns CommandDef
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.CommandDef;
-
-        /**
-         * Creates a plain object from a CommandDef message. Also converts values to other types if specified.
-         * @param message CommandDef
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.CommandDef, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this CommandDef to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for CommandDef
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** EvrSeverity enum. */
-    enum EvrSeverity {
-        EVR_DIAGNOSTIC = 0,
-        EVR_ACTIVITY_LOW = 1,
-        EVR_ACTIVITY_HIGH = 2,
-        EVR_WARNING_LOW = 3,
-        EVR_WARNING_HIGH = 4,
-        EVR_COMMAND = 5,
-        EVR_FATAL = 6
-    }
-
-    /** FormatSpecifierType enum. */
-    enum FormatSpecifierType {
-        FMT_DEFAULT = 0,
-        FMT_CHAR = 1,
-        FMT_DECIMAL = 2,
-        FMT_HEX_LOWER = 3,
-        FMT_HEX_UPPER = 4,
-        FMT_OCTAL = 5,
-        FMT_EXP_LOWER = 6,
-        FMT_EXP_UPPER = 7,
-        FMT_FIXED_LOWER = 8,
-        FMT_FIXED_UPPER = 9,
-        FMT_GENERAL_LOWER = 10,
-        FMT_GENERAL_UPPER = 11
-    }
-
-    /** Properties of a FormatSpecifier. */
-    interface IFormatSpecifier {
-
-        /** FormatSpecifier type */
-        type?: (hermes.FormatSpecifierType|null);
-
-        /** FormatSpecifier precision */
-        precision?: (number|null);
-
-        /** FormatSpecifier argumentIndex */
-        argumentIndex?: (number|null);
-    }
-
-    /** Represents a FormatSpecifier. */
-    class FormatSpecifier implements IFormatSpecifier {
-
-        /**
-         * Constructs a new FormatSpecifier.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IFormatSpecifier);
-
-        /** FormatSpecifier type. */
-        public type: hermes.FormatSpecifierType;
-
-        /** FormatSpecifier precision. */
-        public precision?: (number|null);
-
-        /** FormatSpecifier argumentIndex. */
-        public argumentIndex: number;
-
-        /** FormatSpecifier _precision. */
-        public _precision?: "precision";
-
-        /**
-         * Creates a new FormatSpecifier instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns FormatSpecifier instance
-         */
-        public static create(properties?: hermes.IFormatSpecifier): hermes.FormatSpecifier;
-
-        /**
-         * Encodes the specified FormatSpecifier message. Does not implicitly {@link hermes.FormatSpecifier.verify|verify} messages.
-         * @param message FormatSpecifier message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IFormatSpecifier, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified FormatSpecifier message, length delimited. Does not implicitly {@link hermes.FormatSpecifier.verify|verify} messages.
-         * @param message FormatSpecifier message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IFormatSpecifier, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a FormatSpecifier message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns FormatSpecifier
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.FormatSpecifier;
-
-        /**
-         * Decodes a FormatSpecifier message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns FormatSpecifier
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.FormatSpecifier;
-
-        /**
-         * Verifies a FormatSpecifier message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a FormatSpecifier message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns FormatSpecifier
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.FormatSpecifier;
-
-        /**
-         * Creates a plain object from a FormatSpecifier message. Also converts values to other types if specified.
-         * @param message FormatSpecifier
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.FormatSpecifier, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this FormatSpecifier to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for FormatSpecifier
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a FormatFragment. */
-    interface IFormatFragment {
-
-        /** FormatFragment text */
-        text?: (string|null);
-
-        /** FormatFragment specifier */
-        specifier?: (hermes.IFormatSpecifier|null);
-    }
-
-    /** Represents a FormatFragment. */
-    class FormatFragment implements IFormatFragment {
-
-        /**
-         * Constructs a new FormatFragment.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IFormatFragment);
-
-        /** FormatFragment text. */
-        public text?: (string|null);
-
-        /** FormatFragment specifier. */
-        public specifier?: (hermes.IFormatSpecifier|null);
-
-        /** FormatFragment fragment. */
-        public fragment?: ("text"|"specifier");
-
-        /**
-         * Creates a new FormatFragment instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns FormatFragment instance
-         */
-        public static create(properties?: hermes.IFormatFragment): hermes.FormatFragment;
-
-        /**
-         * Encodes the specified FormatFragment message. Does not implicitly {@link hermes.FormatFragment.verify|verify} messages.
-         * @param message FormatFragment message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IFormatFragment, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified FormatFragment message, length delimited. Does not implicitly {@link hermes.FormatFragment.verify|verify} messages.
-         * @param message FormatFragment message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IFormatFragment, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a FormatFragment message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns FormatFragment
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.FormatFragment;
-
-        /**
-         * Decodes a FormatFragment message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns FormatFragment
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.FormatFragment;
-
-        /**
-         * Verifies a FormatFragment message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a FormatFragment message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns FormatFragment
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.FormatFragment;
-
-        /**
-         * Creates a plain object from a FormatFragment message. Also converts values to other types if specified.
-         * @param message FormatFragment
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.FormatFragment, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this FormatFragment to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for FormatFragment
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a FormatString. */
-    interface IFormatString {
-
-        /** FormatString fragments */
-        fragments?: (hermes.IFormatFragment[]|null);
-
-        /** FormatString original */
-        original?: (string|null);
-    }
-
-    /** Represents a FormatString. */
-    class FormatString implements IFormatString {
-
-        /**
-         * Constructs a new FormatString.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IFormatString);
-
-        /** FormatString fragments. */
-        public fragments: hermes.IFormatFragment[];
-
-        /** FormatString original. */
-        public original: string;
-
-        /**
-         * Creates a new FormatString instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns FormatString instance
-         */
-        public static create(properties?: hermes.IFormatString): hermes.FormatString;
-
-        /**
-         * Encodes the specified FormatString message. Does not implicitly {@link hermes.FormatString.verify|verify} messages.
-         * @param message FormatString message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IFormatString, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified FormatString message, length delimited. Does not implicitly {@link hermes.FormatString.verify|verify} messages.
-         * @param message FormatString message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IFormatString, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a FormatString message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns FormatString
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.FormatString;
-
-        /**
-         * Decodes a FormatString message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns FormatString
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.FormatString;
-
-        /**
-         * Verifies a FormatString message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a FormatString message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns FormatString
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.FormatString;
-
-        /**
-         * Creates a plain object from a FormatString message. Also converts values to other types if specified.
-         * @param message FormatString
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.FormatString, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this FormatString to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for FormatString
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of an EventDef. */
-    interface IEventDef {
-
-        /** EventDef id */
-        id?: (number|null);
-
-        /** Component or module */
-        component?: (string|null);
-
-        /**
-         * Name of the EVR.
-         * Scoped by its component
-         */
-        name?: (string|null);
-
-        /**
-         * Log severity usually stored in the FSW event dictionary
-         * For the most part this information is not held in the
-         * EVR packet since its redundant for ground software.
-         */
-        severity?: (hermes.EvrSeverity|null);
-
-        /**
-         * DEPRECATED: Use format instead
-         * printf format string that will be formatted via sprintf
-         */
-        formatString?: (string|null);
-
-        /** Arguments used inside the format string */
-        "arguments"?: (hermes.IField[]|null);
-
-        /** EventDef metadata */
-        metadata?: (string|null);
-
-        /** Structured format string with parsed fragments */
-        format?: (hermes.IFormatString|null);
-    }
-
-    /** Represents an EventDef. */
-    class EventDef implements IEventDef {
-
-        /**
-         * Constructs a new EventDef.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IEventDef);
-
-        /** EventDef id. */
-        public id: number;
-
-        /** Component or module */
-        public component: string;
-
-        /**
-         * Name of the EVR.
-         * Scoped by its component
-         */
-        public name: string;
-
-        /**
-         * Log severity usually stored in the FSW event dictionary
-         * For the most part this information is not held in the
-         * EVR packet since its redundant for ground software.
-         */
-        public severity: hermes.EvrSeverity;
-
-        /**
-         * DEPRECATED: Use format instead
-         * printf format string that will be formatted via sprintf
-         */
-        public formatString: string;
-
-        /** Arguments used inside the format string */
-        public arguments: hermes.IField[];
-
-        /** EventDef metadata. */
-        public metadata: string;
-
-        /** Structured format string with parsed fragments */
-        public format?: (hermes.IFormatString|null);
-
-        /**
-         * Creates a new EventDef instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns EventDef instance
-         */
-        public static create(properties?: hermes.IEventDef): hermes.EventDef;
-
-        /**
-         * Encodes the specified EventDef message. Does not implicitly {@link hermes.EventDef.verify|verify} messages.
-         * @param message EventDef message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IEventDef, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified EventDef message, length delimited. Does not implicitly {@link hermes.EventDef.verify|verify} messages.
-         * @param message EventDef message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IEventDef, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an EventDef message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns EventDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.EventDef;
-
-        /**
-         * Decodes an EventDef message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns EventDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.EventDef;
-
-        /**
-         * Verifies an EventDef message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an EventDef message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns EventDef
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.EventDef;
-
-        /**
-         * Creates a plain object from an EventDef message. Also converts values to other types if specified.
-         * @param message EventDef
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.EventDef, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this EventDef to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for EventDef
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of an EventRef. */
-    interface IEventRef {
-
-        /** EventRef name */
-        name?: (string|null);
-
-        /** EventRef component */
-        component?: (string|null);
-
-        /** EventRef severity */
-        severity?: (hermes.EvrSeverity|null);
-
-        /** EventRef arguments */
-        "arguments"?: (string[]|null);
-
-        /** EventRef dictionary */
-        dictionary?: (string|null);
-    }
-
-    /** Represents an EventRef. */
-    class EventRef implements IEventRef {
-
-        /**
-         * Constructs a new EventRef.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IEventRef);
-
-        /** EventRef name. */
-        public name: string;
-
-        /** EventRef component. */
-        public component: string;
-
-        /** EventRef severity. */
-        public severity: hermes.EvrSeverity;
-
-        /** EventRef arguments. */
-        public arguments: string[];
-
-        /** EventRef dictionary. */
-        public dictionary: string;
-
-        /**
-         * Creates a new EventRef instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns EventRef instance
-         */
-        public static create(properties?: hermes.IEventRef): hermes.EventRef;
-
-        /**
-         * Encodes the specified EventRef message. Does not implicitly {@link hermes.EventRef.verify|verify} messages.
-         * @param message EventRef message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IEventRef, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified EventRef message, length delimited. Does not implicitly {@link hermes.EventRef.verify|verify} messages.
-         * @param message EventRef message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IEventRef, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an EventRef message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns EventRef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.EventRef;
-
-        /**
-         * Decodes an EventRef message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns EventRef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.EventRef;
-
-        /**
-         * Verifies an EventRef message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an EventRef message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns EventRef
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.EventRef;
-
-        /**
-         * Creates a plain object from an EventRef message. Also converts values to other types if specified.
-         * @param message EventRef
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.EventRef, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this EventRef to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for EventRef
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a TelemetryDef. */
-    interface ITelemetryDef {
-
-        /** Raw ID used for identifying incoming serialized telemetry */
-        id?: (number|null);
-
-        /** Telemetry name */
-        name?: (string|null);
-
-        /** Component or module that owns this telemetry */
-        component?: (string|null);
-
-        /** Serialization type */
-        type?: (hermes.IType|null);
-
-        /** TelemetryDef metadata */
-        metadata?: (string|null);
-    }
-
-    /** Represents a TelemetryDef. */
-    class TelemetryDef implements ITelemetryDef {
-
-        /**
-         * Constructs a new TelemetryDef.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.ITelemetryDef);
-
-        /** Raw ID used for identifying incoming serialized telemetry */
-        public id: number;
-
-        /** Telemetry name */
-        public name: string;
-
-        /** Component or module that owns this telemetry */
-        public component: string;
-
-        /** Serialization type */
-        public type?: (hermes.IType|null);
-
-        /** TelemetryDef metadata. */
-        public metadata: string;
-
-        /**
-         * Creates a new TelemetryDef instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns TelemetryDef instance
-         */
-        public static create(properties?: hermes.ITelemetryDef): hermes.TelemetryDef;
-
-        /**
-         * Encodes the specified TelemetryDef message. Does not implicitly {@link hermes.TelemetryDef.verify|verify} messages.
-         * @param message TelemetryDef message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.ITelemetryDef, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified TelemetryDef message, length delimited. Does not implicitly {@link hermes.TelemetryDef.verify|verify} messages.
-         * @param message TelemetryDef message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.ITelemetryDef, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a TelemetryDef message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns TelemetryDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.TelemetryDef;
-
-        /**
-         * Decodes a TelemetryDef message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns TelemetryDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.TelemetryDef;
-
-        /**
-         * Verifies a TelemetryDef message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a TelemetryDef message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns TelemetryDef
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.TelemetryDef;
-
-        /**
-         * Creates a plain object from a TelemetryDef message. Also converts values to other types if specified.
-         * @param message TelemetryDef
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.TelemetryDef, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this TelemetryDef to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for TelemetryDef
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a TelemetryRef. */
-    interface ITelemetryRef {
-
-        /** TelemetryRef name */
-        name?: (string|null);
-
-        /** TelemetryRef component */
-        component?: (string|null);
-
-        /** TelemetryRef dictionary */
-        dictionary?: (string|null);
-    }
-
-    /** Represents a TelemetryRef. */
-    class TelemetryRef implements ITelemetryRef {
-
-        /**
-         * Constructs a new TelemetryRef.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.ITelemetryRef);
-
-        /** TelemetryRef name. */
-        public name: string;
-
-        /** TelemetryRef component. */
-        public component: string;
-
-        /** TelemetryRef dictionary. */
-        public dictionary: string;
-
-        /**
-         * Creates a new TelemetryRef instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns TelemetryRef instance
-         */
-        public static create(properties?: hermes.ITelemetryRef): hermes.TelemetryRef;
-
-        /**
-         * Encodes the specified TelemetryRef message. Does not implicitly {@link hermes.TelemetryRef.verify|verify} messages.
-         * @param message TelemetryRef message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.ITelemetryRef, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified TelemetryRef message, length delimited. Does not implicitly {@link hermes.TelemetryRef.verify|verify} messages.
-         * @param message TelemetryRef message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.ITelemetryRef, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a TelemetryRef message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns TelemetryRef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.TelemetryRef;
-
-        /**
-         * Decodes a TelemetryRef message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns TelemetryRef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.TelemetryRef;
-
-        /**
-         * Verifies a TelemetryRef message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a TelemetryRef message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns TelemetryRef
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.TelemetryRef;
-
-        /**
-         * Creates a plain object from a TelemetryRef message. Also converts values to other types if specified.
-         * @param message TelemetryRef
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.TelemetryRef, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this TelemetryRef to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for TelemetryRef
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a DictionaryHead. */
-    interface IDictionaryHead {
-
-        /**
-         * Type associated with the Fsw.type
-         * This will filter the user's selection
-         * of dictionaries that can be tracked.
-         *
-         * This is set by the provider.
-         */
-        type?: (string|null);
-
-        /** DictionaryHead name */
-        name?: (string|null);
-
-        /** DictionaryHead version */
-        version?: (string|null);
-    }
-
-    /** Represents a DictionaryHead. */
-    class DictionaryHead implements IDictionaryHead {
-
-        /**
-         * Constructs a new DictionaryHead.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IDictionaryHead);
-
-        /**
-         * Type associated with the Fsw.type
-         * This will filter the user's selection
-         * of dictionaries that can be tracked.
-         *
-         * This is set by the provider.
-         */
-        public type: string;
-
-        /** DictionaryHead name. */
-        public name: string;
-
-        /** DictionaryHead version. */
-        public version: string;
-
-        /**
-         * Creates a new DictionaryHead instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns DictionaryHead instance
-         */
-        public static create(properties?: hermes.IDictionaryHead): hermes.DictionaryHead;
-
-        /**
-         * Encodes the specified DictionaryHead message. Does not implicitly {@link hermes.DictionaryHead.verify|verify} messages.
-         * @param message DictionaryHead message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IDictionaryHead, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified DictionaryHead message, length delimited. Does not implicitly {@link hermes.DictionaryHead.verify|verify} messages.
-         * @param message DictionaryHead message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IDictionaryHead, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a DictionaryHead message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns DictionaryHead
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.DictionaryHead;
-
-        /**
-         * Decodes a DictionaryHead message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns DictionaryHead
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.DictionaryHead;
-
-        /**
-         * Verifies a DictionaryHead message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a DictionaryHead message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns DictionaryHead
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.DictionaryHead;
-
-        /**
-         * Creates a plain object from a DictionaryHead message. Also converts values to other types if specified.
-         * @param message DictionaryHead
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.DictionaryHead, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this DictionaryHead to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for DictionaryHead
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a DictionaryNamespace. */
-    interface IDictionaryNamespace {
-
-        /** DictionaryNamespace commands */
-        commands?: ({ [k: string]: hermes.ICommandDef }|null);
-
-        /** DictionaryNamespace events */
-        events?: ({ [k: string]: hermes.IEventDef }|null);
-
-        /** DictionaryNamespace telemetry */
-        telemetry?: ({ [k: string]: hermes.ITelemetryDef }|null);
-
-        /** DictionaryNamespace parameters */
-        parameters?: ({ [k: string]: hermes.IParameterDef }|null);
-
-        /** DictionaryNamespace types */
-        types?: ({ [k: string]: hermes.IType }|null);
-    }
-
-    /** Represents a DictionaryNamespace. */
-    class DictionaryNamespace implements IDictionaryNamespace {
-
-        /**
-         * Constructs a new DictionaryNamespace.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IDictionaryNamespace);
-
-        /** DictionaryNamespace commands. */
-        public commands: { [k: string]: hermes.ICommandDef };
-
-        /** DictionaryNamespace events. */
-        public events: { [k: string]: hermes.IEventDef };
-
-        /** DictionaryNamespace telemetry. */
-        public telemetry: { [k: string]: hermes.ITelemetryDef };
-
-        /** DictionaryNamespace parameters. */
-        public parameters: { [k: string]: hermes.IParameterDef };
-
-        /** DictionaryNamespace types. */
-        public types: { [k: string]: hermes.IType };
-
-        /**
-         * Creates a new DictionaryNamespace instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns DictionaryNamespace instance
-         */
-        public static create(properties?: hermes.IDictionaryNamespace): hermes.DictionaryNamespace;
-
-        /**
-         * Encodes the specified DictionaryNamespace message. Does not implicitly {@link hermes.DictionaryNamespace.verify|verify} messages.
-         * @param message DictionaryNamespace message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IDictionaryNamespace, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified DictionaryNamespace message, length delimited. Does not implicitly {@link hermes.DictionaryNamespace.verify|verify} messages.
-         * @param message DictionaryNamespace message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IDictionaryNamespace, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a DictionaryNamespace message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns DictionaryNamespace
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.DictionaryNamespace;
-
-        /**
-         * Decodes a DictionaryNamespace message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns DictionaryNamespace
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.DictionaryNamespace;
-
-        /**
-         * Verifies a DictionaryNamespace message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a DictionaryNamespace message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns DictionaryNamespace
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.DictionaryNamespace;
-
-        /**
-         * Creates a plain object from a DictionaryNamespace message. Also converts values to other types if specified.
-         * @param message DictionaryNamespace
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.DictionaryNamespace, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this DictionaryNamespace to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for DictionaryNamespace
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a Dictionary. */
-    interface IDictionary {
-
-        /** Dictionary head */
-        head?: (hermes.IDictionaryHead|null);
-
-        /** Dictionary content */
-        content?: ({ [k: string]: hermes.IDictionaryNamespace }|null);
-
-        /** Dictionary metadata */
-        metadata?: ({ [k: string]: string }|null);
-
-        /** Dictionary id */
-        id?: (string|null);
-    }
-
-    /** Represents a Dictionary. */
-    class Dictionary implements IDictionary {
-
-        /**
-         * Constructs a new Dictionary.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IDictionary);
-
-        /** Dictionary head. */
-        public head?: (hermes.IDictionaryHead|null);
-
-        /** Dictionary content. */
-        public content: { [k: string]: hermes.IDictionaryNamespace };
-
-        /** Dictionary metadata. */
-        public metadata: { [k: string]: string };
-
-        /** Dictionary id. */
-        public id: string;
-
-        /**
-         * Creates a new Dictionary instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns Dictionary instance
-         */
-        public static create(properties?: hermes.IDictionary): hermes.Dictionary;
-
-        /**
-         * Encodes the specified Dictionary message. Does not implicitly {@link hermes.Dictionary.verify|verify} messages.
-         * @param message Dictionary message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IDictionary, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified Dictionary message, length delimited. Does not implicitly {@link hermes.Dictionary.verify|verify} messages.
-         * @param message Dictionary message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IDictionary, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a Dictionary message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns Dictionary
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.Dictionary;
-
-        /**
-         * Decodes a Dictionary message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns Dictionary
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.Dictionary;
-
-        /**
-         * Verifies a Dictionary message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a Dictionary message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns Dictionary
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.Dictionary;
-
-        /**
-         * Creates a plain object from a Dictionary message. Also converts values to other types if specified.
-         * @param message Dictionary
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.Dictionary, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this Dictionary to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for Dictionary
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a Time. */
-    interface ITime {
-
-        /** Time unix */
-        unix?: (google.protobuf.ITimestamp|null);
-
-        /** Time sclk */
-        sclk?: (number|null);
-    }
-
-    /** Represents a Time. */
-    class Time implements ITime {
-
-        /**
-         * Constructs a new Time.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.ITime);
-
-        /** Time unix. */
-        public unix?: (google.protobuf.ITimestamp|null);
-
-        /** Time sclk. */
-        public sclk: number;
-
-        /**
-         * Creates a new Time instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns Time instance
-         */
-        public static create(properties?: hermes.ITime): hermes.Time;
-
-        /**
-         * Encodes the specified Time message. Does not implicitly {@link hermes.Time.verify|verify} messages.
-         * @param message Time message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.ITime, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified Time message, length delimited. Does not implicitly {@link hermes.Time.verify|verify} messages.
-         * @param message Time message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.ITime, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a Time message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns Time
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.Time;
-
-        /**
-         * Decodes a Time message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns Time
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.Time;
-
-        /**
-         * Verifies a Time message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a Time message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns Time
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.Time;
-
-        /**
-         * Creates a plain object from a Time message. Also converts values to other types if specified.
-         * @param message Time
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.Time, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this Time to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for Time
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a FileHeader. */
-    interface IFileHeader {
-
-        /** FileHeader sourcePath */
-        sourcePath?: (string|null);
-
-        /** FileHeader destinationPath */
-        destinationPath?: (string|null);
-
-        /** FileHeader size */
-        size?: (number|Long|null);
-
-        /** FileHeader metadata */
-        metadata?: ({ [k: string]: string }|null);
-    }
-
-    /** Represents a FileHeader. */
-    class FileHeader implements IFileHeader {
-
-        /**
-         * Constructs a new FileHeader.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IFileHeader);
-
-        /** FileHeader sourcePath. */
-        public sourcePath: string;
-
-        /** FileHeader destinationPath. */
-        public destinationPath: string;
-
-        /** FileHeader size. */
-        public size: (number|Long);
-
-        /** FileHeader metadata. */
-        public metadata: { [k: string]: string };
-
-        /**
-         * Creates a new FileHeader instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns FileHeader instance
-         */
-        public static create(properties?: hermes.IFileHeader): hermes.FileHeader;
-
-        /**
-         * Encodes the specified FileHeader message. Does not implicitly {@link hermes.FileHeader.verify|verify} messages.
-         * @param message FileHeader message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IFileHeader, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified FileHeader message, length delimited. Does not implicitly {@link hermes.FileHeader.verify|verify} messages.
-         * @param message FileHeader message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IFileHeader, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a FileHeader message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns FileHeader
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.FileHeader;
-
-        /**
-         * Decodes a FileHeader message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns FileHeader
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.FileHeader;
-
-        /**
-         * Verifies a FileHeader message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a FileHeader message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns FileHeader
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.FileHeader;
-
-        /**
-         * Creates a plain object from a FileHeader message. Also converts values to other types if specified.
-         * @param message FileHeader
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.FileHeader, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this FileHeader to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for FileHeader
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of an UplinkFileChunk. */
-    interface IUplinkFileChunk {
-
-        /** UplinkFileChunk header */
-        header?: (hermes.IFileHeader|null);
-
-        /** UplinkFileChunk data */
-        data?: (Uint8Array|null);
-    }
-
-    /** Represents an UplinkFileChunk. */
-    class UplinkFileChunk implements IUplinkFileChunk {
-
-        /**
-         * Constructs a new UplinkFileChunk.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IUplinkFileChunk);
-
-        /** UplinkFileChunk header. */
-        public header?: (hermes.IFileHeader|null);
-
-        /** UplinkFileChunk data. */
-        public data?: (Uint8Array|null);
-
-        /** UplinkFileChunk value. */
-        public value?: ("header"|"data");
-
-        /**
-         * Creates a new UplinkFileChunk instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns UplinkFileChunk instance
-         */
-        public static create(properties?: hermes.IUplinkFileChunk): hermes.UplinkFileChunk;
-
-        /**
-         * Encodes the specified UplinkFileChunk message. Does not implicitly {@link hermes.UplinkFileChunk.verify|verify} messages.
-         * @param message UplinkFileChunk message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IUplinkFileChunk, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified UplinkFileChunk message, length delimited. Does not implicitly {@link hermes.UplinkFileChunk.verify|verify} messages.
-         * @param message UplinkFileChunk message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IUplinkFileChunk, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an UplinkFileChunk message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns UplinkFileChunk
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.UplinkFileChunk;
-
-        /**
-         * Decodes an UplinkFileChunk message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns UplinkFileChunk
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.UplinkFileChunk;
-
-        /**
-         * Verifies an UplinkFileChunk message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an UplinkFileChunk message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns UplinkFileChunk
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.UplinkFileChunk;
-
-        /**
-         * Creates a plain object from an UplinkFileChunk message. Also converts values to other types if specified.
-         * @param message UplinkFileChunk
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.UplinkFileChunk, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this UplinkFileChunk to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for UplinkFileChunk
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a DownlinkFileData. */
-    interface IDownlinkFileData {
-
-        /** DownlinkFileData offset */
-        offset?: (number|Long|null);
-
-        /** DownlinkFileData data */
-        data?: (Uint8Array|null);
-
-        /** DownlinkFileData md */
-        md?: ({ [k: string]: string }|null);
-    }
-
-    /** Represents a DownlinkFileData. */
-    class DownlinkFileData implements IDownlinkFileData {
-
-        /**
-         * Constructs a new DownlinkFileData.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IDownlinkFileData);
-
-        /** DownlinkFileData offset. */
-        public offset: (number|Long);
-
-        /** DownlinkFileData data. */
-        public data: Uint8Array;
-
-        /** DownlinkFileData md. */
-        public md: { [k: string]: string };
-
-        /**
-         * Creates a new DownlinkFileData instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns DownlinkFileData instance
-         */
-        public static create(properties?: hermes.IDownlinkFileData): hermes.DownlinkFileData;
-
-        /**
-         * Encodes the specified DownlinkFileData message. Does not implicitly {@link hermes.DownlinkFileData.verify|verify} messages.
-         * @param message DownlinkFileData message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IDownlinkFileData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified DownlinkFileData message, length delimited. Does not implicitly {@link hermes.DownlinkFileData.verify|verify} messages.
-         * @param message DownlinkFileData message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IDownlinkFileData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a DownlinkFileData message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns DownlinkFileData
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.DownlinkFileData;
-
-        /**
-         * Decodes a DownlinkFileData message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns DownlinkFileData
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.DownlinkFileData;
-
-        /**
-         * Verifies a DownlinkFileData message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a DownlinkFileData message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns DownlinkFileData
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.DownlinkFileData;
-
-        /**
-         * Creates a plain object from a DownlinkFileData message. Also converts values to other types if specified.
-         * @param message DownlinkFileData
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.DownlinkFileData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this DownlinkFileData to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for DownlinkFileData
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a DownlinkFileMetadata. */
-    interface IDownlinkFileMetadata {
-
-        /** DownlinkFileMetadata key */
-        key?: (string|null);
-
-        /** DownlinkFileMetadata data */
-        data?: (Uint8Array|null);
-    }
-
-    /** Represents a DownlinkFileMetadata. */
-    class DownlinkFileMetadata implements IDownlinkFileMetadata {
-
-        /**
-         * Constructs a new DownlinkFileMetadata.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IDownlinkFileMetadata);
-
-        /** DownlinkFileMetadata key. */
-        public key: string;
-
-        /** DownlinkFileMetadata data. */
-        public data: Uint8Array;
-
-        /**
-         * Creates a new DownlinkFileMetadata instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns DownlinkFileMetadata instance
-         */
-        public static create(properties?: hermes.IDownlinkFileMetadata): hermes.DownlinkFileMetadata;
-
-        /**
-         * Encodes the specified DownlinkFileMetadata message. Does not implicitly {@link hermes.DownlinkFileMetadata.verify|verify} messages.
-         * @param message DownlinkFileMetadata message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IDownlinkFileMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified DownlinkFileMetadata message, length delimited. Does not implicitly {@link hermes.DownlinkFileMetadata.verify|verify} messages.
-         * @param message DownlinkFileMetadata message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IDownlinkFileMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a DownlinkFileMetadata message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns DownlinkFileMetadata
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.DownlinkFileMetadata;
-
-        /**
-         * Decodes a DownlinkFileMetadata message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns DownlinkFileMetadata
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.DownlinkFileMetadata;
-
-        /**
-         * Verifies a DownlinkFileMetadata message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a DownlinkFileMetadata message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns DownlinkFileMetadata
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.DownlinkFileMetadata;
-
-        /**
-         * Creates a plain object from a DownlinkFileMetadata message. Also converts values to other types if specified.
-         * @param message DownlinkFileMetadata
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.DownlinkFileMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this DownlinkFileMetadata to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for DownlinkFileMetadata
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a DownlinkFileValidation. */
-    interface IDownlinkFileValidation {
-    }
-
-    /** Represents a DownlinkFileValidation. */
-    class DownlinkFileValidation implements IDownlinkFileValidation {
-
-        /**
-         * Constructs a new DownlinkFileValidation.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IDownlinkFileValidation);
-
-        /**
-         * Creates a new DownlinkFileValidation instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns DownlinkFileValidation instance
-         */
-        public static create(properties?: hermes.IDownlinkFileValidation): hermes.DownlinkFileValidation;
-
-        /**
-         * Encodes the specified DownlinkFileValidation message. Does not implicitly {@link hermes.DownlinkFileValidation.verify|verify} messages.
-         * @param message DownlinkFileValidation message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IDownlinkFileValidation, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified DownlinkFileValidation message, length delimited. Does not implicitly {@link hermes.DownlinkFileValidation.verify|verify} messages.
-         * @param message DownlinkFileValidation message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IDownlinkFileValidation, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a DownlinkFileValidation message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns DownlinkFileValidation
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.DownlinkFileValidation;
-
-        /**
-         * Decodes a DownlinkFileValidation message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns DownlinkFileValidation
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.DownlinkFileValidation;
-
-        /**
-         * Verifies a DownlinkFileValidation message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a DownlinkFileValidation message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns DownlinkFileValidation
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.DownlinkFileValidation;
-
-        /**
-         * Creates a plain object from a DownlinkFileValidation message. Also converts values to other types if specified.
-         * @param message DownlinkFileValidation
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.DownlinkFileValidation, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this DownlinkFileValidation to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for DownlinkFileValidation
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a DownlinkFileChunk. */
-    interface IDownlinkFileChunk {
-
-        /** DownlinkFileChunk header */
-        header?: (hermes.IFileHeader|null);
-
-        /** DownlinkFileChunk data */
-        data?: (hermes.IDownlinkFileData|null);
-
-        /** DownlinkFileChunk metadata */
-        metadata?: (hermes.IDownlinkFileMetadata|null);
-
-        /** DownlinkFileChunk validation */
-        validation?: (hermes.IDownlinkFileValidation|null);
-    }
-
-    /** Represents a DownlinkFileChunk. */
-    class DownlinkFileChunk implements IDownlinkFileChunk {
-
-        /**
-         * Constructs a new DownlinkFileChunk.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IDownlinkFileChunk);
-
-        /** DownlinkFileChunk header. */
-        public header?: (hermes.IFileHeader|null);
-
-        /** DownlinkFileChunk data. */
-        public data?: (hermes.IDownlinkFileData|null);
-
-        /** DownlinkFileChunk metadata. */
-        public metadata?: (hermes.IDownlinkFileMetadata|null);
-
-        /** DownlinkFileChunk validation. */
-        public validation?: (hermes.IDownlinkFileValidation|null);
-
-        /** DownlinkFileChunk value. */
-        public value?: ("header"|"data"|"metadata"|"validation");
-
-        /**
-         * Creates a new DownlinkFileChunk instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns DownlinkFileChunk instance
-         */
-        public static create(properties?: hermes.IDownlinkFileChunk): hermes.DownlinkFileChunk;
-
-        /**
-         * Encodes the specified DownlinkFileChunk message. Does not implicitly {@link hermes.DownlinkFileChunk.verify|verify} messages.
-         * @param message DownlinkFileChunk message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IDownlinkFileChunk, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified DownlinkFileChunk message, length delimited. Does not implicitly {@link hermes.DownlinkFileChunk.verify|verify} messages.
-         * @param message DownlinkFileChunk message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IDownlinkFileChunk, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a DownlinkFileChunk message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns DownlinkFileChunk
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.DownlinkFileChunk;
-
-        /**
-         * Decodes a DownlinkFileChunk message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns DownlinkFileChunk
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.DownlinkFileChunk;
-
-        /**
-         * Verifies a DownlinkFileChunk message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a DownlinkFileChunk message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns DownlinkFileChunk
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.DownlinkFileChunk;
-
-        /**
-         * Creates a plain object from a DownlinkFileChunk message. Also converts values to other types if specified.
-         * @param message DownlinkFileChunk
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.DownlinkFileChunk, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this DownlinkFileChunk to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for DownlinkFileChunk
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** FswCapability enum. */
-    enum FswCapability {
-        COMMAND = 0,
-        PARSE_COMMAND = 1,
-        SEQUENCE = 2,
-        PARSE_SEQUENCE = 3,
-        FILE = 4,
-        REQUEST = 5
-    }
-
-    /** Properties of a Fsw. */
-    interface IFsw {
-
-        /** Fsw id */
-        id?: (string|null);
-
-        /** Fsw type */
-        type?: (string|null);
-
-        /** Fsw forwards */
-        forwards?: (string[]|null);
-
-        /** Fsw capabilities */
-        capabilities?: (hermes.FswCapability[]|null);
-
-        /** Fsw dictionary */
-        dictionary?: (string|null);
-    }
-
-    /** Represents a Fsw. */
-    class Fsw implements IFsw {
-
-        /**
-         * Constructs a new Fsw.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IFsw);
-
-        /** Fsw id. */
-        public id: string;
-
-        /** Fsw type. */
-        public type: string;
-
-        /** Fsw forwards. */
-        public forwards: string[];
-
-        /** Fsw capabilities. */
-        public capabilities: hermes.FswCapability[];
-
-        /** Fsw dictionary. */
-        public dictionary: string;
-
-        /**
-         * Creates a new Fsw instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns Fsw instance
-         */
-        public static create(properties?: hermes.IFsw): hermes.Fsw;
-
-        /**
-         * Encodes the specified Fsw message. Does not implicitly {@link hermes.Fsw.verify|verify} messages.
-         * @param message Fsw message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IFsw, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified Fsw message, length delimited. Does not implicitly {@link hermes.Fsw.verify|verify} messages.
-         * @param message Fsw message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IFsw, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a Fsw message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns Fsw
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.Fsw;
-
-        /**
-         * Decodes a Fsw message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns Fsw
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.Fsw;
-
-        /**
-         * Verifies a Fsw message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a Fsw message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns Fsw
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.Fsw;
-
-        /**
-         * Creates a plain object from a Fsw message. Also converts values to other types if specified.
-         * @param message Fsw
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.Fsw, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this Fsw to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for Fsw
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a CommandOptions. */
-    interface ICommandOptions {
-
-        /**
-         * Don't wait for the command to reply before resolving the command promise
-         * This promise will resolve once the command is sent to the FSW.
-         */
-        noWait?: (boolean|null);
-    }
-
-    /** Represents a CommandOptions. */
-    class CommandOptions implements ICommandOptions {
-
-        /**
-         * Constructs a new CommandOptions.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.ICommandOptions);
-
-        /**
-         * Don't wait for the command to reply before resolving the command promise
-         * This promise will resolve once the command is sent to the FSW.
-         */
-        public noWait: boolean;
-
-        /**
-         * Creates a new CommandOptions instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns CommandOptions instance
-         */
-        public static create(properties?: hermes.ICommandOptions): hermes.CommandOptions;
-
-        /**
-         * Encodes the specified CommandOptions message. Does not implicitly {@link hermes.CommandOptions.verify|verify} messages.
-         * @param message CommandOptions message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.ICommandOptions, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified CommandOptions message, length delimited. Does not implicitly {@link hermes.CommandOptions.verify|verify} messages.
-         * @param message CommandOptions message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.ICommandOptions, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a CommandOptions message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns CommandOptions
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.CommandOptions;
-
-        /**
-         * Decodes a CommandOptions message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns CommandOptions
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.CommandOptions;
-
-        /**
-         * Verifies a CommandOptions message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a CommandOptions message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns CommandOptions
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.CommandOptions;
-
-        /**
-         * Creates a plain object from a CommandOptions message. Also converts values to other types if specified.
-         * @param message CommandOptions
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.CommandOptions, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this CommandOptions to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for CommandOptions
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a CommandValue. */
-    interface ICommandValue {
-
-        /** CommandValue def */
-        def?: (hermes.ICommandDef|null);
-
-        /** CommandValue args */
-        args?: (hermes.IValue[]|null);
-
-        /** CommandValue options */
-        options?: (hermes.ICommandOptions|null);
-
-        /** CommandValue metadata */
-        metadata?: ({ [k: string]: string }|null);
-    }
-
-    /** Represents a CommandValue. */
-    class CommandValue implements ICommandValue {
-
-        /**
-         * Constructs a new CommandValue.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.ICommandValue);
-
-        /** CommandValue def. */
-        public def?: (hermes.ICommandDef|null);
-
-        /** CommandValue args. */
-        public args: hermes.IValue[];
-
-        /** CommandValue options. */
-        public options?: (hermes.ICommandOptions|null);
-
-        /** CommandValue metadata. */
-        public metadata: { [k: string]: string };
-
-        /**
-         * Creates a new CommandValue instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns CommandValue instance
-         */
-        public static create(properties?: hermes.ICommandValue): hermes.CommandValue;
-
-        /**
-         * Encodes the specified CommandValue message. Does not implicitly {@link hermes.CommandValue.verify|verify} messages.
-         * @param message CommandValue message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.ICommandValue, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified CommandValue message, length delimited. Does not implicitly {@link hermes.CommandValue.verify|verify} messages.
-         * @param message CommandValue message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.ICommandValue, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a CommandValue message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns CommandValue
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.CommandValue;
-
-        /**
-         * Decodes a CommandValue message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns CommandValue
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.CommandValue;
-
-        /**
-         * Verifies a CommandValue message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a CommandValue message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns CommandValue
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.CommandValue;
-
-        /**
-         * Creates a plain object from a CommandValue message. Also converts values to other types if specified.
-         * @param message CommandValue
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.CommandValue, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this CommandValue to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for CommandValue
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a RawCommandValue. */
-    interface IRawCommandValue {
-
-        /** RawCommandValue command */
-        command?: (string|null);
-
-        /** RawCommandValue options */
-        options?: (hermes.ICommandOptions|null);
-
-        /** RawCommandValue metadata */
-        metadata?: ({ [k: string]: string }|null);
-    }
-
-    /**
-     * RawCommandValue is meant for commanding FSWs from clients that do not parse
-     * the dictionary and command fully. This is useful for thin clients that will
-     * rely on the backend to perform type checks.
-     */
-    class RawCommandValue implements IRawCommandValue {
-
-        /**
-         * Constructs a new RawCommandValue.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IRawCommandValue);
-
-        /** RawCommandValue command. */
-        public command: string;
-
-        /** RawCommandValue options. */
-        public options?: (hermes.ICommandOptions|null);
-
-        /** RawCommandValue metadata. */
-        public metadata: { [k: string]: string };
-
-        /**
-         * Creates a new RawCommandValue instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns RawCommandValue instance
-         */
-        public static create(properties?: hermes.IRawCommandValue): hermes.RawCommandValue;
-
-        /**
-         * Encodes the specified RawCommandValue message. Does not implicitly {@link hermes.RawCommandValue.verify|verify} messages.
-         * @param message RawCommandValue message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IRawCommandValue, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified RawCommandValue message, length delimited. Does not implicitly {@link hermes.RawCommandValue.verify|verify} messages.
-         * @param message RawCommandValue message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IRawCommandValue, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a RawCommandValue message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns RawCommandValue
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.RawCommandValue;
-
-        /**
-         * Decodes a RawCommandValue message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns RawCommandValue
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.RawCommandValue;
-
-        /**
-         * Verifies a RawCommandValue message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a RawCommandValue message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns RawCommandValue
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.RawCommandValue;
-
-        /**
-         * Creates a plain object from a RawCommandValue message. Also converts values to other types if specified.
-         * @param message RawCommandValue
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.RawCommandValue, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this RawCommandValue to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for RawCommandValue
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a CommandSequence. */
-    interface ICommandSequence {
-
-        /** CommandSequence commands */
-        commands?: (hermes.ICommandValue[]|null);
-
-        /** CommandSequence languageName */
-        languageName?: (string|null);
-
-        /** CommandSequence metadata */
-        metadata?: ({ [k: string]: string }|null);
-    }
-
-    /** Represents a CommandSequence. */
-    class CommandSequence implements ICommandSequence {
-
-        /**
-         * Constructs a new CommandSequence.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.ICommandSequence);
-
-        /** CommandSequence commands. */
-        public commands: hermes.ICommandValue[];
-
-        /** CommandSequence languageName. */
-        public languageName: string;
-
-        /** CommandSequence metadata. */
-        public metadata: { [k: string]: string };
-
-        /**
-         * Creates a new CommandSequence instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns CommandSequence instance
-         */
-        public static create(properties?: hermes.ICommandSequence): hermes.CommandSequence;
-
-        /**
-         * Encodes the specified CommandSequence message. Does not implicitly {@link hermes.CommandSequence.verify|verify} messages.
-         * @param message CommandSequence message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.ICommandSequence, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified CommandSequence message, length delimited. Does not implicitly {@link hermes.CommandSequence.verify|verify} messages.
-         * @param message CommandSequence message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.ICommandSequence, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a CommandSequence message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns CommandSequence
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.CommandSequence;
-
-        /**
-         * Decodes a CommandSequence message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns CommandSequence
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.CommandSequence;
-
-        /**
-         * Verifies a CommandSequence message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a CommandSequence message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns CommandSequence
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.CommandSequence;
-
-        /**
-         * Creates a plain object from a CommandSequence message. Also converts values to other types if specified.
-         * @param message CommandSequence
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.CommandSequence, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this CommandSequence to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for CommandSequence
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a RawCommandSequence. */
-    interface IRawCommandSequence {
-
-        /** RawCommandSequence sequence */
-        sequence?: (string|null);
-
-        /** RawCommandSequence languageName */
-        languageName?: (string|null);
-
-        /** RawCommandSequence metadata */
-        metadata?: ({ [k: string]: string }|null);
-
-        /** RawCommandSequence lineCommentPrefix */
-        lineCommentPrefix?: (string|null);
-    }
-
-    /** Represents a RawCommandSequence. */
-    class RawCommandSequence implements IRawCommandSequence {
-
-        /**
-         * Constructs a new RawCommandSequence.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IRawCommandSequence);
-
-        /** RawCommandSequence sequence. */
-        public sequence: string;
-
-        /** RawCommandSequence languageName. */
-        public languageName: string;
-
-        /** RawCommandSequence metadata. */
-        public metadata: { [k: string]: string };
-
-        /** RawCommandSequence lineCommentPrefix. */
-        public lineCommentPrefix: string;
-
-        /**
-         * Creates a new RawCommandSequence instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns RawCommandSequence instance
-         */
-        public static create(properties?: hermes.IRawCommandSequence): hermes.RawCommandSequence;
-
-        /**
-         * Encodes the specified RawCommandSequence message. Does not implicitly {@link hermes.RawCommandSequence.verify|verify} messages.
-         * @param message RawCommandSequence message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IRawCommandSequence, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified RawCommandSequence message, length delimited. Does not implicitly {@link hermes.RawCommandSequence.verify|verify} messages.
-         * @param message RawCommandSequence message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IRawCommandSequence, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a RawCommandSequence message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns RawCommandSequence
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.RawCommandSequence;
-
-        /**
-         * Decodes a RawCommandSequence message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns RawCommandSequence
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.RawCommandSequence;
-
-        /**
-         * Verifies a RawCommandSequence message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a RawCommandSequence message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns RawCommandSequence
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.RawCommandSequence;
-
-        /**
-         * Creates a plain object from a RawCommandSequence message. Also converts values to other types if specified.
-         * @param message RawCommandSequence
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.RawCommandSequence, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this RawCommandSequence to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for RawCommandSequence
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a RequestValue. */
-    interface IRequestValue {
-
-        /** RequestValue kind */
-        kind?: (string|null);
-
-        /** RequestValue data */
-        data?: (Uint8Array|null);
-    }
-
-    /**
-     * FSW Requests are non-dictionary defined items. These are connection
-     * specific commands meant to be exposed by custom UI in the frontend.
-     */
-    class RequestValue implements IRequestValue {
-
-        /**
-         * Constructs a new RequestValue.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IRequestValue);
-
-        /** RequestValue kind. */
-        public kind: string;
-
-        /** RequestValue data. */
-        public data: Uint8Array;
-
-        /**
-         * Creates a new RequestValue instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns RequestValue instance
-         */
-        public static create(properties?: hermes.IRequestValue): hermes.RequestValue;
-
-        /**
-         * Encodes the specified RequestValue message. Does not implicitly {@link hermes.RequestValue.verify|verify} messages.
-         * @param message RequestValue message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IRequestValue, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified RequestValue message, length delimited. Does not implicitly {@link hermes.RequestValue.verify|verify} messages.
-         * @param message RequestValue message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IRequestValue, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a RequestValue message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns RequestValue
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.RequestValue;
-
-        /**
-         * Decodes a RequestValue message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns RequestValue
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.RequestValue;
-
-        /**
-         * Verifies a RequestValue message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a RequestValue message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns RequestValue
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.RequestValue;
-
-        /**
-         * Creates a plain object from a RequestValue message. Also converts values to other types if specified.
-         * @param message RequestValue
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.RequestValue, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this RequestValue to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for RequestValue
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a RequestReply. */
-    interface IRequestReply {
-
-        /** RequestReply data */
-        data?: (Uint8Array|null);
-    }
-
-    /** Represents a RequestReply. */
-    class RequestReply implements IRequestReply {
-
-        /**
-         * Constructs a new RequestReply.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IRequestReply);
-
-        /** RequestReply data. */
-        public data: Uint8Array;
-
-        /**
-         * Creates a new RequestReply instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns RequestReply instance
-         */
-        public static create(properties?: hermes.IRequestReply): hermes.RequestReply;
-
-        /**
-         * Encodes the specified RequestReply message. Does not implicitly {@link hermes.RequestReply.verify|verify} messages.
-         * @param message RequestReply message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IRequestReply, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified RequestReply message, length delimited. Does not implicitly {@link hermes.RequestReply.verify|verify} messages.
-         * @param message RequestReply message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IRequestReply, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a RequestReply message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns RequestReply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.RequestReply;
-
-        /**
-         * Decodes a RequestReply message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns RequestReply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.RequestReply;
-
-        /**
-         * Verifies a RequestReply message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a RequestReply message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns RequestReply
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.RequestReply;
-
-        /**
-         * Creates a plain object from a RequestReply message. Also converts values to other types if specified.
-         * @param message RequestReply
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.RequestReply, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this RequestReply to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for RequestReply
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of an Id. */
-    interface IId {
-
-        /** Id id */
-        id?: (string|null);
-    }
-
-    /** Represents an Id. */
-    class Id implements IId {
-
-        /**
-         * Constructs a new Id.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IId);
-
-        /** Id id. */
-        public id: string;
-
-        /**
-         * Creates a new Id instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns Id instance
-         */
-        public static create(properties?: hermes.IId): hermes.Id;
-
-        /**
-         * Encodes the specified Id message. Does not implicitly {@link hermes.Id.verify|verify} messages.
-         * @param message Id message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IId, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified Id message, length delimited. Does not implicitly {@link hermes.Id.verify|verify} messages.
-         * @param message Id message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IId, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an Id message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns Id
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.Id;
-
-        /**
-         * Decodes an Id message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns Id
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.Id;
-
-        /**
-         * Verifies an Id message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an Id message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns Id
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.Id;
-
-        /**
-         * Creates a plain object from an Id message. Also converts values to other types if specified.
-         * @param message Id
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.Id, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this Id to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for Id
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a FswList. */
-    interface IFswList {
-
-        /** FswList all */
-        all?: (hermes.IFsw[]|null);
-    }
-
-    /** Represents a FswList. */
-    class FswList implements IFswList {
-
-        /**
-         * Constructs a new FswList.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IFswList);
-
-        /** FswList all. */
-        public all: hermes.IFsw[];
-
-        /**
-         * Creates a new FswList instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns FswList instance
-         */
-        public static create(properties?: hermes.IFswList): hermes.FswList;
-
-        /**
-         * Encodes the specified FswList message. Does not implicitly {@link hermes.FswList.verify|verify} messages.
-         * @param message FswList message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IFswList, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified FswList message, length delimited. Does not implicitly {@link hermes.FswList.verify|verify} messages.
-         * @param message FswList message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IFswList, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a FswList message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns FswList
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.FswList;
-
-        /**
-         * Decodes a FswList message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns FswList
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.FswList;
-
-        /**
-         * Verifies a FswList message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a FswList message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns FswList
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.FswList;
-
-        /**
-         * Creates a plain object from a FswList message. Also converts values to other types if specified.
-         * @param message FswList
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.FswList, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this FswList to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for FswList
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a Reply. */
-    interface IReply {
-
-        /** Reply success */
-        success?: (boolean|null);
-    }
-
-    /** Represents a Reply. */
-    class Reply implements IReply {
-
-        /**
-         * Constructs a new Reply.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IReply);
-
-        /** Reply success. */
-        public success: boolean;
-
-        /**
-         * Creates a new Reply instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns Reply instance
-         */
-        public static create(properties?: hermes.IReply): hermes.Reply;
-
-        /**
-         * Encodes the specified Reply message. Does not implicitly {@link hermes.Reply.verify|verify} messages.
-         * @param message Reply message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IReply, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified Reply message, length delimited. Does not implicitly {@link hermes.Reply.verify|verify} messages.
-         * @param message Reply message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IReply, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a Reply message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns Reply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.Reply;
-
-        /**
-         * Decodes a Reply message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns Reply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.Reply;
-
-        /**
-         * Verifies a Reply message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a Reply message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns Reply
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.Reply;
-
-        /**
-         * Creates a plain object from a Reply message. Also converts values to other types if specified.
-         * @param message Reply
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.Reply, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this Reply to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for Reply
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a SequenceReply. */
-    interface ISequenceReply {
-
-        /** SequenceReply success */
-        success?: (boolean|null);
-
-        /** SequenceReply commandIndex */
-        commandIndex?: (number|null);
-    }
-
-    /** Represents a SequenceReply. */
-    class SequenceReply implements ISequenceReply {
-
-        /**
-         * Constructs a new SequenceReply.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.ISequenceReply);
-
-        /** SequenceReply success. */
-        public success: boolean;
-
-        /** SequenceReply commandIndex. */
-        public commandIndex: number;
-
-        /**
-         * Creates a new SequenceReply instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns SequenceReply instance
-         */
-        public static create(properties?: hermes.ISequenceReply): hermes.SequenceReply;
-
-        /**
-         * Encodes the specified SequenceReply message. Does not implicitly {@link hermes.SequenceReply.verify|verify} messages.
-         * @param message SequenceReply message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.ISequenceReply, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified SequenceReply message, length delimited. Does not implicitly {@link hermes.SequenceReply.verify|verify} messages.
-         * @param message SequenceReply message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.ISequenceReply, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a SequenceReply message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns SequenceReply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.SequenceReply;
-
-        /**
-         * Decodes a SequenceReply message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns SequenceReply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.SequenceReply;
-
-        /**
-         * Verifies a SequenceReply message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a SequenceReply message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns SequenceReply
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.SequenceReply;
-
-        /**
-         * Creates a plain object from a SequenceReply message. Also converts values to other types if specified.
-         * @param message SequenceReply
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.SequenceReply, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this SequenceReply to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for SequenceReply
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a DictionaryList. */
-    interface IDictionaryList {
-
-        /** DictionaryList all */
-        all?: ({ [k: string]: hermes.IDictionaryHead }|null);
-    }
-
-    /** Represents a DictionaryList. */
-    class DictionaryList implements IDictionaryList {
-
-        /**
-         * Constructs a new DictionaryList.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IDictionaryList);
-
-        /** DictionaryList all. */
-        public all: { [k: string]: hermes.IDictionaryHead };
-
-        /**
-         * Creates a new DictionaryList instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns DictionaryList instance
-         */
-        public static create(properties?: hermes.IDictionaryList): hermes.DictionaryList;
-
-        /**
-         * Encodes the specified DictionaryList message. Does not implicitly {@link hermes.DictionaryList.verify|verify} messages.
-         * @param message DictionaryList message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IDictionaryList, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified DictionaryList message, length delimited. Does not implicitly {@link hermes.DictionaryList.verify|verify} messages.
-         * @param message DictionaryList message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IDictionaryList, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a DictionaryList message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns DictionaryList
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.DictionaryList;
-
-        /**
-         * Decodes a DictionaryList message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns DictionaryList
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.DictionaryList;
-
-        /**
-         * Verifies a DictionaryList message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a DictionaryList message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns DictionaryList
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.DictionaryList;
-
-        /**
-         * Creates a plain object from a DictionaryList message. Also converts values to other types if specified.
-         * @param message DictionaryList
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.DictionaryList, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this DictionaryList to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for DictionaryList
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of an Uplink. */
-    interface IUplink {
-
-        /** Uplink id */
-        id?: (string|null);
-
-        /** Uplink cmd */
-        cmd?: (hermes.ICommandValue|null);
-
-        /** Uplink parseCmd */
-        parseCmd?: (hermes.IRawCommandValue|null);
-
-        /** Uplink seq */
-        seq?: (hermes.ICommandSequence|null);
-
-        /** Uplink parseSeq */
-        parseSeq?: (hermes.IRawCommandSequence|null);
-
-        /** Uplink file */
-        file?: (hermes.IUplinkFileChunk|null);
-
-        /** Uplink request */
-        request?: (hermes.IRequestValue|null);
-
-        /** Uplink cancel */
-        cancel?: (google.protobuf.IEmpty|null);
-
-        /** Uplink final */
-        final?: (google.protobuf.IEmpty|null);
-    }
-
-    /** Represents an Uplink. */
-    class Uplink implements IUplink {
-
-        /**
-         * Constructs a new Uplink.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IUplink);
-
-        /** Uplink id. */
-        public id: string;
-
-        /** Uplink cmd. */
-        public cmd?: (hermes.ICommandValue|null);
-
-        /** Uplink parseCmd. */
-        public parseCmd?: (hermes.IRawCommandValue|null);
-
-        /** Uplink seq. */
-        public seq?: (hermes.ICommandSequence|null);
-
-        /** Uplink parseSeq. */
-        public parseSeq?: (hermes.IRawCommandSequence|null);
-
-        /** Uplink file. */
-        public file?: (hermes.IUplinkFileChunk|null);
-
-        /** Uplink request. */
-        public request?: (hermes.IRequestValue|null);
-
-        /** Uplink cancel. */
-        public cancel?: (google.protobuf.IEmpty|null);
-
-        /** Uplink final. */
-        public final?: (google.protobuf.IEmpty|null);
-
-        /** Uplink value. */
-        public value?: ("cmd"|"parseCmd"|"seq"|"parseSeq"|"file"|"request"|"cancel"|"final");
-
-        /**
-         * Creates a new Uplink instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns Uplink instance
-         */
-        public static create(properties?: hermes.IUplink): hermes.Uplink;
-
-        /**
-         * Encodes the specified Uplink message. Does not implicitly {@link hermes.Uplink.verify|verify} messages.
-         * @param message Uplink message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IUplink, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified Uplink message, length delimited. Does not implicitly {@link hermes.Uplink.verify|verify} messages.
-         * @param message Uplink message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IUplink, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an Uplink message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns Uplink
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.Uplink;
-
-        /**
-         * Decodes an Uplink message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns Uplink
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.Uplink;
-
-        /**
-         * Verifies an Uplink message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an Uplink message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns Uplink
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.Uplink;
-
-        /**
-         * Creates a plain object from an Uplink message. Also converts values to other types if specified.
-         * @param message Uplink
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.Uplink, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this Uplink to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for Uplink
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of an UplinkReply. */
-    interface IUplinkReply {
-
-        /** UplinkReply id */
-        id?: (string|null);
-
-        /** UplinkReply reply */
-        reply?: (Uint8Array|null);
-
-        /** UplinkReply error */
-        error?: (string|null);
-    }
-
-    /** Represents an UplinkReply. */
-    class UplinkReply implements IUplinkReply {
-
-        /**
-         * Constructs a new UplinkReply.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IUplinkReply);
-
-        /** UplinkReply id. */
-        public id: string;
-
-        /** UplinkReply reply. */
-        public reply?: (Uint8Array|null);
-
-        /** UplinkReply error. */
-        public error?: (string|null);
-
-        /** UplinkReply status. */
-        public status?: ("reply"|"error");
-
-        /**
-         * Creates a new UplinkReply instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns UplinkReply instance
-         */
-        public static create(properties?: hermes.IUplinkReply): hermes.UplinkReply;
-
-        /**
-         * Encodes the specified UplinkReply message. Does not implicitly {@link hermes.UplinkReply.verify|verify} messages.
-         * @param message UplinkReply message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IUplinkReply, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified UplinkReply message, length delimited. Does not implicitly {@link hermes.UplinkReply.verify|verify} messages.
-         * @param message UplinkReply message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IUplinkReply, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an UplinkReply message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns UplinkReply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.UplinkReply;
-
-        /**
-         * Decodes an UplinkReply message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns UplinkReply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.UplinkReply;
-
-        /**
-         * Verifies an UplinkReply message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an UplinkReply message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns UplinkReply
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.UplinkReply;
-
-        /**
-         * Creates a plain object from an UplinkReply message. Also converts values to other types if specified.
-         * @param message UplinkReply
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.UplinkReply, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this UplinkReply to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for UplinkReply
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a FswInitialPacket. */
-    interface IFswInitialPacket {
-
-        /** FswInitialPacket info */
-        info?: (hermes.IFsw|null);
-    }
-
-    /** Represents a FswInitialPacket. */
-    class FswInitialPacket implements IFswInitialPacket {
-
-        /**
-         * Constructs a new FswInitialPacket.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IFswInitialPacket);
-
-        /** FswInitialPacket info. */
-        public info?: (hermes.IFsw|null);
-
-        /**
-         * Creates a new FswInitialPacket instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns FswInitialPacket instance
-         */
-        public static create(properties?: hermes.IFswInitialPacket): hermes.FswInitialPacket;
-
-        /**
-         * Encodes the specified FswInitialPacket message. Does not implicitly {@link hermes.FswInitialPacket.verify|verify} messages.
-         * @param message FswInitialPacket message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IFswInitialPacket, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified FswInitialPacket message, length delimited. Does not implicitly {@link hermes.FswInitialPacket.verify|verify} messages.
-         * @param message FswInitialPacket message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IFswInitialPacket, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a FswInitialPacket message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns FswInitialPacket
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.FswInitialPacket;
-
-        /**
-         * Decodes a FswInitialPacket message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns FswInitialPacket
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.FswInitialPacket;
-
-        /**
-         * Verifies a FswInitialPacket message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a FswInitialPacket message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns FswInitialPacket
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.FswInitialPacket;
-
-        /**
-         * Creates a plain object from a FswInitialPacket message. Also converts values to other types if specified.
-         * @param message FswInitialPacket
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.FswInitialPacket, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this FswInitialPacket to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for FswInitialPacket
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
-
-    /** Properties of a FswConnectionPacket. */
-    interface IFswConnectionPacket {
-
-        /** FswConnectionPacket info */
-        info?: (hermes.IFswInitialPacket|null);
-
-        /** FswConnectionPacket reply */
-        reply?: (hermes.IUplinkReply|null);
-    }
-
-    /** Represents a FswConnectionPacket. */
-    class FswConnectionPacket implements IFswConnectionPacket {
-
-        /**
-         * Constructs a new FswConnectionPacket.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: hermes.IFswConnectionPacket);
-
-        /** FswConnectionPacket info. */
-        public info?: (hermes.IFswInitialPacket|null);
-
-        /** FswConnectionPacket reply. */
-        public reply?: (hermes.IUplinkReply|null);
-
-        /** FswConnectionPacket value. */
-        public value?: ("info"|"reply");
-
-        /**
-         * Creates a new FswConnectionPacket instance using the specified properties.
-         * @param [properties] Properties to set
-         * @returns FswConnectionPacket instance
-         */
-        public static create(properties?: hermes.IFswConnectionPacket): hermes.FswConnectionPacket;
-
-        /**
-         * Encodes the specified FswConnectionPacket message. Does not implicitly {@link hermes.FswConnectionPacket.verify|verify} messages.
-         * @param message FswConnectionPacket message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: hermes.IFswConnectionPacket, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified FswConnectionPacket message, length delimited. Does not implicitly {@link hermes.FswConnectionPacket.verify|verify} messages.
-         * @param message FswConnectionPacket message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: hermes.IFswConnectionPacket, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a FswConnectionPacket message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns FswConnectionPacket
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): hermes.FswConnectionPacket;
-
-        /**
-         * Decodes a FswConnectionPacket message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns FswConnectionPacket
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): hermes.FswConnectionPacket;
-
-        /**
-         * Verifies a FswConnectionPacket message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a FswConnectionPacket message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns FswConnectionPacket
-         */
-        public static fromObject(object: { [k: string]: any }): hermes.FswConnectionPacket;
-
-        /**
-         * Creates a plain object from a FswConnectionPacket message. Also converts values to other types if specified.
-         * @param message FswConnectionPacket
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: hermes.FswConnectionPacket, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this FswConnectionPacket to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-
-        /**
-         * Gets the default type url for FswConnectionPacket
-         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns The default type url
-         */
-        public static getTypeUrl(typeUrlPrefix?: string): string;
-    }
 }
 
 /** Namespace google. */
@@ -7671,97 +4385,6 @@ export namespace google {
 
             /**
              * Gets the default type url for Timestamp
-             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns The default type url
-             */
-            public static getTypeUrl(typeUrlPrefix?: string): string;
-        }
-
-        /** Properties of an Empty. */
-        interface IEmpty {
-        }
-
-        /** Represents an Empty. */
-        class Empty implements IEmpty {
-
-            /**
-             * Constructs a new Empty.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: google.protobuf.IEmpty);
-
-            /**
-             * Creates a new Empty instance using the specified properties.
-             * @param [properties] Properties to set
-             * @returns Empty instance
-             */
-            public static create(properties?: google.protobuf.IEmpty): google.protobuf.Empty;
-
-            /**
-             * Encodes the specified Empty message. Does not implicitly {@link google.protobuf.Empty.verify|verify} messages.
-             * @param message Empty message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: google.protobuf.IEmpty, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Encodes the specified Empty message, length delimited. Does not implicitly {@link google.protobuf.Empty.verify|verify} messages.
-             * @param message Empty message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encodeDelimited(message: google.protobuf.IEmpty, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes an Empty message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Empty
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.protobuf.Empty;
-
-            /**
-             * Decodes an Empty message from the specified reader or buffer, length delimited.
-             * @param reader Reader or buffer to decode from
-             * @returns Empty
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.protobuf.Empty;
-
-            /**
-             * Verifies an Empty message.
-             * @param message Plain object to verify
-             * @returns `null` if valid, otherwise the reason why it is not
-             */
-            public static verify(message: { [k: string]: any }): (string|null);
-
-            /**
-             * Creates an Empty message from a plain object. Also converts values to their respective internal types.
-             * @param object Plain object
-             * @returns Empty
-             */
-            public static fromObject(object: { [k: string]: any }): google.protobuf.Empty;
-
-            /**
-             * Creates a plain object from an Empty message. Also converts values to other types if specified.
-             * @param message Empty
-             * @param [options] Conversion options
-             * @returns Plain object
-             */
-            public static toObject(message: google.protobuf.Empty, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-            /**
-             * Converts this Empty to JSON.
-             * @returns JSON object
-             */
-            public toJSON(): { [k: string]: any };
-
-            /**
-             * Gets the default type url for Empty
              * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
              * @returns The default type url
              */

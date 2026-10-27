@@ -2,10 +2,7 @@ syntax = "proto3";
 option go_package = "github.com/nasa/hermes/pkg/pb";
 package hermes;
 
-import "type.proto";
 import "google/protobuf/timestamp.proto";
-import "dictionary.proto";
-import "time.proto";
 
 enum SourceContextFilter {
   /* Only subscribe to realtime data */
@@ -27,67 +24,6 @@ message BusFilter {
 
   /* Filter whether to get recorded vs realtime data streams */
   SourceContextFilter context = 3;
-}
-
-enum SourceContext {
-  /*
-   * Telemetry item was emitted and downlinked in realtime
-   * rather than recorded and downlinked later
-   */
-  REALTIME = 0;
-
-  /*
-   * Telemetry item was recorded on-board and downlinked.
-   * These are generally data products.
-   */
-  RECORDED = 1;
-}
-
-/* Event telemetry */
-message Event {
-  /* Dictionary entry definition of event */
-  EventRef ref = 1;
-
-  /* Timestamp of when the event is emitted by its source (FSW or otherwise) */
-  Time time = 2;
-
-  /* final formatted EVR message */
-  string message = 3;
-
-  /* (optional) parsed arguments before message is formatted */
-  repeated Value args = 4;
-
-  /* (optional) tags to attach to the EVR for additional context */
-  map<string, Value> tags = 5;
-}
-
-/* Channelized telemetry */
-message Telemetry {
-  /* Dictionary entry definition of telemetry */
-  TelemetryRef ref = 1;
-
-  /* Timestamp of when channel is emitted by its source (FSW or otherwise) */
-  Time time = 2;
-
-  /* Packed telemetry value */
-  Value value = 3;
-
-  /* An optional set of tags to add cardinality to this telemetry */
-  map<string, string> labels = 4;
-
-  reserved 5;
-}
-
-message SourcedEvent {
-  Event         event   = 1;
-  string        source  = 2;
-  SourceContext context = 3;
-}
-
-message SourcedTelemetry {
-  Telemetry     telemetry = 1;
-  string        source    = 2;
-  SourceContext context   = 3;
 }
 
 enum FileDownlinkCompletionStatus {

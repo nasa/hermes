@@ -33,13 +33,6 @@ enum UIntKind {
   UINT_U64 = 3;
 }
 
-enum SIntKind {
-  SINT_I8 = 0;
-  SINT_I16 = 1;
-  SINT_I32 = 2;
-  SINT_I64 = 3;
-}
-
 enum FloatKind {
   F_F32 = 0;
   F_F64 = 1;

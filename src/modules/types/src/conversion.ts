@@ -475,17 +475,6 @@ export function eventFromProto(
     };
 }
 
-export function eventRefFromProto(
-    proto: Proto.IEventRef,
-): Def.EventRef {
-    return {
-        component: proto.component ?? "",
-        name: proto.name ?? "",
-        severity: evrSeverityFromProto(proto.severity ?? Proto.EvrSeverity.EVR_DIAGNOSTIC),
-        arguments: proto.arguments ?? [],
-    };
-}
-
 export function parameterFromProto(
     proto: Proto.IParameterDef,
     ctx: ConversionContext
@@ -509,15 +498,6 @@ export function telemetryFromProto(
         name: ctx.value(proto, 'name'),
         type: typeFromProto(ctx.value(proto, 'type'), ctx.with("type")),
         metadata: optional(proto.metadata, JSON.parse),
-    };
-}
-
-export function telemetryRefFromProto(
-    proto: Proto.ITelemetryRef,
-): Def.TelemetryRef {
-    return {
-        component: proto.component ?? "",
-        name: proto.name ?? "",
     };
 }
 

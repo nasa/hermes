@@ -350,1374 +350,6 @@ $root.hermes = (function() {
     })();
 
     /**
-     * SourceContext enum.
-     * @name hermes.SourceContext
-     * @enum {number}
-     * @property {number} REALTIME=0 REALTIME value
-     * @property {number} RECORDED=1 RECORDED value
-     */
-    hermes.SourceContext = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
-        values[valuesById[0] = "REALTIME"] = 0;
-        values[valuesById[1] = "RECORDED"] = 1;
-        return values;
-    })();
-
-    hermes.Event = (function() {
-
-        /**
-         * Properties of an Event.
-         * @memberof hermes
-         * @interface IEvent
-         * @property {hermes.IEventRef|null} [ref] Event ref
-         * @property {hermes.ITime|null} [time] Event time
-         * @property {string|null} [message] Event message
-         * @property {Array.<hermes.IValue>|null} [args] Event args
-         * @property {Object.<string,hermes.IValue>|null} [tags] Event tags
-         */
-
-        /**
-         * Constructs a new Event.
-         * @memberof hermes
-         * @classdesc Represents an Event.
-         * @implements IEvent
-         * @constructor
-         * @param {hermes.IEvent=} [properties] Properties to set
-         */
-        function Event(properties) {
-            this.args = [];
-            this.tags = {};
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Event ref.
-         * @member {hermes.IEventRef|null|undefined} ref
-         * @memberof hermes.Event
-         * @instance
-         */
-        Event.prototype.ref = null;
-
-        /**
-         * Event time.
-         * @member {hermes.ITime|null|undefined} time
-         * @memberof hermes.Event
-         * @instance
-         */
-        Event.prototype.time = null;
-
-        /**
-         * Event message.
-         * @member {string} message
-         * @memberof hermes.Event
-         * @instance
-         */
-        Event.prototype.message = "";
-
-        /**
-         * Event args.
-         * @member {Array.<hermes.IValue>} args
-         * @memberof hermes.Event
-         * @instance
-         */
-        Event.prototype.args = $util.emptyArray;
-
-        /**
-         * Event tags.
-         * @member {Object.<string,hermes.IValue>} tags
-         * @memberof hermes.Event
-         * @instance
-         */
-        Event.prototype.tags = $util.emptyObject;
-
-        /**
-         * Creates a new Event instance using the specified properties.
-         * @function create
-         * @memberof hermes.Event
-         * @static
-         * @param {hermes.IEvent=} [properties] Properties to set
-         * @returns {hermes.Event} Event instance
-         */
-        Event.create = function create(properties) {
-            return new Event(properties);
-        };
-
-        /**
-         * Encodes the specified Event message. Does not implicitly {@link hermes.Event.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.Event
-         * @static
-         * @param {hermes.IEvent} message Event message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Event.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.ref != null && Object.hasOwnProperty.call(message, "ref"))
-                $root.hermes.EventRef.encode(message.ref, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.time != null && Object.hasOwnProperty.call(message, "time"))
-                $root.hermes.Time.encode(message.time, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
-            if (message.message != null && Object.hasOwnProperty.call(message, "message"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.message);
-            if (message.args != null && message.args.length)
-                for (var i = 0; i < message.args.length; ++i)
-                    $root.hermes.Value.encode(message.args[i], writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
-            if (message.tags != null && Object.hasOwnProperty.call(message, "tags"))
-                for (var keys = Object.keys(message.tags), i = 0; i < keys.length; ++i) {
-                    writer.uint32(/* id 5, wireType 2 =*/42).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.Value.encode(message.tags[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
-                }
-            return writer;
-        };
-
-        /**
-         * Encodes the specified Event message, length delimited. Does not implicitly {@link hermes.Event.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.Event
-         * @static
-         * @param {hermes.IEvent} message Event message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Event.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes an Event message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.Event
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.Event} Event
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Event.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Event(), key, value;
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.ref = $root.hermes.EventRef.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 2: {
-                        message.time = $root.hermes.Time.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 3: {
-                        message.message = reader.string();
-                        break;
-                    }
-                case 4: {
-                        if (!(message.args && message.args.length))
-                            message.args = [];
-                        message.args.push($root.hermes.Value.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 5: {
-                        if (message.tags === $util.emptyObject)
-                            message.tags = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = null;
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = $root.hermes.Value.decode(reader, reader.uint32(), undefined, long + 1);
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.tags, key);
-                        message.tags[key] = value;
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes an Event message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.Event
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.Event} Event
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Event.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies an Event message.
-         * @function verify
-         * @memberof hermes.Event
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        Event.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.ref != null && Object.hasOwnProperty.call(message, "ref")) {
-                var error = $root.hermes.EventRef.verify(message.ref, long + 1);
-                if (error)
-                    return "ref." + error;
-            }
-            if (message.time != null && Object.hasOwnProperty.call(message, "time")) {
-                var error = $root.hermes.Time.verify(message.time, long + 1);
-                if (error)
-                    return "time." + error;
-            }
-            if (message.message != null && Object.hasOwnProperty.call(message, "message"))
-                if (!$util.isString(message.message))
-                    return "message: string expected";
-            if (message.args != null && Object.hasOwnProperty.call(message, "args")) {
-                if (!Array.isArray(message.args))
-                    return "args: array expected";
-                for (var i = 0; i < message.args.length; ++i) {
-                    var error = $root.hermes.Value.verify(message.args[i], long + 1);
-                    if (error)
-                        return "args." + error;
-                }
-            }
-            if (message.tags != null && Object.hasOwnProperty.call(message, "tags")) {
-                if (!$util.isObject(message.tags))
-                    return "tags: object expected";
-                var key = Object.keys(message.tags);
-                for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.Value.verify(message.tags[key[i]], long + 1);
-                    if (error)
-                        return "tags." + error;
-                }
-            }
-            return null;
-        };
-
-        /**
-         * Creates an Event message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.Event
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.Event} Event
-         */
-        Event.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.Event)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.Event: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.Event();
-            if (object.ref != null) {
-                if (!$util.isObject(object.ref))
-                    throw TypeError(".hermes.Event.ref: object expected");
-                message.ref = $root.hermes.EventRef.fromObject(object.ref, long + 1);
-            }
-            if (object.time != null) {
-                if (!$util.isObject(object.time))
-                    throw TypeError(".hermes.Event.time: object expected");
-                message.time = $root.hermes.Time.fromObject(object.time, long + 1);
-            }
-            if (object.message != null)
-                message.message = String(object.message);
-            if (object.args) {
-                if (!Array.isArray(object.args))
-                    throw TypeError(".hermes.Event.args: array expected");
-                message.args = [];
-                for (var i = 0; i < object.args.length; ++i) {
-                    if (!$util.isObject(object.args[i]))
-                        throw TypeError(".hermes.Event.args: object expected");
-                    message.args[i] = $root.hermes.Value.fromObject(object.args[i], long + 1);
-                }
-            }
-            if (object.tags) {
-                if (!$util.isObject(object.tags))
-                    throw TypeError(".hermes.Event.tags: object expected");
-                message.tags = {};
-                for (var keys = Object.keys(object.tags), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.tags, keys[i]);
-                    if (!$util.isObject(object.tags[keys[i]]))
-                        throw TypeError(".hermes.Event.tags: object expected");
-                    message.tags[keys[i]] = $root.hermes.Value.fromObject(object.tags[keys[i]], long + 1);
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from an Event message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.Event
-         * @static
-         * @param {hermes.Event} message Event
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        Event.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.arrays || options.defaults)
-                object.args = [];
-            if (options.objects || options.defaults)
-                object.tags = {};
-            if (options.defaults) {
-                object.ref = null;
-                object.time = null;
-                object.message = "";
-            }
-            if (message.ref != null && Object.hasOwnProperty.call(message, "ref"))
-                object.ref = $root.hermes.EventRef.toObject(message.ref, options, q + 1);
-            if (message.time != null && Object.hasOwnProperty.call(message, "time"))
-                object.time = $root.hermes.Time.toObject(message.time, options, q + 1);
-            if (message.message != null && Object.hasOwnProperty.call(message, "message"))
-                object.message = message.message;
-            if (message.args && message.args.length) {
-                object.args = [];
-                for (var j = 0; j < message.args.length; ++j)
-                    object.args[j] = $root.hermes.Value.toObject(message.args[j], options, q + 1);
-            }
-            var keys2;
-            if (message.tags && (keys2 = Object.keys(message.tags)).length) {
-                object.tags = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.tags, keys2[j]);
-                    object.tags[keys2[j]] = $root.hermes.Value.toObject(message.tags[keys2[j]], options, q + 1);
-                }
-            }
-            return object;
-        };
-
-        /**
-         * Converts this Event to JSON.
-         * @function toJSON
-         * @memberof hermes.Event
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        Event.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for Event
-         * @function getTypeUrl
-         * @memberof hermes.Event
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        Event.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.Event";
-        };
-
-        return Event;
-    })();
-
-    hermes.Telemetry = (function() {
-
-        /**
-         * Properties of a Telemetry.
-         * @memberof hermes
-         * @interface ITelemetry
-         * @property {hermes.ITelemetryRef|null} [ref] Telemetry ref
-         * @property {hermes.ITime|null} [time] Telemetry time
-         * @property {hermes.IValue|null} [value] Telemetry value
-         * @property {Object.<string,string>|null} [labels] Telemetry labels
-         */
-
-        /**
-         * Constructs a new Telemetry.
-         * @memberof hermes
-         * @classdesc Represents a Telemetry.
-         * @implements ITelemetry
-         * @constructor
-         * @param {hermes.ITelemetry=} [properties] Properties to set
-         */
-        function Telemetry(properties) {
-            this.labels = {};
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Telemetry ref.
-         * @member {hermes.ITelemetryRef|null|undefined} ref
-         * @memberof hermes.Telemetry
-         * @instance
-         */
-        Telemetry.prototype.ref = null;
-
-        /**
-         * Telemetry time.
-         * @member {hermes.ITime|null|undefined} time
-         * @memberof hermes.Telemetry
-         * @instance
-         */
-        Telemetry.prototype.time = null;
-
-        /**
-         * Telemetry value.
-         * @member {hermes.IValue|null|undefined} value
-         * @memberof hermes.Telemetry
-         * @instance
-         */
-        Telemetry.prototype.value = null;
-
-        /**
-         * Telemetry labels.
-         * @member {Object.<string,string>} labels
-         * @memberof hermes.Telemetry
-         * @instance
-         */
-        Telemetry.prototype.labels = $util.emptyObject;
-
-        /**
-         * Creates a new Telemetry instance using the specified properties.
-         * @function create
-         * @memberof hermes.Telemetry
-         * @static
-         * @param {hermes.ITelemetry=} [properties] Properties to set
-         * @returns {hermes.Telemetry} Telemetry instance
-         */
-        Telemetry.create = function create(properties) {
-            return new Telemetry(properties);
-        };
-
-        /**
-         * Encodes the specified Telemetry message. Does not implicitly {@link hermes.Telemetry.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.Telemetry
-         * @static
-         * @param {hermes.ITelemetry} message Telemetry message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Telemetry.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.ref != null && Object.hasOwnProperty.call(message, "ref"))
-                $root.hermes.TelemetryRef.encode(message.ref, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.time != null && Object.hasOwnProperty.call(message, "time"))
-                $root.hermes.Time.encode(message.time, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
-            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
-                $root.hermes.Value.encode(message.value, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
-            if (message.labels != null && Object.hasOwnProperty.call(message, "labels"))
-                for (var keys = Object.keys(message.labels), i = 0; i < keys.length; ++i)
-                    writer.uint32(/* id 4, wireType 2 =*/34).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.labels[keys[i]]).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified Telemetry message, length delimited. Does not implicitly {@link hermes.Telemetry.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.Telemetry
-         * @static
-         * @param {hermes.ITelemetry} message Telemetry message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Telemetry.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a Telemetry message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.Telemetry
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.Telemetry} Telemetry
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Telemetry.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Telemetry(), key, value;
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.ref = $root.hermes.TelemetryRef.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 2: {
-                        message.time = $root.hermes.Time.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 3: {
-                        message.value = $root.hermes.Value.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 4: {
-                        if (message.labels === $util.emptyObject)
-                            message.labels = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = "";
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = reader.string();
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.labels, key);
-                        message.labels[key] = value;
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a Telemetry message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.Telemetry
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.Telemetry} Telemetry
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Telemetry.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a Telemetry message.
-         * @function verify
-         * @memberof hermes.Telemetry
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        Telemetry.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.ref != null && Object.hasOwnProperty.call(message, "ref")) {
-                var error = $root.hermes.TelemetryRef.verify(message.ref, long + 1);
-                if (error)
-                    return "ref." + error;
-            }
-            if (message.time != null && Object.hasOwnProperty.call(message, "time")) {
-                var error = $root.hermes.Time.verify(message.time, long + 1);
-                if (error)
-                    return "time." + error;
-            }
-            if (message.value != null && Object.hasOwnProperty.call(message, "value")) {
-                var error = $root.hermes.Value.verify(message.value, long + 1);
-                if (error)
-                    return "value." + error;
-            }
-            if (message.labels != null && Object.hasOwnProperty.call(message, "labels")) {
-                if (!$util.isObject(message.labels))
-                    return "labels: object expected";
-                var key = Object.keys(message.labels);
-                for (var i = 0; i < key.length; ++i)
-                    if (!$util.isString(message.labels[key[i]]))
-                        return "labels: string{k:string} expected";
-            }
-            return null;
-        };
-
-        /**
-         * Creates a Telemetry message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.Telemetry
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.Telemetry} Telemetry
-         */
-        Telemetry.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.Telemetry)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.Telemetry: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.Telemetry();
-            if (object.ref != null) {
-                if (!$util.isObject(object.ref))
-                    throw TypeError(".hermes.Telemetry.ref: object expected");
-                message.ref = $root.hermes.TelemetryRef.fromObject(object.ref, long + 1);
-            }
-            if (object.time != null) {
-                if (!$util.isObject(object.time))
-                    throw TypeError(".hermes.Telemetry.time: object expected");
-                message.time = $root.hermes.Time.fromObject(object.time, long + 1);
-            }
-            if (object.value != null) {
-                if (!$util.isObject(object.value))
-                    throw TypeError(".hermes.Telemetry.value: object expected");
-                message.value = $root.hermes.Value.fromObject(object.value, long + 1);
-            }
-            if (object.labels) {
-                if (!$util.isObject(object.labels))
-                    throw TypeError(".hermes.Telemetry.labels: object expected");
-                message.labels = {};
-                for (var keys = Object.keys(object.labels), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.labels, keys[i]);
-                    message.labels[keys[i]] = String(object.labels[keys[i]]);
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a Telemetry message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.Telemetry
-         * @static
-         * @param {hermes.Telemetry} message Telemetry
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        Telemetry.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.objects || options.defaults)
-                object.labels = {};
-            if (options.defaults) {
-                object.ref = null;
-                object.time = null;
-                object.value = null;
-            }
-            if (message.ref != null && Object.hasOwnProperty.call(message, "ref"))
-                object.ref = $root.hermes.TelemetryRef.toObject(message.ref, options, q + 1);
-            if (message.time != null && Object.hasOwnProperty.call(message, "time"))
-                object.time = $root.hermes.Time.toObject(message.time, options, q + 1);
-            if (message.value != null && Object.hasOwnProperty.call(message, "value"))
-                object.value = $root.hermes.Value.toObject(message.value, options, q + 1);
-            var keys2;
-            if (message.labels && (keys2 = Object.keys(message.labels)).length) {
-                object.labels = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.labels, keys2[j]);
-                    object.labels[keys2[j]] = message.labels[keys2[j]];
-                }
-            }
-            return object;
-        };
-
-        /**
-         * Converts this Telemetry to JSON.
-         * @function toJSON
-         * @memberof hermes.Telemetry
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        Telemetry.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for Telemetry
-         * @function getTypeUrl
-         * @memberof hermes.Telemetry
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        Telemetry.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.Telemetry";
-        };
-
-        return Telemetry;
-    })();
-
-    hermes.SourcedEvent = (function() {
-
-        /**
-         * Properties of a SourcedEvent.
-         * @memberof hermes
-         * @interface ISourcedEvent
-         * @property {hermes.IEvent|null} [event] SourcedEvent event
-         * @property {string|null} [source] SourcedEvent source
-         * @property {hermes.SourceContext|null} [context] SourcedEvent context
-         */
-
-        /**
-         * Constructs a new SourcedEvent.
-         * @memberof hermes
-         * @classdesc Represents a SourcedEvent.
-         * @implements ISourcedEvent
-         * @constructor
-         * @param {hermes.ISourcedEvent=} [properties] Properties to set
-         */
-        function SourcedEvent(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * SourcedEvent event.
-         * @member {hermes.IEvent|null|undefined} event
-         * @memberof hermes.SourcedEvent
-         * @instance
-         */
-        SourcedEvent.prototype.event = null;
-
-        /**
-         * SourcedEvent source.
-         * @member {string} source
-         * @memberof hermes.SourcedEvent
-         * @instance
-         */
-        SourcedEvent.prototype.source = "";
-
-        /**
-         * SourcedEvent context.
-         * @member {hermes.SourceContext} context
-         * @memberof hermes.SourcedEvent
-         * @instance
-         */
-        SourcedEvent.prototype.context = 0;
-
-        /**
-         * Creates a new SourcedEvent instance using the specified properties.
-         * @function create
-         * @memberof hermes.SourcedEvent
-         * @static
-         * @param {hermes.ISourcedEvent=} [properties] Properties to set
-         * @returns {hermes.SourcedEvent} SourcedEvent instance
-         */
-        SourcedEvent.create = function create(properties) {
-            return new SourcedEvent(properties);
-        };
-
-        /**
-         * Encodes the specified SourcedEvent message. Does not implicitly {@link hermes.SourcedEvent.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.SourcedEvent
-         * @static
-         * @param {hermes.ISourcedEvent} message SourcedEvent message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        SourcedEvent.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.event != null && Object.hasOwnProperty.call(message, "event"))
-                $root.hermes.Event.encode(message.event, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.source);
-            if (message.context != null && Object.hasOwnProperty.call(message, "context"))
-                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.context);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified SourcedEvent message, length delimited. Does not implicitly {@link hermes.SourcedEvent.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.SourcedEvent
-         * @static
-         * @param {hermes.ISourcedEvent} message SourcedEvent message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        SourcedEvent.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a SourcedEvent message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.SourcedEvent
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.SourcedEvent} SourcedEvent
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        SourcedEvent.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.SourcedEvent();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.event = $root.hermes.Event.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 2: {
-                        message.source = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.context = reader.int32();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a SourcedEvent message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.SourcedEvent
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.SourcedEvent} SourcedEvent
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        SourcedEvent.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a SourcedEvent message.
-         * @function verify
-         * @memberof hermes.SourcedEvent
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        SourcedEvent.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.event != null && Object.hasOwnProperty.call(message, "event")) {
-                var error = $root.hermes.Event.verify(message.event, long + 1);
-                if (error)
-                    return "event." + error;
-            }
-            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
-                if (!$util.isString(message.source))
-                    return "source: string expected";
-            if (message.context != null && Object.hasOwnProperty.call(message, "context"))
-                switch (message.context) {
-                default:
-                    return "context: enum value expected";
-                case 0:
-                case 1:
-                    break;
-                }
-            return null;
-        };
-
-        /**
-         * Creates a SourcedEvent message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.SourcedEvent
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.SourcedEvent} SourcedEvent
-         */
-        SourcedEvent.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.SourcedEvent)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.SourcedEvent: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.SourcedEvent();
-            if (object.event != null) {
-                if (!$util.isObject(object.event))
-                    throw TypeError(".hermes.SourcedEvent.event: object expected");
-                message.event = $root.hermes.Event.fromObject(object.event, long + 1);
-            }
-            if (object.source != null)
-                message.source = String(object.source);
-            switch (object.context) {
-            default:
-                if (typeof object.context === "number") {
-                    message.context = object.context;
-                    break;
-                }
-                break;
-            case "REALTIME":
-            case 0:
-                message.context = 0;
-                break;
-            case "RECORDED":
-            case 1:
-                message.context = 1;
-                break;
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a SourcedEvent message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.SourcedEvent
-         * @static
-         * @param {hermes.SourcedEvent} message SourcedEvent
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        SourcedEvent.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults) {
-                object.event = null;
-                object.source = "";
-                object.context = options.enums === String ? "REALTIME" : 0;
-            }
-            if (message.event != null && Object.hasOwnProperty.call(message, "event"))
-                object.event = $root.hermes.Event.toObject(message.event, options, q + 1);
-            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
-                object.source = message.source;
-            if (message.context != null && Object.hasOwnProperty.call(message, "context"))
-                object.context = options.enums === String ? $root.hermes.SourceContext[message.context] === undefined ? message.context : $root.hermes.SourceContext[message.context] : message.context;
-            return object;
-        };
-
-        /**
-         * Converts this SourcedEvent to JSON.
-         * @function toJSON
-         * @memberof hermes.SourcedEvent
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        SourcedEvent.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for SourcedEvent
-         * @function getTypeUrl
-         * @memberof hermes.SourcedEvent
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        SourcedEvent.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.SourcedEvent";
-        };
-
-        return SourcedEvent;
-    })();
-
-    hermes.SourcedTelemetry = (function() {
-
-        /**
-         * Properties of a SourcedTelemetry.
-         * @memberof hermes
-         * @interface ISourcedTelemetry
-         * @property {hermes.ITelemetry|null} [telemetry] SourcedTelemetry telemetry
-         * @property {string|null} [source] SourcedTelemetry source
-         * @property {hermes.SourceContext|null} [context] SourcedTelemetry context
-         */
-
-        /**
-         * Constructs a new SourcedTelemetry.
-         * @memberof hermes
-         * @classdesc Represents a SourcedTelemetry.
-         * @implements ISourcedTelemetry
-         * @constructor
-         * @param {hermes.ISourcedTelemetry=} [properties] Properties to set
-         */
-        function SourcedTelemetry(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * SourcedTelemetry telemetry.
-         * @member {hermes.ITelemetry|null|undefined} telemetry
-         * @memberof hermes.SourcedTelemetry
-         * @instance
-         */
-        SourcedTelemetry.prototype.telemetry = null;
-
-        /**
-         * SourcedTelemetry source.
-         * @member {string} source
-         * @memberof hermes.SourcedTelemetry
-         * @instance
-         */
-        SourcedTelemetry.prototype.source = "";
-
-        /**
-         * SourcedTelemetry context.
-         * @member {hermes.SourceContext} context
-         * @memberof hermes.SourcedTelemetry
-         * @instance
-         */
-        SourcedTelemetry.prototype.context = 0;
-
-        /**
-         * Creates a new SourcedTelemetry instance using the specified properties.
-         * @function create
-         * @memberof hermes.SourcedTelemetry
-         * @static
-         * @param {hermes.ISourcedTelemetry=} [properties] Properties to set
-         * @returns {hermes.SourcedTelemetry} SourcedTelemetry instance
-         */
-        SourcedTelemetry.create = function create(properties) {
-            return new SourcedTelemetry(properties);
-        };
-
-        /**
-         * Encodes the specified SourcedTelemetry message. Does not implicitly {@link hermes.SourcedTelemetry.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.SourcedTelemetry
-         * @static
-         * @param {hermes.ISourcedTelemetry} message SourcedTelemetry message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        SourcedTelemetry.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.telemetry != null && Object.hasOwnProperty.call(message, "telemetry"))
-                $root.hermes.Telemetry.encode(message.telemetry, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.source);
-            if (message.context != null && Object.hasOwnProperty.call(message, "context"))
-                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.context);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified SourcedTelemetry message, length delimited. Does not implicitly {@link hermes.SourcedTelemetry.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.SourcedTelemetry
-         * @static
-         * @param {hermes.ISourcedTelemetry} message SourcedTelemetry message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        SourcedTelemetry.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a SourcedTelemetry message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.SourcedTelemetry
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.SourcedTelemetry} SourcedTelemetry
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        SourcedTelemetry.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.SourcedTelemetry();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.telemetry = $root.hermes.Telemetry.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 2: {
-                        message.source = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.context = reader.int32();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a SourcedTelemetry message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.SourcedTelemetry
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.SourcedTelemetry} SourcedTelemetry
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        SourcedTelemetry.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a SourcedTelemetry message.
-         * @function verify
-         * @memberof hermes.SourcedTelemetry
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        SourcedTelemetry.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.telemetry != null && Object.hasOwnProperty.call(message, "telemetry")) {
-                var error = $root.hermes.Telemetry.verify(message.telemetry, long + 1);
-                if (error)
-                    return "telemetry." + error;
-            }
-            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
-                if (!$util.isString(message.source))
-                    return "source: string expected";
-            if (message.context != null && Object.hasOwnProperty.call(message, "context"))
-                switch (message.context) {
-                default:
-                    return "context: enum value expected";
-                case 0:
-                case 1:
-                    break;
-                }
-            return null;
-        };
-
-        /**
-         * Creates a SourcedTelemetry message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.SourcedTelemetry
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.SourcedTelemetry} SourcedTelemetry
-         */
-        SourcedTelemetry.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.SourcedTelemetry)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.SourcedTelemetry: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.SourcedTelemetry();
-            if (object.telemetry != null) {
-                if (!$util.isObject(object.telemetry))
-                    throw TypeError(".hermes.SourcedTelemetry.telemetry: object expected");
-                message.telemetry = $root.hermes.Telemetry.fromObject(object.telemetry, long + 1);
-            }
-            if (object.source != null)
-                message.source = String(object.source);
-            switch (object.context) {
-            default:
-                if (typeof object.context === "number") {
-                    message.context = object.context;
-                    break;
-                }
-                break;
-            case "REALTIME":
-            case 0:
-                message.context = 0;
-                break;
-            case "RECORDED":
-            case 1:
-                message.context = 1;
-                break;
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a SourcedTelemetry message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.SourcedTelemetry
-         * @static
-         * @param {hermes.SourcedTelemetry} message SourcedTelemetry
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        SourcedTelemetry.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults) {
-                object.telemetry = null;
-                object.source = "";
-                object.context = options.enums === String ? "REALTIME" : 0;
-            }
-            if (message.telemetry != null && Object.hasOwnProperty.call(message, "telemetry"))
-                object.telemetry = $root.hermes.Telemetry.toObject(message.telemetry, options, q + 1);
-            if (message.source != null && Object.hasOwnProperty.call(message, "source"))
-                object.source = message.source;
-            if (message.context != null && Object.hasOwnProperty.call(message, "context"))
-                object.context = options.enums === String ? $root.hermes.SourceContext[message.context] === undefined ? message.context : $root.hermes.SourceContext[message.context] : message.context;
-            return object;
-        };
-
-        /**
-         * Converts this SourcedTelemetry to JSON.
-         * @function toJSON
-         * @memberof hermes.SourcedTelemetry
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        SourcedTelemetry.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for SourcedTelemetry
-         * @function getTypeUrl
-         * @memberof hermes.SourcedTelemetry
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        SourcedTelemetry.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.SourcedTelemetry";
-        };
-
-        return SourcedTelemetry;
-    })();
-
-    /**
      * FileDownlinkCompletionStatus enum.
      * @name hermes.FileDownlinkCompletionStatus
      * @enum {number}
@@ -3880,6 +2512,3686 @@ $root.hermes = (function() {
         return FileTransferState;
     })();
 
+    hermes.ParameterDef = (function() {
+
+        /**
+         * Properties of a ParameterDef.
+         * @memberof hermes
+         * @interface IParameterDef
+         * @property {number|null} [id] ParameterDef id
+         * @property {string|null} [component] Component or module that owns this parameter
+         * @property {string|null} [name] Name of the parameter
+         * Scoped by its component
+         * @property {hermes.IType|null} [type] ParameterDef type
+         * @property {string|null} [metadata] ParameterDef metadata
+         */
+
+        /**
+         * Constructs a new ParameterDef.
+         * @memberof hermes
+         * @classdesc Represents a ParameterDef.
+         * @implements IParameterDef
+         * @constructor
+         * @param {hermes.IParameterDef=} [properties] Properties to set
+         */
+        function ParameterDef(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * ParameterDef id.
+         * @member {number} id
+         * @memberof hermes.ParameterDef
+         * @instance
+         */
+        ParameterDef.prototype.id = 0;
+
+        /**
+         * Component or module that owns this parameter
+         * @member {string} component
+         * @memberof hermes.ParameterDef
+         * @instance
+         */
+        ParameterDef.prototype.component = "";
+
+        /**
+         * Name of the parameter
+         * Scoped by its component
+         * @member {string} name
+         * @memberof hermes.ParameterDef
+         * @instance
+         */
+        ParameterDef.prototype.name = "";
+
+        /**
+         * ParameterDef type.
+         * @member {hermes.IType|null|undefined} type
+         * @memberof hermes.ParameterDef
+         * @instance
+         */
+        ParameterDef.prototype.type = null;
+
+        /**
+         * ParameterDef metadata.
+         * @member {string} metadata
+         * @memberof hermes.ParameterDef
+         * @instance
+         */
+        ParameterDef.prototype.metadata = "";
+
+        /**
+         * Creates a new ParameterDef instance using the specified properties.
+         * @function create
+         * @memberof hermes.ParameterDef
+         * @static
+         * @param {hermes.IParameterDef=} [properties] Properties to set
+         * @returns {hermes.ParameterDef} ParameterDef instance
+         */
+        ParameterDef.create = function create(properties) {
+            return new ParameterDef(properties);
+        };
+
+        /**
+         * Encodes the specified ParameterDef message. Does not implicitly {@link hermes.ParameterDef.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.ParameterDef
+         * @static
+         * @param {hermes.IParameterDef} message ParameterDef message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ParameterDef.encode = function encode(message, writer, q) {
+            if (!writer)
+                writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.component);
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.name);
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                $root.hermes.Type.encode(message.type, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                writer.uint32(/* id 5, wireType 2 =*/42).string(message.metadata);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified ParameterDef message, length delimited. Does not implicitly {@link hermes.ParameterDef.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.ParameterDef
+         * @static
+         * @param {hermes.IParameterDef} message ParameterDef message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        ParameterDef.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a ParameterDef message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.ParameterDef
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.ParameterDef} ParameterDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ParameterDef.decode = function decode(reader, length, error, long) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ParameterDef();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.id = reader.int32();
+                        break;
+                    }
+                case 2: {
+                        message.component = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.name = reader.string();
+                        break;
+                    }
+                case 4: {
+                        message.type = $root.hermes.Type.decode(reader, reader.uint32(), undefined, long + 1);
+                        break;
+                    }
+                case 5: {
+                        message.metadata = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7, long);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a ParameterDef message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.ParameterDef
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.ParameterDef} ParameterDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        ParameterDef.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a ParameterDef message.
+         * @function verify
+         * @memberof hermes.ParameterDef
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        ParameterDef.verify = function verify(message, long) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                if (!$util.isInteger(message.id))
+                    return "id: integer expected";
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
+                if (!$util.isString(message.component))
+                    return "component: string expected";
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                if (!$util.isString(message.name))
+                    return "name: string expected";
+            if (message.type != null && Object.hasOwnProperty.call(message, "type")) {
+                var error = $root.hermes.Type.verify(message.type, long + 1);
+                if (error)
+                    return "type." + error;
+            }
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                if (!$util.isString(message.metadata))
+                    return "metadata: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a ParameterDef message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.ParameterDef
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.ParameterDef} ParameterDef
+         */
+        ParameterDef.fromObject = function fromObject(object, long) {
+            if (object instanceof $root.hermes.ParameterDef)
+                return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.ParameterDef: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var message = new $root.hermes.ParameterDef();
+            if (object.id != null)
+                message.id = object.id | 0;
+            if (object.component != null)
+                message.component = String(object.component);
+            if (object.name != null)
+                message.name = String(object.name);
+            if (object.type != null) {
+                if (!$util.isObject(object.type))
+                    throw TypeError(".hermes.ParameterDef.type: object expected");
+                message.type = $root.hermes.Type.fromObject(object.type, long + 1);
+            }
+            if (object.metadata != null)
+                message.metadata = String(object.metadata);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a ParameterDef message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.ParameterDef
+         * @static
+         * @param {hermes.ParameterDef} message ParameterDef
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        ParameterDef.toObject = function toObject(message, options, q) {
+            if (!options)
+                options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            var object = {};
+            if (options.defaults) {
+                object.id = 0;
+                object.component = "";
+                object.name = "";
+                object.type = null;
+                object.metadata = "";
+            }
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                object.id = message.id;
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
+                object.component = message.component;
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                object.name = message.name;
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                object.type = $root.hermes.Type.toObject(message.type, options, q + 1);
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                object.metadata = message.metadata;
+            return object;
+        };
+
+        /**
+         * Converts this ParameterDef to JSON.
+         * @function toJSON
+         * @memberof hermes.ParameterDef
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        ParameterDef.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for ParameterDef
+         * @function getTypeUrl
+         * @memberof hermes.ParameterDef
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        ParameterDef.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.ParameterDef";
+        };
+
+        return ParameterDef;
+    })();
+
+    hermes.CommandDef = (function() {
+
+        /**
+         * Properties of a CommandDef.
+         * @memberof hermes
+         * @interface ICommandDef
+         * @property {number|null} [opcode] CommandDef opcode
+         * @property {string|null} [mnemonic] Mnemonic command used to identify this command.
+         * FSW may or may not include the module name in the mnemonic and its
+         * up to the language parsing software to identify the proper command from mnemonic information.
+         * 
+         * This may have varying meaning across missions
+         * @property {string|null} [component] Parent component or module owning this command
+         * @property {Array.<hermes.IField>|null} ["arguments"] Command arguments
+         * @property {string|null} [metadata] CommandDef metadata
+         */
+
+        /**
+         * Constructs a new CommandDef.
+         * @memberof hermes
+         * @classdesc Represents a CommandDef.
+         * @implements ICommandDef
+         * @constructor
+         * @param {hermes.ICommandDef=} [properties] Properties to set
+         */
+        function CommandDef(properties) {
+            this["arguments"] = [];
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * CommandDef opcode.
+         * @member {number} opcode
+         * @memberof hermes.CommandDef
+         * @instance
+         */
+        CommandDef.prototype.opcode = 0;
+
+        /**
+         * Mnemonic command used to identify this command.
+         * FSW may or may not include the module name in the mnemonic and its
+         * up to the language parsing software to identify the proper command from mnemonic information.
+         * 
+         * This may have varying meaning across missions
+         * @member {string} mnemonic
+         * @memberof hermes.CommandDef
+         * @instance
+         */
+        CommandDef.prototype.mnemonic = "";
+
+        /**
+         * Parent component or module owning this command
+         * @member {string} component
+         * @memberof hermes.CommandDef
+         * @instance
+         */
+        CommandDef.prototype.component = "";
+
+        /**
+         * Command arguments
+         * @member {Array.<hermes.IField>} arguments
+         * @memberof hermes.CommandDef
+         * @instance
+         */
+        CommandDef.prototype["arguments"] = $util.emptyArray;
+
+        /**
+         * CommandDef metadata.
+         * @member {string} metadata
+         * @memberof hermes.CommandDef
+         * @instance
+         */
+        CommandDef.prototype.metadata = "";
+
+        /**
+         * Creates a new CommandDef instance using the specified properties.
+         * @function create
+         * @memberof hermes.CommandDef
+         * @static
+         * @param {hermes.ICommandDef=} [properties] Properties to set
+         * @returns {hermes.CommandDef} CommandDef instance
+         */
+        CommandDef.create = function create(properties) {
+            return new CommandDef(properties);
+        };
+
+        /**
+         * Encodes the specified CommandDef message. Does not implicitly {@link hermes.CommandDef.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.CommandDef
+         * @static
+         * @param {hermes.ICommandDef} message CommandDef message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        CommandDef.encode = function encode(message, writer, q) {
+            if (!writer)
+                writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            if (message.opcode != null && Object.hasOwnProperty.call(message, "opcode"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.opcode);
+            if (message.mnemonic != null && Object.hasOwnProperty.call(message, "mnemonic"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.mnemonic);
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.component);
+            if (message["arguments"] != null && message["arguments"].length)
+                for (var i = 0; i < message["arguments"].length; ++i)
+                    $root.hermes.Field.encode(message["arguments"][i], writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                writer.uint32(/* id 5, wireType 2 =*/42).string(message.metadata);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified CommandDef message, length delimited. Does not implicitly {@link hermes.CommandDef.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.CommandDef
+         * @static
+         * @param {hermes.ICommandDef} message CommandDef message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        CommandDef.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a CommandDef message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.CommandDef
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.CommandDef} CommandDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        CommandDef.decode = function decode(reader, length, error, long) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.CommandDef();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.opcode = reader.int32();
+                        break;
+                    }
+                case 2: {
+                        message.mnemonic = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.component = reader.string();
+                        break;
+                    }
+                case 4: {
+                        if (!(message["arguments"] && message["arguments"].length))
+                            message["arguments"] = [];
+                        message["arguments"].push($root.hermes.Field.decode(reader, reader.uint32(), undefined, long + 1));
+                        break;
+                    }
+                case 5: {
+                        message.metadata = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7, long);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a CommandDef message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.CommandDef
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.CommandDef} CommandDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        CommandDef.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a CommandDef message.
+         * @function verify
+         * @memberof hermes.CommandDef
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        CommandDef.verify = function verify(message, long) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.opcode != null && Object.hasOwnProperty.call(message, "opcode"))
+                if (!$util.isInteger(message.opcode))
+                    return "opcode: integer expected";
+            if (message.mnemonic != null && Object.hasOwnProperty.call(message, "mnemonic"))
+                if (!$util.isString(message.mnemonic))
+                    return "mnemonic: string expected";
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
+                if (!$util.isString(message.component))
+                    return "component: string expected";
+            if (message["arguments"] != null && Object.hasOwnProperty.call(message, "arguments")) {
+                if (!Array.isArray(message["arguments"]))
+                    return "arguments: array expected";
+                for (var i = 0; i < message["arguments"].length; ++i) {
+                    var error = $root.hermes.Field.verify(message["arguments"][i], long + 1);
+                    if (error)
+                        return "arguments." + error;
+                }
+            }
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                if (!$util.isString(message.metadata))
+                    return "metadata: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a CommandDef message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.CommandDef
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.CommandDef} CommandDef
+         */
+        CommandDef.fromObject = function fromObject(object, long) {
+            if (object instanceof $root.hermes.CommandDef)
+                return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.CommandDef: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var message = new $root.hermes.CommandDef();
+            if (object.opcode != null)
+                message.opcode = object.opcode | 0;
+            if (object.mnemonic != null)
+                message.mnemonic = String(object.mnemonic);
+            if (object.component != null)
+                message.component = String(object.component);
+            if (object["arguments"]) {
+                if (!Array.isArray(object["arguments"]))
+                    throw TypeError(".hermes.CommandDef.arguments: array expected");
+                message["arguments"] = [];
+                for (var i = 0; i < object["arguments"].length; ++i) {
+                    if (!$util.isObject(object["arguments"][i]))
+                        throw TypeError(".hermes.CommandDef.arguments: object expected");
+                    message["arguments"][i] = $root.hermes.Field.fromObject(object["arguments"][i], long + 1);
+                }
+            }
+            if (object.metadata != null)
+                message.metadata = String(object.metadata);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a CommandDef message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.CommandDef
+         * @static
+         * @param {hermes.CommandDef} message CommandDef
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        CommandDef.toObject = function toObject(message, options, q) {
+            if (!options)
+                options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            var object = {};
+            if (options.arrays || options.defaults)
+                object["arguments"] = [];
+            if (options.defaults) {
+                object.opcode = 0;
+                object.mnemonic = "";
+                object.component = "";
+                object.metadata = "";
+            }
+            if (message.opcode != null && Object.hasOwnProperty.call(message, "opcode"))
+                object.opcode = message.opcode;
+            if (message.mnemonic != null && Object.hasOwnProperty.call(message, "mnemonic"))
+                object.mnemonic = message.mnemonic;
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
+                object.component = message.component;
+            if (message["arguments"] && message["arguments"].length) {
+                object["arguments"] = [];
+                for (var j = 0; j < message["arguments"].length; ++j)
+                    object["arguments"][j] = $root.hermes.Field.toObject(message["arguments"][j], options, q + 1);
+            }
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                object.metadata = message.metadata;
+            return object;
+        };
+
+        /**
+         * Converts this CommandDef to JSON.
+         * @function toJSON
+         * @memberof hermes.CommandDef
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        CommandDef.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for CommandDef
+         * @function getTypeUrl
+         * @memberof hermes.CommandDef
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        CommandDef.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.CommandDef";
+        };
+
+        return CommandDef;
+    })();
+
+    /**
+     * EvrSeverity enum.
+     * @name hermes.EvrSeverity
+     * @enum {number}
+     * @property {number} EVR_DIAGNOSTIC=0 EVR_DIAGNOSTIC value
+     * @property {number} EVR_ACTIVITY_LOW=1 EVR_ACTIVITY_LOW value
+     * @property {number} EVR_ACTIVITY_HIGH=2 EVR_ACTIVITY_HIGH value
+     * @property {number} EVR_WARNING_LOW=3 EVR_WARNING_LOW value
+     * @property {number} EVR_WARNING_HIGH=4 EVR_WARNING_HIGH value
+     * @property {number} EVR_COMMAND=5 EVR_COMMAND value
+     * @property {number} EVR_FATAL=6 EVR_FATAL value
+     */
+    hermes.EvrSeverity = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "EVR_DIAGNOSTIC"] = 0;
+        values[valuesById[1] = "EVR_ACTIVITY_LOW"] = 1;
+        values[valuesById[2] = "EVR_ACTIVITY_HIGH"] = 2;
+        values[valuesById[3] = "EVR_WARNING_LOW"] = 3;
+        values[valuesById[4] = "EVR_WARNING_HIGH"] = 4;
+        values[valuesById[5] = "EVR_COMMAND"] = 5;
+        values[valuesById[6] = "EVR_FATAL"] = 6;
+        return values;
+    })();
+
+    /**
+     * FormatSpecifierType enum.
+     * @name hermes.FormatSpecifierType
+     * @enum {number}
+     * @property {number} FMT_DEFAULT=0 FMT_DEFAULT value
+     * @property {number} FMT_CHAR=1 FMT_CHAR value
+     * @property {number} FMT_DECIMAL=2 FMT_DECIMAL value
+     * @property {number} FMT_HEX_LOWER=3 FMT_HEX_LOWER value
+     * @property {number} FMT_HEX_UPPER=4 FMT_HEX_UPPER value
+     * @property {number} FMT_OCTAL=5 FMT_OCTAL value
+     * @property {number} FMT_EXP_LOWER=6 FMT_EXP_LOWER value
+     * @property {number} FMT_EXP_UPPER=7 FMT_EXP_UPPER value
+     * @property {number} FMT_FIXED_LOWER=8 FMT_FIXED_LOWER value
+     * @property {number} FMT_FIXED_UPPER=9 FMT_FIXED_UPPER value
+     * @property {number} FMT_GENERAL_LOWER=10 FMT_GENERAL_LOWER value
+     * @property {number} FMT_GENERAL_UPPER=11 FMT_GENERAL_UPPER value
+     */
+    hermes.FormatSpecifierType = (function() {
+        var valuesById = {}, values = Object.create(valuesById);
+        values[valuesById[0] = "FMT_DEFAULT"] = 0;
+        values[valuesById[1] = "FMT_CHAR"] = 1;
+        values[valuesById[2] = "FMT_DECIMAL"] = 2;
+        values[valuesById[3] = "FMT_HEX_LOWER"] = 3;
+        values[valuesById[4] = "FMT_HEX_UPPER"] = 4;
+        values[valuesById[5] = "FMT_OCTAL"] = 5;
+        values[valuesById[6] = "FMT_EXP_LOWER"] = 6;
+        values[valuesById[7] = "FMT_EXP_UPPER"] = 7;
+        values[valuesById[8] = "FMT_FIXED_LOWER"] = 8;
+        values[valuesById[9] = "FMT_FIXED_UPPER"] = 9;
+        values[valuesById[10] = "FMT_GENERAL_LOWER"] = 10;
+        values[valuesById[11] = "FMT_GENERAL_UPPER"] = 11;
+        return values;
+    })();
+
+    hermes.FormatSpecifier = (function() {
+
+        /**
+         * Properties of a FormatSpecifier.
+         * @memberof hermes
+         * @interface IFormatSpecifier
+         * @property {hermes.FormatSpecifierType|null} [type] FormatSpecifier type
+         * @property {number|null} [precision] FormatSpecifier precision
+         * @property {number|null} [argumentIndex] FormatSpecifier argumentIndex
+         */
+
+        /**
+         * Constructs a new FormatSpecifier.
+         * @memberof hermes
+         * @classdesc Represents a FormatSpecifier.
+         * @implements IFormatSpecifier
+         * @constructor
+         * @param {hermes.IFormatSpecifier=} [properties] Properties to set
+         */
+        function FormatSpecifier(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * FormatSpecifier type.
+         * @member {hermes.FormatSpecifierType} type
+         * @memberof hermes.FormatSpecifier
+         * @instance
+         */
+        FormatSpecifier.prototype.type = 0;
+
+        /**
+         * FormatSpecifier precision.
+         * @member {number|null|undefined} precision
+         * @memberof hermes.FormatSpecifier
+         * @instance
+         */
+        FormatSpecifier.prototype.precision = null;
+
+        /**
+         * FormatSpecifier argumentIndex.
+         * @member {number} argumentIndex
+         * @memberof hermes.FormatSpecifier
+         * @instance
+         */
+        FormatSpecifier.prototype.argumentIndex = 0;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        /**
+         * FormatSpecifier _precision.
+         * @member {"precision"|undefined} _precision
+         * @memberof hermes.FormatSpecifier
+         * @instance
+         */
+        Object.defineProperty(FormatSpecifier.prototype, "_precision", {
+            get: $util.oneOfGetter($oneOfFields = ["precision"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Creates a new FormatSpecifier instance using the specified properties.
+         * @function create
+         * @memberof hermes.FormatSpecifier
+         * @static
+         * @param {hermes.IFormatSpecifier=} [properties] Properties to set
+         * @returns {hermes.FormatSpecifier} FormatSpecifier instance
+         */
+        FormatSpecifier.create = function create(properties) {
+            return new FormatSpecifier(properties);
+        };
+
+        /**
+         * Encodes the specified FormatSpecifier message. Does not implicitly {@link hermes.FormatSpecifier.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.FormatSpecifier
+         * @static
+         * @param {hermes.IFormatSpecifier} message FormatSpecifier message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        FormatSpecifier.encode = function encode(message, writer, q) {
+            if (!writer)
+                writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.type);
+            if (message.precision != null && Object.hasOwnProperty.call(message, "precision"))
+                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.precision);
+            if (message.argumentIndex != null && Object.hasOwnProperty.call(message, "argumentIndex"))
+                writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.argumentIndex);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified FormatSpecifier message, length delimited. Does not implicitly {@link hermes.FormatSpecifier.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.FormatSpecifier
+         * @static
+         * @param {hermes.IFormatSpecifier} message FormatSpecifier message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        FormatSpecifier.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a FormatSpecifier message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.FormatSpecifier
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.FormatSpecifier} FormatSpecifier
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        FormatSpecifier.decode = function decode(reader, length, error, long) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FormatSpecifier();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.type = reader.int32();
+                        break;
+                    }
+                case 2: {
+                        message.precision = reader.uint32();
+                        break;
+                    }
+                case 3: {
+                        message.argumentIndex = reader.uint32();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7, long);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a FormatSpecifier message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.FormatSpecifier
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.FormatSpecifier} FormatSpecifier
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        FormatSpecifier.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a FormatSpecifier message.
+         * @function verify
+         * @memberof hermes.FormatSpecifier
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        FormatSpecifier.verify = function verify(message, long) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            var properties = {};
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                switch (message.type) {
+                default:
+                    return "type: enum value expected";
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                case 10:
+                case 11:
+                    break;
+                }
+            if (message.precision != null && Object.hasOwnProperty.call(message, "precision")) {
+                properties._precision = 1;
+                if (!$util.isInteger(message.precision))
+                    return "precision: integer expected";
+            }
+            if (message.argumentIndex != null && Object.hasOwnProperty.call(message, "argumentIndex"))
+                if (!$util.isInteger(message.argumentIndex))
+                    return "argumentIndex: integer expected";
+            return null;
+        };
+
+        /**
+         * Creates a FormatSpecifier message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.FormatSpecifier
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.FormatSpecifier} FormatSpecifier
+         */
+        FormatSpecifier.fromObject = function fromObject(object, long) {
+            if (object instanceof $root.hermes.FormatSpecifier)
+                return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FormatSpecifier: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var message = new $root.hermes.FormatSpecifier();
+            switch (object.type) {
+            default:
+                if (typeof object.type === "number") {
+                    message.type = object.type;
+                    break;
+                }
+                break;
+            case "FMT_DEFAULT":
+            case 0:
+                message.type = 0;
+                break;
+            case "FMT_CHAR":
+            case 1:
+                message.type = 1;
+                break;
+            case "FMT_DECIMAL":
+            case 2:
+                message.type = 2;
+                break;
+            case "FMT_HEX_LOWER":
+            case 3:
+                message.type = 3;
+                break;
+            case "FMT_HEX_UPPER":
+            case 4:
+                message.type = 4;
+                break;
+            case "FMT_OCTAL":
+            case 5:
+                message.type = 5;
+                break;
+            case "FMT_EXP_LOWER":
+            case 6:
+                message.type = 6;
+                break;
+            case "FMT_EXP_UPPER":
+            case 7:
+                message.type = 7;
+                break;
+            case "FMT_FIXED_LOWER":
+            case 8:
+                message.type = 8;
+                break;
+            case "FMT_FIXED_UPPER":
+            case 9:
+                message.type = 9;
+                break;
+            case "FMT_GENERAL_LOWER":
+            case 10:
+                message.type = 10;
+                break;
+            case "FMT_GENERAL_UPPER":
+            case 11:
+                message.type = 11;
+                break;
+            }
+            if (object.precision != null)
+                message.precision = object.precision >>> 0;
+            if (object.argumentIndex != null)
+                message.argumentIndex = object.argumentIndex >>> 0;
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a FormatSpecifier message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.FormatSpecifier
+         * @static
+         * @param {hermes.FormatSpecifier} message FormatSpecifier
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        FormatSpecifier.toObject = function toObject(message, options, q) {
+            if (!options)
+                options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            var object = {};
+            if (options.defaults) {
+                object.type = options.enums === String ? "FMT_DEFAULT" : 0;
+                object.argumentIndex = 0;
+            }
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                object.type = options.enums === String ? $root.hermes.FormatSpecifierType[message.type] === undefined ? message.type : $root.hermes.FormatSpecifierType[message.type] : message.type;
+            if (message.precision != null && Object.hasOwnProperty.call(message, "precision")) {
+                object.precision = message.precision;
+                if (options.oneofs)
+                    object._precision = "precision";
+            }
+            if (message.argumentIndex != null && Object.hasOwnProperty.call(message, "argumentIndex"))
+                object.argumentIndex = message.argumentIndex;
+            return object;
+        };
+
+        /**
+         * Converts this FormatSpecifier to JSON.
+         * @function toJSON
+         * @memberof hermes.FormatSpecifier
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        FormatSpecifier.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for FormatSpecifier
+         * @function getTypeUrl
+         * @memberof hermes.FormatSpecifier
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        FormatSpecifier.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.FormatSpecifier";
+        };
+
+        return FormatSpecifier;
+    })();
+
+    hermes.FormatFragment = (function() {
+
+        /**
+         * Properties of a FormatFragment.
+         * @memberof hermes
+         * @interface IFormatFragment
+         * @property {string|null} [text] FormatFragment text
+         * @property {hermes.IFormatSpecifier|null} [specifier] FormatFragment specifier
+         */
+
+        /**
+         * Constructs a new FormatFragment.
+         * @memberof hermes
+         * @classdesc Represents a FormatFragment.
+         * @implements IFormatFragment
+         * @constructor
+         * @param {hermes.IFormatFragment=} [properties] Properties to set
+         */
+        function FormatFragment(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * FormatFragment text.
+         * @member {string|null|undefined} text
+         * @memberof hermes.FormatFragment
+         * @instance
+         */
+        FormatFragment.prototype.text = null;
+
+        /**
+         * FormatFragment specifier.
+         * @member {hermes.IFormatSpecifier|null|undefined} specifier
+         * @memberof hermes.FormatFragment
+         * @instance
+         */
+        FormatFragment.prototype.specifier = null;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        /**
+         * FormatFragment fragment.
+         * @member {"text"|"specifier"|undefined} fragment
+         * @memberof hermes.FormatFragment
+         * @instance
+         */
+        Object.defineProperty(FormatFragment.prototype, "fragment", {
+            get: $util.oneOfGetter($oneOfFields = ["text", "specifier"]),
+            set: $util.oneOfSetter($oneOfFields)
+        });
+
+        /**
+         * Creates a new FormatFragment instance using the specified properties.
+         * @function create
+         * @memberof hermes.FormatFragment
+         * @static
+         * @param {hermes.IFormatFragment=} [properties] Properties to set
+         * @returns {hermes.FormatFragment} FormatFragment instance
+         */
+        FormatFragment.create = function create(properties) {
+            return new FormatFragment(properties);
+        };
+
+        /**
+         * Encodes the specified FormatFragment message. Does not implicitly {@link hermes.FormatFragment.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.FormatFragment
+         * @static
+         * @param {hermes.IFormatFragment} message FormatFragment message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        FormatFragment.encode = function encode(message, writer, q) {
+            if (!writer)
+                writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            if (message.text != null && Object.hasOwnProperty.call(message, "text"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.text);
+            if (message.specifier != null && Object.hasOwnProperty.call(message, "specifier"))
+                $root.hermes.FormatSpecifier.encode(message.specifier, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
+            return writer;
+        };
+
+        /**
+         * Encodes the specified FormatFragment message, length delimited. Does not implicitly {@link hermes.FormatFragment.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.FormatFragment
+         * @static
+         * @param {hermes.IFormatFragment} message FormatFragment message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        FormatFragment.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a FormatFragment message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.FormatFragment
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.FormatFragment} FormatFragment
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        FormatFragment.decode = function decode(reader, length, error, long) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FormatFragment();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.text = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.specifier = $root.hermes.FormatSpecifier.decode(reader, reader.uint32(), undefined, long + 1);
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7, long);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a FormatFragment message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.FormatFragment
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.FormatFragment} FormatFragment
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        FormatFragment.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a FormatFragment message.
+         * @function verify
+         * @memberof hermes.FormatFragment
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        FormatFragment.verify = function verify(message, long) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            var properties = {};
+            if (message.text != null && Object.hasOwnProperty.call(message, "text")) {
+                properties.fragment = 1;
+                if (!$util.isString(message.text))
+                    return "text: string expected";
+            }
+            if (message.specifier != null && Object.hasOwnProperty.call(message, "specifier")) {
+                if (properties.fragment === 1)
+                    return "fragment: multiple values";
+                properties.fragment = 1;
+                {
+                    var error = $root.hermes.FormatSpecifier.verify(message.specifier, long + 1);
+                    if (error)
+                        return "specifier." + error;
+                }
+            }
+            return null;
+        };
+
+        /**
+         * Creates a FormatFragment message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.FormatFragment
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.FormatFragment} FormatFragment
+         */
+        FormatFragment.fromObject = function fromObject(object, long) {
+            if (object instanceof $root.hermes.FormatFragment)
+                return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FormatFragment: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var message = new $root.hermes.FormatFragment();
+            if (object.text != null)
+                message.text = String(object.text);
+            if (object.specifier != null) {
+                if (!$util.isObject(object.specifier))
+                    throw TypeError(".hermes.FormatFragment.specifier: object expected");
+                message.specifier = $root.hermes.FormatSpecifier.fromObject(object.specifier, long + 1);
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a FormatFragment message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.FormatFragment
+         * @static
+         * @param {hermes.FormatFragment} message FormatFragment
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        FormatFragment.toObject = function toObject(message, options, q) {
+            if (!options)
+                options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            var object = {};
+            if (message.text != null && Object.hasOwnProperty.call(message, "text")) {
+                object.text = message.text;
+                if (options.oneofs)
+                    object.fragment = "text";
+            }
+            if (message.specifier != null && Object.hasOwnProperty.call(message, "specifier")) {
+                object.specifier = $root.hermes.FormatSpecifier.toObject(message.specifier, options, q + 1);
+                if (options.oneofs)
+                    object.fragment = "specifier";
+            }
+            return object;
+        };
+
+        /**
+         * Converts this FormatFragment to JSON.
+         * @function toJSON
+         * @memberof hermes.FormatFragment
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        FormatFragment.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for FormatFragment
+         * @function getTypeUrl
+         * @memberof hermes.FormatFragment
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        FormatFragment.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.FormatFragment";
+        };
+
+        return FormatFragment;
+    })();
+
+    hermes.FormatString = (function() {
+
+        /**
+         * Properties of a FormatString.
+         * @memberof hermes
+         * @interface IFormatString
+         * @property {Array.<hermes.IFormatFragment>|null} [fragments] FormatString fragments
+         * @property {string|null} [original] FormatString original
+         */
+
+        /**
+         * Constructs a new FormatString.
+         * @memberof hermes
+         * @classdesc Represents a FormatString.
+         * @implements IFormatString
+         * @constructor
+         * @param {hermes.IFormatString=} [properties] Properties to set
+         */
+        function FormatString(properties) {
+            this.fragments = [];
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * FormatString fragments.
+         * @member {Array.<hermes.IFormatFragment>} fragments
+         * @memberof hermes.FormatString
+         * @instance
+         */
+        FormatString.prototype.fragments = $util.emptyArray;
+
+        /**
+         * FormatString original.
+         * @member {string} original
+         * @memberof hermes.FormatString
+         * @instance
+         */
+        FormatString.prototype.original = "";
+
+        /**
+         * Creates a new FormatString instance using the specified properties.
+         * @function create
+         * @memberof hermes.FormatString
+         * @static
+         * @param {hermes.IFormatString=} [properties] Properties to set
+         * @returns {hermes.FormatString} FormatString instance
+         */
+        FormatString.create = function create(properties) {
+            return new FormatString(properties);
+        };
+
+        /**
+         * Encodes the specified FormatString message. Does not implicitly {@link hermes.FormatString.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.FormatString
+         * @static
+         * @param {hermes.IFormatString} message FormatString message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        FormatString.encode = function encode(message, writer, q) {
+            if (!writer)
+                writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            if (message.fragments != null && message.fragments.length)
+                for (var i = 0; i < message.fragments.length; ++i)
+                    $root.hermes.FormatFragment.encode(message.fragments[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
+            if (message.original != null && Object.hasOwnProperty.call(message, "original"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.original);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified FormatString message, length delimited. Does not implicitly {@link hermes.FormatString.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.FormatString
+         * @static
+         * @param {hermes.IFormatString} message FormatString message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        FormatString.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a FormatString message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.FormatString
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.FormatString} FormatString
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        FormatString.decode = function decode(reader, length, error, long) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FormatString();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        if (!(message.fragments && message.fragments.length))
+                            message.fragments = [];
+                        message.fragments.push($root.hermes.FormatFragment.decode(reader, reader.uint32(), undefined, long + 1));
+                        break;
+                    }
+                case 2: {
+                        message.original = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7, long);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a FormatString message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.FormatString
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.FormatString} FormatString
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        FormatString.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a FormatString message.
+         * @function verify
+         * @memberof hermes.FormatString
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        FormatString.verify = function verify(message, long) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.fragments != null && Object.hasOwnProperty.call(message, "fragments")) {
+                if (!Array.isArray(message.fragments))
+                    return "fragments: array expected";
+                for (var i = 0; i < message.fragments.length; ++i) {
+                    var error = $root.hermes.FormatFragment.verify(message.fragments[i], long + 1);
+                    if (error)
+                        return "fragments." + error;
+                }
+            }
+            if (message.original != null && Object.hasOwnProperty.call(message, "original"))
+                if (!$util.isString(message.original))
+                    return "original: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a FormatString message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.FormatString
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.FormatString} FormatString
+         */
+        FormatString.fromObject = function fromObject(object, long) {
+            if (object instanceof $root.hermes.FormatString)
+                return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.FormatString: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var message = new $root.hermes.FormatString();
+            if (object.fragments) {
+                if (!Array.isArray(object.fragments))
+                    throw TypeError(".hermes.FormatString.fragments: array expected");
+                message.fragments = [];
+                for (var i = 0; i < object.fragments.length; ++i) {
+                    if (!$util.isObject(object.fragments[i]))
+                        throw TypeError(".hermes.FormatString.fragments: object expected");
+                    message.fragments[i] = $root.hermes.FormatFragment.fromObject(object.fragments[i], long + 1);
+                }
+            }
+            if (object.original != null)
+                message.original = String(object.original);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a FormatString message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.FormatString
+         * @static
+         * @param {hermes.FormatString} message FormatString
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        FormatString.toObject = function toObject(message, options, q) {
+            if (!options)
+                options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            var object = {};
+            if (options.arrays || options.defaults)
+                object.fragments = [];
+            if (options.defaults)
+                object.original = "";
+            if (message.fragments && message.fragments.length) {
+                object.fragments = [];
+                for (var j = 0; j < message.fragments.length; ++j)
+                    object.fragments[j] = $root.hermes.FormatFragment.toObject(message.fragments[j], options, q + 1);
+            }
+            if (message.original != null && Object.hasOwnProperty.call(message, "original"))
+                object.original = message.original;
+            return object;
+        };
+
+        /**
+         * Converts this FormatString to JSON.
+         * @function toJSON
+         * @memberof hermes.FormatString
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        FormatString.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for FormatString
+         * @function getTypeUrl
+         * @memberof hermes.FormatString
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        FormatString.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.FormatString";
+        };
+
+        return FormatString;
+    })();
+
+    hermes.EventDef = (function() {
+
+        /**
+         * Properties of an EventDef.
+         * @memberof hermes
+         * @interface IEventDef
+         * @property {number|null} [id] EventDef id
+         * @property {string|null} [component] Component or module
+         * @property {string|null} [name] Name of the EVR.
+         * Scoped by its component
+         * @property {hermes.EvrSeverity|null} [severity] Log severity usually stored in the FSW event dictionary
+         * For the most part this information is not held in the
+         * EVR packet since its redundant for ground software.
+         * @property {string|null} [formatString] DEPRECATED: Use format instead
+         * printf format string that will be formatted via sprintf
+         * @property {Array.<hermes.IField>|null} ["arguments"] Arguments used inside the format string
+         * @property {string|null} [metadata] EventDef metadata
+         * @property {hermes.IFormatString|null} [format] Structured format string with parsed fragments
+         */
+
+        /**
+         * Constructs a new EventDef.
+         * @memberof hermes
+         * @classdesc Represents an EventDef.
+         * @implements IEventDef
+         * @constructor
+         * @param {hermes.IEventDef=} [properties] Properties to set
+         */
+        function EventDef(properties) {
+            this["arguments"] = [];
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * EventDef id.
+         * @member {number} id
+         * @memberof hermes.EventDef
+         * @instance
+         */
+        EventDef.prototype.id = 0;
+
+        /**
+         * Component or module
+         * @member {string} component
+         * @memberof hermes.EventDef
+         * @instance
+         */
+        EventDef.prototype.component = "";
+
+        /**
+         * Name of the EVR.
+         * Scoped by its component
+         * @member {string} name
+         * @memberof hermes.EventDef
+         * @instance
+         */
+        EventDef.prototype.name = "";
+
+        /**
+         * Log severity usually stored in the FSW event dictionary
+         * For the most part this information is not held in the
+         * EVR packet since its redundant for ground software.
+         * @member {hermes.EvrSeverity} severity
+         * @memberof hermes.EventDef
+         * @instance
+         */
+        EventDef.prototype.severity = 0;
+
+        /**
+         * DEPRECATED: Use format instead
+         * printf format string that will be formatted via sprintf
+         * @member {string} formatString
+         * @memberof hermes.EventDef
+         * @instance
+         */
+        EventDef.prototype.formatString = "";
+
+        /**
+         * Arguments used inside the format string
+         * @member {Array.<hermes.IField>} arguments
+         * @memberof hermes.EventDef
+         * @instance
+         */
+        EventDef.prototype["arguments"] = $util.emptyArray;
+
+        /**
+         * EventDef metadata.
+         * @member {string} metadata
+         * @memberof hermes.EventDef
+         * @instance
+         */
+        EventDef.prototype.metadata = "";
+
+        /**
+         * Structured format string with parsed fragments
+         * @member {hermes.IFormatString|null|undefined} format
+         * @memberof hermes.EventDef
+         * @instance
+         */
+        EventDef.prototype.format = null;
+
+        /**
+         * Creates a new EventDef instance using the specified properties.
+         * @function create
+         * @memberof hermes.EventDef
+         * @static
+         * @param {hermes.IEventDef=} [properties] Properties to set
+         * @returns {hermes.EventDef} EventDef instance
+         */
+        EventDef.create = function create(properties) {
+            return new EventDef(properties);
+        };
+
+        /**
+         * Encodes the specified EventDef message. Does not implicitly {@link hermes.EventDef.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.EventDef
+         * @static
+         * @param {hermes.IEventDef} message EventDef message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        EventDef.encode = function encode(message, writer, q) {
+            if (!writer)
+                writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.component);
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.name);
+            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
+                writer.uint32(/* id 4, wireType 0 =*/32).int32(message.severity);
+            if (message.formatString != null && Object.hasOwnProperty.call(message, "formatString"))
+                writer.uint32(/* id 5, wireType 2 =*/42).string(message.formatString);
+            if (message["arguments"] != null && message["arguments"].length)
+                for (var i = 0; i < message["arguments"].length; ++i)
+                    $root.hermes.Field.encode(message["arguments"][i], writer.uint32(/* id 6, wireType 2 =*/50).fork(), q + 1).ldelim();
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                writer.uint32(/* id 7, wireType 2 =*/58).string(message.metadata);
+            if (message.format != null && Object.hasOwnProperty.call(message, "format"))
+                $root.hermes.FormatString.encode(message.format, writer.uint32(/* id 8, wireType 2 =*/66).fork(), q + 1).ldelim();
+            return writer;
+        };
+
+        /**
+         * Encodes the specified EventDef message, length delimited. Does not implicitly {@link hermes.EventDef.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.EventDef
+         * @static
+         * @param {hermes.IEventDef} message EventDef message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        EventDef.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes an EventDef message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.EventDef
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.EventDef} EventDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        EventDef.decode = function decode(reader, length, error, long) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.EventDef();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.id = reader.int32();
+                        break;
+                    }
+                case 2: {
+                        message.component = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.name = reader.string();
+                        break;
+                    }
+                case 4: {
+                        message.severity = reader.int32();
+                        break;
+                    }
+                case 5: {
+                        message.formatString = reader.string();
+                        break;
+                    }
+                case 6: {
+                        if (!(message["arguments"] && message["arguments"].length))
+                            message["arguments"] = [];
+                        message["arguments"].push($root.hermes.Field.decode(reader, reader.uint32(), undefined, long + 1));
+                        break;
+                    }
+                case 7: {
+                        message.metadata = reader.string();
+                        break;
+                    }
+                case 8: {
+                        message.format = $root.hermes.FormatString.decode(reader, reader.uint32(), undefined, long + 1);
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7, long);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes an EventDef message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.EventDef
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.EventDef} EventDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        EventDef.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies an EventDef message.
+         * @function verify
+         * @memberof hermes.EventDef
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        EventDef.verify = function verify(message, long) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                if (!$util.isInteger(message.id))
+                    return "id: integer expected";
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
+                if (!$util.isString(message.component))
+                    return "component: string expected";
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                if (!$util.isString(message.name))
+                    return "name: string expected";
+            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
+                switch (message.severity) {
+                default:
+                    return "severity: enum value expected";
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                    break;
+                }
+            if (message.formatString != null && Object.hasOwnProperty.call(message, "formatString"))
+                if (!$util.isString(message.formatString))
+                    return "formatString: string expected";
+            if (message["arguments"] != null && Object.hasOwnProperty.call(message, "arguments")) {
+                if (!Array.isArray(message["arguments"]))
+                    return "arguments: array expected";
+                for (var i = 0; i < message["arguments"].length; ++i) {
+                    var error = $root.hermes.Field.verify(message["arguments"][i], long + 1);
+                    if (error)
+                        return "arguments." + error;
+                }
+            }
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                if (!$util.isString(message.metadata))
+                    return "metadata: string expected";
+            if (message.format != null && Object.hasOwnProperty.call(message, "format")) {
+                var error = $root.hermes.FormatString.verify(message.format, long + 1);
+                if (error)
+                    return "format." + error;
+            }
+            return null;
+        };
+
+        /**
+         * Creates an EventDef message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.EventDef
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.EventDef} EventDef
+         */
+        EventDef.fromObject = function fromObject(object, long) {
+            if (object instanceof $root.hermes.EventDef)
+                return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.EventDef: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var message = new $root.hermes.EventDef();
+            if (object.id != null)
+                message.id = object.id | 0;
+            if (object.component != null)
+                message.component = String(object.component);
+            if (object.name != null)
+                message.name = String(object.name);
+            switch (object.severity) {
+            default:
+                if (typeof object.severity === "number") {
+                    message.severity = object.severity;
+                    break;
+                }
+                break;
+            case "EVR_DIAGNOSTIC":
+            case 0:
+                message.severity = 0;
+                break;
+            case "EVR_ACTIVITY_LOW":
+            case 1:
+                message.severity = 1;
+                break;
+            case "EVR_ACTIVITY_HIGH":
+            case 2:
+                message.severity = 2;
+                break;
+            case "EVR_WARNING_LOW":
+            case 3:
+                message.severity = 3;
+                break;
+            case "EVR_WARNING_HIGH":
+            case 4:
+                message.severity = 4;
+                break;
+            case "EVR_COMMAND":
+            case 5:
+                message.severity = 5;
+                break;
+            case "EVR_FATAL":
+            case 6:
+                message.severity = 6;
+                break;
+            }
+            if (object.formatString != null)
+                message.formatString = String(object.formatString);
+            if (object["arguments"]) {
+                if (!Array.isArray(object["arguments"]))
+                    throw TypeError(".hermes.EventDef.arguments: array expected");
+                message["arguments"] = [];
+                for (var i = 0; i < object["arguments"].length; ++i) {
+                    if (!$util.isObject(object["arguments"][i]))
+                        throw TypeError(".hermes.EventDef.arguments: object expected");
+                    message["arguments"][i] = $root.hermes.Field.fromObject(object["arguments"][i], long + 1);
+                }
+            }
+            if (object.metadata != null)
+                message.metadata = String(object.metadata);
+            if (object.format != null) {
+                if (!$util.isObject(object.format))
+                    throw TypeError(".hermes.EventDef.format: object expected");
+                message.format = $root.hermes.FormatString.fromObject(object.format, long + 1);
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from an EventDef message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.EventDef
+         * @static
+         * @param {hermes.EventDef} message EventDef
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        EventDef.toObject = function toObject(message, options, q) {
+            if (!options)
+                options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            var object = {};
+            if (options.arrays || options.defaults)
+                object["arguments"] = [];
+            if (options.defaults) {
+                object.id = 0;
+                object.component = "";
+                object.name = "";
+                object.severity = options.enums === String ? "EVR_DIAGNOSTIC" : 0;
+                object.formatString = "";
+                object.metadata = "";
+                object.format = null;
+            }
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                object.id = message.id;
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
+                object.component = message.component;
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                object.name = message.name;
+            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
+                object.severity = options.enums === String ? $root.hermes.EvrSeverity[message.severity] === undefined ? message.severity : $root.hermes.EvrSeverity[message.severity] : message.severity;
+            if (message.formatString != null && Object.hasOwnProperty.call(message, "formatString"))
+                object.formatString = message.formatString;
+            if (message["arguments"] && message["arguments"].length) {
+                object["arguments"] = [];
+                for (var j = 0; j < message["arguments"].length; ++j)
+                    object["arguments"][j] = $root.hermes.Field.toObject(message["arguments"][j], options, q + 1);
+            }
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                object.metadata = message.metadata;
+            if (message.format != null && Object.hasOwnProperty.call(message, "format"))
+                object.format = $root.hermes.FormatString.toObject(message.format, options, q + 1);
+            return object;
+        };
+
+        /**
+         * Converts this EventDef to JSON.
+         * @function toJSON
+         * @memberof hermes.EventDef
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        EventDef.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for EventDef
+         * @function getTypeUrl
+         * @memberof hermes.EventDef
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        EventDef.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.EventDef";
+        };
+
+        return EventDef;
+    })();
+
+    hermes.TelemetryDef = (function() {
+
+        /**
+         * Properties of a TelemetryDef.
+         * @memberof hermes
+         * @interface ITelemetryDef
+         * @property {number|null} [id] Raw ID used for identifying incoming serialized telemetry
+         * @property {string|null} [name] Telemetry name
+         * @property {string|null} [component] Component or module that owns this telemetry
+         * @property {hermes.IType|null} [type] Serialization type
+         * @property {string|null} [metadata] TelemetryDef metadata
+         */
+
+        /**
+         * Constructs a new TelemetryDef.
+         * @memberof hermes
+         * @classdesc Represents a TelemetryDef.
+         * @implements ITelemetryDef
+         * @constructor
+         * @param {hermes.ITelemetryDef=} [properties] Properties to set
+         */
+        function TelemetryDef(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Raw ID used for identifying incoming serialized telemetry
+         * @member {number} id
+         * @memberof hermes.TelemetryDef
+         * @instance
+         */
+        TelemetryDef.prototype.id = 0;
+
+        /**
+         * Telemetry name
+         * @member {string} name
+         * @memberof hermes.TelemetryDef
+         * @instance
+         */
+        TelemetryDef.prototype.name = "";
+
+        /**
+         * Component or module that owns this telemetry
+         * @member {string} component
+         * @memberof hermes.TelemetryDef
+         * @instance
+         */
+        TelemetryDef.prototype.component = "";
+
+        /**
+         * Serialization type
+         * @member {hermes.IType|null|undefined} type
+         * @memberof hermes.TelemetryDef
+         * @instance
+         */
+        TelemetryDef.prototype.type = null;
+
+        /**
+         * TelemetryDef metadata.
+         * @member {string} metadata
+         * @memberof hermes.TelemetryDef
+         * @instance
+         */
+        TelemetryDef.prototype.metadata = "";
+
+        /**
+         * Creates a new TelemetryDef instance using the specified properties.
+         * @function create
+         * @memberof hermes.TelemetryDef
+         * @static
+         * @param {hermes.ITelemetryDef=} [properties] Properties to set
+         * @returns {hermes.TelemetryDef} TelemetryDef instance
+         */
+        TelemetryDef.create = function create(properties) {
+            return new TelemetryDef(properties);
+        };
+
+        /**
+         * Encodes the specified TelemetryDef message. Does not implicitly {@link hermes.TelemetryDef.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.TelemetryDef
+         * @static
+         * @param {hermes.ITelemetryDef} message TelemetryDef message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        TelemetryDef.encode = function encode(message, writer, q) {
+            if (!writer)
+                writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.name);
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.component);
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                $root.hermes.Type.encode(message.type, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                writer.uint32(/* id 6, wireType 2 =*/50).string(message.metadata);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified TelemetryDef message, length delimited. Does not implicitly {@link hermes.TelemetryDef.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.TelemetryDef
+         * @static
+         * @param {hermes.ITelemetryDef} message TelemetryDef message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        TelemetryDef.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a TelemetryDef message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.TelemetryDef
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.TelemetryDef} TelemetryDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        TelemetryDef.decode = function decode(reader, length, error, long) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.TelemetryDef();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.id = reader.int32();
+                        break;
+                    }
+                case 2: {
+                        message.name = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.component = reader.string();
+                        break;
+                    }
+                case 4: {
+                        message.type = $root.hermes.Type.decode(reader, reader.uint32(), undefined, long + 1);
+                        break;
+                    }
+                case 6: {
+                        message.metadata = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7, long);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a TelemetryDef message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.TelemetryDef
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.TelemetryDef} TelemetryDef
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        TelemetryDef.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a TelemetryDef message.
+         * @function verify
+         * @memberof hermes.TelemetryDef
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        TelemetryDef.verify = function verify(message, long) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                if (!$util.isInteger(message.id))
+                    return "id: integer expected";
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                if (!$util.isString(message.name))
+                    return "name: string expected";
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
+                if (!$util.isString(message.component))
+                    return "component: string expected";
+            if (message.type != null && Object.hasOwnProperty.call(message, "type")) {
+                var error = $root.hermes.Type.verify(message.type, long + 1);
+                if (error)
+                    return "type." + error;
+            }
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                if (!$util.isString(message.metadata))
+                    return "metadata: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a TelemetryDef message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.TelemetryDef
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.TelemetryDef} TelemetryDef
+         */
+        TelemetryDef.fromObject = function fromObject(object, long) {
+            if (object instanceof $root.hermes.TelemetryDef)
+                return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.TelemetryDef: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var message = new $root.hermes.TelemetryDef();
+            if (object.id != null)
+                message.id = object.id | 0;
+            if (object.name != null)
+                message.name = String(object.name);
+            if (object.component != null)
+                message.component = String(object.component);
+            if (object.type != null) {
+                if (!$util.isObject(object.type))
+                    throw TypeError(".hermes.TelemetryDef.type: object expected");
+                message.type = $root.hermes.Type.fromObject(object.type, long + 1);
+            }
+            if (object.metadata != null)
+                message.metadata = String(object.metadata);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a TelemetryDef message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.TelemetryDef
+         * @static
+         * @param {hermes.TelemetryDef} message TelemetryDef
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        TelemetryDef.toObject = function toObject(message, options, q) {
+            if (!options)
+                options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            var object = {};
+            if (options.defaults) {
+                object.id = 0;
+                object.name = "";
+                object.component = "";
+                object.type = null;
+                object.metadata = "";
+            }
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                object.id = message.id;
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                object.name = message.name;
+            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
+                object.component = message.component;
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                object.type = $root.hermes.Type.toObject(message.type, options, q + 1);
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                object.metadata = message.metadata;
+            return object;
+        };
+
+        /**
+         * Converts this TelemetryDef to JSON.
+         * @function toJSON
+         * @memberof hermes.TelemetryDef
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        TelemetryDef.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for TelemetryDef
+         * @function getTypeUrl
+         * @memberof hermes.TelemetryDef
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        TelemetryDef.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.TelemetryDef";
+        };
+
+        return TelemetryDef;
+    })();
+
+    hermes.DictionaryHead = (function() {
+
+        /**
+         * Properties of a DictionaryHead.
+         * @memberof hermes
+         * @interface IDictionaryHead
+         * @property {string|null} [type] Type associated with the Fsw.type
+         * This will filter the user's selection
+         * of dictionaries that can be tracked.
+         * 
+         * This is set by the provider.
+         * @property {string|null} [name] DictionaryHead name
+         * @property {string|null} [version] DictionaryHead version
+         */
+
+        /**
+         * Constructs a new DictionaryHead.
+         * @memberof hermes
+         * @classdesc Represents a DictionaryHead.
+         * @implements IDictionaryHead
+         * @constructor
+         * @param {hermes.IDictionaryHead=} [properties] Properties to set
+         */
+        function DictionaryHead(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Type associated with the Fsw.type
+         * This will filter the user's selection
+         * of dictionaries that can be tracked.
+         * 
+         * This is set by the provider.
+         * @member {string} type
+         * @memberof hermes.DictionaryHead
+         * @instance
+         */
+        DictionaryHead.prototype.type = "";
+
+        /**
+         * DictionaryHead name.
+         * @member {string} name
+         * @memberof hermes.DictionaryHead
+         * @instance
+         */
+        DictionaryHead.prototype.name = "";
+
+        /**
+         * DictionaryHead version.
+         * @member {string} version
+         * @memberof hermes.DictionaryHead
+         * @instance
+         */
+        DictionaryHead.prototype.version = "";
+
+        /**
+         * Creates a new DictionaryHead instance using the specified properties.
+         * @function create
+         * @memberof hermes.DictionaryHead
+         * @static
+         * @param {hermes.IDictionaryHead=} [properties] Properties to set
+         * @returns {hermes.DictionaryHead} DictionaryHead instance
+         */
+        DictionaryHead.create = function create(properties) {
+            return new DictionaryHead(properties);
+        };
+
+        /**
+         * Encodes the specified DictionaryHead message. Does not implicitly {@link hermes.DictionaryHead.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.DictionaryHead
+         * @static
+         * @param {hermes.IDictionaryHead} message DictionaryHead message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DictionaryHead.encode = function encode(message, writer, q) {
+            if (!writer)
+                writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.type);
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.name);
+            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.version);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified DictionaryHead message, length delimited. Does not implicitly {@link hermes.DictionaryHead.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.DictionaryHead
+         * @static
+         * @param {hermes.IDictionaryHead} message DictionaryHead message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DictionaryHead.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a DictionaryHead message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.DictionaryHead
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.DictionaryHead} DictionaryHead
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DictionaryHead.decode = function decode(reader, length, error, long) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DictionaryHead();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.type = reader.string();
+                        break;
+                    }
+                case 2: {
+                        message.name = reader.string();
+                        break;
+                    }
+                case 3: {
+                        message.version = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7, long);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a DictionaryHead message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.DictionaryHead
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.DictionaryHead} DictionaryHead
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DictionaryHead.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a DictionaryHead message.
+         * @function verify
+         * @memberof hermes.DictionaryHead
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        DictionaryHead.verify = function verify(message, long) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                if (!$util.isString(message.type))
+                    return "type: string expected";
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                if (!$util.isString(message.name))
+                    return "name: string expected";
+            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
+                if (!$util.isString(message.version))
+                    return "version: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a DictionaryHead message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.DictionaryHead
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.DictionaryHead} DictionaryHead
+         */
+        DictionaryHead.fromObject = function fromObject(object, long) {
+            if (object instanceof $root.hermes.DictionaryHead)
+                return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.DictionaryHead: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var message = new $root.hermes.DictionaryHead();
+            if (object.type != null)
+                message.type = String(object.type);
+            if (object.name != null)
+                message.name = String(object.name);
+            if (object.version != null)
+                message.version = String(object.version);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a DictionaryHead message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.DictionaryHead
+         * @static
+         * @param {hermes.DictionaryHead} message DictionaryHead
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        DictionaryHead.toObject = function toObject(message, options, q) {
+            if (!options)
+                options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            var object = {};
+            if (options.defaults) {
+                object.type = "";
+                object.name = "";
+                object.version = "";
+            }
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                object.type = message.type;
+            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                object.name = message.name;
+            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
+                object.version = message.version;
+            return object;
+        };
+
+        /**
+         * Converts this DictionaryHead to JSON.
+         * @function toJSON
+         * @memberof hermes.DictionaryHead
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        DictionaryHead.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for DictionaryHead
+         * @function getTypeUrl
+         * @memberof hermes.DictionaryHead
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        DictionaryHead.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.DictionaryHead";
+        };
+
+        return DictionaryHead;
+    })();
+
+    hermes.DictionaryNamespace = (function() {
+
+        /**
+         * Properties of a DictionaryNamespace.
+         * @memberof hermes
+         * @interface IDictionaryNamespace
+         * @property {Object.<string,hermes.ICommandDef>|null} [commands] DictionaryNamespace commands
+         * @property {Object.<string,hermes.IEventDef>|null} [events] DictionaryNamespace events
+         * @property {Object.<string,hermes.ITelemetryDef>|null} [telemetry] DictionaryNamespace telemetry
+         * @property {Object.<string,hermes.IParameterDef>|null} [parameters] DictionaryNamespace parameters
+         * @property {Object.<string,hermes.IType>|null} [types] DictionaryNamespace types
+         */
+
+        /**
+         * Constructs a new DictionaryNamespace.
+         * @memberof hermes
+         * @classdesc Represents a DictionaryNamespace.
+         * @implements IDictionaryNamespace
+         * @constructor
+         * @param {hermes.IDictionaryNamespace=} [properties] Properties to set
+         */
+        function DictionaryNamespace(properties) {
+            this.commands = {};
+            this.events = {};
+            this.telemetry = {};
+            this.parameters = {};
+            this.types = {};
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * DictionaryNamespace commands.
+         * @member {Object.<string,hermes.ICommandDef>} commands
+         * @memberof hermes.DictionaryNamespace
+         * @instance
+         */
+        DictionaryNamespace.prototype.commands = $util.emptyObject;
+
+        /**
+         * DictionaryNamespace events.
+         * @member {Object.<string,hermes.IEventDef>} events
+         * @memberof hermes.DictionaryNamespace
+         * @instance
+         */
+        DictionaryNamespace.prototype.events = $util.emptyObject;
+
+        /**
+         * DictionaryNamespace telemetry.
+         * @member {Object.<string,hermes.ITelemetryDef>} telemetry
+         * @memberof hermes.DictionaryNamespace
+         * @instance
+         */
+        DictionaryNamespace.prototype.telemetry = $util.emptyObject;
+
+        /**
+         * DictionaryNamespace parameters.
+         * @member {Object.<string,hermes.IParameterDef>} parameters
+         * @memberof hermes.DictionaryNamespace
+         * @instance
+         */
+        DictionaryNamespace.prototype.parameters = $util.emptyObject;
+
+        /**
+         * DictionaryNamespace types.
+         * @member {Object.<string,hermes.IType>} types
+         * @memberof hermes.DictionaryNamespace
+         * @instance
+         */
+        DictionaryNamespace.prototype.types = $util.emptyObject;
+
+        /**
+         * Creates a new DictionaryNamespace instance using the specified properties.
+         * @function create
+         * @memberof hermes.DictionaryNamespace
+         * @static
+         * @param {hermes.IDictionaryNamespace=} [properties] Properties to set
+         * @returns {hermes.DictionaryNamespace} DictionaryNamespace instance
+         */
+        DictionaryNamespace.create = function create(properties) {
+            return new DictionaryNamespace(properties);
+        };
+
+        /**
+         * Encodes the specified DictionaryNamespace message. Does not implicitly {@link hermes.DictionaryNamespace.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.DictionaryNamespace
+         * @static
+         * @param {hermes.IDictionaryNamespace} message DictionaryNamespace message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DictionaryNamespace.encode = function encode(message, writer, q) {
+            if (!writer)
+                writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            if (message.commands != null && Object.hasOwnProperty.call(message, "commands"))
+                for (var keys = Object.keys(message.commands), i = 0; i < keys.length; ++i) {
+                    writer.uint32(/* id 1, wireType 2 =*/10).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
+                    $root.hermes.CommandDef.encode(message.commands[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
+                }
+            if (message.events != null && Object.hasOwnProperty.call(message, "events"))
+                for (var keys = Object.keys(message.events), i = 0; i < keys.length; ++i) {
+                    writer.uint32(/* id 2, wireType 2 =*/18).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
+                    $root.hermes.EventDef.encode(message.events[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
+                }
+            if (message.telemetry != null && Object.hasOwnProperty.call(message, "telemetry"))
+                for (var keys = Object.keys(message.telemetry), i = 0; i < keys.length; ++i) {
+                    writer.uint32(/* id 3, wireType 2 =*/26).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
+                    $root.hermes.TelemetryDef.encode(message.telemetry[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
+                }
+            if (message.parameters != null && Object.hasOwnProperty.call(message, "parameters"))
+                for (var keys = Object.keys(message.parameters), i = 0; i < keys.length; ++i) {
+                    writer.uint32(/* id 4, wireType 2 =*/34).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
+                    $root.hermes.ParameterDef.encode(message.parameters[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
+                }
+            if (message.types != null && Object.hasOwnProperty.call(message, "types"))
+                for (var keys = Object.keys(message.types), i = 0; i < keys.length; ++i) {
+                    writer.uint32(/* id 5, wireType 2 =*/42).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
+                    $root.hermes.Type.encode(message.types[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
+                }
+            return writer;
+        };
+
+        /**
+         * Encodes the specified DictionaryNamespace message, length delimited. Does not implicitly {@link hermes.DictionaryNamespace.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.DictionaryNamespace
+         * @static
+         * @param {hermes.IDictionaryNamespace} message DictionaryNamespace message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        DictionaryNamespace.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a DictionaryNamespace message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.DictionaryNamespace
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.DictionaryNamespace} DictionaryNamespace
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DictionaryNamespace.decode = function decode(reader, length, error, long) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DictionaryNamespace(), key, value;
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        if (message.commands === $util.emptyObject)
+                            message.commands = {};
+                        var end2 = reader.uint32() + reader.pos;
+                        key = "";
+                        value = null;
+                        while (reader.pos < end2) {
+                            var tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.string();
+                                break;
+                            case 2:
+                                value = $root.hermes.CommandDef.decode(reader, reader.uint32(), undefined, long + 1);
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7, long);
+                                break;
+                            }
+                        }
+                        if (key === "__proto__")
+                            $util.makeProp(message.commands, key);
+                        message.commands[key] = value;
+                        break;
+                    }
+                case 2: {
+                        if (message.events === $util.emptyObject)
+                            message.events = {};
+                        var end2 = reader.uint32() + reader.pos;
+                        key = "";
+                        value = null;
+                        while (reader.pos < end2) {
+                            var tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.string();
+                                break;
+                            case 2:
+                                value = $root.hermes.EventDef.decode(reader, reader.uint32(), undefined, long + 1);
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7, long);
+                                break;
+                            }
+                        }
+                        if (key === "__proto__")
+                            $util.makeProp(message.events, key);
+                        message.events[key] = value;
+                        break;
+                    }
+                case 3: {
+                        if (message.telemetry === $util.emptyObject)
+                            message.telemetry = {};
+                        var end2 = reader.uint32() + reader.pos;
+                        key = "";
+                        value = null;
+                        while (reader.pos < end2) {
+                            var tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.string();
+                                break;
+                            case 2:
+                                value = $root.hermes.TelemetryDef.decode(reader, reader.uint32(), undefined, long + 1);
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7, long);
+                                break;
+                            }
+                        }
+                        if (key === "__proto__")
+                            $util.makeProp(message.telemetry, key);
+                        message.telemetry[key] = value;
+                        break;
+                    }
+                case 4: {
+                        if (message.parameters === $util.emptyObject)
+                            message.parameters = {};
+                        var end2 = reader.uint32() + reader.pos;
+                        key = "";
+                        value = null;
+                        while (reader.pos < end2) {
+                            var tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.string();
+                                break;
+                            case 2:
+                                value = $root.hermes.ParameterDef.decode(reader, reader.uint32(), undefined, long + 1);
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7, long);
+                                break;
+                            }
+                        }
+                        if (key === "__proto__")
+                            $util.makeProp(message.parameters, key);
+                        message.parameters[key] = value;
+                        break;
+                    }
+                case 5: {
+                        if (message.types === $util.emptyObject)
+                            message.types = {};
+                        var end2 = reader.uint32() + reader.pos;
+                        key = "";
+                        value = null;
+                        while (reader.pos < end2) {
+                            var tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.string();
+                                break;
+                            case 2:
+                                value = $root.hermes.Type.decode(reader, reader.uint32(), undefined, long + 1);
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7, long);
+                                break;
+                            }
+                        }
+                        if (key === "__proto__")
+                            $util.makeProp(message.types, key);
+                        message.types[key] = value;
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7, long);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a DictionaryNamespace message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.DictionaryNamespace
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.DictionaryNamespace} DictionaryNamespace
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        DictionaryNamespace.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a DictionaryNamespace message.
+         * @function verify
+         * @memberof hermes.DictionaryNamespace
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        DictionaryNamespace.verify = function verify(message, long) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.commands != null && Object.hasOwnProperty.call(message, "commands")) {
+                if (!$util.isObject(message.commands))
+                    return "commands: object expected";
+                var key = Object.keys(message.commands);
+                for (var i = 0; i < key.length; ++i) {
+                    var error = $root.hermes.CommandDef.verify(message.commands[key[i]], long + 1);
+                    if (error)
+                        return "commands." + error;
+                }
+            }
+            if (message.events != null && Object.hasOwnProperty.call(message, "events")) {
+                if (!$util.isObject(message.events))
+                    return "events: object expected";
+                var key = Object.keys(message.events);
+                for (var i = 0; i < key.length; ++i) {
+                    var error = $root.hermes.EventDef.verify(message.events[key[i]], long + 1);
+                    if (error)
+                        return "events." + error;
+                }
+            }
+            if (message.telemetry != null && Object.hasOwnProperty.call(message, "telemetry")) {
+                if (!$util.isObject(message.telemetry))
+                    return "telemetry: object expected";
+                var key = Object.keys(message.telemetry);
+                for (var i = 0; i < key.length; ++i) {
+                    var error = $root.hermes.TelemetryDef.verify(message.telemetry[key[i]], long + 1);
+                    if (error)
+                        return "telemetry." + error;
+                }
+            }
+            if (message.parameters != null && Object.hasOwnProperty.call(message, "parameters")) {
+                if (!$util.isObject(message.parameters))
+                    return "parameters: object expected";
+                var key = Object.keys(message.parameters);
+                for (var i = 0; i < key.length; ++i) {
+                    var error = $root.hermes.ParameterDef.verify(message.parameters[key[i]], long + 1);
+                    if (error)
+                        return "parameters." + error;
+                }
+            }
+            if (message.types != null && Object.hasOwnProperty.call(message, "types")) {
+                if (!$util.isObject(message.types))
+                    return "types: object expected";
+                var key = Object.keys(message.types);
+                for (var i = 0; i < key.length; ++i) {
+                    var error = $root.hermes.Type.verify(message.types[key[i]], long + 1);
+                    if (error)
+                        return "types." + error;
+                }
+            }
+            return null;
+        };
+
+        /**
+         * Creates a DictionaryNamespace message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.DictionaryNamespace
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.DictionaryNamespace} DictionaryNamespace
+         */
+        DictionaryNamespace.fromObject = function fromObject(object, long) {
+            if (object instanceof $root.hermes.DictionaryNamespace)
+                return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.DictionaryNamespace: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var message = new $root.hermes.DictionaryNamespace();
+            if (object.commands) {
+                if (!$util.isObject(object.commands))
+                    throw TypeError(".hermes.DictionaryNamespace.commands: object expected");
+                message.commands = {};
+                for (var keys = Object.keys(object.commands), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.commands, keys[i]);
+                    if (!$util.isObject(object.commands[keys[i]]))
+                        throw TypeError(".hermes.DictionaryNamespace.commands: object expected");
+                    message.commands[keys[i]] = $root.hermes.CommandDef.fromObject(object.commands[keys[i]], long + 1);
+                }
+            }
+            if (object.events) {
+                if (!$util.isObject(object.events))
+                    throw TypeError(".hermes.DictionaryNamespace.events: object expected");
+                message.events = {};
+                for (var keys = Object.keys(object.events), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.events, keys[i]);
+                    if (!$util.isObject(object.events[keys[i]]))
+                        throw TypeError(".hermes.DictionaryNamespace.events: object expected");
+                    message.events[keys[i]] = $root.hermes.EventDef.fromObject(object.events[keys[i]], long + 1);
+                }
+            }
+            if (object.telemetry) {
+                if (!$util.isObject(object.telemetry))
+                    throw TypeError(".hermes.DictionaryNamespace.telemetry: object expected");
+                message.telemetry = {};
+                for (var keys = Object.keys(object.telemetry), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.telemetry, keys[i]);
+                    if (!$util.isObject(object.telemetry[keys[i]]))
+                        throw TypeError(".hermes.DictionaryNamespace.telemetry: object expected");
+                    message.telemetry[keys[i]] = $root.hermes.TelemetryDef.fromObject(object.telemetry[keys[i]], long + 1);
+                }
+            }
+            if (object.parameters) {
+                if (!$util.isObject(object.parameters))
+                    throw TypeError(".hermes.DictionaryNamespace.parameters: object expected");
+                message.parameters = {};
+                for (var keys = Object.keys(object.parameters), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.parameters, keys[i]);
+                    if (!$util.isObject(object.parameters[keys[i]]))
+                        throw TypeError(".hermes.DictionaryNamespace.parameters: object expected");
+                    message.parameters[keys[i]] = $root.hermes.ParameterDef.fromObject(object.parameters[keys[i]], long + 1);
+                }
+            }
+            if (object.types) {
+                if (!$util.isObject(object.types))
+                    throw TypeError(".hermes.DictionaryNamespace.types: object expected");
+                message.types = {};
+                for (var keys = Object.keys(object.types), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.types, keys[i]);
+                    if (!$util.isObject(object.types[keys[i]]))
+                        throw TypeError(".hermes.DictionaryNamespace.types: object expected");
+                    message.types[keys[i]] = $root.hermes.Type.fromObject(object.types[keys[i]], long + 1);
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a DictionaryNamespace message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.DictionaryNamespace
+         * @static
+         * @param {hermes.DictionaryNamespace} message DictionaryNamespace
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        DictionaryNamespace.toObject = function toObject(message, options, q) {
+            if (!options)
+                options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            var object = {};
+            if (options.objects || options.defaults) {
+                object.commands = {};
+                object.events = {};
+                object.telemetry = {};
+                object.parameters = {};
+                object.types = {};
+            }
+            var keys2;
+            if (message.commands && (keys2 = Object.keys(message.commands)).length) {
+                object.commands = {};
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.commands, keys2[j]);
+                    object.commands[keys2[j]] = $root.hermes.CommandDef.toObject(message.commands[keys2[j]], options, q + 1);
+                }
+            }
+            if (message.events && (keys2 = Object.keys(message.events)).length) {
+                object.events = {};
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.events, keys2[j]);
+                    object.events[keys2[j]] = $root.hermes.EventDef.toObject(message.events[keys2[j]], options, q + 1);
+                }
+            }
+            if (message.telemetry && (keys2 = Object.keys(message.telemetry)).length) {
+                object.telemetry = {};
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.telemetry, keys2[j]);
+                    object.telemetry[keys2[j]] = $root.hermes.TelemetryDef.toObject(message.telemetry[keys2[j]], options, q + 1);
+                }
+            }
+            if (message.parameters && (keys2 = Object.keys(message.parameters)).length) {
+                object.parameters = {};
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.parameters, keys2[j]);
+                    object.parameters[keys2[j]] = $root.hermes.ParameterDef.toObject(message.parameters[keys2[j]], options, q + 1);
+                }
+            }
+            if (message.types && (keys2 = Object.keys(message.types)).length) {
+                object.types = {};
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.types, keys2[j]);
+                    object.types[keys2[j]] = $root.hermes.Type.toObject(message.types[keys2[j]], options, q + 1);
+                }
+            }
+            return object;
+        };
+
+        /**
+         * Converts this DictionaryNamespace to JSON.
+         * @function toJSON
+         * @memberof hermes.DictionaryNamespace
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        DictionaryNamespace.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for DictionaryNamespace
+         * @function getTypeUrl
+         * @memberof hermes.DictionaryNamespace
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        DictionaryNamespace.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.DictionaryNamespace";
+        };
+
+        return DictionaryNamespace;
+    })();
+
+    hermes.Dictionary = (function() {
+
+        /**
+         * Properties of a Dictionary.
+         * @memberof hermes
+         * @interface IDictionary
+         * @property {hermes.IDictionaryHead|null} [head] Dictionary head
+         * @property {Object.<string,hermes.IDictionaryNamespace>|null} [content] Dictionary content
+         * @property {Object.<string,string>|null} [metadata] Dictionary metadata
+         * @property {string|null} [id] Dictionary id
+         */
+
+        /**
+         * Constructs a new Dictionary.
+         * @memberof hermes
+         * @classdesc Represents a Dictionary.
+         * @implements IDictionary
+         * @constructor
+         * @param {hermes.IDictionary=} [properties] Properties to set
+         */
+        function Dictionary(properties) {
+            this.content = {};
+            this.metadata = {};
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Dictionary head.
+         * @member {hermes.IDictionaryHead|null|undefined} head
+         * @memberof hermes.Dictionary
+         * @instance
+         */
+        Dictionary.prototype.head = null;
+
+        /**
+         * Dictionary content.
+         * @member {Object.<string,hermes.IDictionaryNamespace>} content
+         * @memberof hermes.Dictionary
+         * @instance
+         */
+        Dictionary.prototype.content = $util.emptyObject;
+
+        /**
+         * Dictionary metadata.
+         * @member {Object.<string,string>} metadata
+         * @memberof hermes.Dictionary
+         * @instance
+         */
+        Dictionary.prototype.metadata = $util.emptyObject;
+
+        /**
+         * Dictionary id.
+         * @member {string} id
+         * @memberof hermes.Dictionary
+         * @instance
+         */
+        Dictionary.prototype.id = "";
+
+        /**
+         * Creates a new Dictionary instance using the specified properties.
+         * @function create
+         * @memberof hermes.Dictionary
+         * @static
+         * @param {hermes.IDictionary=} [properties] Properties to set
+         * @returns {hermes.Dictionary} Dictionary instance
+         */
+        Dictionary.create = function create(properties) {
+            return new Dictionary(properties);
+        };
+
+        /**
+         * Encodes the specified Dictionary message. Does not implicitly {@link hermes.Dictionary.verify|verify} messages.
+         * @function encode
+         * @memberof hermes.Dictionary
+         * @static
+         * @param {hermes.IDictionary} message Dictionary message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Dictionary.encode = function encode(message, writer, q) {
+            if (!writer)
+                writer = $Writer.create();
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            if (message.head != null && Object.hasOwnProperty.call(message, "head"))
+                $root.hermes.DictionaryHead.encode(message.head, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
+            if (message.content != null && Object.hasOwnProperty.call(message, "content"))
+                for (var keys = Object.keys(message.content), i = 0; i < keys.length; ++i) {
+                    writer.uint32(/* id 2, wireType 2 =*/18).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
+                    $root.hermes.DictionaryNamespace.encode(message.content[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
+                }
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
+                    writer.uint32(/* id 3, wireType 2 =*/26).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.metadata[keys[i]]).ldelim();
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.id);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified Dictionary message, length delimited. Does not implicitly {@link hermes.Dictionary.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof hermes.Dictionary
+         * @static
+         * @param {hermes.IDictionary} message Dictionary message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Dictionary.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a Dictionary message from the specified reader or buffer.
+         * @function decode
+         * @memberof hermes.Dictionary
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {hermes.Dictionary} Dictionary
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Dictionary.decode = function decode(reader, length, error, long) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            if (long === undefined)
+                long = 0;
+            if (long > $Reader.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Dictionary(), key, value;
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.head = $root.hermes.DictionaryHead.decode(reader, reader.uint32(), undefined, long + 1);
+                        break;
+                    }
+                case 2: {
+                        if (message.content === $util.emptyObject)
+                            message.content = {};
+                        var end2 = reader.uint32() + reader.pos;
+                        key = "";
+                        value = null;
+                        while (reader.pos < end2) {
+                            var tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.string();
+                                break;
+                            case 2:
+                                value = $root.hermes.DictionaryNamespace.decode(reader, reader.uint32(), undefined, long + 1);
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7, long);
+                                break;
+                            }
+                        }
+                        if (key === "__proto__")
+                            $util.makeProp(message.content, key);
+                        message.content[key] = value;
+                        break;
+                    }
+                case 3: {
+                        if (message.metadata === $util.emptyObject)
+                            message.metadata = {};
+                        var end2 = reader.uint32() + reader.pos;
+                        key = "";
+                        value = "";
+                        while (reader.pos < end2) {
+                            var tag2 = reader.uint32();
+                            switch (tag2 >>> 3) {
+                            case 1:
+                                key = reader.string();
+                                break;
+                            case 2:
+                                value = reader.string();
+                                break;
+                            default:
+                                reader.skipType(tag2 & 7, long);
+                                break;
+                            }
+                        }
+                        if (key === "__proto__")
+                            $util.makeProp(message.metadata, key);
+                        message.metadata[key] = value;
+                        break;
+                    }
+                case 4: {
+                        message.id = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7, long);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a Dictionary message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof hermes.Dictionary
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {hermes.Dictionary} Dictionary
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Dictionary.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a Dictionary message.
+         * @function verify
+         * @memberof hermes.Dictionary
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        Dictionary.verify = function verify(message, long) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                return "maximum nesting depth exceeded";
+            if (message.head != null && Object.hasOwnProperty.call(message, "head")) {
+                var error = $root.hermes.DictionaryHead.verify(message.head, long + 1);
+                if (error)
+                    return "head." + error;
+            }
+            if (message.content != null && Object.hasOwnProperty.call(message, "content")) {
+                if (!$util.isObject(message.content))
+                    return "content: object expected";
+                var key = Object.keys(message.content);
+                for (var i = 0; i < key.length; ++i) {
+                    var error = $root.hermes.DictionaryNamespace.verify(message.content[key[i]], long + 1);
+                    if (error)
+                        return "content." + error;
+                }
+            }
+            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
+                if (!$util.isObject(message.metadata))
+                    return "metadata: object expected";
+                var key = Object.keys(message.metadata);
+                for (var i = 0; i < key.length; ++i)
+                    if (!$util.isString(message.metadata[key[i]]))
+                        return "metadata: string{k:string} expected";
+            }
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                if (!$util.isString(message.id))
+                    return "id: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a Dictionary message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof hermes.Dictionary
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {hermes.Dictionary} Dictionary
+         */
+        Dictionary.fromObject = function fromObject(object, long) {
+            if (object instanceof $root.hermes.Dictionary)
+                return object;
+            if (!$util.isObject(object))
+                throw TypeError(".hermes.Dictionary: object expected");
+            if (long === undefined)
+                long = 0;
+            if (long > $util.recursionLimit)
+                throw Error("maximum nesting depth exceeded");
+            var message = new $root.hermes.Dictionary();
+            if (object.head != null) {
+                if (!$util.isObject(object.head))
+                    throw TypeError(".hermes.Dictionary.head: object expected");
+                message.head = $root.hermes.DictionaryHead.fromObject(object.head, long + 1);
+            }
+            if (object.content) {
+                if (!$util.isObject(object.content))
+                    throw TypeError(".hermes.Dictionary.content: object expected");
+                message.content = {};
+                for (var keys = Object.keys(object.content), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.content, keys[i]);
+                    if (!$util.isObject(object.content[keys[i]]))
+                        throw TypeError(".hermes.Dictionary.content: object expected");
+                    message.content[keys[i]] = $root.hermes.DictionaryNamespace.fromObject(object.content[keys[i]], long + 1);
+                }
+            }
+            if (object.metadata) {
+                if (!$util.isObject(object.metadata))
+                    throw TypeError(".hermes.Dictionary.metadata: object expected");
+                message.metadata = {};
+                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
+                    if (keys[i] === "__proto__")
+                        $util.makeProp(message.metadata, keys[i]);
+                    message.metadata[keys[i]] = String(object.metadata[keys[i]]);
+                }
+            }
+            if (object.id != null)
+                message.id = String(object.id);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a Dictionary message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof hermes.Dictionary
+         * @static
+         * @param {hermes.Dictionary} message Dictionary
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        Dictionary.toObject = function toObject(message, options, q) {
+            if (!options)
+                options = {};
+            if (q === undefined)
+                q = 0;
+            if (q > $util.recursionLimit)
+                throw Error("max depth exceeded");
+            var object = {};
+            if (options.objects || options.defaults) {
+                object.content = {};
+                object.metadata = {};
+            }
+            if (options.defaults) {
+                object.head = null;
+                object.id = "";
+            }
+            if (message.head != null && Object.hasOwnProperty.call(message, "head"))
+                object.head = $root.hermes.DictionaryHead.toObject(message.head, options, q + 1);
+            var keys2;
+            if (message.content && (keys2 = Object.keys(message.content)).length) {
+                object.content = {};
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.content, keys2[j]);
+                    object.content[keys2[j]] = $root.hermes.DictionaryNamespace.toObject(message.content[keys2[j]], options, q + 1);
+                }
+            }
+            if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
+                object.metadata = {};
+                for (var j = 0; j < keys2.length; ++j) {
+                    if (keys2[j] === "__proto__")
+                        $util.makeProp(object.metadata, keys2[j]);
+                    object.metadata[keys2[j]] = message.metadata[keys2[j]];
+                }
+            }
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                object.id = message.id;
+            return object;
+        };
+
+        /**
+         * Converts this Dictionary to JSON.
+         * @function toJSON
+         * @memberof hermes.Dictionary
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        Dictionary.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for Dictionary
+         * @function getTypeUrl
+         * @memberof hermes.Dictionary
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        Dictionary.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/hermes.Dictionary";
+        };
+
+        return Dictionary;
+    })();
+
     /**
      * IntKind enum.
      * @name hermes.IntKind
@@ -3951,24 +6263,6 @@ $root.hermes = (function() {
         values[valuesById[1] = "UINT_U16"] = 1;
         values[valuesById[2] = "UINT_U32"] = 2;
         values[valuesById[3] = "UINT_U64"] = 3;
-        return values;
-    })();
-
-    /**
-     * SIntKind enum.
-     * @name hermes.SIntKind
-     * @enum {number}
-     * @property {number} SINT_I8=0 SINT_I8 value
-     * @property {number} SINT_I16=1 SINT_I16 value
-     * @property {number} SINT_I32=2 SINT_I32 value
-     * @property {number} SINT_I64=3 SINT_I64 value
-     */
-    hermes.SIntKind = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
-        values[valuesById[0] = "SINT_I8"] = 0;
-        values[valuesById[1] = "SINT_I16"] = 1;
-        values[valuesById[2] = "SINT_I32"] = 2;
-        values[valuesById[3] = "SINT_I64"] = 3;
         return values;
     })();
 
@@ -10306,11480 +12600,6 @@ $root.hermes = (function() {
         return Value;
     })();
 
-    hermes.ParameterDef = (function() {
-
-        /**
-         * Properties of a ParameterDef.
-         * @memberof hermes
-         * @interface IParameterDef
-         * @property {number|null} [id] ParameterDef id
-         * @property {string|null} [component] Component or module that owns this parameter
-         * @property {string|null} [name] Name of the parameter
-         * Scoped by its component
-         * @property {hermes.IType|null} [type] ParameterDef type
-         * @property {string|null} [metadata] ParameterDef metadata
-         */
-
-        /**
-         * Constructs a new ParameterDef.
-         * @memberof hermes
-         * @classdesc Represents a ParameterDef.
-         * @implements IParameterDef
-         * @constructor
-         * @param {hermes.IParameterDef=} [properties] Properties to set
-         */
-        function ParameterDef(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * ParameterDef id.
-         * @member {number} id
-         * @memberof hermes.ParameterDef
-         * @instance
-         */
-        ParameterDef.prototype.id = 0;
-
-        /**
-         * Component or module that owns this parameter
-         * @member {string} component
-         * @memberof hermes.ParameterDef
-         * @instance
-         */
-        ParameterDef.prototype.component = "";
-
-        /**
-         * Name of the parameter
-         * Scoped by its component
-         * @member {string} name
-         * @memberof hermes.ParameterDef
-         * @instance
-         */
-        ParameterDef.prototype.name = "";
-
-        /**
-         * ParameterDef type.
-         * @member {hermes.IType|null|undefined} type
-         * @memberof hermes.ParameterDef
-         * @instance
-         */
-        ParameterDef.prototype.type = null;
-
-        /**
-         * ParameterDef metadata.
-         * @member {string} metadata
-         * @memberof hermes.ParameterDef
-         * @instance
-         */
-        ParameterDef.prototype.metadata = "";
-
-        /**
-         * Creates a new ParameterDef instance using the specified properties.
-         * @function create
-         * @memberof hermes.ParameterDef
-         * @static
-         * @param {hermes.IParameterDef=} [properties] Properties to set
-         * @returns {hermes.ParameterDef} ParameterDef instance
-         */
-        ParameterDef.create = function create(properties) {
-            return new ParameterDef(properties);
-        };
-
-        /**
-         * Encodes the specified ParameterDef message. Does not implicitly {@link hermes.ParameterDef.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.ParameterDef
-         * @static
-         * @param {hermes.IParameterDef} message ParameterDef message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        ParameterDef.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.component);
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.name);
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                $root.hermes.Type.encode(message.type, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                writer.uint32(/* id 5, wireType 2 =*/42).string(message.metadata);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified ParameterDef message, length delimited. Does not implicitly {@link hermes.ParameterDef.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.ParameterDef
-         * @static
-         * @param {hermes.IParameterDef} message ParameterDef message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        ParameterDef.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a ParameterDef message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.ParameterDef
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.ParameterDef} ParameterDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        ParameterDef.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.ParameterDef();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.id = reader.int32();
-                        break;
-                    }
-                case 2: {
-                        message.component = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.name = reader.string();
-                        break;
-                    }
-                case 4: {
-                        message.type = $root.hermes.Type.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 5: {
-                        message.metadata = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a ParameterDef message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.ParameterDef
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.ParameterDef} ParameterDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        ParameterDef.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a ParameterDef message.
-         * @function verify
-         * @memberof hermes.ParameterDef
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        ParameterDef.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                if (!$util.isInteger(message.id))
-                    return "id: integer expected";
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                if (!$util.isString(message.component))
-                    return "component: string expected";
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                if (!$util.isString(message.name))
-                    return "name: string expected";
-            if (message.type != null && Object.hasOwnProperty.call(message, "type")) {
-                var error = $root.hermes.Type.verify(message.type, long + 1);
-                if (error)
-                    return "type." + error;
-            }
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                if (!$util.isString(message.metadata))
-                    return "metadata: string expected";
-            return null;
-        };
-
-        /**
-         * Creates a ParameterDef message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.ParameterDef
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.ParameterDef} ParameterDef
-         */
-        ParameterDef.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.ParameterDef)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.ParameterDef: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.ParameterDef();
-            if (object.id != null)
-                message.id = object.id | 0;
-            if (object.component != null)
-                message.component = String(object.component);
-            if (object.name != null)
-                message.name = String(object.name);
-            if (object.type != null) {
-                if (!$util.isObject(object.type))
-                    throw TypeError(".hermes.ParameterDef.type: object expected");
-                message.type = $root.hermes.Type.fromObject(object.type, long + 1);
-            }
-            if (object.metadata != null)
-                message.metadata = String(object.metadata);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a ParameterDef message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.ParameterDef
-         * @static
-         * @param {hermes.ParameterDef} message ParameterDef
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        ParameterDef.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults) {
-                object.id = 0;
-                object.component = "";
-                object.name = "";
-                object.type = null;
-                object.metadata = "";
-            }
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                object.id = message.id;
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                object.component = message.component;
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                object.name = message.name;
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                object.type = $root.hermes.Type.toObject(message.type, options, q + 1);
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                object.metadata = message.metadata;
-            return object;
-        };
-
-        /**
-         * Converts this ParameterDef to JSON.
-         * @function toJSON
-         * @memberof hermes.ParameterDef
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        ParameterDef.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for ParameterDef
-         * @function getTypeUrl
-         * @memberof hermes.ParameterDef
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        ParameterDef.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.ParameterDef";
-        };
-
-        return ParameterDef;
-    })();
-
-    hermes.CommandDef = (function() {
-
-        /**
-         * Properties of a CommandDef.
-         * @memberof hermes
-         * @interface ICommandDef
-         * @property {number|null} [opcode] CommandDef opcode
-         * @property {string|null} [mnemonic] Mnemonic command used to identify this command.
-         * FSW may or may not include the module name in the mnemonic and its
-         * up to the language parsing software to identify the proper command from mnemonic information.
-         * 
-         * This may have varying meaning across missions
-         * @property {string|null} [component] Parent component or module owning this command
-         * @property {Array.<hermes.IField>|null} ["arguments"] Command arguments
-         * @property {string|null} [metadata] CommandDef metadata
-         */
-
-        /**
-         * Constructs a new CommandDef.
-         * @memberof hermes
-         * @classdesc Represents a CommandDef.
-         * @implements ICommandDef
-         * @constructor
-         * @param {hermes.ICommandDef=} [properties] Properties to set
-         */
-        function CommandDef(properties) {
-            this["arguments"] = [];
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * CommandDef opcode.
-         * @member {number} opcode
-         * @memberof hermes.CommandDef
-         * @instance
-         */
-        CommandDef.prototype.opcode = 0;
-
-        /**
-         * Mnemonic command used to identify this command.
-         * FSW may or may not include the module name in the mnemonic and its
-         * up to the language parsing software to identify the proper command from mnemonic information.
-         * 
-         * This may have varying meaning across missions
-         * @member {string} mnemonic
-         * @memberof hermes.CommandDef
-         * @instance
-         */
-        CommandDef.prototype.mnemonic = "";
-
-        /**
-         * Parent component or module owning this command
-         * @member {string} component
-         * @memberof hermes.CommandDef
-         * @instance
-         */
-        CommandDef.prototype.component = "";
-
-        /**
-         * Command arguments
-         * @member {Array.<hermes.IField>} arguments
-         * @memberof hermes.CommandDef
-         * @instance
-         */
-        CommandDef.prototype["arguments"] = $util.emptyArray;
-
-        /**
-         * CommandDef metadata.
-         * @member {string} metadata
-         * @memberof hermes.CommandDef
-         * @instance
-         */
-        CommandDef.prototype.metadata = "";
-
-        /**
-         * Creates a new CommandDef instance using the specified properties.
-         * @function create
-         * @memberof hermes.CommandDef
-         * @static
-         * @param {hermes.ICommandDef=} [properties] Properties to set
-         * @returns {hermes.CommandDef} CommandDef instance
-         */
-        CommandDef.create = function create(properties) {
-            return new CommandDef(properties);
-        };
-
-        /**
-         * Encodes the specified CommandDef message. Does not implicitly {@link hermes.CommandDef.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.CommandDef
-         * @static
-         * @param {hermes.ICommandDef} message CommandDef message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        CommandDef.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.opcode != null && Object.hasOwnProperty.call(message, "opcode"))
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.opcode);
-            if (message.mnemonic != null && Object.hasOwnProperty.call(message, "mnemonic"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.mnemonic);
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.component);
-            if (message["arguments"] != null && message["arguments"].length)
-                for (var i = 0; i < message["arguments"].length; ++i)
-                    $root.hermes.Field.encode(message["arguments"][i], writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                writer.uint32(/* id 5, wireType 2 =*/42).string(message.metadata);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified CommandDef message, length delimited. Does not implicitly {@link hermes.CommandDef.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.CommandDef
-         * @static
-         * @param {hermes.ICommandDef} message CommandDef message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        CommandDef.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a CommandDef message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.CommandDef
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.CommandDef} CommandDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        CommandDef.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.CommandDef();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.opcode = reader.int32();
-                        break;
-                    }
-                case 2: {
-                        message.mnemonic = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.component = reader.string();
-                        break;
-                    }
-                case 4: {
-                        if (!(message["arguments"] && message["arguments"].length))
-                            message["arguments"] = [];
-                        message["arguments"].push($root.hermes.Field.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 5: {
-                        message.metadata = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a CommandDef message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.CommandDef
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.CommandDef} CommandDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        CommandDef.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a CommandDef message.
-         * @function verify
-         * @memberof hermes.CommandDef
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        CommandDef.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.opcode != null && Object.hasOwnProperty.call(message, "opcode"))
-                if (!$util.isInteger(message.opcode))
-                    return "opcode: integer expected";
-            if (message.mnemonic != null && Object.hasOwnProperty.call(message, "mnemonic"))
-                if (!$util.isString(message.mnemonic))
-                    return "mnemonic: string expected";
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                if (!$util.isString(message.component))
-                    return "component: string expected";
-            if (message["arguments"] != null && Object.hasOwnProperty.call(message, "arguments")) {
-                if (!Array.isArray(message["arguments"]))
-                    return "arguments: array expected";
-                for (var i = 0; i < message["arguments"].length; ++i) {
-                    var error = $root.hermes.Field.verify(message["arguments"][i], long + 1);
-                    if (error)
-                        return "arguments." + error;
-                }
-            }
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                if (!$util.isString(message.metadata))
-                    return "metadata: string expected";
-            return null;
-        };
-
-        /**
-         * Creates a CommandDef message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.CommandDef
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.CommandDef} CommandDef
-         */
-        CommandDef.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.CommandDef)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.CommandDef: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.CommandDef();
-            if (object.opcode != null)
-                message.opcode = object.opcode | 0;
-            if (object.mnemonic != null)
-                message.mnemonic = String(object.mnemonic);
-            if (object.component != null)
-                message.component = String(object.component);
-            if (object["arguments"]) {
-                if (!Array.isArray(object["arguments"]))
-                    throw TypeError(".hermes.CommandDef.arguments: array expected");
-                message["arguments"] = [];
-                for (var i = 0; i < object["arguments"].length; ++i) {
-                    if (!$util.isObject(object["arguments"][i]))
-                        throw TypeError(".hermes.CommandDef.arguments: object expected");
-                    message["arguments"][i] = $root.hermes.Field.fromObject(object["arguments"][i], long + 1);
-                }
-            }
-            if (object.metadata != null)
-                message.metadata = String(object.metadata);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a CommandDef message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.CommandDef
-         * @static
-         * @param {hermes.CommandDef} message CommandDef
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        CommandDef.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.arrays || options.defaults)
-                object["arguments"] = [];
-            if (options.defaults) {
-                object.opcode = 0;
-                object.mnemonic = "";
-                object.component = "";
-                object.metadata = "";
-            }
-            if (message.opcode != null && Object.hasOwnProperty.call(message, "opcode"))
-                object.opcode = message.opcode;
-            if (message.mnemonic != null && Object.hasOwnProperty.call(message, "mnemonic"))
-                object.mnemonic = message.mnemonic;
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                object.component = message.component;
-            if (message["arguments"] && message["arguments"].length) {
-                object["arguments"] = [];
-                for (var j = 0; j < message["arguments"].length; ++j)
-                    object["arguments"][j] = $root.hermes.Field.toObject(message["arguments"][j], options, q + 1);
-            }
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                object.metadata = message.metadata;
-            return object;
-        };
-
-        /**
-         * Converts this CommandDef to JSON.
-         * @function toJSON
-         * @memberof hermes.CommandDef
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        CommandDef.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for CommandDef
-         * @function getTypeUrl
-         * @memberof hermes.CommandDef
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        CommandDef.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.CommandDef";
-        };
-
-        return CommandDef;
-    })();
-
-    /**
-     * EvrSeverity enum.
-     * @name hermes.EvrSeverity
-     * @enum {number}
-     * @property {number} EVR_DIAGNOSTIC=0 EVR_DIAGNOSTIC value
-     * @property {number} EVR_ACTIVITY_LOW=1 EVR_ACTIVITY_LOW value
-     * @property {number} EVR_ACTIVITY_HIGH=2 EVR_ACTIVITY_HIGH value
-     * @property {number} EVR_WARNING_LOW=3 EVR_WARNING_LOW value
-     * @property {number} EVR_WARNING_HIGH=4 EVR_WARNING_HIGH value
-     * @property {number} EVR_COMMAND=5 EVR_COMMAND value
-     * @property {number} EVR_FATAL=6 EVR_FATAL value
-     */
-    hermes.EvrSeverity = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
-        values[valuesById[0] = "EVR_DIAGNOSTIC"] = 0;
-        values[valuesById[1] = "EVR_ACTIVITY_LOW"] = 1;
-        values[valuesById[2] = "EVR_ACTIVITY_HIGH"] = 2;
-        values[valuesById[3] = "EVR_WARNING_LOW"] = 3;
-        values[valuesById[4] = "EVR_WARNING_HIGH"] = 4;
-        values[valuesById[5] = "EVR_COMMAND"] = 5;
-        values[valuesById[6] = "EVR_FATAL"] = 6;
-        return values;
-    })();
-
-    /**
-     * FormatSpecifierType enum.
-     * @name hermes.FormatSpecifierType
-     * @enum {number}
-     * @property {number} FMT_DEFAULT=0 FMT_DEFAULT value
-     * @property {number} FMT_CHAR=1 FMT_CHAR value
-     * @property {number} FMT_DECIMAL=2 FMT_DECIMAL value
-     * @property {number} FMT_HEX_LOWER=3 FMT_HEX_LOWER value
-     * @property {number} FMT_HEX_UPPER=4 FMT_HEX_UPPER value
-     * @property {number} FMT_OCTAL=5 FMT_OCTAL value
-     * @property {number} FMT_EXP_LOWER=6 FMT_EXP_LOWER value
-     * @property {number} FMT_EXP_UPPER=7 FMT_EXP_UPPER value
-     * @property {number} FMT_FIXED_LOWER=8 FMT_FIXED_LOWER value
-     * @property {number} FMT_FIXED_UPPER=9 FMT_FIXED_UPPER value
-     * @property {number} FMT_GENERAL_LOWER=10 FMT_GENERAL_LOWER value
-     * @property {number} FMT_GENERAL_UPPER=11 FMT_GENERAL_UPPER value
-     */
-    hermes.FormatSpecifierType = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
-        values[valuesById[0] = "FMT_DEFAULT"] = 0;
-        values[valuesById[1] = "FMT_CHAR"] = 1;
-        values[valuesById[2] = "FMT_DECIMAL"] = 2;
-        values[valuesById[3] = "FMT_HEX_LOWER"] = 3;
-        values[valuesById[4] = "FMT_HEX_UPPER"] = 4;
-        values[valuesById[5] = "FMT_OCTAL"] = 5;
-        values[valuesById[6] = "FMT_EXP_LOWER"] = 6;
-        values[valuesById[7] = "FMT_EXP_UPPER"] = 7;
-        values[valuesById[8] = "FMT_FIXED_LOWER"] = 8;
-        values[valuesById[9] = "FMT_FIXED_UPPER"] = 9;
-        values[valuesById[10] = "FMT_GENERAL_LOWER"] = 10;
-        values[valuesById[11] = "FMT_GENERAL_UPPER"] = 11;
-        return values;
-    })();
-
-    hermes.FormatSpecifier = (function() {
-
-        /**
-         * Properties of a FormatSpecifier.
-         * @memberof hermes
-         * @interface IFormatSpecifier
-         * @property {hermes.FormatSpecifierType|null} [type] FormatSpecifier type
-         * @property {number|null} [precision] FormatSpecifier precision
-         * @property {number|null} [argumentIndex] FormatSpecifier argumentIndex
-         */
-
-        /**
-         * Constructs a new FormatSpecifier.
-         * @memberof hermes
-         * @classdesc Represents a FormatSpecifier.
-         * @implements IFormatSpecifier
-         * @constructor
-         * @param {hermes.IFormatSpecifier=} [properties] Properties to set
-         */
-        function FormatSpecifier(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * FormatSpecifier type.
-         * @member {hermes.FormatSpecifierType} type
-         * @memberof hermes.FormatSpecifier
-         * @instance
-         */
-        FormatSpecifier.prototype.type = 0;
-
-        /**
-         * FormatSpecifier precision.
-         * @member {number|null|undefined} precision
-         * @memberof hermes.FormatSpecifier
-         * @instance
-         */
-        FormatSpecifier.prototype.precision = null;
-
-        /**
-         * FormatSpecifier argumentIndex.
-         * @member {number} argumentIndex
-         * @memberof hermes.FormatSpecifier
-         * @instance
-         */
-        FormatSpecifier.prototype.argumentIndex = 0;
-
-        // OneOf field names bound to virtual getters and setters
-        var $oneOfFields;
-
-        /**
-         * FormatSpecifier _precision.
-         * @member {"precision"|undefined} _precision
-         * @memberof hermes.FormatSpecifier
-         * @instance
-         */
-        Object.defineProperty(FormatSpecifier.prototype, "_precision", {
-            get: $util.oneOfGetter($oneOfFields = ["precision"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * Creates a new FormatSpecifier instance using the specified properties.
-         * @function create
-         * @memberof hermes.FormatSpecifier
-         * @static
-         * @param {hermes.IFormatSpecifier=} [properties] Properties to set
-         * @returns {hermes.FormatSpecifier} FormatSpecifier instance
-         */
-        FormatSpecifier.create = function create(properties) {
-            return new FormatSpecifier(properties);
-        };
-
-        /**
-         * Encodes the specified FormatSpecifier message. Does not implicitly {@link hermes.FormatSpecifier.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.FormatSpecifier
-         * @static
-         * @param {hermes.IFormatSpecifier} message FormatSpecifier message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FormatSpecifier.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.type);
-            if (message.precision != null && Object.hasOwnProperty.call(message, "precision"))
-                writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.precision);
-            if (message.argumentIndex != null && Object.hasOwnProperty.call(message, "argumentIndex"))
-                writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.argumentIndex);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified FormatSpecifier message, length delimited. Does not implicitly {@link hermes.FormatSpecifier.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.FormatSpecifier
-         * @static
-         * @param {hermes.IFormatSpecifier} message FormatSpecifier message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FormatSpecifier.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a FormatSpecifier message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.FormatSpecifier
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.FormatSpecifier} FormatSpecifier
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FormatSpecifier.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FormatSpecifier();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.type = reader.int32();
-                        break;
-                    }
-                case 2: {
-                        message.precision = reader.uint32();
-                        break;
-                    }
-                case 3: {
-                        message.argumentIndex = reader.uint32();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a FormatSpecifier message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.FormatSpecifier
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.FormatSpecifier} FormatSpecifier
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FormatSpecifier.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a FormatSpecifier message.
-         * @function verify
-         * @memberof hermes.FormatSpecifier
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        FormatSpecifier.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            var properties = {};
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                switch (message.type) {
-                default:
-                    return "type: enum value expected";
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                case 10:
-                case 11:
-                    break;
-                }
-            if (message.precision != null && Object.hasOwnProperty.call(message, "precision")) {
-                properties._precision = 1;
-                if (!$util.isInteger(message.precision))
-                    return "precision: integer expected";
-            }
-            if (message.argumentIndex != null && Object.hasOwnProperty.call(message, "argumentIndex"))
-                if (!$util.isInteger(message.argumentIndex))
-                    return "argumentIndex: integer expected";
-            return null;
-        };
-
-        /**
-         * Creates a FormatSpecifier message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.FormatSpecifier
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.FormatSpecifier} FormatSpecifier
-         */
-        FormatSpecifier.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.FormatSpecifier)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.FormatSpecifier: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.FormatSpecifier();
-            switch (object.type) {
-            default:
-                if (typeof object.type === "number") {
-                    message.type = object.type;
-                    break;
-                }
-                break;
-            case "FMT_DEFAULT":
-            case 0:
-                message.type = 0;
-                break;
-            case "FMT_CHAR":
-            case 1:
-                message.type = 1;
-                break;
-            case "FMT_DECIMAL":
-            case 2:
-                message.type = 2;
-                break;
-            case "FMT_HEX_LOWER":
-            case 3:
-                message.type = 3;
-                break;
-            case "FMT_HEX_UPPER":
-            case 4:
-                message.type = 4;
-                break;
-            case "FMT_OCTAL":
-            case 5:
-                message.type = 5;
-                break;
-            case "FMT_EXP_LOWER":
-            case 6:
-                message.type = 6;
-                break;
-            case "FMT_EXP_UPPER":
-            case 7:
-                message.type = 7;
-                break;
-            case "FMT_FIXED_LOWER":
-            case 8:
-                message.type = 8;
-                break;
-            case "FMT_FIXED_UPPER":
-            case 9:
-                message.type = 9;
-                break;
-            case "FMT_GENERAL_LOWER":
-            case 10:
-                message.type = 10;
-                break;
-            case "FMT_GENERAL_UPPER":
-            case 11:
-                message.type = 11;
-                break;
-            }
-            if (object.precision != null)
-                message.precision = object.precision >>> 0;
-            if (object.argumentIndex != null)
-                message.argumentIndex = object.argumentIndex >>> 0;
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a FormatSpecifier message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.FormatSpecifier
-         * @static
-         * @param {hermes.FormatSpecifier} message FormatSpecifier
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        FormatSpecifier.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults) {
-                object.type = options.enums === String ? "FMT_DEFAULT" : 0;
-                object.argumentIndex = 0;
-            }
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                object.type = options.enums === String ? $root.hermes.FormatSpecifierType[message.type] === undefined ? message.type : $root.hermes.FormatSpecifierType[message.type] : message.type;
-            if (message.precision != null && Object.hasOwnProperty.call(message, "precision")) {
-                object.precision = message.precision;
-                if (options.oneofs)
-                    object._precision = "precision";
-            }
-            if (message.argumentIndex != null && Object.hasOwnProperty.call(message, "argumentIndex"))
-                object.argumentIndex = message.argumentIndex;
-            return object;
-        };
-
-        /**
-         * Converts this FormatSpecifier to JSON.
-         * @function toJSON
-         * @memberof hermes.FormatSpecifier
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        FormatSpecifier.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for FormatSpecifier
-         * @function getTypeUrl
-         * @memberof hermes.FormatSpecifier
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        FormatSpecifier.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.FormatSpecifier";
-        };
-
-        return FormatSpecifier;
-    })();
-
-    hermes.FormatFragment = (function() {
-
-        /**
-         * Properties of a FormatFragment.
-         * @memberof hermes
-         * @interface IFormatFragment
-         * @property {string|null} [text] FormatFragment text
-         * @property {hermes.IFormatSpecifier|null} [specifier] FormatFragment specifier
-         */
-
-        /**
-         * Constructs a new FormatFragment.
-         * @memberof hermes
-         * @classdesc Represents a FormatFragment.
-         * @implements IFormatFragment
-         * @constructor
-         * @param {hermes.IFormatFragment=} [properties] Properties to set
-         */
-        function FormatFragment(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * FormatFragment text.
-         * @member {string|null|undefined} text
-         * @memberof hermes.FormatFragment
-         * @instance
-         */
-        FormatFragment.prototype.text = null;
-
-        /**
-         * FormatFragment specifier.
-         * @member {hermes.IFormatSpecifier|null|undefined} specifier
-         * @memberof hermes.FormatFragment
-         * @instance
-         */
-        FormatFragment.prototype.specifier = null;
-
-        // OneOf field names bound to virtual getters and setters
-        var $oneOfFields;
-
-        /**
-         * FormatFragment fragment.
-         * @member {"text"|"specifier"|undefined} fragment
-         * @memberof hermes.FormatFragment
-         * @instance
-         */
-        Object.defineProperty(FormatFragment.prototype, "fragment", {
-            get: $util.oneOfGetter($oneOfFields = ["text", "specifier"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * Creates a new FormatFragment instance using the specified properties.
-         * @function create
-         * @memberof hermes.FormatFragment
-         * @static
-         * @param {hermes.IFormatFragment=} [properties] Properties to set
-         * @returns {hermes.FormatFragment} FormatFragment instance
-         */
-        FormatFragment.create = function create(properties) {
-            return new FormatFragment(properties);
-        };
-
-        /**
-         * Encodes the specified FormatFragment message. Does not implicitly {@link hermes.FormatFragment.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.FormatFragment
-         * @static
-         * @param {hermes.IFormatFragment} message FormatFragment message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FormatFragment.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.text != null && Object.hasOwnProperty.call(message, "text"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.text);
-            if (message.specifier != null && Object.hasOwnProperty.call(message, "specifier"))
-                $root.hermes.FormatSpecifier.encode(message.specifier, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified FormatFragment message, length delimited. Does not implicitly {@link hermes.FormatFragment.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.FormatFragment
-         * @static
-         * @param {hermes.IFormatFragment} message FormatFragment message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FormatFragment.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a FormatFragment message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.FormatFragment
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.FormatFragment} FormatFragment
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FormatFragment.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FormatFragment();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.text = reader.string();
-                        break;
-                    }
-                case 2: {
-                        message.specifier = $root.hermes.FormatSpecifier.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a FormatFragment message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.FormatFragment
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.FormatFragment} FormatFragment
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FormatFragment.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a FormatFragment message.
-         * @function verify
-         * @memberof hermes.FormatFragment
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        FormatFragment.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            var properties = {};
-            if (message.text != null && Object.hasOwnProperty.call(message, "text")) {
-                properties.fragment = 1;
-                if (!$util.isString(message.text))
-                    return "text: string expected";
-            }
-            if (message.specifier != null && Object.hasOwnProperty.call(message, "specifier")) {
-                if (properties.fragment === 1)
-                    return "fragment: multiple values";
-                properties.fragment = 1;
-                {
-                    var error = $root.hermes.FormatSpecifier.verify(message.specifier, long + 1);
-                    if (error)
-                        return "specifier." + error;
-                }
-            }
-            return null;
-        };
-
-        /**
-         * Creates a FormatFragment message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.FormatFragment
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.FormatFragment} FormatFragment
-         */
-        FormatFragment.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.FormatFragment)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.FormatFragment: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.FormatFragment();
-            if (object.text != null)
-                message.text = String(object.text);
-            if (object.specifier != null) {
-                if (!$util.isObject(object.specifier))
-                    throw TypeError(".hermes.FormatFragment.specifier: object expected");
-                message.specifier = $root.hermes.FormatSpecifier.fromObject(object.specifier, long + 1);
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a FormatFragment message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.FormatFragment
-         * @static
-         * @param {hermes.FormatFragment} message FormatFragment
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        FormatFragment.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (message.text != null && Object.hasOwnProperty.call(message, "text")) {
-                object.text = message.text;
-                if (options.oneofs)
-                    object.fragment = "text";
-            }
-            if (message.specifier != null && Object.hasOwnProperty.call(message, "specifier")) {
-                object.specifier = $root.hermes.FormatSpecifier.toObject(message.specifier, options, q + 1);
-                if (options.oneofs)
-                    object.fragment = "specifier";
-            }
-            return object;
-        };
-
-        /**
-         * Converts this FormatFragment to JSON.
-         * @function toJSON
-         * @memberof hermes.FormatFragment
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        FormatFragment.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for FormatFragment
-         * @function getTypeUrl
-         * @memberof hermes.FormatFragment
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        FormatFragment.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.FormatFragment";
-        };
-
-        return FormatFragment;
-    })();
-
-    hermes.FormatString = (function() {
-
-        /**
-         * Properties of a FormatString.
-         * @memberof hermes
-         * @interface IFormatString
-         * @property {Array.<hermes.IFormatFragment>|null} [fragments] FormatString fragments
-         * @property {string|null} [original] FormatString original
-         */
-
-        /**
-         * Constructs a new FormatString.
-         * @memberof hermes
-         * @classdesc Represents a FormatString.
-         * @implements IFormatString
-         * @constructor
-         * @param {hermes.IFormatString=} [properties] Properties to set
-         */
-        function FormatString(properties) {
-            this.fragments = [];
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * FormatString fragments.
-         * @member {Array.<hermes.IFormatFragment>} fragments
-         * @memberof hermes.FormatString
-         * @instance
-         */
-        FormatString.prototype.fragments = $util.emptyArray;
-
-        /**
-         * FormatString original.
-         * @member {string} original
-         * @memberof hermes.FormatString
-         * @instance
-         */
-        FormatString.prototype.original = "";
-
-        /**
-         * Creates a new FormatString instance using the specified properties.
-         * @function create
-         * @memberof hermes.FormatString
-         * @static
-         * @param {hermes.IFormatString=} [properties] Properties to set
-         * @returns {hermes.FormatString} FormatString instance
-         */
-        FormatString.create = function create(properties) {
-            return new FormatString(properties);
-        };
-
-        /**
-         * Encodes the specified FormatString message. Does not implicitly {@link hermes.FormatString.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.FormatString
-         * @static
-         * @param {hermes.IFormatString} message FormatString message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FormatString.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.fragments != null && message.fragments.length)
-                for (var i = 0; i < message.fragments.length; ++i)
-                    $root.hermes.FormatFragment.encode(message.fragments[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.original != null && Object.hasOwnProperty.call(message, "original"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.original);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified FormatString message, length delimited. Does not implicitly {@link hermes.FormatString.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.FormatString
-         * @static
-         * @param {hermes.IFormatString} message FormatString message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FormatString.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a FormatString message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.FormatString
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.FormatString} FormatString
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FormatString.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FormatString();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        if (!(message.fragments && message.fragments.length))
-                            message.fragments = [];
-                        message.fragments.push($root.hermes.FormatFragment.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 2: {
-                        message.original = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a FormatString message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.FormatString
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.FormatString} FormatString
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FormatString.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a FormatString message.
-         * @function verify
-         * @memberof hermes.FormatString
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        FormatString.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.fragments != null && Object.hasOwnProperty.call(message, "fragments")) {
-                if (!Array.isArray(message.fragments))
-                    return "fragments: array expected";
-                for (var i = 0; i < message.fragments.length; ++i) {
-                    var error = $root.hermes.FormatFragment.verify(message.fragments[i], long + 1);
-                    if (error)
-                        return "fragments." + error;
-                }
-            }
-            if (message.original != null && Object.hasOwnProperty.call(message, "original"))
-                if (!$util.isString(message.original))
-                    return "original: string expected";
-            return null;
-        };
-
-        /**
-         * Creates a FormatString message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.FormatString
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.FormatString} FormatString
-         */
-        FormatString.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.FormatString)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.FormatString: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.FormatString();
-            if (object.fragments) {
-                if (!Array.isArray(object.fragments))
-                    throw TypeError(".hermes.FormatString.fragments: array expected");
-                message.fragments = [];
-                for (var i = 0; i < object.fragments.length; ++i) {
-                    if (!$util.isObject(object.fragments[i]))
-                        throw TypeError(".hermes.FormatString.fragments: object expected");
-                    message.fragments[i] = $root.hermes.FormatFragment.fromObject(object.fragments[i], long + 1);
-                }
-            }
-            if (object.original != null)
-                message.original = String(object.original);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a FormatString message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.FormatString
-         * @static
-         * @param {hermes.FormatString} message FormatString
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        FormatString.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.arrays || options.defaults)
-                object.fragments = [];
-            if (options.defaults)
-                object.original = "";
-            if (message.fragments && message.fragments.length) {
-                object.fragments = [];
-                for (var j = 0; j < message.fragments.length; ++j)
-                    object.fragments[j] = $root.hermes.FormatFragment.toObject(message.fragments[j], options, q + 1);
-            }
-            if (message.original != null && Object.hasOwnProperty.call(message, "original"))
-                object.original = message.original;
-            return object;
-        };
-
-        /**
-         * Converts this FormatString to JSON.
-         * @function toJSON
-         * @memberof hermes.FormatString
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        FormatString.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for FormatString
-         * @function getTypeUrl
-         * @memberof hermes.FormatString
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        FormatString.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.FormatString";
-        };
-
-        return FormatString;
-    })();
-
-    hermes.EventDef = (function() {
-
-        /**
-         * Properties of an EventDef.
-         * @memberof hermes
-         * @interface IEventDef
-         * @property {number|null} [id] EventDef id
-         * @property {string|null} [component] Component or module
-         * @property {string|null} [name] Name of the EVR.
-         * Scoped by its component
-         * @property {hermes.EvrSeverity|null} [severity] Log severity usually stored in the FSW event dictionary
-         * For the most part this information is not held in the
-         * EVR packet since its redundant for ground software.
-         * @property {string|null} [formatString] DEPRECATED: Use format instead
-         * printf format string that will be formatted via sprintf
-         * @property {Array.<hermes.IField>|null} ["arguments"] Arguments used inside the format string
-         * @property {string|null} [metadata] EventDef metadata
-         * @property {hermes.IFormatString|null} [format] Structured format string with parsed fragments
-         */
-
-        /**
-         * Constructs a new EventDef.
-         * @memberof hermes
-         * @classdesc Represents an EventDef.
-         * @implements IEventDef
-         * @constructor
-         * @param {hermes.IEventDef=} [properties] Properties to set
-         */
-        function EventDef(properties) {
-            this["arguments"] = [];
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * EventDef id.
-         * @member {number} id
-         * @memberof hermes.EventDef
-         * @instance
-         */
-        EventDef.prototype.id = 0;
-
-        /**
-         * Component or module
-         * @member {string} component
-         * @memberof hermes.EventDef
-         * @instance
-         */
-        EventDef.prototype.component = "";
-
-        /**
-         * Name of the EVR.
-         * Scoped by its component
-         * @member {string} name
-         * @memberof hermes.EventDef
-         * @instance
-         */
-        EventDef.prototype.name = "";
-
-        /**
-         * Log severity usually stored in the FSW event dictionary
-         * For the most part this information is not held in the
-         * EVR packet since its redundant for ground software.
-         * @member {hermes.EvrSeverity} severity
-         * @memberof hermes.EventDef
-         * @instance
-         */
-        EventDef.prototype.severity = 0;
-
-        /**
-         * DEPRECATED: Use format instead
-         * printf format string that will be formatted via sprintf
-         * @member {string} formatString
-         * @memberof hermes.EventDef
-         * @instance
-         */
-        EventDef.prototype.formatString = "";
-
-        /**
-         * Arguments used inside the format string
-         * @member {Array.<hermes.IField>} arguments
-         * @memberof hermes.EventDef
-         * @instance
-         */
-        EventDef.prototype["arguments"] = $util.emptyArray;
-
-        /**
-         * EventDef metadata.
-         * @member {string} metadata
-         * @memberof hermes.EventDef
-         * @instance
-         */
-        EventDef.prototype.metadata = "";
-
-        /**
-         * Structured format string with parsed fragments
-         * @member {hermes.IFormatString|null|undefined} format
-         * @memberof hermes.EventDef
-         * @instance
-         */
-        EventDef.prototype.format = null;
-
-        /**
-         * Creates a new EventDef instance using the specified properties.
-         * @function create
-         * @memberof hermes.EventDef
-         * @static
-         * @param {hermes.IEventDef=} [properties] Properties to set
-         * @returns {hermes.EventDef} EventDef instance
-         */
-        EventDef.create = function create(properties) {
-            return new EventDef(properties);
-        };
-
-        /**
-         * Encodes the specified EventDef message. Does not implicitly {@link hermes.EventDef.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.EventDef
-         * @static
-         * @param {hermes.IEventDef} message EventDef message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        EventDef.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.component);
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.name);
-            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
-                writer.uint32(/* id 4, wireType 0 =*/32).int32(message.severity);
-            if (message.formatString != null && Object.hasOwnProperty.call(message, "formatString"))
-                writer.uint32(/* id 5, wireType 2 =*/42).string(message.formatString);
-            if (message["arguments"] != null && message["arguments"].length)
-                for (var i = 0; i < message["arguments"].length; ++i)
-                    $root.hermes.Field.encode(message["arguments"][i], writer.uint32(/* id 6, wireType 2 =*/50).fork(), q + 1).ldelim();
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                writer.uint32(/* id 7, wireType 2 =*/58).string(message.metadata);
-            if (message.format != null && Object.hasOwnProperty.call(message, "format"))
-                $root.hermes.FormatString.encode(message.format, writer.uint32(/* id 8, wireType 2 =*/66).fork(), q + 1).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified EventDef message, length delimited. Does not implicitly {@link hermes.EventDef.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.EventDef
-         * @static
-         * @param {hermes.IEventDef} message EventDef message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        EventDef.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes an EventDef message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.EventDef
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.EventDef} EventDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        EventDef.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.EventDef();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.id = reader.int32();
-                        break;
-                    }
-                case 2: {
-                        message.component = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.name = reader.string();
-                        break;
-                    }
-                case 4: {
-                        message.severity = reader.int32();
-                        break;
-                    }
-                case 5: {
-                        message.formatString = reader.string();
-                        break;
-                    }
-                case 6: {
-                        if (!(message["arguments"] && message["arguments"].length))
-                            message["arguments"] = [];
-                        message["arguments"].push($root.hermes.Field.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 7: {
-                        message.metadata = reader.string();
-                        break;
-                    }
-                case 8: {
-                        message.format = $root.hermes.FormatString.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes an EventDef message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.EventDef
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.EventDef} EventDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        EventDef.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies an EventDef message.
-         * @function verify
-         * @memberof hermes.EventDef
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        EventDef.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                if (!$util.isInteger(message.id))
-                    return "id: integer expected";
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                if (!$util.isString(message.component))
-                    return "component: string expected";
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                if (!$util.isString(message.name))
-                    return "name: string expected";
-            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
-                switch (message.severity) {
-                default:
-                    return "severity: enum value expected";
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                    break;
-                }
-            if (message.formatString != null && Object.hasOwnProperty.call(message, "formatString"))
-                if (!$util.isString(message.formatString))
-                    return "formatString: string expected";
-            if (message["arguments"] != null && Object.hasOwnProperty.call(message, "arguments")) {
-                if (!Array.isArray(message["arguments"]))
-                    return "arguments: array expected";
-                for (var i = 0; i < message["arguments"].length; ++i) {
-                    var error = $root.hermes.Field.verify(message["arguments"][i], long + 1);
-                    if (error)
-                        return "arguments." + error;
-                }
-            }
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                if (!$util.isString(message.metadata))
-                    return "metadata: string expected";
-            if (message.format != null && Object.hasOwnProperty.call(message, "format")) {
-                var error = $root.hermes.FormatString.verify(message.format, long + 1);
-                if (error)
-                    return "format." + error;
-            }
-            return null;
-        };
-
-        /**
-         * Creates an EventDef message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.EventDef
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.EventDef} EventDef
-         */
-        EventDef.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.EventDef)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.EventDef: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.EventDef();
-            if (object.id != null)
-                message.id = object.id | 0;
-            if (object.component != null)
-                message.component = String(object.component);
-            if (object.name != null)
-                message.name = String(object.name);
-            switch (object.severity) {
-            default:
-                if (typeof object.severity === "number") {
-                    message.severity = object.severity;
-                    break;
-                }
-                break;
-            case "EVR_DIAGNOSTIC":
-            case 0:
-                message.severity = 0;
-                break;
-            case "EVR_ACTIVITY_LOW":
-            case 1:
-                message.severity = 1;
-                break;
-            case "EVR_ACTIVITY_HIGH":
-            case 2:
-                message.severity = 2;
-                break;
-            case "EVR_WARNING_LOW":
-            case 3:
-                message.severity = 3;
-                break;
-            case "EVR_WARNING_HIGH":
-            case 4:
-                message.severity = 4;
-                break;
-            case "EVR_COMMAND":
-            case 5:
-                message.severity = 5;
-                break;
-            case "EVR_FATAL":
-            case 6:
-                message.severity = 6;
-                break;
-            }
-            if (object.formatString != null)
-                message.formatString = String(object.formatString);
-            if (object["arguments"]) {
-                if (!Array.isArray(object["arguments"]))
-                    throw TypeError(".hermes.EventDef.arguments: array expected");
-                message["arguments"] = [];
-                for (var i = 0; i < object["arguments"].length; ++i) {
-                    if (!$util.isObject(object["arguments"][i]))
-                        throw TypeError(".hermes.EventDef.arguments: object expected");
-                    message["arguments"][i] = $root.hermes.Field.fromObject(object["arguments"][i], long + 1);
-                }
-            }
-            if (object.metadata != null)
-                message.metadata = String(object.metadata);
-            if (object.format != null) {
-                if (!$util.isObject(object.format))
-                    throw TypeError(".hermes.EventDef.format: object expected");
-                message.format = $root.hermes.FormatString.fromObject(object.format, long + 1);
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from an EventDef message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.EventDef
-         * @static
-         * @param {hermes.EventDef} message EventDef
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        EventDef.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.arrays || options.defaults)
-                object["arguments"] = [];
-            if (options.defaults) {
-                object.id = 0;
-                object.component = "";
-                object.name = "";
-                object.severity = options.enums === String ? "EVR_DIAGNOSTIC" : 0;
-                object.formatString = "";
-                object.metadata = "";
-                object.format = null;
-            }
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                object.id = message.id;
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                object.component = message.component;
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                object.name = message.name;
-            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
-                object.severity = options.enums === String ? $root.hermes.EvrSeverity[message.severity] === undefined ? message.severity : $root.hermes.EvrSeverity[message.severity] : message.severity;
-            if (message.formatString != null && Object.hasOwnProperty.call(message, "formatString"))
-                object.formatString = message.formatString;
-            if (message["arguments"] && message["arguments"].length) {
-                object["arguments"] = [];
-                for (var j = 0; j < message["arguments"].length; ++j)
-                    object["arguments"][j] = $root.hermes.Field.toObject(message["arguments"][j], options, q + 1);
-            }
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                object.metadata = message.metadata;
-            if (message.format != null && Object.hasOwnProperty.call(message, "format"))
-                object.format = $root.hermes.FormatString.toObject(message.format, options, q + 1);
-            return object;
-        };
-
-        /**
-         * Converts this EventDef to JSON.
-         * @function toJSON
-         * @memberof hermes.EventDef
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        EventDef.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for EventDef
-         * @function getTypeUrl
-         * @memberof hermes.EventDef
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        EventDef.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.EventDef";
-        };
-
-        return EventDef;
-    })();
-
-    hermes.EventRef = (function() {
-
-        /**
-         * Properties of an EventRef.
-         * @memberof hermes
-         * @interface IEventRef
-         * @property {string|null} [name] EventRef name
-         * @property {string|null} [component] EventRef component
-         * @property {hermes.EvrSeverity|null} [severity] EventRef severity
-         * @property {Array.<string>|null} ["arguments"] EventRef arguments
-         * @property {string|null} [dictionary] EventRef dictionary
-         */
-
-        /**
-         * Constructs a new EventRef.
-         * @memberof hermes
-         * @classdesc Represents an EventRef.
-         * @implements IEventRef
-         * @constructor
-         * @param {hermes.IEventRef=} [properties] Properties to set
-         */
-        function EventRef(properties) {
-            this["arguments"] = [];
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * EventRef name.
-         * @member {string} name
-         * @memberof hermes.EventRef
-         * @instance
-         */
-        EventRef.prototype.name = "";
-
-        /**
-         * EventRef component.
-         * @member {string} component
-         * @memberof hermes.EventRef
-         * @instance
-         */
-        EventRef.prototype.component = "";
-
-        /**
-         * EventRef severity.
-         * @member {hermes.EvrSeverity} severity
-         * @memberof hermes.EventRef
-         * @instance
-         */
-        EventRef.prototype.severity = 0;
-
-        /**
-         * EventRef arguments.
-         * @member {Array.<string>} arguments
-         * @memberof hermes.EventRef
-         * @instance
-         */
-        EventRef.prototype["arguments"] = $util.emptyArray;
-
-        /**
-         * EventRef dictionary.
-         * @member {string} dictionary
-         * @memberof hermes.EventRef
-         * @instance
-         */
-        EventRef.prototype.dictionary = "";
-
-        /**
-         * Creates a new EventRef instance using the specified properties.
-         * @function create
-         * @memberof hermes.EventRef
-         * @static
-         * @param {hermes.IEventRef=} [properties] Properties to set
-         * @returns {hermes.EventRef} EventRef instance
-         */
-        EventRef.create = function create(properties) {
-            return new EventRef(properties);
-        };
-
-        /**
-         * Encodes the specified EventRef message. Does not implicitly {@link hermes.EventRef.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.EventRef
-         * @static
-         * @param {hermes.IEventRef} message EventRef message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        EventRef.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.name);
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.component);
-            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
-                writer.uint32(/* id 4, wireType 0 =*/32).int32(message.severity);
-            if (message["arguments"] != null && message["arguments"].length)
-                for (var i = 0; i < message["arguments"].length; ++i)
-                    writer.uint32(/* id 5, wireType 2 =*/42).string(message["arguments"][i]);
-            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
-                writer.uint32(/* id 10, wireType 2 =*/82).string(message.dictionary);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified EventRef message, length delimited. Does not implicitly {@link hermes.EventRef.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.EventRef
-         * @static
-         * @param {hermes.IEventRef} message EventRef message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        EventRef.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes an EventRef message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.EventRef
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.EventRef} EventRef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        EventRef.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.EventRef();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 2: {
-                        message.name = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.component = reader.string();
-                        break;
-                    }
-                case 4: {
-                        message.severity = reader.int32();
-                        break;
-                    }
-                case 5: {
-                        if (!(message["arguments"] && message["arguments"].length))
-                            message["arguments"] = [];
-                        message["arguments"].push(reader.string());
-                        break;
-                    }
-                case 10: {
-                        message.dictionary = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes an EventRef message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.EventRef
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.EventRef} EventRef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        EventRef.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies an EventRef message.
-         * @function verify
-         * @memberof hermes.EventRef
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        EventRef.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                if (!$util.isString(message.name))
-                    return "name: string expected";
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                if (!$util.isString(message.component))
-                    return "component: string expected";
-            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
-                switch (message.severity) {
-                default:
-                    return "severity: enum value expected";
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                    break;
-                }
-            if (message["arguments"] != null && Object.hasOwnProperty.call(message, "arguments")) {
-                if (!Array.isArray(message["arguments"]))
-                    return "arguments: array expected";
-                for (var i = 0; i < message["arguments"].length; ++i)
-                    if (!$util.isString(message["arguments"][i]))
-                        return "arguments: string[] expected";
-            }
-            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
-                if (!$util.isString(message.dictionary))
-                    return "dictionary: string expected";
-            return null;
-        };
-
-        /**
-         * Creates an EventRef message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.EventRef
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.EventRef} EventRef
-         */
-        EventRef.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.EventRef)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.EventRef: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.EventRef();
-            if (object.name != null)
-                message.name = String(object.name);
-            if (object.component != null)
-                message.component = String(object.component);
-            switch (object.severity) {
-            default:
-                if (typeof object.severity === "number") {
-                    message.severity = object.severity;
-                    break;
-                }
-                break;
-            case "EVR_DIAGNOSTIC":
-            case 0:
-                message.severity = 0;
-                break;
-            case "EVR_ACTIVITY_LOW":
-            case 1:
-                message.severity = 1;
-                break;
-            case "EVR_ACTIVITY_HIGH":
-            case 2:
-                message.severity = 2;
-                break;
-            case "EVR_WARNING_LOW":
-            case 3:
-                message.severity = 3;
-                break;
-            case "EVR_WARNING_HIGH":
-            case 4:
-                message.severity = 4;
-                break;
-            case "EVR_COMMAND":
-            case 5:
-                message.severity = 5;
-                break;
-            case "EVR_FATAL":
-            case 6:
-                message.severity = 6;
-                break;
-            }
-            if (object["arguments"]) {
-                if (!Array.isArray(object["arguments"]))
-                    throw TypeError(".hermes.EventRef.arguments: array expected");
-                message["arguments"] = [];
-                for (var i = 0; i < object["arguments"].length; ++i)
-                    message["arguments"][i] = String(object["arguments"][i]);
-            }
-            if (object.dictionary != null)
-                message.dictionary = String(object.dictionary);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from an EventRef message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.EventRef
-         * @static
-         * @param {hermes.EventRef} message EventRef
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        EventRef.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.arrays || options.defaults)
-                object["arguments"] = [];
-            if (options.defaults) {
-                object.name = "";
-                object.component = "";
-                object.severity = options.enums === String ? "EVR_DIAGNOSTIC" : 0;
-                object.dictionary = "";
-            }
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                object.name = message.name;
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                object.component = message.component;
-            if (message.severity != null && Object.hasOwnProperty.call(message, "severity"))
-                object.severity = options.enums === String ? $root.hermes.EvrSeverity[message.severity] === undefined ? message.severity : $root.hermes.EvrSeverity[message.severity] : message.severity;
-            if (message["arguments"] && message["arguments"].length) {
-                object["arguments"] = [];
-                for (var j = 0; j < message["arguments"].length; ++j)
-                    object["arguments"][j] = message["arguments"][j];
-            }
-            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
-                object.dictionary = message.dictionary;
-            return object;
-        };
-
-        /**
-         * Converts this EventRef to JSON.
-         * @function toJSON
-         * @memberof hermes.EventRef
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        EventRef.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for EventRef
-         * @function getTypeUrl
-         * @memberof hermes.EventRef
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        EventRef.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.EventRef";
-        };
-
-        return EventRef;
-    })();
-
-    hermes.TelemetryDef = (function() {
-
-        /**
-         * Properties of a TelemetryDef.
-         * @memberof hermes
-         * @interface ITelemetryDef
-         * @property {number|null} [id] Raw ID used for identifying incoming serialized telemetry
-         * @property {string|null} [name] Telemetry name
-         * @property {string|null} [component] Component or module that owns this telemetry
-         * @property {hermes.IType|null} [type] Serialization type
-         * @property {string|null} [metadata] TelemetryDef metadata
-         */
-
-        /**
-         * Constructs a new TelemetryDef.
-         * @memberof hermes
-         * @classdesc Represents a TelemetryDef.
-         * @implements ITelemetryDef
-         * @constructor
-         * @param {hermes.ITelemetryDef=} [properties] Properties to set
-         */
-        function TelemetryDef(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Raw ID used for identifying incoming serialized telemetry
-         * @member {number} id
-         * @memberof hermes.TelemetryDef
-         * @instance
-         */
-        TelemetryDef.prototype.id = 0;
-
-        /**
-         * Telemetry name
-         * @member {string} name
-         * @memberof hermes.TelemetryDef
-         * @instance
-         */
-        TelemetryDef.prototype.name = "";
-
-        /**
-         * Component or module that owns this telemetry
-         * @member {string} component
-         * @memberof hermes.TelemetryDef
-         * @instance
-         */
-        TelemetryDef.prototype.component = "";
-
-        /**
-         * Serialization type
-         * @member {hermes.IType|null|undefined} type
-         * @memberof hermes.TelemetryDef
-         * @instance
-         */
-        TelemetryDef.prototype.type = null;
-
-        /**
-         * TelemetryDef metadata.
-         * @member {string} metadata
-         * @memberof hermes.TelemetryDef
-         * @instance
-         */
-        TelemetryDef.prototype.metadata = "";
-
-        /**
-         * Creates a new TelemetryDef instance using the specified properties.
-         * @function create
-         * @memberof hermes.TelemetryDef
-         * @static
-         * @param {hermes.ITelemetryDef=} [properties] Properties to set
-         * @returns {hermes.TelemetryDef} TelemetryDef instance
-         */
-        TelemetryDef.create = function create(properties) {
-            return new TelemetryDef(properties);
-        };
-
-        /**
-         * Encodes the specified TelemetryDef message. Does not implicitly {@link hermes.TelemetryDef.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.TelemetryDef
-         * @static
-         * @param {hermes.ITelemetryDef} message TelemetryDef message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        TelemetryDef.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.name);
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.component);
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                $root.hermes.Type.encode(message.type, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                writer.uint32(/* id 6, wireType 2 =*/50).string(message.metadata);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified TelemetryDef message, length delimited. Does not implicitly {@link hermes.TelemetryDef.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.TelemetryDef
-         * @static
-         * @param {hermes.ITelemetryDef} message TelemetryDef message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        TelemetryDef.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a TelemetryDef message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.TelemetryDef
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.TelemetryDef} TelemetryDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        TelemetryDef.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.TelemetryDef();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.id = reader.int32();
-                        break;
-                    }
-                case 2: {
-                        message.name = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.component = reader.string();
-                        break;
-                    }
-                case 4: {
-                        message.type = $root.hermes.Type.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 6: {
-                        message.metadata = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a TelemetryDef message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.TelemetryDef
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.TelemetryDef} TelemetryDef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        TelemetryDef.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a TelemetryDef message.
-         * @function verify
-         * @memberof hermes.TelemetryDef
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        TelemetryDef.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                if (!$util.isInteger(message.id))
-                    return "id: integer expected";
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                if (!$util.isString(message.name))
-                    return "name: string expected";
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                if (!$util.isString(message.component))
-                    return "component: string expected";
-            if (message.type != null && Object.hasOwnProperty.call(message, "type")) {
-                var error = $root.hermes.Type.verify(message.type, long + 1);
-                if (error)
-                    return "type." + error;
-            }
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                if (!$util.isString(message.metadata))
-                    return "metadata: string expected";
-            return null;
-        };
-
-        /**
-         * Creates a TelemetryDef message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.TelemetryDef
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.TelemetryDef} TelemetryDef
-         */
-        TelemetryDef.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.TelemetryDef)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.TelemetryDef: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.TelemetryDef();
-            if (object.id != null)
-                message.id = object.id | 0;
-            if (object.name != null)
-                message.name = String(object.name);
-            if (object.component != null)
-                message.component = String(object.component);
-            if (object.type != null) {
-                if (!$util.isObject(object.type))
-                    throw TypeError(".hermes.TelemetryDef.type: object expected");
-                message.type = $root.hermes.Type.fromObject(object.type, long + 1);
-            }
-            if (object.metadata != null)
-                message.metadata = String(object.metadata);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a TelemetryDef message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.TelemetryDef
-         * @static
-         * @param {hermes.TelemetryDef} message TelemetryDef
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        TelemetryDef.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults) {
-                object.id = 0;
-                object.name = "";
-                object.component = "";
-                object.type = null;
-                object.metadata = "";
-            }
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                object.id = message.id;
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                object.name = message.name;
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                object.component = message.component;
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                object.type = $root.hermes.Type.toObject(message.type, options, q + 1);
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                object.metadata = message.metadata;
-            return object;
-        };
-
-        /**
-         * Converts this TelemetryDef to JSON.
-         * @function toJSON
-         * @memberof hermes.TelemetryDef
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        TelemetryDef.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for TelemetryDef
-         * @function getTypeUrl
-         * @memberof hermes.TelemetryDef
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        TelemetryDef.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.TelemetryDef";
-        };
-
-        return TelemetryDef;
-    })();
-
-    hermes.TelemetryRef = (function() {
-
-        /**
-         * Properties of a TelemetryRef.
-         * @memberof hermes
-         * @interface ITelemetryRef
-         * @property {string|null} [name] TelemetryRef name
-         * @property {string|null} [component] TelemetryRef component
-         * @property {string|null} [dictionary] TelemetryRef dictionary
-         */
-
-        /**
-         * Constructs a new TelemetryRef.
-         * @memberof hermes
-         * @classdesc Represents a TelemetryRef.
-         * @implements ITelemetryRef
-         * @constructor
-         * @param {hermes.ITelemetryRef=} [properties] Properties to set
-         */
-        function TelemetryRef(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * TelemetryRef name.
-         * @member {string} name
-         * @memberof hermes.TelemetryRef
-         * @instance
-         */
-        TelemetryRef.prototype.name = "";
-
-        /**
-         * TelemetryRef component.
-         * @member {string} component
-         * @memberof hermes.TelemetryRef
-         * @instance
-         */
-        TelemetryRef.prototype.component = "";
-
-        /**
-         * TelemetryRef dictionary.
-         * @member {string} dictionary
-         * @memberof hermes.TelemetryRef
-         * @instance
-         */
-        TelemetryRef.prototype.dictionary = "";
-
-        /**
-         * Creates a new TelemetryRef instance using the specified properties.
-         * @function create
-         * @memberof hermes.TelemetryRef
-         * @static
-         * @param {hermes.ITelemetryRef=} [properties] Properties to set
-         * @returns {hermes.TelemetryRef} TelemetryRef instance
-         */
-        TelemetryRef.create = function create(properties) {
-            return new TelemetryRef(properties);
-        };
-
-        /**
-         * Encodes the specified TelemetryRef message. Does not implicitly {@link hermes.TelemetryRef.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.TelemetryRef
-         * @static
-         * @param {hermes.ITelemetryRef} message TelemetryRef message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        TelemetryRef.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.name);
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.component);
-            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
-                writer.uint32(/* id 10, wireType 2 =*/82).string(message.dictionary);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified TelemetryRef message, length delimited. Does not implicitly {@link hermes.TelemetryRef.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.TelemetryRef
-         * @static
-         * @param {hermes.ITelemetryRef} message TelemetryRef message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        TelemetryRef.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a TelemetryRef message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.TelemetryRef
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.TelemetryRef} TelemetryRef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        TelemetryRef.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.TelemetryRef();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 2: {
-                        message.name = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.component = reader.string();
-                        break;
-                    }
-                case 10: {
-                        message.dictionary = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a TelemetryRef message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.TelemetryRef
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.TelemetryRef} TelemetryRef
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        TelemetryRef.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a TelemetryRef message.
-         * @function verify
-         * @memberof hermes.TelemetryRef
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        TelemetryRef.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                if (!$util.isString(message.name))
-                    return "name: string expected";
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                if (!$util.isString(message.component))
-                    return "component: string expected";
-            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
-                if (!$util.isString(message.dictionary))
-                    return "dictionary: string expected";
-            return null;
-        };
-
-        /**
-         * Creates a TelemetryRef message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.TelemetryRef
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.TelemetryRef} TelemetryRef
-         */
-        TelemetryRef.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.TelemetryRef)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.TelemetryRef: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.TelemetryRef();
-            if (object.name != null)
-                message.name = String(object.name);
-            if (object.component != null)
-                message.component = String(object.component);
-            if (object.dictionary != null)
-                message.dictionary = String(object.dictionary);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a TelemetryRef message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.TelemetryRef
-         * @static
-         * @param {hermes.TelemetryRef} message TelemetryRef
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        TelemetryRef.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults) {
-                object.name = "";
-                object.component = "";
-                object.dictionary = "";
-            }
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                object.name = message.name;
-            if (message.component != null && Object.hasOwnProperty.call(message, "component"))
-                object.component = message.component;
-            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
-                object.dictionary = message.dictionary;
-            return object;
-        };
-
-        /**
-         * Converts this TelemetryRef to JSON.
-         * @function toJSON
-         * @memberof hermes.TelemetryRef
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        TelemetryRef.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for TelemetryRef
-         * @function getTypeUrl
-         * @memberof hermes.TelemetryRef
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        TelemetryRef.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.TelemetryRef";
-        };
-
-        return TelemetryRef;
-    })();
-
-    hermes.DictionaryHead = (function() {
-
-        /**
-         * Properties of a DictionaryHead.
-         * @memberof hermes
-         * @interface IDictionaryHead
-         * @property {string|null} [type] Type associated with the Fsw.type
-         * This will filter the user's selection
-         * of dictionaries that can be tracked.
-         * 
-         * This is set by the provider.
-         * @property {string|null} [name] DictionaryHead name
-         * @property {string|null} [version] DictionaryHead version
-         */
-
-        /**
-         * Constructs a new DictionaryHead.
-         * @memberof hermes
-         * @classdesc Represents a DictionaryHead.
-         * @implements IDictionaryHead
-         * @constructor
-         * @param {hermes.IDictionaryHead=} [properties] Properties to set
-         */
-        function DictionaryHead(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Type associated with the Fsw.type
-         * This will filter the user's selection
-         * of dictionaries that can be tracked.
-         * 
-         * This is set by the provider.
-         * @member {string} type
-         * @memberof hermes.DictionaryHead
-         * @instance
-         */
-        DictionaryHead.prototype.type = "";
-
-        /**
-         * DictionaryHead name.
-         * @member {string} name
-         * @memberof hermes.DictionaryHead
-         * @instance
-         */
-        DictionaryHead.prototype.name = "";
-
-        /**
-         * DictionaryHead version.
-         * @member {string} version
-         * @memberof hermes.DictionaryHead
-         * @instance
-         */
-        DictionaryHead.prototype.version = "";
-
-        /**
-         * Creates a new DictionaryHead instance using the specified properties.
-         * @function create
-         * @memberof hermes.DictionaryHead
-         * @static
-         * @param {hermes.IDictionaryHead=} [properties] Properties to set
-         * @returns {hermes.DictionaryHead} DictionaryHead instance
-         */
-        DictionaryHead.create = function create(properties) {
-            return new DictionaryHead(properties);
-        };
-
-        /**
-         * Encodes the specified DictionaryHead message. Does not implicitly {@link hermes.DictionaryHead.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.DictionaryHead
-         * @static
-         * @param {hermes.IDictionaryHead} message DictionaryHead message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DictionaryHead.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.type);
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.name);
-            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.version);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified DictionaryHead message, length delimited. Does not implicitly {@link hermes.DictionaryHead.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.DictionaryHead
-         * @static
-         * @param {hermes.IDictionaryHead} message DictionaryHead message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DictionaryHead.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a DictionaryHead message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.DictionaryHead
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.DictionaryHead} DictionaryHead
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DictionaryHead.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DictionaryHead();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.type = reader.string();
-                        break;
-                    }
-                case 2: {
-                        message.name = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.version = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a DictionaryHead message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.DictionaryHead
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.DictionaryHead} DictionaryHead
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DictionaryHead.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a DictionaryHead message.
-         * @function verify
-         * @memberof hermes.DictionaryHead
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        DictionaryHead.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                if (!$util.isString(message.type))
-                    return "type: string expected";
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                if (!$util.isString(message.name))
-                    return "name: string expected";
-            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
-                if (!$util.isString(message.version))
-                    return "version: string expected";
-            return null;
-        };
-
-        /**
-         * Creates a DictionaryHead message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.DictionaryHead
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.DictionaryHead} DictionaryHead
-         */
-        DictionaryHead.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.DictionaryHead)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.DictionaryHead: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.DictionaryHead();
-            if (object.type != null)
-                message.type = String(object.type);
-            if (object.name != null)
-                message.name = String(object.name);
-            if (object.version != null)
-                message.version = String(object.version);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a DictionaryHead message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.DictionaryHead
-         * @static
-         * @param {hermes.DictionaryHead} message DictionaryHead
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        DictionaryHead.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults) {
-                object.type = "";
-                object.name = "";
-                object.version = "";
-            }
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                object.type = message.type;
-            if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                object.name = message.name;
-            if (message.version != null && Object.hasOwnProperty.call(message, "version"))
-                object.version = message.version;
-            return object;
-        };
-
-        /**
-         * Converts this DictionaryHead to JSON.
-         * @function toJSON
-         * @memberof hermes.DictionaryHead
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        DictionaryHead.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for DictionaryHead
-         * @function getTypeUrl
-         * @memberof hermes.DictionaryHead
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        DictionaryHead.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.DictionaryHead";
-        };
-
-        return DictionaryHead;
-    })();
-
-    hermes.DictionaryNamespace = (function() {
-
-        /**
-         * Properties of a DictionaryNamespace.
-         * @memberof hermes
-         * @interface IDictionaryNamespace
-         * @property {Object.<string,hermes.ICommandDef>|null} [commands] DictionaryNamespace commands
-         * @property {Object.<string,hermes.IEventDef>|null} [events] DictionaryNamespace events
-         * @property {Object.<string,hermes.ITelemetryDef>|null} [telemetry] DictionaryNamespace telemetry
-         * @property {Object.<string,hermes.IParameterDef>|null} [parameters] DictionaryNamespace parameters
-         * @property {Object.<string,hermes.IType>|null} [types] DictionaryNamespace types
-         */
-
-        /**
-         * Constructs a new DictionaryNamespace.
-         * @memberof hermes
-         * @classdesc Represents a DictionaryNamespace.
-         * @implements IDictionaryNamespace
-         * @constructor
-         * @param {hermes.IDictionaryNamespace=} [properties] Properties to set
-         */
-        function DictionaryNamespace(properties) {
-            this.commands = {};
-            this.events = {};
-            this.telemetry = {};
-            this.parameters = {};
-            this.types = {};
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * DictionaryNamespace commands.
-         * @member {Object.<string,hermes.ICommandDef>} commands
-         * @memberof hermes.DictionaryNamespace
-         * @instance
-         */
-        DictionaryNamespace.prototype.commands = $util.emptyObject;
-
-        /**
-         * DictionaryNamespace events.
-         * @member {Object.<string,hermes.IEventDef>} events
-         * @memberof hermes.DictionaryNamespace
-         * @instance
-         */
-        DictionaryNamespace.prototype.events = $util.emptyObject;
-
-        /**
-         * DictionaryNamespace telemetry.
-         * @member {Object.<string,hermes.ITelemetryDef>} telemetry
-         * @memberof hermes.DictionaryNamespace
-         * @instance
-         */
-        DictionaryNamespace.prototype.telemetry = $util.emptyObject;
-
-        /**
-         * DictionaryNamespace parameters.
-         * @member {Object.<string,hermes.IParameterDef>} parameters
-         * @memberof hermes.DictionaryNamespace
-         * @instance
-         */
-        DictionaryNamespace.prototype.parameters = $util.emptyObject;
-
-        /**
-         * DictionaryNamespace types.
-         * @member {Object.<string,hermes.IType>} types
-         * @memberof hermes.DictionaryNamespace
-         * @instance
-         */
-        DictionaryNamespace.prototype.types = $util.emptyObject;
-
-        /**
-         * Creates a new DictionaryNamespace instance using the specified properties.
-         * @function create
-         * @memberof hermes.DictionaryNamespace
-         * @static
-         * @param {hermes.IDictionaryNamespace=} [properties] Properties to set
-         * @returns {hermes.DictionaryNamespace} DictionaryNamespace instance
-         */
-        DictionaryNamespace.create = function create(properties) {
-            return new DictionaryNamespace(properties);
-        };
-
-        /**
-         * Encodes the specified DictionaryNamespace message. Does not implicitly {@link hermes.DictionaryNamespace.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.DictionaryNamespace
-         * @static
-         * @param {hermes.IDictionaryNamespace} message DictionaryNamespace message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DictionaryNamespace.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.commands != null && Object.hasOwnProperty.call(message, "commands"))
-                for (var keys = Object.keys(message.commands), i = 0; i < keys.length; ++i) {
-                    writer.uint32(/* id 1, wireType 2 =*/10).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.CommandDef.encode(message.commands[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
-                }
-            if (message.events != null && Object.hasOwnProperty.call(message, "events"))
-                for (var keys = Object.keys(message.events), i = 0; i < keys.length; ++i) {
-                    writer.uint32(/* id 2, wireType 2 =*/18).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.EventDef.encode(message.events[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
-                }
-            if (message.telemetry != null && Object.hasOwnProperty.call(message, "telemetry"))
-                for (var keys = Object.keys(message.telemetry), i = 0; i < keys.length; ++i) {
-                    writer.uint32(/* id 3, wireType 2 =*/26).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.TelemetryDef.encode(message.telemetry[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
-                }
-            if (message.parameters != null && Object.hasOwnProperty.call(message, "parameters"))
-                for (var keys = Object.keys(message.parameters), i = 0; i < keys.length; ++i) {
-                    writer.uint32(/* id 4, wireType 2 =*/34).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.ParameterDef.encode(message.parameters[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
-                }
-            if (message.types != null && Object.hasOwnProperty.call(message, "types"))
-                for (var keys = Object.keys(message.types), i = 0; i < keys.length; ++i) {
-                    writer.uint32(/* id 5, wireType 2 =*/42).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.Type.encode(message.types[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
-                }
-            return writer;
-        };
-
-        /**
-         * Encodes the specified DictionaryNamespace message, length delimited. Does not implicitly {@link hermes.DictionaryNamespace.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.DictionaryNamespace
-         * @static
-         * @param {hermes.IDictionaryNamespace} message DictionaryNamespace message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DictionaryNamespace.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a DictionaryNamespace message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.DictionaryNamespace
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.DictionaryNamespace} DictionaryNamespace
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DictionaryNamespace.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DictionaryNamespace(), key, value;
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        if (message.commands === $util.emptyObject)
-                            message.commands = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = null;
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = $root.hermes.CommandDef.decode(reader, reader.uint32(), undefined, long + 1);
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.commands, key);
-                        message.commands[key] = value;
-                        break;
-                    }
-                case 2: {
-                        if (message.events === $util.emptyObject)
-                            message.events = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = null;
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = $root.hermes.EventDef.decode(reader, reader.uint32(), undefined, long + 1);
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.events, key);
-                        message.events[key] = value;
-                        break;
-                    }
-                case 3: {
-                        if (message.telemetry === $util.emptyObject)
-                            message.telemetry = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = null;
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = $root.hermes.TelemetryDef.decode(reader, reader.uint32(), undefined, long + 1);
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.telemetry, key);
-                        message.telemetry[key] = value;
-                        break;
-                    }
-                case 4: {
-                        if (message.parameters === $util.emptyObject)
-                            message.parameters = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = null;
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = $root.hermes.ParameterDef.decode(reader, reader.uint32(), undefined, long + 1);
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.parameters, key);
-                        message.parameters[key] = value;
-                        break;
-                    }
-                case 5: {
-                        if (message.types === $util.emptyObject)
-                            message.types = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = null;
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = $root.hermes.Type.decode(reader, reader.uint32(), undefined, long + 1);
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.types, key);
-                        message.types[key] = value;
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a DictionaryNamespace message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.DictionaryNamespace
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.DictionaryNamespace} DictionaryNamespace
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DictionaryNamespace.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a DictionaryNamespace message.
-         * @function verify
-         * @memberof hermes.DictionaryNamespace
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        DictionaryNamespace.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.commands != null && Object.hasOwnProperty.call(message, "commands")) {
-                if (!$util.isObject(message.commands))
-                    return "commands: object expected";
-                var key = Object.keys(message.commands);
-                for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.CommandDef.verify(message.commands[key[i]], long + 1);
-                    if (error)
-                        return "commands." + error;
-                }
-            }
-            if (message.events != null && Object.hasOwnProperty.call(message, "events")) {
-                if (!$util.isObject(message.events))
-                    return "events: object expected";
-                var key = Object.keys(message.events);
-                for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.EventDef.verify(message.events[key[i]], long + 1);
-                    if (error)
-                        return "events." + error;
-                }
-            }
-            if (message.telemetry != null && Object.hasOwnProperty.call(message, "telemetry")) {
-                if (!$util.isObject(message.telemetry))
-                    return "telemetry: object expected";
-                var key = Object.keys(message.telemetry);
-                for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.TelemetryDef.verify(message.telemetry[key[i]], long + 1);
-                    if (error)
-                        return "telemetry." + error;
-                }
-            }
-            if (message.parameters != null && Object.hasOwnProperty.call(message, "parameters")) {
-                if (!$util.isObject(message.parameters))
-                    return "parameters: object expected";
-                var key = Object.keys(message.parameters);
-                for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.ParameterDef.verify(message.parameters[key[i]], long + 1);
-                    if (error)
-                        return "parameters." + error;
-                }
-            }
-            if (message.types != null && Object.hasOwnProperty.call(message, "types")) {
-                if (!$util.isObject(message.types))
-                    return "types: object expected";
-                var key = Object.keys(message.types);
-                for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.Type.verify(message.types[key[i]], long + 1);
-                    if (error)
-                        return "types." + error;
-                }
-            }
-            return null;
-        };
-
-        /**
-         * Creates a DictionaryNamespace message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.DictionaryNamespace
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.DictionaryNamespace} DictionaryNamespace
-         */
-        DictionaryNamespace.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.DictionaryNamespace)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.DictionaryNamespace: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.DictionaryNamespace();
-            if (object.commands) {
-                if (!$util.isObject(object.commands))
-                    throw TypeError(".hermes.DictionaryNamespace.commands: object expected");
-                message.commands = {};
-                for (var keys = Object.keys(object.commands), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.commands, keys[i]);
-                    if (!$util.isObject(object.commands[keys[i]]))
-                        throw TypeError(".hermes.DictionaryNamespace.commands: object expected");
-                    message.commands[keys[i]] = $root.hermes.CommandDef.fromObject(object.commands[keys[i]], long + 1);
-                }
-            }
-            if (object.events) {
-                if (!$util.isObject(object.events))
-                    throw TypeError(".hermes.DictionaryNamespace.events: object expected");
-                message.events = {};
-                for (var keys = Object.keys(object.events), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.events, keys[i]);
-                    if (!$util.isObject(object.events[keys[i]]))
-                        throw TypeError(".hermes.DictionaryNamespace.events: object expected");
-                    message.events[keys[i]] = $root.hermes.EventDef.fromObject(object.events[keys[i]], long + 1);
-                }
-            }
-            if (object.telemetry) {
-                if (!$util.isObject(object.telemetry))
-                    throw TypeError(".hermes.DictionaryNamespace.telemetry: object expected");
-                message.telemetry = {};
-                for (var keys = Object.keys(object.telemetry), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.telemetry, keys[i]);
-                    if (!$util.isObject(object.telemetry[keys[i]]))
-                        throw TypeError(".hermes.DictionaryNamespace.telemetry: object expected");
-                    message.telemetry[keys[i]] = $root.hermes.TelemetryDef.fromObject(object.telemetry[keys[i]], long + 1);
-                }
-            }
-            if (object.parameters) {
-                if (!$util.isObject(object.parameters))
-                    throw TypeError(".hermes.DictionaryNamespace.parameters: object expected");
-                message.parameters = {};
-                for (var keys = Object.keys(object.parameters), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.parameters, keys[i]);
-                    if (!$util.isObject(object.parameters[keys[i]]))
-                        throw TypeError(".hermes.DictionaryNamespace.parameters: object expected");
-                    message.parameters[keys[i]] = $root.hermes.ParameterDef.fromObject(object.parameters[keys[i]], long + 1);
-                }
-            }
-            if (object.types) {
-                if (!$util.isObject(object.types))
-                    throw TypeError(".hermes.DictionaryNamespace.types: object expected");
-                message.types = {};
-                for (var keys = Object.keys(object.types), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.types, keys[i]);
-                    if (!$util.isObject(object.types[keys[i]]))
-                        throw TypeError(".hermes.DictionaryNamespace.types: object expected");
-                    message.types[keys[i]] = $root.hermes.Type.fromObject(object.types[keys[i]], long + 1);
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a DictionaryNamespace message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.DictionaryNamespace
-         * @static
-         * @param {hermes.DictionaryNamespace} message DictionaryNamespace
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        DictionaryNamespace.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.objects || options.defaults) {
-                object.commands = {};
-                object.events = {};
-                object.telemetry = {};
-                object.parameters = {};
-                object.types = {};
-            }
-            var keys2;
-            if (message.commands && (keys2 = Object.keys(message.commands)).length) {
-                object.commands = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.commands, keys2[j]);
-                    object.commands[keys2[j]] = $root.hermes.CommandDef.toObject(message.commands[keys2[j]], options, q + 1);
-                }
-            }
-            if (message.events && (keys2 = Object.keys(message.events)).length) {
-                object.events = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.events, keys2[j]);
-                    object.events[keys2[j]] = $root.hermes.EventDef.toObject(message.events[keys2[j]], options, q + 1);
-                }
-            }
-            if (message.telemetry && (keys2 = Object.keys(message.telemetry)).length) {
-                object.telemetry = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.telemetry, keys2[j]);
-                    object.telemetry[keys2[j]] = $root.hermes.TelemetryDef.toObject(message.telemetry[keys2[j]], options, q + 1);
-                }
-            }
-            if (message.parameters && (keys2 = Object.keys(message.parameters)).length) {
-                object.parameters = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.parameters, keys2[j]);
-                    object.parameters[keys2[j]] = $root.hermes.ParameterDef.toObject(message.parameters[keys2[j]], options, q + 1);
-                }
-            }
-            if (message.types && (keys2 = Object.keys(message.types)).length) {
-                object.types = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.types, keys2[j]);
-                    object.types[keys2[j]] = $root.hermes.Type.toObject(message.types[keys2[j]], options, q + 1);
-                }
-            }
-            return object;
-        };
-
-        /**
-         * Converts this DictionaryNamespace to JSON.
-         * @function toJSON
-         * @memberof hermes.DictionaryNamespace
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        DictionaryNamespace.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for DictionaryNamespace
-         * @function getTypeUrl
-         * @memberof hermes.DictionaryNamespace
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        DictionaryNamespace.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.DictionaryNamespace";
-        };
-
-        return DictionaryNamespace;
-    })();
-
-    hermes.Dictionary = (function() {
-
-        /**
-         * Properties of a Dictionary.
-         * @memberof hermes
-         * @interface IDictionary
-         * @property {hermes.IDictionaryHead|null} [head] Dictionary head
-         * @property {Object.<string,hermes.IDictionaryNamespace>|null} [content] Dictionary content
-         * @property {Object.<string,string>|null} [metadata] Dictionary metadata
-         * @property {string|null} [id] Dictionary id
-         */
-
-        /**
-         * Constructs a new Dictionary.
-         * @memberof hermes
-         * @classdesc Represents a Dictionary.
-         * @implements IDictionary
-         * @constructor
-         * @param {hermes.IDictionary=} [properties] Properties to set
-         */
-        function Dictionary(properties) {
-            this.content = {};
-            this.metadata = {};
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Dictionary head.
-         * @member {hermes.IDictionaryHead|null|undefined} head
-         * @memberof hermes.Dictionary
-         * @instance
-         */
-        Dictionary.prototype.head = null;
-
-        /**
-         * Dictionary content.
-         * @member {Object.<string,hermes.IDictionaryNamespace>} content
-         * @memberof hermes.Dictionary
-         * @instance
-         */
-        Dictionary.prototype.content = $util.emptyObject;
-
-        /**
-         * Dictionary metadata.
-         * @member {Object.<string,string>} metadata
-         * @memberof hermes.Dictionary
-         * @instance
-         */
-        Dictionary.prototype.metadata = $util.emptyObject;
-
-        /**
-         * Dictionary id.
-         * @member {string} id
-         * @memberof hermes.Dictionary
-         * @instance
-         */
-        Dictionary.prototype.id = "";
-
-        /**
-         * Creates a new Dictionary instance using the specified properties.
-         * @function create
-         * @memberof hermes.Dictionary
-         * @static
-         * @param {hermes.IDictionary=} [properties] Properties to set
-         * @returns {hermes.Dictionary} Dictionary instance
-         */
-        Dictionary.create = function create(properties) {
-            return new Dictionary(properties);
-        };
-
-        /**
-         * Encodes the specified Dictionary message. Does not implicitly {@link hermes.Dictionary.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.Dictionary
-         * @static
-         * @param {hermes.IDictionary} message Dictionary message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Dictionary.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.head != null && Object.hasOwnProperty.call(message, "head"))
-                $root.hermes.DictionaryHead.encode(message.head, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.content != null && Object.hasOwnProperty.call(message, "content"))
-                for (var keys = Object.keys(message.content), i = 0; i < keys.length; ++i) {
-                    writer.uint32(/* id 2, wireType 2 =*/18).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.DictionaryNamespace.encode(message.content[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
-                }
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
-                    writer.uint32(/* id 3, wireType 2 =*/26).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.metadata[keys[i]]).ldelim();
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                writer.uint32(/* id 4, wireType 2 =*/34).string(message.id);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified Dictionary message, length delimited. Does not implicitly {@link hermes.Dictionary.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.Dictionary
-         * @static
-         * @param {hermes.IDictionary} message Dictionary message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Dictionary.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a Dictionary message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.Dictionary
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.Dictionary} Dictionary
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Dictionary.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Dictionary(), key, value;
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.head = $root.hermes.DictionaryHead.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 2: {
-                        if (message.content === $util.emptyObject)
-                            message.content = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = null;
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = $root.hermes.DictionaryNamespace.decode(reader, reader.uint32(), undefined, long + 1);
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.content, key);
-                        message.content[key] = value;
-                        break;
-                    }
-                case 3: {
-                        if (message.metadata === $util.emptyObject)
-                            message.metadata = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = "";
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = reader.string();
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.metadata, key);
-                        message.metadata[key] = value;
-                        break;
-                    }
-                case 4: {
-                        message.id = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a Dictionary message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.Dictionary
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.Dictionary} Dictionary
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Dictionary.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a Dictionary message.
-         * @function verify
-         * @memberof hermes.Dictionary
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        Dictionary.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.head != null && Object.hasOwnProperty.call(message, "head")) {
-                var error = $root.hermes.DictionaryHead.verify(message.head, long + 1);
-                if (error)
-                    return "head." + error;
-            }
-            if (message.content != null && Object.hasOwnProperty.call(message, "content")) {
-                if (!$util.isObject(message.content))
-                    return "content: object expected";
-                var key = Object.keys(message.content);
-                for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.DictionaryNamespace.verify(message.content[key[i]], long + 1);
-                    if (error)
-                        return "content." + error;
-                }
-            }
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
-                if (!$util.isObject(message.metadata))
-                    return "metadata: object expected";
-                var key = Object.keys(message.metadata);
-                for (var i = 0; i < key.length; ++i)
-                    if (!$util.isString(message.metadata[key[i]]))
-                        return "metadata: string{k:string} expected";
-            }
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                if (!$util.isString(message.id))
-                    return "id: string expected";
-            return null;
-        };
-
-        /**
-         * Creates a Dictionary message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.Dictionary
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.Dictionary} Dictionary
-         */
-        Dictionary.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.Dictionary)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.Dictionary: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.Dictionary();
-            if (object.head != null) {
-                if (!$util.isObject(object.head))
-                    throw TypeError(".hermes.Dictionary.head: object expected");
-                message.head = $root.hermes.DictionaryHead.fromObject(object.head, long + 1);
-            }
-            if (object.content) {
-                if (!$util.isObject(object.content))
-                    throw TypeError(".hermes.Dictionary.content: object expected");
-                message.content = {};
-                for (var keys = Object.keys(object.content), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.content, keys[i]);
-                    if (!$util.isObject(object.content[keys[i]]))
-                        throw TypeError(".hermes.Dictionary.content: object expected");
-                    message.content[keys[i]] = $root.hermes.DictionaryNamespace.fromObject(object.content[keys[i]], long + 1);
-                }
-            }
-            if (object.metadata) {
-                if (!$util.isObject(object.metadata))
-                    throw TypeError(".hermes.Dictionary.metadata: object expected");
-                message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.metadata, keys[i]);
-                    message.metadata[keys[i]] = String(object.metadata[keys[i]]);
-                }
-            }
-            if (object.id != null)
-                message.id = String(object.id);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a Dictionary message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.Dictionary
-         * @static
-         * @param {hermes.Dictionary} message Dictionary
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        Dictionary.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.objects || options.defaults) {
-                object.content = {};
-                object.metadata = {};
-            }
-            if (options.defaults) {
-                object.head = null;
-                object.id = "";
-            }
-            if (message.head != null && Object.hasOwnProperty.call(message, "head"))
-                object.head = $root.hermes.DictionaryHead.toObject(message.head, options, q + 1);
-            var keys2;
-            if (message.content && (keys2 = Object.keys(message.content)).length) {
-                object.content = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.content, keys2[j]);
-                    object.content[keys2[j]] = $root.hermes.DictionaryNamespace.toObject(message.content[keys2[j]], options, q + 1);
-                }
-            }
-            if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
-                object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.metadata, keys2[j]);
-                    object.metadata[keys2[j]] = message.metadata[keys2[j]];
-                }
-            }
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                object.id = message.id;
-            return object;
-        };
-
-        /**
-         * Converts this Dictionary to JSON.
-         * @function toJSON
-         * @memberof hermes.Dictionary
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        Dictionary.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for Dictionary
-         * @function getTypeUrl
-         * @memberof hermes.Dictionary
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        Dictionary.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.Dictionary";
-        };
-
-        return Dictionary;
-    })();
-
-    hermes.Time = (function() {
-
-        /**
-         * Properties of a Time.
-         * @memberof hermes
-         * @interface ITime
-         * @property {google.protobuf.ITimestamp|null} [unix] Time unix
-         * @property {number|null} [sclk] Time sclk
-         */
-
-        /**
-         * Constructs a new Time.
-         * @memberof hermes
-         * @classdesc Represents a Time.
-         * @implements ITime
-         * @constructor
-         * @param {hermes.ITime=} [properties] Properties to set
-         */
-        function Time(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Time unix.
-         * @member {google.protobuf.ITimestamp|null|undefined} unix
-         * @memberof hermes.Time
-         * @instance
-         */
-        Time.prototype.unix = null;
-
-        /**
-         * Time sclk.
-         * @member {number} sclk
-         * @memberof hermes.Time
-         * @instance
-         */
-        Time.prototype.sclk = 0;
-
-        /**
-         * Creates a new Time instance using the specified properties.
-         * @function create
-         * @memberof hermes.Time
-         * @static
-         * @param {hermes.ITime=} [properties] Properties to set
-         * @returns {hermes.Time} Time instance
-         */
-        Time.create = function create(properties) {
-            return new Time(properties);
-        };
-
-        /**
-         * Encodes the specified Time message. Does not implicitly {@link hermes.Time.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.Time
-         * @static
-         * @param {hermes.ITime} message Time message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Time.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.unix != null && Object.hasOwnProperty.call(message, "unix"))
-                $root.google.protobuf.Timestamp.encode(message.unix, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.sclk != null && Object.hasOwnProperty.call(message, "sclk"))
-                writer.uint32(/* id 2, wireType 1 =*/17).double(message.sclk);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified Time message, length delimited. Does not implicitly {@link hermes.Time.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.Time
-         * @static
-         * @param {hermes.ITime} message Time message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Time.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a Time message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.Time
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.Time} Time
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Time.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Time();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.unix = $root.google.protobuf.Timestamp.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 2: {
-                        message.sclk = reader.double();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a Time message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.Time
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.Time} Time
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Time.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a Time message.
-         * @function verify
-         * @memberof hermes.Time
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        Time.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.unix != null && Object.hasOwnProperty.call(message, "unix")) {
-                var error = $root.google.protobuf.Timestamp.verify(message.unix, long + 1);
-                if (error)
-                    return "unix." + error;
-            }
-            if (message.sclk != null && Object.hasOwnProperty.call(message, "sclk"))
-                if (typeof message.sclk !== "number")
-                    return "sclk: number expected";
-            return null;
-        };
-
-        /**
-         * Creates a Time message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.Time
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.Time} Time
-         */
-        Time.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.Time)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.Time: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.Time();
-            if (object.unix != null) {
-                if (!$util.isObject(object.unix))
-                    throw TypeError(".hermes.Time.unix: object expected");
-                message.unix = $root.google.protobuf.Timestamp.fromObject(object.unix, long + 1);
-            }
-            if (object.sclk != null)
-                message.sclk = Number(object.sclk);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a Time message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.Time
-         * @static
-         * @param {hermes.Time} message Time
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        Time.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults) {
-                object.unix = null;
-                object.sclk = 0;
-            }
-            if (message.unix != null && Object.hasOwnProperty.call(message, "unix"))
-                object.unix = $root.google.protobuf.Timestamp.toObject(message.unix, options, q + 1);
-            if (message.sclk != null && Object.hasOwnProperty.call(message, "sclk"))
-                object.sclk = options.json && !isFinite(message.sclk) ? String(message.sclk) : message.sclk;
-            return object;
-        };
-
-        /**
-         * Converts this Time to JSON.
-         * @function toJSON
-         * @memberof hermes.Time
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        Time.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for Time
-         * @function getTypeUrl
-         * @memberof hermes.Time
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        Time.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.Time";
-        };
-
-        return Time;
-    })();
-
-    hermes.FileHeader = (function() {
-
-        /**
-         * Properties of a FileHeader.
-         * @memberof hermes
-         * @interface IFileHeader
-         * @property {string|null} [sourcePath] FileHeader sourcePath
-         * @property {string|null} [destinationPath] FileHeader destinationPath
-         * @property {number|Long|null} [size] FileHeader size
-         * @property {Object.<string,string>|null} [metadata] FileHeader metadata
-         */
-
-        /**
-         * Constructs a new FileHeader.
-         * @memberof hermes
-         * @classdesc Represents a FileHeader.
-         * @implements IFileHeader
-         * @constructor
-         * @param {hermes.IFileHeader=} [properties] Properties to set
-         */
-        function FileHeader(properties) {
-            this.metadata = {};
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * FileHeader sourcePath.
-         * @member {string} sourcePath
-         * @memberof hermes.FileHeader
-         * @instance
-         */
-        FileHeader.prototype.sourcePath = "";
-
-        /**
-         * FileHeader destinationPath.
-         * @member {string} destinationPath
-         * @memberof hermes.FileHeader
-         * @instance
-         */
-        FileHeader.prototype.destinationPath = "";
-
-        /**
-         * FileHeader size.
-         * @member {number|Long} size
-         * @memberof hermes.FileHeader
-         * @instance
-         */
-        FileHeader.prototype.size = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
-
-        /**
-         * FileHeader metadata.
-         * @member {Object.<string,string>} metadata
-         * @memberof hermes.FileHeader
-         * @instance
-         */
-        FileHeader.prototype.metadata = $util.emptyObject;
-
-        /**
-         * Creates a new FileHeader instance using the specified properties.
-         * @function create
-         * @memberof hermes.FileHeader
-         * @static
-         * @param {hermes.IFileHeader=} [properties] Properties to set
-         * @returns {hermes.FileHeader} FileHeader instance
-         */
-        FileHeader.create = function create(properties) {
-            return new FileHeader(properties);
-        };
-
-        /**
-         * Encodes the specified FileHeader message. Does not implicitly {@link hermes.FileHeader.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.FileHeader
-         * @static
-         * @param {hermes.IFileHeader} message FileHeader message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FileHeader.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.sourcePath);
-            if (message.destinationPath != null && Object.hasOwnProperty.call(message, "destinationPath"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.destinationPath);
-            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
-                writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.size);
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
-                    writer.uint32(/* id 4, wireType 2 =*/34).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.metadata[keys[i]]).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified FileHeader message, length delimited. Does not implicitly {@link hermes.FileHeader.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.FileHeader
-         * @static
-         * @param {hermes.IFileHeader} message FileHeader message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FileHeader.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a FileHeader message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.FileHeader
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.FileHeader} FileHeader
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FileHeader.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FileHeader(), key, value;
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.sourcePath = reader.string();
-                        break;
-                    }
-                case 2: {
-                        message.destinationPath = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.size = reader.uint64();
-                        break;
-                    }
-                case 4: {
-                        if (message.metadata === $util.emptyObject)
-                            message.metadata = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = "";
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = reader.string();
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.metadata, key);
-                        message.metadata[key] = value;
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a FileHeader message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.FileHeader
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.FileHeader} FileHeader
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FileHeader.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a FileHeader message.
-         * @function verify
-         * @memberof hermes.FileHeader
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        FileHeader.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
-                if (!$util.isString(message.sourcePath))
-                    return "sourcePath: string expected";
-            if (message.destinationPath != null && Object.hasOwnProperty.call(message, "destinationPath"))
-                if (!$util.isString(message.destinationPath))
-                    return "destinationPath: string expected";
-            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
-                if (!$util.isInteger(message.size) && !(message.size && $util.isInteger(message.size.low) && $util.isInteger(message.size.high)))
-                    return "size: integer|Long expected";
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
-                if (!$util.isObject(message.metadata))
-                    return "metadata: object expected";
-                var key = Object.keys(message.metadata);
-                for (var i = 0; i < key.length; ++i)
-                    if (!$util.isString(message.metadata[key[i]]))
-                        return "metadata: string{k:string} expected";
-            }
-            return null;
-        };
-
-        /**
-         * Creates a FileHeader message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.FileHeader
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.FileHeader} FileHeader
-         */
-        FileHeader.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.FileHeader)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.FileHeader: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.FileHeader();
-            if (object.sourcePath != null)
-                message.sourcePath = String(object.sourcePath);
-            if (object.destinationPath != null)
-                message.destinationPath = String(object.destinationPath);
-            if (object.size != null)
-                if ($util.Long)
-                    message.size = $util.Long.fromValue(object.size, true);
-                else if (typeof object.size === "string")
-                    message.size = parseInt(object.size, 10);
-                else if (typeof object.size === "number")
-                    message.size = object.size;
-                else if (typeof object.size === "object")
-                    message.size = new $util.LongBits(object.size.low >>> 0, object.size.high >>> 0).toNumber(true);
-            if (object.metadata) {
-                if (!$util.isObject(object.metadata))
-                    throw TypeError(".hermes.FileHeader.metadata: object expected");
-                message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.metadata, keys[i]);
-                    message.metadata[keys[i]] = String(object.metadata[keys[i]]);
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a FileHeader message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.FileHeader
-         * @static
-         * @param {hermes.FileHeader} message FileHeader
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        FileHeader.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.objects || options.defaults)
-                object.metadata = {};
-            if (options.defaults) {
-                object.sourcePath = "";
-                object.destinationPath = "";
-                if ($util.Long) {
-                    var long = new $util.Long(0, 0, true);
-                    object.size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
-                } else
-                    object.size = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
-            }
-            if (message.sourcePath != null && Object.hasOwnProperty.call(message, "sourcePath"))
-                object.sourcePath = message.sourcePath;
-            if (message.destinationPath != null && Object.hasOwnProperty.call(message, "destinationPath"))
-                object.destinationPath = message.destinationPath;
-            if (message.size != null && Object.hasOwnProperty.call(message, "size"))
-                if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                    object.size = typeof message.size === "number" ? BigInt(message.size) : $util.Long.fromBits(message.size.low >>> 0, message.size.high >>> 0, true).toBigInt();
-                else if (typeof message.size === "number")
-                    object.size = options.longs === String ? String(message.size) : message.size;
-                else
-                    object.size = options.longs === String ? $util.Long.prototype.toString.call(message.size) : options.longs === Number ? new $util.LongBits(message.size.low >>> 0, message.size.high >>> 0).toNumber(true) : message.size;
-            var keys2;
-            if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
-                object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.metadata, keys2[j]);
-                    object.metadata[keys2[j]] = message.metadata[keys2[j]];
-                }
-            }
-            return object;
-        };
-
-        /**
-         * Converts this FileHeader to JSON.
-         * @function toJSON
-         * @memberof hermes.FileHeader
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        FileHeader.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for FileHeader
-         * @function getTypeUrl
-         * @memberof hermes.FileHeader
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        FileHeader.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.FileHeader";
-        };
-
-        return FileHeader;
-    })();
-
-    hermes.UplinkFileChunk = (function() {
-
-        /**
-         * Properties of an UplinkFileChunk.
-         * @memberof hermes
-         * @interface IUplinkFileChunk
-         * @property {hermes.IFileHeader|null} [header] UplinkFileChunk header
-         * @property {Uint8Array|null} [data] UplinkFileChunk data
-         */
-
-        /**
-         * Constructs a new UplinkFileChunk.
-         * @memberof hermes
-         * @classdesc Represents an UplinkFileChunk.
-         * @implements IUplinkFileChunk
-         * @constructor
-         * @param {hermes.IUplinkFileChunk=} [properties] Properties to set
-         */
-        function UplinkFileChunk(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * UplinkFileChunk header.
-         * @member {hermes.IFileHeader|null|undefined} header
-         * @memberof hermes.UplinkFileChunk
-         * @instance
-         */
-        UplinkFileChunk.prototype.header = null;
-
-        /**
-         * UplinkFileChunk data.
-         * @member {Uint8Array|null|undefined} data
-         * @memberof hermes.UplinkFileChunk
-         * @instance
-         */
-        UplinkFileChunk.prototype.data = null;
-
-        // OneOf field names bound to virtual getters and setters
-        var $oneOfFields;
-
-        /**
-         * UplinkFileChunk value.
-         * @member {"header"|"data"|undefined} value
-         * @memberof hermes.UplinkFileChunk
-         * @instance
-         */
-        Object.defineProperty(UplinkFileChunk.prototype, "value", {
-            get: $util.oneOfGetter($oneOfFields = ["header", "data"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * Creates a new UplinkFileChunk instance using the specified properties.
-         * @function create
-         * @memberof hermes.UplinkFileChunk
-         * @static
-         * @param {hermes.IUplinkFileChunk=} [properties] Properties to set
-         * @returns {hermes.UplinkFileChunk} UplinkFileChunk instance
-         */
-        UplinkFileChunk.create = function create(properties) {
-            return new UplinkFileChunk(properties);
-        };
-
-        /**
-         * Encodes the specified UplinkFileChunk message. Does not implicitly {@link hermes.UplinkFileChunk.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.UplinkFileChunk
-         * @static
-         * @param {hermes.IUplinkFileChunk} message UplinkFileChunk message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        UplinkFileChunk.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.header != null && Object.hasOwnProperty.call(message, "header"))
-                $root.hermes.FileHeader.encode(message.header, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.data);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified UplinkFileChunk message, length delimited. Does not implicitly {@link hermes.UplinkFileChunk.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.UplinkFileChunk
-         * @static
-         * @param {hermes.IUplinkFileChunk} message UplinkFileChunk message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        UplinkFileChunk.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes an UplinkFileChunk message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.UplinkFileChunk
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.UplinkFileChunk} UplinkFileChunk
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        UplinkFileChunk.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.UplinkFileChunk();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.header = $root.hermes.FileHeader.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 2: {
-                        message.data = reader.bytes();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes an UplinkFileChunk message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.UplinkFileChunk
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.UplinkFileChunk} UplinkFileChunk
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        UplinkFileChunk.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies an UplinkFileChunk message.
-         * @function verify
-         * @memberof hermes.UplinkFileChunk
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        UplinkFileChunk.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            var properties = {};
-            if (message.header != null && Object.hasOwnProperty.call(message, "header")) {
-                properties.value = 1;
-                {
-                    var error = $root.hermes.FileHeader.verify(message.header, long + 1);
-                    if (error)
-                        return "header." + error;
-                }
-            }
-            if (message.data != null && Object.hasOwnProperty.call(message, "data")) {
-                if (properties.value === 1)
-                    return "value: multiple values";
-                properties.value = 1;
-                if (!(message.data && typeof message.data.length === "number" || $util.isString(message.data)))
-                    return "data: buffer expected";
-            }
-            return null;
-        };
-
-        /**
-         * Creates an UplinkFileChunk message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.UplinkFileChunk
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.UplinkFileChunk} UplinkFileChunk
-         */
-        UplinkFileChunk.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.UplinkFileChunk)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.UplinkFileChunk: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.UplinkFileChunk();
-            if (object.header != null) {
-                if (!$util.isObject(object.header))
-                    throw TypeError(".hermes.UplinkFileChunk.header: object expected");
-                message.header = $root.hermes.FileHeader.fromObject(object.header, long + 1);
-            }
-            if (object.data != null)
-                if (typeof object.data === "string")
-                    $util.base64.decode(object.data, message.data = $util.newBuffer($util.base64.length(object.data)), 0);
-                else if (object.data.length >= 0)
-                    message.data = object.data;
-            return message;
-        };
-
-        /**
-         * Creates a plain object from an UplinkFileChunk message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.UplinkFileChunk
-         * @static
-         * @param {hermes.UplinkFileChunk} message UplinkFileChunk
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        UplinkFileChunk.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (message.header != null && Object.hasOwnProperty.call(message, "header")) {
-                object.header = $root.hermes.FileHeader.toObject(message.header, options, q + 1);
-                if (options.oneofs)
-                    object.value = "header";
-            }
-            if (message.data != null && Object.hasOwnProperty.call(message, "data")) {
-                object.data = options.bytes === String ? $util.base64.encode(message.data, 0, message.data.length) : options.bytes === Array ? Array.prototype.slice.call(message.data) : message.data;
-                if (options.oneofs)
-                    object.value = "data";
-            }
-            return object;
-        };
-
-        /**
-         * Converts this UplinkFileChunk to JSON.
-         * @function toJSON
-         * @memberof hermes.UplinkFileChunk
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        UplinkFileChunk.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for UplinkFileChunk
-         * @function getTypeUrl
-         * @memberof hermes.UplinkFileChunk
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        UplinkFileChunk.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.UplinkFileChunk";
-        };
-
-        return UplinkFileChunk;
-    })();
-
-    hermes.DownlinkFileData = (function() {
-
-        /**
-         * Properties of a DownlinkFileData.
-         * @memberof hermes
-         * @interface IDownlinkFileData
-         * @property {number|Long|null} [offset] DownlinkFileData offset
-         * @property {Uint8Array|null} [data] DownlinkFileData data
-         * @property {Object.<string,string>|null} [md] DownlinkFileData md
-         */
-
-        /**
-         * Constructs a new DownlinkFileData.
-         * @memberof hermes
-         * @classdesc Represents a DownlinkFileData.
-         * @implements IDownlinkFileData
-         * @constructor
-         * @param {hermes.IDownlinkFileData=} [properties] Properties to set
-         */
-        function DownlinkFileData(properties) {
-            this.md = {};
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * DownlinkFileData offset.
-         * @member {number|Long} offset
-         * @memberof hermes.DownlinkFileData
-         * @instance
-         */
-        DownlinkFileData.prototype.offset = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
-
-        /**
-         * DownlinkFileData data.
-         * @member {Uint8Array} data
-         * @memberof hermes.DownlinkFileData
-         * @instance
-         */
-        DownlinkFileData.prototype.data = $util.newBuffer([]);
-
-        /**
-         * DownlinkFileData md.
-         * @member {Object.<string,string>} md
-         * @memberof hermes.DownlinkFileData
-         * @instance
-         */
-        DownlinkFileData.prototype.md = $util.emptyObject;
-
-        /**
-         * Creates a new DownlinkFileData instance using the specified properties.
-         * @function create
-         * @memberof hermes.DownlinkFileData
-         * @static
-         * @param {hermes.IDownlinkFileData=} [properties] Properties to set
-         * @returns {hermes.DownlinkFileData} DownlinkFileData instance
-         */
-        DownlinkFileData.create = function create(properties) {
-            return new DownlinkFileData(properties);
-        };
-
-        /**
-         * Encodes the specified DownlinkFileData message. Does not implicitly {@link hermes.DownlinkFileData.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.DownlinkFileData
-         * @static
-         * @param {hermes.IDownlinkFileData} message DownlinkFileData message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DownlinkFileData.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.offset != null && Object.hasOwnProperty.call(message, "offset"))
-                writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.offset);
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.data);
-            if (message.md != null && Object.hasOwnProperty.call(message, "md"))
-                for (var keys = Object.keys(message.md), i = 0; i < keys.length; ++i)
-                    writer.uint32(/* id 3, wireType 2 =*/26).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.md[keys[i]]).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified DownlinkFileData message, length delimited. Does not implicitly {@link hermes.DownlinkFileData.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.DownlinkFileData
-         * @static
-         * @param {hermes.IDownlinkFileData} message DownlinkFileData message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DownlinkFileData.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a DownlinkFileData message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.DownlinkFileData
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.DownlinkFileData} DownlinkFileData
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DownlinkFileData.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DownlinkFileData(), key, value;
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.offset = reader.uint64();
-                        break;
-                    }
-                case 2: {
-                        message.data = reader.bytes();
-                        break;
-                    }
-                case 3: {
-                        if (message.md === $util.emptyObject)
-                            message.md = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = "";
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = reader.string();
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.md, key);
-                        message.md[key] = value;
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a DownlinkFileData message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.DownlinkFileData
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.DownlinkFileData} DownlinkFileData
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DownlinkFileData.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a DownlinkFileData message.
-         * @function verify
-         * @memberof hermes.DownlinkFileData
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        DownlinkFileData.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.offset != null && Object.hasOwnProperty.call(message, "offset"))
-                if (!$util.isInteger(message.offset) && !(message.offset && $util.isInteger(message.offset.low) && $util.isInteger(message.offset.high)))
-                    return "offset: integer|Long expected";
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                if (!(message.data && typeof message.data.length === "number" || $util.isString(message.data)))
-                    return "data: buffer expected";
-            if (message.md != null && Object.hasOwnProperty.call(message, "md")) {
-                if (!$util.isObject(message.md))
-                    return "md: object expected";
-                var key = Object.keys(message.md);
-                for (var i = 0; i < key.length; ++i)
-                    if (!$util.isString(message.md[key[i]]))
-                        return "md: string{k:string} expected";
-            }
-            return null;
-        };
-
-        /**
-         * Creates a DownlinkFileData message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.DownlinkFileData
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.DownlinkFileData} DownlinkFileData
-         */
-        DownlinkFileData.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.DownlinkFileData)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.DownlinkFileData: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.DownlinkFileData();
-            if (object.offset != null)
-                if ($util.Long)
-                    message.offset = $util.Long.fromValue(object.offset, true);
-                else if (typeof object.offset === "string")
-                    message.offset = parseInt(object.offset, 10);
-                else if (typeof object.offset === "number")
-                    message.offset = object.offset;
-                else if (typeof object.offset === "object")
-                    message.offset = new $util.LongBits(object.offset.low >>> 0, object.offset.high >>> 0).toNumber(true);
-            if (object.data != null)
-                if (typeof object.data === "string")
-                    $util.base64.decode(object.data, message.data = $util.newBuffer($util.base64.length(object.data)), 0);
-                else if (object.data.length >= 0)
-                    message.data = object.data;
-            if (object.md) {
-                if (!$util.isObject(object.md))
-                    throw TypeError(".hermes.DownlinkFileData.md: object expected");
-                message.md = {};
-                for (var keys = Object.keys(object.md), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.md, keys[i]);
-                    message.md[keys[i]] = String(object.md[keys[i]]);
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a DownlinkFileData message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.DownlinkFileData
-         * @static
-         * @param {hermes.DownlinkFileData} message DownlinkFileData
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        DownlinkFileData.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.objects || options.defaults)
-                object.md = {};
-            if (options.defaults) {
-                if ($util.Long) {
-                    var long = new $util.Long(0, 0, true);
-                    object.offset = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : typeof BigInt !== "undefined" && options.longs === BigInt ? long.toBigInt() : long;
-                } else
-                    object.offset = options.longs === String ? "0" : typeof BigInt !== "undefined" && options.longs === BigInt ? BigInt("0") : 0;
-                if (options.bytes === String)
-                    object.data = "";
-                else {
-                    object.data = [];
-                    if (options.bytes !== Array)
-                        object.data = $util.newBuffer(object.data);
-                }
-            }
-            if (message.offset != null && Object.hasOwnProperty.call(message, "offset"))
-                if (typeof BigInt !== "undefined" && options.longs === BigInt)
-                    object.offset = typeof message.offset === "number" ? BigInt(message.offset) : $util.Long.fromBits(message.offset.low >>> 0, message.offset.high >>> 0, true).toBigInt();
-                else if (typeof message.offset === "number")
-                    object.offset = options.longs === String ? String(message.offset) : message.offset;
-                else
-                    object.offset = options.longs === String ? $util.Long.prototype.toString.call(message.offset) : options.longs === Number ? new $util.LongBits(message.offset.low >>> 0, message.offset.high >>> 0).toNumber(true) : message.offset;
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                object.data = options.bytes === String ? $util.base64.encode(message.data, 0, message.data.length) : options.bytes === Array ? Array.prototype.slice.call(message.data) : message.data;
-            var keys2;
-            if (message.md && (keys2 = Object.keys(message.md)).length) {
-                object.md = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.md, keys2[j]);
-                    object.md[keys2[j]] = message.md[keys2[j]];
-                }
-            }
-            return object;
-        };
-
-        /**
-         * Converts this DownlinkFileData to JSON.
-         * @function toJSON
-         * @memberof hermes.DownlinkFileData
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        DownlinkFileData.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for DownlinkFileData
-         * @function getTypeUrl
-         * @memberof hermes.DownlinkFileData
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        DownlinkFileData.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.DownlinkFileData";
-        };
-
-        return DownlinkFileData;
-    })();
-
-    hermes.DownlinkFileMetadata = (function() {
-
-        /**
-         * Properties of a DownlinkFileMetadata.
-         * @memberof hermes
-         * @interface IDownlinkFileMetadata
-         * @property {string|null} [key] DownlinkFileMetadata key
-         * @property {Uint8Array|null} [data] DownlinkFileMetadata data
-         */
-
-        /**
-         * Constructs a new DownlinkFileMetadata.
-         * @memberof hermes
-         * @classdesc Represents a DownlinkFileMetadata.
-         * @implements IDownlinkFileMetadata
-         * @constructor
-         * @param {hermes.IDownlinkFileMetadata=} [properties] Properties to set
-         */
-        function DownlinkFileMetadata(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * DownlinkFileMetadata key.
-         * @member {string} key
-         * @memberof hermes.DownlinkFileMetadata
-         * @instance
-         */
-        DownlinkFileMetadata.prototype.key = "";
-
-        /**
-         * DownlinkFileMetadata data.
-         * @member {Uint8Array} data
-         * @memberof hermes.DownlinkFileMetadata
-         * @instance
-         */
-        DownlinkFileMetadata.prototype.data = $util.newBuffer([]);
-
-        /**
-         * Creates a new DownlinkFileMetadata instance using the specified properties.
-         * @function create
-         * @memberof hermes.DownlinkFileMetadata
-         * @static
-         * @param {hermes.IDownlinkFileMetadata=} [properties] Properties to set
-         * @returns {hermes.DownlinkFileMetadata} DownlinkFileMetadata instance
-         */
-        DownlinkFileMetadata.create = function create(properties) {
-            return new DownlinkFileMetadata(properties);
-        };
-
-        /**
-         * Encodes the specified DownlinkFileMetadata message. Does not implicitly {@link hermes.DownlinkFileMetadata.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.DownlinkFileMetadata
-         * @static
-         * @param {hermes.IDownlinkFileMetadata} message DownlinkFileMetadata message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DownlinkFileMetadata.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.key != null && Object.hasOwnProperty.call(message, "key"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.key);
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.data);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified DownlinkFileMetadata message, length delimited. Does not implicitly {@link hermes.DownlinkFileMetadata.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.DownlinkFileMetadata
-         * @static
-         * @param {hermes.IDownlinkFileMetadata} message DownlinkFileMetadata message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DownlinkFileMetadata.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a DownlinkFileMetadata message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.DownlinkFileMetadata
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.DownlinkFileMetadata} DownlinkFileMetadata
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DownlinkFileMetadata.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DownlinkFileMetadata();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.key = reader.string();
-                        break;
-                    }
-                case 2: {
-                        message.data = reader.bytes();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a DownlinkFileMetadata message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.DownlinkFileMetadata
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.DownlinkFileMetadata} DownlinkFileMetadata
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DownlinkFileMetadata.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a DownlinkFileMetadata message.
-         * @function verify
-         * @memberof hermes.DownlinkFileMetadata
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        DownlinkFileMetadata.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.key != null && Object.hasOwnProperty.call(message, "key"))
-                if (!$util.isString(message.key))
-                    return "key: string expected";
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                if (!(message.data && typeof message.data.length === "number" || $util.isString(message.data)))
-                    return "data: buffer expected";
-            return null;
-        };
-
-        /**
-         * Creates a DownlinkFileMetadata message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.DownlinkFileMetadata
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.DownlinkFileMetadata} DownlinkFileMetadata
-         */
-        DownlinkFileMetadata.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.DownlinkFileMetadata)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.DownlinkFileMetadata: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.DownlinkFileMetadata();
-            if (object.key != null)
-                message.key = String(object.key);
-            if (object.data != null)
-                if (typeof object.data === "string")
-                    $util.base64.decode(object.data, message.data = $util.newBuffer($util.base64.length(object.data)), 0);
-                else if (object.data.length >= 0)
-                    message.data = object.data;
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a DownlinkFileMetadata message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.DownlinkFileMetadata
-         * @static
-         * @param {hermes.DownlinkFileMetadata} message DownlinkFileMetadata
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        DownlinkFileMetadata.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults) {
-                object.key = "";
-                if (options.bytes === String)
-                    object.data = "";
-                else {
-                    object.data = [];
-                    if (options.bytes !== Array)
-                        object.data = $util.newBuffer(object.data);
-                }
-            }
-            if (message.key != null && Object.hasOwnProperty.call(message, "key"))
-                object.key = message.key;
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                object.data = options.bytes === String ? $util.base64.encode(message.data, 0, message.data.length) : options.bytes === Array ? Array.prototype.slice.call(message.data) : message.data;
-            return object;
-        };
-
-        /**
-         * Converts this DownlinkFileMetadata to JSON.
-         * @function toJSON
-         * @memberof hermes.DownlinkFileMetadata
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        DownlinkFileMetadata.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for DownlinkFileMetadata
-         * @function getTypeUrl
-         * @memberof hermes.DownlinkFileMetadata
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        DownlinkFileMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.DownlinkFileMetadata";
-        };
-
-        return DownlinkFileMetadata;
-    })();
-
-    hermes.DownlinkFileValidation = (function() {
-
-        /**
-         * Properties of a DownlinkFileValidation.
-         * @memberof hermes
-         * @interface IDownlinkFileValidation
-         */
-
-        /**
-         * Constructs a new DownlinkFileValidation.
-         * @memberof hermes
-         * @classdesc Represents a DownlinkFileValidation.
-         * @implements IDownlinkFileValidation
-         * @constructor
-         * @param {hermes.IDownlinkFileValidation=} [properties] Properties to set
-         */
-        function DownlinkFileValidation(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Creates a new DownlinkFileValidation instance using the specified properties.
-         * @function create
-         * @memberof hermes.DownlinkFileValidation
-         * @static
-         * @param {hermes.IDownlinkFileValidation=} [properties] Properties to set
-         * @returns {hermes.DownlinkFileValidation} DownlinkFileValidation instance
-         */
-        DownlinkFileValidation.create = function create(properties) {
-            return new DownlinkFileValidation(properties);
-        };
-
-        /**
-         * Encodes the specified DownlinkFileValidation message. Does not implicitly {@link hermes.DownlinkFileValidation.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.DownlinkFileValidation
-         * @static
-         * @param {hermes.IDownlinkFileValidation} message DownlinkFileValidation message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DownlinkFileValidation.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            return writer;
-        };
-
-        /**
-         * Encodes the specified DownlinkFileValidation message, length delimited. Does not implicitly {@link hermes.DownlinkFileValidation.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.DownlinkFileValidation
-         * @static
-         * @param {hermes.IDownlinkFileValidation} message DownlinkFileValidation message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DownlinkFileValidation.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a DownlinkFileValidation message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.DownlinkFileValidation
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.DownlinkFileValidation} DownlinkFileValidation
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DownlinkFileValidation.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DownlinkFileValidation();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a DownlinkFileValidation message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.DownlinkFileValidation
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.DownlinkFileValidation} DownlinkFileValidation
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DownlinkFileValidation.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a DownlinkFileValidation message.
-         * @function verify
-         * @memberof hermes.DownlinkFileValidation
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        DownlinkFileValidation.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            return null;
-        };
-
-        /**
-         * Creates a DownlinkFileValidation message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.DownlinkFileValidation
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.DownlinkFileValidation} DownlinkFileValidation
-         */
-        DownlinkFileValidation.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.DownlinkFileValidation)
-                return object;
-            return new $root.hermes.DownlinkFileValidation();
-        };
-
-        /**
-         * Creates a plain object from a DownlinkFileValidation message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.DownlinkFileValidation
-         * @static
-         * @param {hermes.DownlinkFileValidation} message DownlinkFileValidation
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        DownlinkFileValidation.toObject = function toObject() {
-            return {};
-        };
-
-        /**
-         * Converts this DownlinkFileValidation to JSON.
-         * @function toJSON
-         * @memberof hermes.DownlinkFileValidation
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        DownlinkFileValidation.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for DownlinkFileValidation
-         * @function getTypeUrl
-         * @memberof hermes.DownlinkFileValidation
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        DownlinkFileValidation.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.DownlinkFileValidation";
-        };
-
-        return DownlinkFileValidation;
-    })();
-
-    hermes.DownlinkFileChunk = (function() {
-
-        /**
-         * Properties of a DownlinkFileChunk.
-         * @memberof hermes
-         * @interface IDownlinkFileChunk
-         * @property {hermes.IFileHeader|null} [header] DownlinkFileChunk header
-         * @property {hermes.IDownlinkFileData|null} [data] DownlinkFileChunk data
-         * @property {hermes.IDownlinkFileMetadata|null} [metadata] DownlinkFileChunk metadata
-         * @property {hermes.IDownlinkFileValidation|null} [validation] DownlinkFileChunk validation
-         */
-
-        /**
-         * Constructs a new DownlinkFileChunk.
-         * @memberof hermes
-         * @classdesc Represents a DownlinkFileChunk.
-         * @implements IDownlinkFileChunk
-         * @constructor
-         * @param {hermes.IDownlinkFileChunk=} [properties] Properties to set
-         */
-        function DownlinkFileChunk(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * DownlinkFileChunk header.
-         * @member {hermes.IFileHeader|null|undefined} header
-         * @memberof hermes.DownlinkFileChunk
-         * @instance
-         */
-        DownlinkFileChunk.prototype.header = null;
-
-        /**
-         * DownlinkFileChunk data.
-         * @member {hermes.IDownlinkFileData|null|undefined} data
-         * @memberof hermes.DownlinkFileChunk
-         * @instance
-         */
-        DownlinkFileChunk.prototype.data = null;
-
-        /**
-         * DownlinkFileChunk metadata.
-         * @member {hermes.IDownlinkFileMetadata|null|undefined} metadata
-         * @memberof hermes.DownlinkFileChunk
-         * @instance
-         */
-        DownlinkFileChunk.prototype.metadata = null;
-
-        /**
-         * DownlinkFileChunk validation.
-         * @member {hermes.IDownlinkFileValidation|null|undefined} validation
-         * @memberof hermes.DownlinkFileChunk
-         * @instance
-         */
-        DownlinkFileChunk.prototype.validation = null;
-
-        // OneOf field names bound to virtual getters and setters
-        var $oneOfFields;
-
-        /**
-         * DownlinkFileChunk value.
-         * @member {"header"|"data"|"metadata"|"validation"|undefined} value
-         * @memberof hermes.DownlinkFileChunk
-         * @instance
-         */
-        Object.defineProperty(DownlinkFileChunk.prototype, "value", {
-            get: $util.oneOfGetter($oneOfFields = ["header", "data", "metadata", "validation"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * Creates a new DownlinkFileChunk instance using the specified properties.
-         * @function create
-         * @memberof hermes.DownlinkFileChunk
-         * @static
-         * @param {hermes.IDownlinkFileChunk=} [properties] Properties to set
-         * @returns {hermes.DownlinkFileChunk} DownlinkFileChunk instance
-         */
-        DownlinkFileChunk.create = function create(properties) {
-            return new DownlinkFileChunk(properties);
-        };
-
-        /**
-         * Encodes the specified DownlinkFileChunk message. Does not implicitly {@link hermes.DownlinkFileChunk.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.DownlinkFileChunk
-         * @static
-         * @param {hermes.IDownlinkFileChunk} message DownlinkFileChunk message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DownlinkFileChunk.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.header != null && Object.hasOwnProperty.call(message, "header"))
-                $root.hermes.FileHeader.encode(message.header, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                $root.hermes.DownlinkFileData.encode(message.data, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                $root.hermes.DownlinkFileMetadata.encode(message.metadata, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
-            if (message.validation != null && Object.hasOwnProperty.call(message, "validation"))
-                $root.hermes.DownlinkFileValidation.encode(message.validation, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified DownlinkFileChunk message, length delimited. Does not implicitly {@link hermes.DownlinkFileChunk.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.DownlinkFileChunk
-         * @static
-         * @param {hermes.IDownlinkFileChunk} message DownlinkFileChunk message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DownlinkFileChunk.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a DownlinkFileChunk message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.DownlinkFileChunk
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.DownlinkFileChunk} DownlinkFileChunk
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DownlinkFileChunk.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DownlinkFileChunk();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.header = $root.hermes.FileHeader.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 2: {
-                        message.data = $root.hermes.DownlinkFileData.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 3: {
-                        message.metadata = $root.hermes.DownlinkFileMetadata.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 4: {
-                        message.validation = $root.hermes.DownlinkFileValidation.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a DownlinkFileChunk message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.DownlinkFileChunk
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.DownlinkFileChunk} DownlinkFileChunk
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DownlinkFileChunk.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a DownlinkFileChunk message.
-         * @function verify
-         * @memberof hermes.DownlinkFileChunk
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        DownlinkFileChunk.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            var properties = {};
-            if (message.header != null && Object.hasOwnProperty.call(message, "header")) {
-                properties.value = 1;
-                {
-                    var error = $root.hermes.FileHeader.verify(message.header, long + 1);
-                    if (error)
-                        return "header." + error;
-                }
-            }
-            if (message.data != null && Object.hasOwnProperty.call(message, "data")) {
-                if (properties.value === 1)
-                    return "value: multiple values";
-                properties.value = 1;
-                {
-                    var error = $root.hermes.DownlinkFileData.verify(message.data, long + 1);
-                    if (error)
-                        return "data." + error;
-                }
-            }
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
-                if (properties.value === 1)
-                    return "value: multiple values";
-                properties.value = 1;
-                {
-                    var error = $root.hermes.DownlinkFileMetadata.verify(message.metadata, long + 1);
-                    if (error)
-                        return "metadata." + error;
-                }
-            }
-            if (message.validation != null && Object.hasOwnProperty.call(message, "validation")) {
-                if (properties.value === 1)
-                    return "value: multiple values";
-                properties.value = 1;
-                {
-                    var error = $root.hermes.DownlinkFileValidation.verify(message.validation, long + 1);
-                    if (error)
-                        return "validation." + error;
-                }
-            }
-            return null;
-        };
-
-        /**
-         * Creates a DownlinkFileChunk message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.DownlinkFileChunk
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.DownlinkFileChunk} DownlinkFileChunk
-         */
-        DownlinkFileChunk.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.DownlinkFileChunk)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.DownlinkFileChunk: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.DownlinkFileChunk();
-            if (object.header != null) {
-                if (!$util.isObject(object.header))
-                    throw TypeError(".hermes.DownlinkFileChunk.header: object expected");
-                message.header = $root.hermes.FileHeader.fromObject(object.header, long + 1);
-            }
-            if (object.data != null) {
-                if (!$util.isObject(object.data))
-                    throw TypeError(".hermes.DownlinkFileChunk.data: object expected");
-                message.data = $root.hermes.DownlinkFileData.fromObject(object.data, long + 1);
-            }
-            if (object.metadata != null) {
-                if (!$util.isObject(object.metadata))
-                    throw TypeError(".hermes.DownlinkFileChunk.metadata: object expected");
-                message.metadata = $root.hermes.DownlinkFileMetadata.fromObject(object.metadata, long + 1);
-            }
-            if (object.validation != null) {
-                if (!$util.isObject(object.validation))
-                    throw TypeError(".hermes.DownlinkFileChunk.validation: object expected");
-                message.validation = $root.hermes.DownlinkFileValidation.fromObject(object.validation, long + 1);
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a DownlinkFileChunk message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.DownlinkFileChunk
-         * @static
-         * @param {hermes.DownlinkFileChunk} message DownlinkFileChunk
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        DownlinkFileChunk.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (message.header != null && Object.hasOwnProperty.call(message, "header")) {
-                object.header = $root.hermes.FileHeader.toObject(message.header, options, q + 1);
-                if (options.oneofs)
-                    object.value = "header";
-            }
-            if (message.data != null && Object.hasOwnProperty.call(message, "data")) {
-                object.data = $root.hermes.DownlinkFileData.toObject(message.data, options, q + 1);
-                if (options.oneofs)
-                    object.value = "data";
-            }
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
-                object.metadata = $root.hermes.DownlinkFileMetadata.toObject(message.metadata, options, q + 1);
-                if (options.oneofs)
-                    object.value = "metadata";
-            }
-            if (message.validation != null && Object.hasOwnProperty.call(message, "validation")) {
-                object.validation = $root.hermes.DownlinkFileValidation.toObject(message.validation, options, q + 1);
-                if (options.oneofs)
-                    object.value = "validation";
-            }
-            return object;
-        };
-
-        /**
-         * Converts this DownlinkFileChunk to JSON.
-         * @function toJSON
-         * @memberof hermes.DownlinkFileChunk
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        DownlinkFileChunk.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for DownlinkFileChunk
-         * @function getTypeUrl
-         * @memberof hermes.DownlinkFileChunk
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        DownlinkFileChunk.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.DownlinkFileChunk";
-        };
-
-        return DownlinkFileChunk;
-    })();
-
-    /**
-     * FswCapability enum.
-     * @name hermes.FswCapability
-     * @enum {number}
-     * @property {number} COMMAND=0 COMMAND value
-     * @property {number} PARSE_COMMAND=1 PARSE_COMMAND value
-     * @property {number} SEQUENCE=2 SEQUENCE value
-     * @property {number} PARSE_SEQUENCE=3 PARSE_SEQUENCE value
-     * @property {number} FILE=4 FILE value
-     * @property {number} REQUEST=5 REQUEST value
-     */
-    hermes.FswCapability = (function() {
-        var valuesById = {}, values = Object.create(valuesById);
-        values[valuesById[0] = "COMMAND"] = 0;
-        values[valuesById[1] = "PARSE_COMMAND"] = 1;
-        values[valuesById[2] = "SEQUENCE"] = 2;
-        values[valuesById[3] = "PARSE_SEQUENCE"] = 3;
-        values[valuesById[4] = "FILE"] = 4;
-        values[valuesById[5] = "REQUEST"] = 5;
-        return values;
-    })();
-
-    hermes.Fsw = (function() {
-
-        /**
-         * Properties of a Fsw.
-         * @memberof hermes
-         * @interface IFsw
-         * @property {string|null} [id] Fsw id
-         * @property {string|null} [type] Fsw type
-         * @property {Array.<string>|null} [forwards] Fsw forwards
-         * @property {Array.<hermes.FswCapability>|null} [capabilities] Fsw capabilities
-         * @property {string|null} [dictionary] Fsw dictionary
-         */
-
-        /**
-         * Constructs a new Fsw.
-         * @memberof hermes
-         * @classdesc Represents a Fsw.
-         * @implements IFsw
-         * @constructor
-         * @param {hermes.IFsw=} [properties] Properties to set
-         */
-        function Fsw(properties) {
-            this.forwards = [];
-            this.capabilities = [];
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Fsw id.
-         * @member {string} id
-         * @memberof hermes.Fsw
-         * @instance
-         */
-        Fsw.prototype.id = "";
-
-        /**
-         * Fsw type.
-         * @member {string} type
-         * @memberof hermes.Fsw
-         * @instance
-         */
-        Fsw.prototype.type = "";
-
-        /**
-         * Fsw forwards.
-         * @member {Array.<string>} forwards
-         * @memberof hermes.Fsw
-         * @instance
-         */
-        Fsw.prototype.forwards = $util.emptyArray;
-
-        /**
-         * Fsw capabilities.
-         * @member {Array.<hermes.FswCapability>} capabilities
-         * @memberof hermes.Fsw
-         * @instance
-         */
-        Fsw.prototype.capabilities = $util.emptyArray;
-
-        /**
-         * Fsw dictionary.
-         * @member {string} dictionary
-         * @memberof hermes.Fsw
-         * @instance
-         */
-        Fsw.prototype.dictionary = "";
-
-        /**
-         * Creates a new Fsw instance using the specified properties.
-         * @function create
-         * @memberof hermes.Fsw
-         * @static
-         * @param {hermes.IFsw=} [properties] Properties to set
-         * @returns {hermes.Fsw} Fsw instance
-         */
-        Fsw.create = function create(properties) {
-            return new Fsw(properties);
-        };
-
-        /**
-         * Encodes the specified Fsw message. Does not implicitly {@link hermes.Fsw.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.Fsw
-         * @static
-         * @param {hermes.IFsw} message Fsw message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Fsw.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.type);
-            if (message.forwards != null && message.forwards.length)
-                for (var i = 0; i < message.forwards.length; ++i)
-                    writer.uint32(/* id 4, wireType 2 =*/34).string(message.forwards[i]);
-            if (message.capabilities != null && message.capabilities.length) {
-                writer.uint32(/* id 7, wireType 2 =*/58).fork();
-                for (var i = 0; i < message.capabilities.length; ++i)
-                    writer.int32(message.capabilities[i]);
-                writer.ldelim();
-            }
-            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
-                writer.uint32(/* id 8, wireType 2 =*/66).string(message.dictionary);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified Fsw message, length delimited. Does not implicitly {@link hermes.Fsw.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.Fsw
-         * @static
-         * @param {hermes.IFsw} message Fsw message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Fsw.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a Fsw message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.Fsw
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.Fsw} Fsw
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Fsw.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Fsw();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.id = reader.string();
-                        break;
-                    }
-                case 2: {
-                        message.type = reader.string();
-                        break;
-                    }
-                case 4: {
-                        if (!(message.forwards && message.forwards.length))
-                            message.forwards = [];
-                        message.forwards.push(reader.string());
-                        break;
-                    }
-                case 7: {
-                        if (!(message.capabilities && message.capabilities.length))
-                            message.capabilities = [];
-                        if ((tag & 7) === 2) {
-                            var end2 = reader.uint32() + reader.pos;
-                            while (reader.pos < end2)
-                                message.capabilities.push(reader.int32());
-                        } else
-                            message.capabilities.push(reader.int32());
-                        break;
-                    }
-                case 8: {
-                        message.dictionary = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a Fsw message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.Fsw
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.Fsw} Fsw
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Fsw.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a Fsw message.
-         * @function verify
-         * @memberof hermes.Fsw
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        Fsw.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                if (!$util.isString(message.id))
-                    return "id: string expected";
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                if (!$util.isString(message.type))
-                    return "type: string expected";
-            if (message.forwards != null && Object.hasOwnProperty.call(message, "forwards")) {
-                if (!Array.isArray(message.forwards))
-                    return "forwards: array expected";
-                for (var i = 0; i < message.forwards.length; ++i)
-                    if (!$util.isString(message.forwards[i]))
-                        return "forwards: string[] expected";
-            }
-            if (message.capabilities != null && Object.hasOwnProperty.call(message, "capabilities")) {
-                if (!Array.isArray(message.capabilities))
-                    return "capabilities: array expected";
-                for (var i = 0; i < message.capabilities.length; ++i)
-                    switch (message.capabilities[i]) {
-                    default:
-                        return "capabilities: enum value[] expected";
-                    case 0:
-                    case 1:
-                    case 2:
-                    case 3:
-                    case 4:
-                    case 5:
-                        break;
-                    }
-            }
-            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
-                if (!$util.isString(message.dictionary))
-                    return "dictionary: string expected";
-            return null;
-        };
-
-        /**
-         * Creates a Fsw message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.Fsw
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.Fsw} Fsw
-         */
-        Fsw.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.Fsw)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.Fsw: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.Fsw();
-            if (object.id != null)
-                message.id = String(object.id);
-            if (object.type != null)
-                message.type = String(object.type);
-            if (object.forwards) {
-                if (!Array.isArray(object.forwards))
-                    throw TypeError(".hermes.Fsw.forwards: array expected");
-                message.forwards = [];
-                for (var i = 0; i < object.forwards.length; ++i)
-                    message.forwards[i] = String(object.forwards[i]);
-            }
-            if (object.capabilities) {
-                if (!Array.isArray(object.capabilities))
-                    throw TypeError(".hermes.Fsw.capabilities: array expected");
-                message.capabilities = [];
-                for (var i = 0; i < object.capabilities.length; ++i)
-                    switch (object.capabilities[i]) {
-                    default:
-                        if (typeof object.capabilities[i] === "number") {
-                            message.capabilities[i] = object.capabilities[i];
-                            break;
-                        }
-                    case "COMMAND":
-                    case 0:
-                        message.capabilities[i] = 0;
-                        break;
-                    case "PARSE_COMMAND":
-                    case 1:
-                        message.capabilities[i] = 1;
-                        break;
-                    case "SEQUENCE":
-                    case 2:
-                        message.capabilities[i] = 2;
-                        break;
-                    case "PARSE_SEQUENCE":
-                    case 3:
-                        message.capabilities[i] = 3;
-                        break;
-                    case "FILE":
-                    case 4:
-                        message.capabilities[i] = 4;
-                        break;
-                    case "REQUEST":
-                    case 5:
-                        message.capabilities[i] = 5;
-                        break;
-                    }
-            }
-            if (object.dictionary != null)
-                message.dictionary = String(object.dictionary);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a Fsw message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.Fsw
-         * @static
-         * @param {hermes.Fsw} message Fsw
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        Fsw.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.arrays || options.defaults) {
-                object.forwards = [];
-                object.capabilities = [];
-            }
-            if (options.defaults) {
-                object.id = "";
-                object.type = "";
-                object.dictionary = "";
-            }
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                object.id = message.id;
-            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                object.type = message.type;
-            if (message.forwards && message.forwards.length) {
-                object.forwards = [];
-                for (var j = 0; j < message.forwards.length; ++j)
-                    object.forwards[j] = message.forwards[j];
-            }
-            if (message.capabilities && message.capabilities.length) {
-                object.capabilities = [];
-                for (var j = 0; j < message.capabilities.length; ++j)
-                    object.capabilities[j] = options.enums === String ? $root.hermes.FswCapability[message.capabilities[j]] === undefined ? message.capabilities[j] : $root.hermes.FswCapability[message.capabilities[j]] : message.capabilities[j];
-            }
-            if (message.dictionary != null && Object.hasOwnProperty.call(message, "dictionary"))
-                object.dictionary = message.dictionary;
-            return object;
-        };
-
-        /**
-         * Converts this Fsw to JSON.
-         * @function toJSON
-         * @memberof hermes.Fsw
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        Fsw.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for Fsw
-         * @function getTypeUrl
-         * @memberof hermes.Fsw
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        Fsw.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.Fsw";
-        };
-
-        return Fsw;
-    })();
-
-    hermes.CommandOptions = (function() {
-
-        /**
-         * Properties of a CommandOptions.
-         * @memberof hermes
-         * @interface ICommandOptions
-         * @property {boolean|null} [noWait] Don't wait for the command to reply before resolving the command promise
-         * This promise will resolve once the command is sent to the FSW.
-         */
-
-        /**
-         * Constructs a new CommandOptions.
-         * @memberof hermes
-         * @classdesc Represents a CommandOptions.
-         * @implements ICommandOptions
-         * @constructor
-         * @param {hermes.ICommandOptions=} [properties] Properties to set
-         */
-        function CommandOptions(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Don't wait for the command to reply before resolving the command promise
-         * This promise will resolve once the command is sent to the FSW.
-         * @member {boolean} noWait
-         * @memberof hermes.CommandOptions
-         * @instance
-         */
-        CommandOptions.prototype.noWait = false;
-
-        /**
-         * Creates a new CommandOptions instance using the specified properties.
-         * @function create
-         * @memberof hermes.CommandOptions
-         * @static
-         * @param {hermes.ICommandOptions=} [properties] Properties to set
-         * @returns {hermes.CommandOptions} CommandOptions instance
-         */
-        CommandOptions.create = function create(properties) {
-            return new CommandOptions(properties);
-        };
-
-        /**
-         * Encodes the specified CommandOptions message. Does not implicitly {@link hermes.CommandOptions.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.CommandOptions
-         * @static
-         * @param {hermes.ICommandOptions} message CommandOptions message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        CommandOptions.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.noWait != null && Object.hasOwnProperty.call(message, "noWait"))
-                writer.uint32(/* id 1, wireType 0 =*/8).bool(message.noWait);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified CommandOptions message, length delimited. Does not implicitly {@link hermes.CommandOptions.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.CommandOptions
-         * @static
-         * @param {hermes.ICommandOptions} message CommandOptions message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        CommandOptions.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a CommandOptions message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.CommandOptions
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.CommandOptions} CommandOptions
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        CommandOptions.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.CommandOptions();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.noWait = reader.bool();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a CommandOptions message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.CommandOptions
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.CommandOptions} CommandOptions
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        CommandOptions.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a CommandOptions message.
-         * @function verify
-         * @memberof hermes.CommandOptions
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        CommandOptions.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.noWait != null && Object.hasOwnProperty.call(message, "noWait"))
-                if (typeof message.noWait !== "boolean")
-                    return "noWait: boolean expected";
-            return null;
-        };
-
-        /**
-         * Creates a CommandOptions message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.CommandOptions
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.CommandOptions} CommandOptions
-         */
-        CommandOptions.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.CommandOptions)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.CommandOptions: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.CommandOptions();
-            if (object.noWait != null)
-                message.noWait = Boolean(object.noWait);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a CommandOptions message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.CommandOptions
-         * @static
-         * @param {hermes.CommandOptions} message CommandOptions
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        CommandOptions.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults)
-                object.noWait = false;
-            if (message.noWait != null && Object.hasOwnProperty.call(message, "noWait"))
-                object.noWait = message.noWait;
-            return object;
-        };
-
-        /**
-         * Converts this CommandOptions to JSON.
-         * @function toJSON
-         * @memberof hermes.CommandOptions
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        CommandOptions.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for CommandOptions
-         * @function getTypeUrl
-         * @memberof hermes.CommandOptions
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        CommandOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.CommandOptions";
-        };
-
-        return CommandOptions;
-    })();
-
-    hermes.CommandValue = (function() {
-
-        /**
-         * Properties of a CommandValue.
-         * @memberof hermes
-         * @interface ICommandValue
-         * @property {hermes.ICommandDef|null} [def] CommandValue def
-         * @property {Array.<hermes.IValue>|null} [args] CommandValue args
-         * @property {hermes.ICommandOptions|null} [options] CommandValue options
-         * @property {Object.<string,string>|null} [metadata] CommandValue metadata
-         */
-
-        /**
-         * Constructs a new CommandValue.
-         * @memberof hermes
-         * @classdesc Represents a CommandValue.
-         * @implements ICommandValue
-         * @constructor
-         * @param {hermes.ICommandValue=} [properties] Properties to set
-         */
-        function CommandValue(properties) {
-            this.args = [];
-            this.metadata = {};
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * CommandValue def.
-         * @member {hermes.ICommandDef|null|undefined} def
-         * @memberof hermes.CommandValue
-         * @instance
-         */
-        CommandValue.prototype.def = null;
-
-        /**
-         * CommandValue args.
-         * @member {Array.<hermes.IValue>} args
-         * @memberof hermes.CommandValue
-         * @instance
-         */
-        CommandValue.prototype.args = $util.emptyArray;
-
-        /**
-         * CommandValue options.
-         * @member {hermes.ICommandOptions|null|undefined} options
-         * @memberof hermes.CommandValue
-         * @instance
-         */
-        CommandValue.prototype.options = null;
-
-        /**
-         * CommandValue metadata.
-         * @member {Object.<string,string>} metadata
-         * @memberof hermes.CommandValue
-         * @instance
-         */
-        CommandValue.prototype.metadata = $util.emptyObject;
-
-        /**
-         * Creates a new CommandValue instance using the specified properties.
-         * @function create
-         * @memberof hermes.CommandValue
-         * @static
-         * @param {hermes.ICommandValue=} [properties] Properties to set
-         * @returns {hermes.CommandValue} CommandValue instance
-         */
-        CommandValue.create = function create(properties) {
-            return new CommandValue(properties);
-        };
-
-        /**
-         * Encodes the specified CommandValue message. Does not implicitly {@link hermes.CommandValue.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.CommandValue
-         * @static
-         * @param {hermes.ICommandValue} message CommandValue message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        CommandValue.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.def != null && Object.hasOwnProperty.call(message, "def"))
-                $root.hermes.CommandDef.encode(message.def, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.args != null && message.args.length)
-                for (var i = 0; i < message.args.length; ++i)
-                    $root.hermes.Value.encode(message.args[i], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
-            if (message.options != null && Object.hasOwnProperty.call(message, "options"))
-                $root.hermes.CommandOptions.encode(message.options, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
-                    writer.uint32(/* id 4, wireType 2 =*/34).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.metadata[keys[i]]).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified CommandValue message, length delimited. Does not implicitly {@link hermes.CommandValue.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.CommandValue
-         * @static
-         * @param {hermes.ICommandValue} message CommandValue message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        CommandValue.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a CommandValue message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.CommandValue
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.CommandValue} CommandValue
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        CommandValue.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.CommandValue(), key, value;
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.def = $root.hermes.CommandDef.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 2: {
-                        if (!(message.args && message.args.length))
-                            message.args = [];
-                        message.args.push($root.hermes.Value.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 3: {
-                        message.options = $root.hermes.CommandOptions.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 4: {
-                        if (message.metadata === $util.emptyObject)
-                            message.metadata = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = "";
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = reader.string();
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.metadata, key);
-                        message.metadata[key] = value;
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a CommandValue message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.CommandValue
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.CommandValue} CommandValue
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        CommandValue.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a CommandValue message.
-         * @function verify
-         * @memberof hermes.CommandValue
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        CommandValue.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.def != null && Object.hasOwnProperty.call(message, "def")) {
-                var error = $root.hermes.CommandDef.verify(message.def, long + 1);
-                if (error)
-                    return "def." + error;
-            }
-            if (message.args != null && Object.hasOwnProperty.call(message, "args")) {
-                if (!Array.isArray(message.args))
-                    return "args: array expected";
-                for (var i = 0; i < message.args.length; ++i) {
-                    var error = $root.hermes.Value.verify(message.args[i], long + 1);
-                    if (error)
-                        return "args." + error;
-                }
-            }
-            if (message.options != null && Object.hasOwnProperty.call(message, "options")) {
-                var error = $root.hermes.CommandOptions.verify(message.options, long + 1);
-                if (error)
-                    return "options." + error;
-            }
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
-                if (!$util.isObject(message.metadata))
-                    return "metadata: object expected";
-                var key = Object.keys(message.metadata);
-                for (var i = 0; i < key.length; ++i)
-                    if (!$util.isString(message.metadata[key[i]]))
-                        return "metadata: string{k:string} expected";
-            }
-            return null;
-        };
-
-        /**
-         * Creates a CommandValue message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.CommandValue
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.CommandValue} CommandValue
-         */
-        CommandValue.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.CommandValue)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.CommandValue: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.CommandValue();
-            if (object.def != null) {
-                if (!$util.isObject(object.def))
-                    throw TypeError(".hermes.CommandValue.def: object expected");
-                message.def = $root.hermes.CommandDef.fromObject(object.def, long + 1);
-            }
-            if (object.args) {
-                if (!Array.isArray(object.args))
-                    throw TypeError(".hermes.CommandValue.args: array expected");
-                message.args = [];
-                for (var i = 0; i < object.args.length; ++i) {
-                    if (!$util.isObject(object.args[i]))
-                        throw TypeError(".hermes.CommandValue.args: object expected");
-                    message.args[i] = $root.hermes.Value.fromObject(object.args[i], long + 1);
-                }
-            }
-            if (object.options != null) {
-                if (!$util.isObject(object.options))
-                    throw TypeError(".hermes.CommandValue.options: object expected");
-                message.options = $root.hermes.CommandOptions.fromObject(object.options, long + 1);
-            }
-            if (object.metadata) {
-                if (!$util.isObject(object.metadata))
-                    throw TypeError(".hermes.CommandValue.metadata: object expected");
-                message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.metadata, keys[i]);
-                    message.metadata[keys[i]] = String(object.metadata[keys[i]]);
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a CommandValue message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.CommandValue
-         * @static
-         * @param {hermes.CommandValue} message CommandValue
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        CommandValue.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.arrays || options.defaults)
-                object.args = [];
-            if (options.objects || options.defaults)
-                object.metadata = {};
-            if (options.defaults) {
-                object.def = null;
-                object.options = null;
-            }
-            if (message.def != null && Object.hasOwnProperty.call(message, "def"))
-                object.def = $root.hermes.CommandDef.toObject(message.def, options, q + 1);
-            if (message.args && message.args.length) {
-                object.args = [];
-                for (var j = 0; j < message.args.length; ++j)
-                    object.args[j] = $root.hermes.Value.toObject(message.args[j], options, q + 1);
-            }
-            if (message.options != null && Object.hasOwnProperty.call(message, "options"))
-                object.options = $root.hermes.CommandOptions.toObject(message.options, options, q + 1);
-            var keys2;
-            if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
-                object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.metadata, keys2[j]);
-                    object.metadata[keys2[j]] = message.metadata[keys2[j]];
-                }
-            }
-            return object;
-        };
-
-        /**
-         * Converts this CommandValue to JSON.
-         * @function toJSON
-         * @memberof hermes.CommandValue
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        CommandValue.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for CommandValue
-         * @function getTypeUrl
-         * @memberof hermes.CommandValue
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        CommandValue.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.CommandValue";
-        };
-
-        return CommandValue;
-    })();
-
-    hermes.RawCommandValue = (function() {
-
-        /**
-         * Properties of a RawCommandValue.
-         * @memberof hermes
-         * @interface IRawCommandValue
-         * @property {string|null} [command] RawCommandValue command
-         * @property {hermes.ICommandOptions|null} [options] RawCommandValue options
-         * @property {Object.<string,string>|null} [metadata] RawCommandValue metadata
-         */
-
-        /**
-         * Constructs a new RawCommandValue.
-         * @memberof hermes
-         * @classdesc RawCommandValue is meant for commanding FSWs from clients that do not parse
-         * the dictionary and command fully. This is useful for thin clients that will
-         * rely on the backend to perform type checks.
-         * @implements IRawCommandValue
-         * @constructor
-         * @param {hermes.IRawCommandValue=} [properties] Properties to set
-         */
-        function RawCommandValue(properties) {
-            this.metadata = {};
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * RawCommandValue command.
-         * @member {string} command
-         * @memberof hermes.RawCommandValue
-         * @instance
-         */
-        RawCommandValue.prototype.command = "";
-
-        /**
-         * RawCommandValue options.
-         * @member {hermes.ICommandOptions|null|undefined} options
-         * @memberof hermes.RawCommandValue
-         * @instance
-         */
-        RawCommandValue.prototype.options = null;
-
-        /**
-         * RawCommandValue metadata.
-         * @member {Object.<string,string>} metadata
-         * @memberof hermes.RawCommandValue
-         * @instance
-         */
-        RawCommandValue.prototype.metadata = $util.emptyObject;
-
-        /**
-         * Creates a new RawCommandValue instance using the specified properties.
-         * @function create
-         * @memberof hermes.RawCommandValue
-         * @static
-         * @param {hermes.IRawCommandValue=} [properties] Properties to set
-         * @returns {hermes.RawCommandValue} RawCommandValue instance
-         */
-        RawCommandValue.create = function create(properties) {
-            return new RawCommandValue(properties);
-        };
-
-        /**
-         * Encodes the specified RawCommandValue message. Does not implicitly {@link hermes.RawCommandValue.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.RawCommandValue
-         * @static
-         * @param {hermes.IRawCommandValue} message RawCommandValue message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        RawCommandValue.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.command != null && Object.hasOwnProperty.call(message, "command"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.command);
-            if (message.options != null && Object.hasOwnProperty.call(message, "options"))
-                $root.hermes.CommandOptions.encode(message.options, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
-                    writer.uint32(/* id 4, wireType 2 =*/34).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.metadata[keys[i]]).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified RawCommandValue message, length delimited. Does not implicitly {@link hermes.RawCommandValue.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.RawCommandValue
-         * @static
-         * @param {hermes.IRawCommandValue} message RawCommandValue message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        RawCommandValue.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a RawCommandValue message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.RawCommandValue
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.RawCommandValue} RawCommandValue
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        RawCommandValue.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.RawCommandValue(), key, value;
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 2: {
-                        message.command = reader.string();
-                        break;
-                    }
-                case 3: {
-                        message.options = $root.hermes.CommandOptions.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 4: {
-                        if (message.metadata === $util.emptyObject)
-                            message.metadata = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = "";
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = reader.string();
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.metadata, key);
-                        message.metadata[key] = value;
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a RawCommandValue message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.RawCommandValue
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.RawCommandValue} RawCommandValue
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        RawCommandValue.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a RawCommandValue message.
-         * @function verify
-         * @memberof hermes.RawCommandValue
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        RawCommandValue.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.command != null && Object.hasOwnProperty.call(message, "command"))
-                if (!$util.isString(message.command))
-                    return "command: string expected";
-            if (message.options != null && Object.hasOwnProperty.call(message, "options")) {
-                var error = $root.hermes.CommandOptions.verify(message.options, long + 1);
-                if (error)
-                    return "options." + error;
-            }
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
-                if (!$util.isObject(message.metadata))
-                    return "metadata: object expected";
-                var key = Object.keys(message.metadata);
-                for (var i = 0; i < key.length; ++i)
-                    if (!$util.isString(message.metadata[key[i]]))
-                        return "metadata: string{k:string} expected";
-            }
-            return null;
-        };
-
-        /**
-         * Creates a RawCommandValue message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.RawCommandValue
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.RawCommandValue} RawCommandValue
-         */
-        RawCommandValue.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.RawCommandValue)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.RawCommandValue: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.RawCommandValue();
-            if (object.command != null)
-                message.command = String(object.command);
-            if (object.options != null) {
-                if (!$util.isObject(object.options))
-                    throw TypeError(".hermes.RawCommandValue.options: object expected");
-                message.options = $root.hermes.CommandOptions.fromObject(object.options, long + 1);
-            }
-            if (object.metadata) {
-                if (!$util.isObject(object.metadata))
-                    throw TypeError(".hermes.RawCommandValue.metadata: object expected");
-                message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.metadata, keys[i]);
-                    message.metadata[keys[i]] = String(object.metadata[keys[i]]);
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a RawCommandValue message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.RawCommandValue
-         * @static
-         * @param {hermes.RawCommandValue} message RawCommandValue
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        RawCommandValue.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.objects || options.defaults)
-                object.metadata = {};
-            if (options.defaults) {
-                object.command = "";
-                object.options = null;
-            }
-            if (message.command != null && Object.hasOwnProperty.call(message, "command"))
-                object.command = message.command;
-            if (message.options != null && Object.hasOwnProperty.call(message, "options"))
-                object.options = $root.hermes.CommandOptions.toObject(message.options, options, q + 1);
-            var keys2;
-            if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
-                object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.metadata, keys2[j]);
-                    object.metadata[keys2[j]] = message.metadata[keys2[j]];
-                }
-            }
-            return object;
-        };
-
-        /**
-         * Converts this RawCommandValue to JSON.
-         * @function toJSON
-         * @memberof hermes.RawCommandValue
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        RawCommandValue.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for RawCommandValue
-         * @function getTypeUrl
-         * @memberof hermes.RawCommandValue
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        RawCommandValue.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.RawCommandValue";
-        };
-
-        return RawCommandValue;
-    })();
-
-    hermes.CommandSequence = (function() {
-
-        /**
-         * Properties of a CommandSequence.
-         * @memberof hermes
-         * @interface ICommandSequence
-         * @property {Array.<hermes.ICommandValue>|null} [commands] CommandSequence commands
-         * @property {string|null} [languageName] CommandSequence languageName
-         * @property {Object.<string,string>|null} [metadata] CommandSequence metadata
-         */
-
-        /**
-         * Constructs a new CommandSequence.
-         * @memberof hermes
-         * @classdesc Represents a CommandSequence.
-         * @implements ICommandSequence
-         * @constructor
-         * @param {hermes.ICommandSequence=} [properties] Properties to set
-         */
-        function CommandSequence(properties) {
-            this.commands = [];
-            this.metadata = {};
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * CommandSequence commands.
-         * @member {Array.<hermes.ICommandValue>} commands
-         * @memberof hermes.CommandSequence
-         * @instance
-         */
-        CommandSequence.prototype.commands = $util.emptyArray;
-
-        /**
-         * CommandSequence languageName.
-         * @member {string} languageName
-         * @memberof hermes.CommandSequence
-         * @instance
-         */
-        CommandSequence.prototype.languageName = "";
-
-        /**
-         * CommandSequence metadata.
-         * @member {Object.<string,string>} metadata
-         * @memberof hermes.CommandSequence
-         * @instance
-         */
-        CommandSequence.prototype.metadata = $util.emptyObject;
-
-        /**
-         * Creates a new CommandSequence instance using the specified properties.
-         * @function create
-         * @memberof hermes.CommandSequence
-         * @static
-         * @param {hermes.ICommandSequence=} [properties] Properties to set
-         * @returns {hermes.CommandSequence} CommandSequence instance
-         */
-        CommandSequence.create = function create(properties) {
-            return new CommandSequence(properties);
-        };
-
-        /**
-         * Encodes the specified CommandSequence message. Does not implicitly {@link hermes.CommandSequence.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.CommandSequence
-         * @static
-         * @param {hermes.ICommandSequence} message CommandSequence message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        CommandSequence.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.commands != null && message.commands.length)
-                for (var i = 0; i < message.commands.length; ++i)
-                    $root.hermes.CommandValue.encode(message.commands[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.languageName != null && Object.hasOwnProperty.call(message, "languageName"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.languageName);
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
-                    writer.uint32(/* id 3, wireType 2 =*/26).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.metadata[keys[i]]).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified CommandSequence message, length delimited. Does not implicitly {@link hermes.CommandSequence.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.CommandSequence
-         * @static
-         * @param {hermes.ICommandSequence} message CommandSequence message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        CommandSequence.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a CommandSequence message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.CommandSequence
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.CommandSequence} CommandSequence
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        CommandSequence.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.CommandSequence(), key, value;
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        if (!(message.commands && message.commands.length))
-                            message.commands = [];
-                        message.commands.push($root.hermes.CommandValue.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                case 2: {
-                        message.languageName = reader.string();
-                        break;
-                    }
-                case 3: {
-                        if (message.metadata === $util.emptyObject)
-                            message.metadata = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = "";
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = reader.string();
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.metadata, key);
-                        message.metadata[key] = value;
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a CommandSequence message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.CommandSequence
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.CommandSequence} CommandSequence
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        CommandSequence.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a CommandSequence message.
-         * @function verify
-         * @memberof hermes.CommandSequence
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        CommandSequence.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.commands != null && Object.hasOwnProperty.call(message, "commands")) {
-                if (!Array.isArray(message.commands))
-                    return "commands: array expected";
-                for (var i = 0; i < message.commands.length; ++i) {
-                    var error = $root.hermes.CommandValue.verify(message.commands[i], long + 1);
-                    if (error)
-                        return "commands." + error;
-                }
-            }
-            if (message.languageName != null && Object.hasOwnProperty.call(message, "languageName"))
-                if (!$util.isString(message.languageName))
-                    return "languageName: string expected";
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
-                if (!$util.isObject(message.metadata))
-                    return "metadata: object expected";
-                var key = Object.keys(message.metadata);
-                for (var i = 0; i < key.length; ++i)
-                    if (!$util.isString(message.metadata[key[i]]))
-                        return "metadata: string{k:string} expected";
-            }
-            return null;
-        };
-
-        /**
-         * Creates a CommandSequence message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.CommandSequence
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.CommandSequence} CommandSequence
-         */
-        CommandSequence.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.CommandSequence)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.CommandSequence: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.CommandSequence();
-            if (object.commands) {
-                if (!Array.isArray(object.commands))
-                    throw TypeError(".hermes.CommandSequence.commands: array expected");
-                message.commands = [];
-                for (var i = 0; i < object.commands.length; ++i) {
-                    if (!$util.isObject(object.commands[i]))
-                        throw TypeError(".hermes.CommandSequence.commands: object expected");
-                    message.commands[i] = $root.hermes.CommandValue.fromObject(object.commands[i], long + 1);
-                }
-            }
-            if (object.languageName != null)
-                message.languageName = String(object.languageName);
-            if (object.metadata) {
-                if (!$util.isObject(object.metadata))
-                    throw TypeError(".hermes.CommandSequence.metadata: object expected");
-                message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.metadata, keys[i]);
-                    message.metadata[keys[i]] = String(object.metadata[keys[i]]);
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a CommandSequence message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.CommandSequence
-         * @static
-         * @param {hermes.CommandSequence} message CommandSequence
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        CommandSequence.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.arrays || options.defaults)
-                object.commands = [];
-            if (options.objects || options.defaults)
-                object.metadata = {};
-            if (options.defaults)
-                object.languageName = "";
-            if (message.commands && message.commands.length) {
-                object.commands = [];
-                for (var j = 0; j < message.commands.length; ++j)
-                    object.commands[j] = $root.hermes.CommandValue.toObject(message.commands[j], options, q + 1);
-            }
-            if (message.languageName != null && Object.hasOwnProperty.call(message, "languageName"))
-                object.languageName = message.languageName;
-            var keys2;
-            if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
-                object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.metadata, keys2[j]);
-                    object.metadata[keys2[j]] = message.metadata[keys2[j]];
-                }
-            }
-            return object;
-        };
-
-        /**
-         * Converts this CommandSequence to JSON.
-         * @function toJSON
-         * @memberof hermes.CommandSequence
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        CommandSequence.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for CommandSequence
-         * @function getTypeUrl
-         * @memberof hermes.CommandSequence
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        CommandSequence.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.CommandSequence";
-        };
-
-        return CommandSequence;
-    })();
-
-    hermes.RawCommandSequence = (function() {
-
-        /**
-         * Properties of a RawCommandSequence.
-         * @memberof hermes
-         * @interface IRawCommandSequence
-         * @property {string|null} [sequence] RawCommandSequence sequence
-         * @property {string|null} [languageName] RawCommandSequence languageName
-         * @property {Object.<string,string>|null} [metadata] RawCommandSequence metadata
-         * @property {string|null} [lineCommentPrefix] RawCommandSequence lineCommentPrefix
-         */
-
-        /**
-         * Constructs a new RawCommandSequence.
-         * @memberof hermes
-         * @classdesc Represents a RawCommandSequence.
-         * @implements IRawCommandSequence
-         * @constructor
-         * @param {hermes.IRawCommandSequence=} [properties] Properties to set
-         */
-        function RawCommandSequence(properties) {
-            this.metadata = {};
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * RawCommandSequence sequence.
-         * @member {string} sequence
-         * @memberof hermes.RawCommandSequence
-         * @instance
-         */
-        RawCommandSequence.prototype.sequence = "";
-
-        /**
-         * RawCommandSequence languageName.
-         * @member {string} languageName
-         * @memberof hermes.RawCommandSequence
-         * @instance
-         */
-        RawCommandSequence.prototype.languageName = "";
-
-        /**
-         * RawCommandSequence metadata.
-         * @member {Object.<string,string>} metadata
-         * @memberof hermes.RawCommandSequence
-         * @instance
-         */
-        RawCommandSequence.prototype.metadata = $util.emptyObject;
-
-        /**
-         * RawCommandSequence lineCommentPrefix.
-         * @member {string} lineCommentPrefix
-         * @memberof hermes.RawCommandSequence
-         * @instance
-         */
-        RawCommandSequence.prototype.lineCommentPrefix = "";
-
-        /**
-         * Creates a new RawCommandSequence instance using the specified properties.
-         * @function create
-         * @memberof hermes.RawCommandSequence
-         * @static
-         * @param {hermes.IRawCommandSequence=} [properties] Properties to set
-         * @returns {hermes.RawCommandSequence} RawCommandSequence instance
-         */
-        RawCommandSequence.create = function create(properties) {
-            return new RawCommandSequence(properties);
-        };
-
-        /**
-         * Encodes the specified RawCommandSequence message. Does not implicitly {@link hermes.RawCommandSequence.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.RawCommandSequence
-         * @static
-         * @param {hermes.IRawCommandSequence} message RawCommandSequence message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        RawCommandSequence.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.sequence != null && Object.hasOwnProperty.call(message, "sequence"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.sequence);
-            if (message.languageName != null && Object.hasOwnProperty.call(message, "languageName"))
-                writer.uint32(/* id 2, wireType 2 =*/18).string(message.languageName);
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
-                for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
-                    writer.uint32(/* id 3, wireType 2 =*/26).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.metadata[keys[i]]).ldelim();
-            if (message.lineCommentPrefix != null && Object.hasOwnProperty.call(message, "lineCommentPrefix"))
-                writer.uint32(/* id 4, wireType 2 =*/34).string(message.lineCommentPrefix);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified RawCommandSequence message, length delimited. Does not implicitly {@link hermes.RawCommandSequence.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.RawCommandSequence
-         * @static
-         * @param {hermes.IRawCommandSequence} message RawCommandSequence message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        RawCommandSequence.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a RawCommandSequence message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.RawCommandSequence
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.RawCommandSequence} RawCommandSequence
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        RawCommandSequence.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.RawCommandSequence(), key, value;
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.sequence = reader.string();
-                        break;
-                    }
-                case 2: {
-                        message.languageName = reader.string();
-                        break;
-                    }
-                case 3: {
-                        if (message.metadata === $util.emptyObject)
-                            message.metadata = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = "";
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = reader.string();
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.metadata, key);
-                        message.metadata[key] = value;
-                        break;
-                    }
-                case 4: {
-                        message.lineCommentPrefix = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a RawCommandSequence message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.RawCommandSequence
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.RawCommandSequence} RawCommandSequence
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        RawCommandSequence.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a RawCommandSequence message.
-         * @function verify
-         * @memberof hermes.RawCommandSequence
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        RawCommandSequence.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.sequence != null && Object.hasOwnProperty.call(message, "sequence"))
-                if (!$util.isString(message.sequence))
-                    return "sequence: string expected";
-            if (message.languageName != null && Object.hasOwnProperty.call(message, "languageName"))
-                if (!$util.isString(message.languageName))
-                    return "languageName: string expected";
-            if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata")) {
-                if (!$util.isObject(message.metadata))
-                    return "metadata: object expected";
-                var key = Object.keys(message.metadata);
-                for (var i = 0; i < key.length; ++i)
-                    if (!$util.isString(message.metadata[key[i]]))
-                        return "metadata: string{k:string} expected";
-            }
-            if (message.lineCommentPrefix != null && Object.hasOwnProperty.call(message, "lineCommentPrefix"))
-                if (!$util.isString(message.lineCommentPrefix))
-                    return "lineCommentPrefix: string expected";
-            return null;
-        };
-
-        /**
-         * Creates a RawCommandSequence message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.RawCommandSequence
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.RawCommandSequence} RawCommandSequence
-         */
-        RawCommandSequence.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.RawCommandSequence)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.RawCommandSequence: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.RawCommandSequence();
-            if (object.sequence != null)
-                message.sequence = String(object.sequence);
-            if (object.languageName != null)
-                message.languageName = String(object.languageName);
-            if (object.metadata) {
-                if (!$util.isObject(object.metadata))
-                    throw TypeError(".hermes.RawCommandSequence.metadata: object expected");
-                message.metadata = {};
-                for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.metadata, keys[i]);
-                    message.metadata[keys[i]] = String(object.metadata[keys[i]]);
-                }
-            }
-            if (object.lineCommentPrefix != null)
-                message.lineCommentPrefix = String(object.lineCommentPrefix);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a RawCommandSequence message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.RawCommandSequence
-         * @static
-         * @param {hermes.RawCommandSequence} message RawCommandSequence
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        RawCommandSequence.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.objects || options.defaults)
-                object.metadata = {};
-            if (options.defaults) {
-                object.sequence = "";
-                object.languageName = "";
-                object.lineCommentPrefix = "";
-            }
-            if (message.sequence != null && Object.hasOwnProperty.call(message, "sequence"))
-                object.sequence = message.sequence;
-            if (message.languageName != null && Object.hasOwnProperty.call(message, "languageName"))
-                object.languageName = message.languageName;
-            var keys2;
-            if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
-                object.metadata = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.metadata, keys2[j]);
-                    object.metadata[keys2[j]] = message.metadata[keys2[j]];
-                }
-            }
-            if (message.lineCommentPrefix != null && Object.hasOwnProperty.call(message, "lineCommentPrefix"))
-                object.lineCommentPrefix = message.lineCommentPrefix;
-            return object;
-        };
-
-        /**
-         * Converts this RawCommandSequence to JSON.
-         * @function toJSON
-         * @memberof hermes.RawCommandSequence
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        RawCommandSequence.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for RawCommandSequence
-         * @function getTypeUrl
-         * @memberof hermes.RawCommandSequence
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        RawCommandSequence.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.RawCommandSequence";
-        };
-
-        return RawCommandSequence;
-    })();
-
-    hermes.RequestValue = (function() {
-
-        /**
-         * Properties of a RequestValue.
-         * @memberof hermes
-         * @interface IRequestValue
-         * @property {string|null} [kind] RequestValue kind
-         * @property {Uint8Array|null} [data] RequestValue data
-         */
-
-        /**
-         * Constructs a new RequestValue.
-         * @memberof hermes
-         * @classdesc FSW Requests are non-dictionary defined items. These are connection
-         * specific commands meant to be exposed by custom UI in the frontend.
-         * @implements IRequestValue
-         * @constructor
-         * @param {hermes.IRequestValue=} [properties] Properties to set
-         */
-        function RequestValue(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * RequestValue kind.
-         * @member {string} kind
-         * @memberof hermes.RequestValue
-         * @instance
-         */
-        RequestValue.prototype.kind = "";
-
-        /**
-         * RequestValue data.
-         * @member {Uint8Array} data
-         * @memberof hermes.RequestValue
-         * @instance
-         */
-        RequestValue.prototype.data = $util.newBuffer([]);
-
-        /**
-         * Creates a new RequestValue instance using the specified properties.
-         * @function create
-         * @memberof hermes.RequestValue
-         * @static
-         * @param {hermes.IRequestValue=} [properties] Properties to set
-         * @returns {hermes.RequestValue} RequestValue instance
-         */
-        RequestValue.create = function create(properties) {
-            return new RequestValue(properties);
-        };
-
-        /**
-         * Encodes the specified RequestValue message. Does not implicitly {@link hermes.RequestValue.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.RequestValue
-         * @static
-         * @param {hermes.IRequestValue} message RequestValue message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        RequestValue.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.kind);
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.data);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified RequestValue message, length delimited. Does not implicitly {@link hermes.RequestValue.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.RequestValue
-         * @static
-         * @param {hermes.IRequestValue} message RequestValue message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        RequestValue.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a RequestValue message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.RequestValue
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.RequestValue} RequestValue
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        RequestValue.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.RequestValue();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.kind = reader.string();
-                        break;
-                    }
-                case 2: {
-                        message.data = reader.bytes();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a RequestValue message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.RequestValue
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.RequestValue} RequestValue
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        RequestValue.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a RequestValue message.
-         * @function verify
-         * @memberof hermes.RequestValue
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        RequestValue.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
-                if (!$util.isString(message.kind))
-                    return "kind: string expected";
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                if (!(message.data && typeof message.data.length === "number" || $util.isString(message.data)))
-                    return "data: buffer expected";
-            return null;
-        };
-
-        /**
-         * Creates a RequestValue message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.RequestValue
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.RequestValue} RequestValue
-         */
-        RequestValue.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.RequestValue)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.RequestValue: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.RequestValue();
-            if (object.kind != null)
-                message.kind = String(object.kind);
-            if (object.data != null)
-                if (typeof object.data === "string")
-                    $util.base64.decode(object.data, message.data = $util.newBuffer($util.base64.length(object.data)), 0);
-                else if (object.data.length >= 0)
-                    message.data = object.data;
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a RequestValue message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.RequestValue
-         * @static
-         * @param {hermes.RequestValue} message RequestValue
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        RequestValue.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults) {
-                object.kind = "";
-                if (options.bytes === String)
-                    object.data = "";
-                else {
-                    object.data = [];
-                    if (options.bytes !== Array)
-                        object.data = $util.newBuffer(object.data);
-                }
-            }
-            if (message.kind != null && Object.hasOwnProperty.call(message, "kind"))
-                object.kind = message.kind;
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                object.data = options.bytes === String ? $util.base64.encode(message.data, 0, message.data.length) : options.bytes === Array ? Array.prototype.slice.call(message.data) : message.data;
-            return object;
-        };
-
-        /**
-         * Converts this RequestValue to JSON.
-         * @function toJSON
-         * @memberof hermes.RequestValue
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        RequestValue.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for RequestValue
-         * @function getTypeUrl
-         * @memberof hermes.RequestValue
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        RequestValue.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.RequestValue";
-        };
-
-        return RequestValue;
-    })();
-
-    hermes.RequestReply = (function() {
-
-        /**
-         * Properties of a RequestReply.
-         * @memberof hermes
-         * @interface IRequestReply
-         * @property {Uint8Array|null} [data] RequestReply data
-         */
-
-        /**
-         * Constructs a new RequestReply.
-         * @memberof hermes
-         * @classdesc Represents a RequestReply.
-         * @implements IRequestReply
-         * @constructor
-         * @param {hermes.IRequestReply=} [properties] Properties to set
-         */
-        function RequestReply(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * RequestReply data.
-         * @member {Uint8Array} data
-         * @memberof hermes.RequestReply
-         * @instance
-         */
-        RequestReply.prototype.data = $util.newBuffer([]);
-
-        /**
-         * Creates a new RequestReply instance using the specified properties.
-         * @function create
-         * @memberof hermes.RequestReply
-         * @static
-         * @param {hermes.IRequestReply=} [properties] Properties to set
-         * @returns {hermes.RequestReply} RequestReply instance
-         */
-        RequestReply.create = function create(properties) {
-            return new RequestReply(properties);
-        };
-
-        /**
-         * Encodes the specified RequestReply message. Does not implicitly {@link hermes.RequestReply.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.RequestReply
-         * @static
-         * @param {hermes.IRequestReply} message RequestReply message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        RequestReply.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.data);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified RequestReply message, length delimited. Does not implicitly {@link hermes.RequestReply.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.RequestReply
-         * @static
-         * @param {hermes.IRequestReply} message RequestReply message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        RequestReply.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a RequestReply message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.RequestReply
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.RequestReply} RequestReply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        RequestReply.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.RequestReply();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.data = reader.bytes();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a RequestReply message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.RequestReply
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.RequestReply} RequestReply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        RequestReply.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a RequestReply message.
-         * @function verify
-         * @memberof hermes.RequestReply
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        RequestReply.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                if (!(message.data && typeof message.data.length === "number" || $util.isString(message.data)))
-                    return "data: buffer expected";
-            return null;
-        };
-
-        /**
-         * Creates a RequestReply message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.RequestReply
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.RequestReply} RequestReply
-         */
-        RequestReply.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.RequestReply)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.RequestReply: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.RequestReply();
-            if (object.data != null)
-                if (typeof object.data === "string")
-                    $util.base64.decode(object.data, message.data = $util.newBuffer($util.base64.length(object.data)), 0);
-                else if (object.data.length >= 0)
-                    message.data = object.data;
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a RequestReply message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.RequestReply
-         * @static
-         * @param {hermes.RequestReply} message RequestReply
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        RequestReply.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults)
-                if (options.bytes === String)
-                    object.data = "";
-                else {
-                    object.data = [];
-                    if (options.bytes !== Array)
-                        object.data = $util.newBuffer(object.data);
-                }
-            if (message.data != null && Object.hasOwnProperty.call(message, "data"))
-                object.data = options.bytes === String ? $util.base64.encode(message.data, 0, message.data.length) : options.bytes === Array ? Array.prototype.slice.call(message.data) : message.data;
-            return object;
-        };
-
-        /**
-         * Converts this RequestReply to JSON.
-         * @function toJSON
-         * @memberof hermes.RequestReply
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        RequestReply.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for RequestReply
-         * @function getTypeUrl
-         * @memberof hermes.RequestReply
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        RequestReply.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.RequestReply";
-        };
-
-        return RequestReply;
-    })();
-
-    hermes.Id = (function() {
-
-        /**
-         * Properties of an Id.
-         * @memberof hermes
-         * @interface IId
-         * @property {string|null} [id] Id id
-         */
-
-        /**
-         * Constructs a new Id.
-         * @memberof hermes
-         * @classdesc Represents an Id.
-         * @implements IId
-         * @constructor
-         * @param {hermes.IId=} [properties] Properties to set
-         */
-        function Id(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Id id.
-         * @member {string} id
-         * @memberof hermes.Id
-         * @instance
-         */
-        Id.prototype.id = "";
-
-        /**
-         * Creates a new Id instance using the specified properties.
-         * @function create
-         * @memberof hermes.Id
-         * @static
-         * @param {hermes.IId=} [properties] Properties to set
-         * @returns {hermes.Id} Id instance
-         */
-        Id.create = function create(properties) {
-            return new Id(properties);
-        };
-
-        /**
-         * Encodes the specified Id message. Does not implicitly {@link hermes.Id.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.Id
-         * @static
-         * @param {hermes.IId} message Id message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Id.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified Id message, length delimited. Does not implicitly {@link hermes.Id.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.Id
-         * @static
-         * @param {hermes.IId} message Id message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Id.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes an Id message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.Id
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.Id} Id
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Id.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Id();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.id = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes an Id message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.Id
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.Id} Id
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Id.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies an Id message.
-         * @function verify
-         * @memberof hermes.Id
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        Id.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                if (!$util.isString(message.id))
-                    return "id: string expected";
-            return null;
-        };
-
-        /**
-         * Creates an Id message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.Id
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.Id} Id
-         */
-        Id.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.Id)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.Id: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.Id();
-            if (object.id != null)
-                message.id = String(object.id);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from an Id message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.Id
-         * @static
-         * @param {hermes.Id} message Id
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        Id.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults)
-                object.id = "";
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                object.id = message.id;
-            return object;
-        };
-
-        /**
-         * Converts this Id to JSON.
-         * @function toJSON
-         * @memberof hermes.Id
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        Id.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for Id
-         * @function getTypeUrl
-         * @memberof hermes.Id
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        Id.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.Id";
-        };
-
-        return Id;
-    })();
-
-    hermes.FswList = (function() {
-
-        /**
-         * Properties of a FswList.
-         * @memberof hermes
-         * @interface IFswList
-         * @property {Array.<hermes.IFsw>|null} [all] FswList all
-         */
-
-        /**
-         * Constructs a new FswList.
-         * @memberof hermes
-         * @classdesc Represents a FswList.
-         * @implements IFswList
-         * @constructor
-         * @param {hermes.IFswList=} [properties] Properties to set
-         */
-        function FswList(properties) {
-            this.all = [];
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * FswList all.
-         * @member {Array.<hermes.IFsw>} all
-         * @memberof hermes.FswList
-         * @instance
-         */
-        FswList.prototype.all = $util.emptyArray;
-
-        /**
-         * Creates a new FswList instance using the specified properties.
-         * @function create
-         * @memberof hermes.FswList
-         * @static
-         * @param {hermes.IFswList=} [properties] Properties to set
-         * @returns {hermes.FswList} FswList instance
-         */
-        FswList.create = function create(properties) {
-            return new FswList(properties);
-        };
-
-        /**
-         * Encodes the specified FswList message. Does not implicitly {@link hermes.FswList.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.FswList
-         * @static
-         * @param {hermes.IFswList} message FswList message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FswList.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.all != null && message.all.length)
-                for (var i = 0; i < message.all.length; ++i)
-                    $root.hermes.Fsw.encode(message.all[i], writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified FswList message, length delimited. Does not implicitly {@link hermes.FswList.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.FswList
-         * @static
-         * @param {hermes.IFswList} message FswList message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FswList.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a FswList message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.FswList
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.FswList} FswList
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FswList.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FswList();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        if (!(message.all && message.all.length))
-                            message.all = [];
-                        message.all.push($root.hermes.Fsw.decode(reader, reader.uint32(), undefined, long + 1));
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a FswList message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.FswList
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.FswList} FswList
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FswList.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a FswList message.
-         * @function verify
-         * @memberof hermes.FswList
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        FswList.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.all != null && Object.hasOwnProperty.call(message, "all")) {
-                if (!Array.isArray(message.all))
-                    return "all: array expected";
-                for (var i = 0; i < message.all.length; ++i) {
-                    var error = $root.hermes.Fsw.verify(message.all[i], long + 1);
-                    if (error)
-                        return "all." + error;
-                }
-            }
-            return null;
-        };
-
-        /**
-         * Creates a FswList message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.FswList
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.FswList} FswList
-         */
-        FswList.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.FswList)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.FswList: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.FswList();
-            if (object.all) {
-                if (!Array.isArray(object.all))
-                    throw TypeError(".hermes.FswList.all: array expected");
-                message.all = [];
-                for (var i = 0; i < object.all.length; ++i) {
-                    if (!$util.isObject(object.all[i]))
-                        throw TypeError(".hermes.FswList.all: object expected");
-                    message.all[i] = $root.hermes.Fsw.fromObject(object.all[i], long + 1);
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a FswList message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.FswList
-         * @static
-         * @param {hermes.FswList} message FswList
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        FswList.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.arrays || options.defaults)
-                object.all = [];
-            if (message.all && message.all.length) {
-                object.all = [];
-                for (var j = 0; j < message.all.length; ++j)
-                    object.all[j] = $root.hermes.Fsw.toObject(message.all[j], options, q + 1);
-            }
-            return object;
-        };
-
-        /**
-         * Converts this FswList to JSON.
-         * @function toJSON
-         * @memberof hermes.FswList
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        FswList.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for FswList
-         * @function getTypeUrl
-         * @memberof hermes.FswList
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        FswList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.FswList";
-        };
-
-        return FswList;
-    })();
-
-    hermes.Reply = (function() {
-
-        /**
-         * Properties of a Reply.
-         * @memberof hermes
-         * @interface IReply
-         * @property {boolean|null} [success] Reply success
-         */
-
-        /**
-         * Constructs a new Reply.
-         * @memberof hermes
-         * @classdesc Represents a Reply.
-         * @implements IReply
-         * @constructor
-         * @param {hermes.IReply=} [properties] Properties to set
-         */
-        function Reply(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Reply success.
-         * @member {boolean} success
-         * @memberof hermes.Reply
-         * @instance
-         */
-        Reply.prototype.success = false;
-
-        /**
-         * Creates a new Reply instance using the specified properties.
-         * @function create
-         * @memberof hermes.Reply
-         * @static
-         * @param {hermes.IReply=} [properties] Properties to set
-         * @returns {hermes.Reply} Reply instance
-         */
-        Reply.create = function create(properties) {
-            return new Reply(properties);
-        };
-
-        /**
-         * Encodes the specified Reply message. Does not implicitly {@link hermes.Reply.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.Reply
-         * @static
-         * @param {hermes.IReply} message Reply message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Reply.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.success != null && Object.hasOwnProperty.call(message, "success"))
-                writer.uint32(/* id 1, wireType 0 =*/8).bool(message.success);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified Reply message, length delimited. Does not implicitly {@link hermes.Reply.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.Reply
-         * @static
-         * @param {hermes.IReply} message Reply message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Reply.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a Reply message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.Reply
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.Reply} Reply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Reply.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Reply();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.success = reader.bool();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a Reply message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.Reply
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.Reply} Reply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Reply.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a Reply message.
-         * @function verify
-         * @memberof hermes.Reply
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        Reply.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.success != null && Object.hasOwnProperty.call(message, "success"))
-                if (typeof message.success !== "boolean")
-                    return "success: boolean expected";
-            return null;
-        };
-
-        /**
-         * Creates a Reply message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.Reply
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.Reply} Reply
-         */
-        Reply.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.Reply)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.Reply: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.Reply();
-            if (object.success != null)
-                message.success = Boolean(object.success);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a Reply message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.Reply
-         * @static
-         * @param {hermes.Reply} message Reply
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        Reply.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults)
-                object.success = false;
-            if (message.success != null && Object.hasOwnProperty.call(message, "success"))
-                object.success = message.success;
-            return object;
-        };
-
-        /**
-         * Converts this Reply to JSON.
-         * @function toJSON
-         * @memberof hermes.Reply
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        Reply.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for Reply
-         * @function getTypeUrl
-         * @memberof hermes.Reply
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        Reply.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.Reply";
-        };
-
-        return Reply;
-    })();
-
-    hermes.SequenceReply = (function() {
-
-        /**
-         * Properties of a SequenceReply.
-         * @memberof hermes
-         * @interface ISequenceReply
-         * @property {boolean|null} [success] SequenceReply success
-         * @property {number|null} [commandIndex] SequenceReply commandIndex
-         */
-
-        /**
-         * Constructs a new SequenceReply.
-         * @memberof hermes
-         * @classdesc Represents a SequenceReply.
-         * @implements ISequenceReply
-         * @constructor
-         * @param {hermes.ISequenceReply=} [properties] Properties to set
-         */
-        function SequenceReply(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * SequenceReply success.
-         * @member {boolean} success
-         * @memberof hermes.SequenceReply
-         * @instance
-         */
-        SequenceReply.prototype.success = false;
-
-        /**
-         * SequenceReply commandIndex.
-         * @member {number} commandIndex
-         * @memberof hermes.SequenceReply
-         * @instance
-         */
-        SequenceReply.prototype.commandIndex = 0;
-
-        /**
-         * Creates a new SequenceReply instance using the specified properties.
-         * @function create
-         * @memberof hermes.SequenceReply
-         * @static
-         * @param {hermes.ISequenceReply=} [properties] Properties to set
-         * @returns {hermes.SequenceReply} SequenceReply instance
-         */
-        SequenceReply.create = function create(properties) {
-            return new SequenceReply(properties);
-        };
-
-        /**
-         * Encodes the specified SequenceReply message. Does not implicitly {@link hermes.SequenceReply.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.SequenceReply
-         * @static
-         * @param {hermes.ISequenceReply} message SequenceReply message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        SequenceReply.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.success != null && Object.hasOwnProperty.call(message, "success"))
-                writer.uint32(/* id 1, wireType 0 =*/8).bool(message.success);
-            if (message.commandIndex != null && Object.hasOwnProperty.call(message, "commandIndex"))
-                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.commandIndex);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified SequenceReply message, length delimited. Does not implicitly {@link hermes.SequenceReply.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.SequenceReply
-         * @static
-         * @param {hermes.ISequenceReply} message SequenceReply message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        SequenceReply.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a SequenceReply message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.SequenceReply
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.SequenceReply} SequenceReply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        SequenceReply.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.SequenceReply();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.success = reader.bool();
-                        break;
-                    }
-                case 2: {
-                        message.commandIndex = reader.int32();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a SequenceReply message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.SequenceReply
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.SequenceReply} SequenceReply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        SequenceReply.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a SequenceReply message.
-         * @function verify
-         * @memberof hermes.SequenceReply
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        SequenceReply.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.success != null && Object.hasOwnProperty.call(message, "success"))
-                if (typeof message.success !== "boolean")
-                    return "success: boolean expected";
-            if (message.commandIndex != null && Object.hasOwnProperty.call(message, "commandIndex"))
-                if (!$util.isInteger(message.commandIndex))
-                    return "commandIndex: integer expected";
-            return null;
-        };
-
-        /**
-         * Creates a SequenceReply message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.SequenceReply
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.SequenceReply} SequenceReply
-         */
-        SequenceReply.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.SequenceReply)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.SequenceReply: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.SequenceReply();
-            if (object.success != null)
-                message.success = Boolean(object.success);
-            if (object.commandIndex != null)
-                message.commandIndex = object.commandIndex | 0;
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a SequenceReply message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.SequenceReply
-         * @static
-         * @param {hermes.SequenceReply} message SequenceReply
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        SequenceReply.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults) {
-                object.success = false;
-                object.commandIndex = 0;
-            }
-            if (message.success != null && Object.hasOwnProperty.call(message, "success"))
-                object.success = message.success;
-            if (message.commandIndex != null && Object.hasOwnProperty.call(message, "commandIndex"))
-                object.commandIndex = message.commandIndex;
-            return object;
-        };
-
-        /**
-         * Converts this SequenceReply to JSON.
-         * @function toJSON
-         * @memberof hermes.SequenceReply
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        SequenceReply.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for SequenceReply
-         * @function getTypeUrl
-         * @memberof hermes.SequenceReply
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        SequenceReply.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.SequenceReply";
-        };
-
-        return SequenceReply;
-    })();
-
-    hermes.DictionaryList = (function() {
-
-        /**
-         * Properties of a DictionaryList.
-         * @memberof hermes
-         * @interface IDictionaryList
-         * @property {Object.<string,hermes.IDictionaryHead>|null} [all] DictionaryList all
-         */
-
-        /**
-         * Constructs a new DictionaryList.
-         * @memberof hermes
-         * @classdesc Represents a DictionaryList.
-         * @implements IDictionaryList
-         * @constructor
-         * @param {hermes.IDictionaryList=} [properties] Properties to set
-         */
-        function DictionaryList(properties) {
-            this.all = {};
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * DictionaryList all.
-         * @member {Object.<string,hermes.IDictionaryHead>} all
-         * @memberof hermes.DictionaryList
-         * @instance
-         */
-        DictionaryList.prototype.all = $util.emptyObject;
-
-        /**
-         * Creates a new DictionaryList instance using the specified properties.
-         * @function create
-         * @memberof hermes.DictionaryList
-         * @static
-         * @param {hermes.IDictionaryList=} [properties] Properties to set
-         * @returns {hermes.DictionaryList} DictionaryList instance
-         */
-        DictionaryList.create = function create(properties) {
-            return new DictionaryList(properties);
-        };
-
-        /**
-         * Encodes the specified DictionaryList message. Does not implicitly {@link hermes.DictionaryList.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.DictionaryList
-         * @static
-         * @param {hermes.IDictionaryList} message DictionaryList message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DictionaryList.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.all != null && Object.hasOwnProperty.call(message, "all"))
-                for (var keys = Object.keys(message.all), i = 0; i < keys.length; ++i) {
-                    writer.uint32(/* id 1, wireType 2 =*/10).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]);
-                    $root.hermes.DictionaryHead.encode(message.all[keys[i]], writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim().ldelim();
-                }
-            return writer;
-        };
-
-        /**
-         * Encodes the specified DictionaryList message, length delimited. Does not implicitly {@link hermes.DictionaryList.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.DictionaryList
-         * @static
-         * @param {hermes.IDictionaryList} message DictionaryList message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        DictionaryList.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a DictionaryList message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.DictionaryList
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.DictionaryList} DictionaryList
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DictionaryList.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.DictionaryList(), key, value;
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        if (message.all === $util.emptyObject)
-                            message.all = {};
-                        var end2 = reader.uint32() + reader.pos;
-                        key = "";
-                        value = null;
-                        while (reader.pos < end2) {
-                            var tag2 = reader.uint32();
-                            switch (tag2 >>> 3) {
-                            case 1:
-                                key = reader.string();
-                                break;
-                            case 2:
-                                value = $root.hermes.DictionaryHead.decode(reader, reader.uint32(), undefined, long + 1);
-                                break;
-                            default:
-                                reader.skipType(tag2 & 7, long);
-                                break;
-                            }
-                        }
-                        if (key === "__proto__")
-                            $util.makeProp(message.all, key);
-                        message.all[key] = value;
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a DictionaryList message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.DictionaryList
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.DictionaryList} DictionaryList
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        DictionaryList.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a DictionaryList message.
-         * @function verify
-         * @memberof hermes.DictionaryList
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        DictionaryList.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.all != null && Object.hasOwnProperty.call(message, "all")) {
-                if (!$util.isObject(message.all))
-                    return "all: object expected";
-                var key = Object.keys(message.all);
-                for (var i = 0; i < key.length; ++i) {
-                    var error = $root.hermes.DictionaryHead.verify(message.all[key[i]], long + 1);
-                    if (error)
-                        return "all." + error;
-                }
-            }
-            return null;
-        };
-
-        /**
-         * Creates a DictionaryList message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.DictionaryList
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.DictionaryList} DictionaryList
-         */
-        DictionaryList.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.DictionaryList)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.DictionaryList: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.DictionaryList();
-            if (object.all) {
-                if (!$util.isObject(object.all))
-                    throw TypeError(".hermes.DictionaryList.all: object expected");
-                message.all = {};
-                for (var keys = Object.keys(object.all), i = 0; i < keys.length; ++i) {
-                    if (keys[i] === "__proto__")
-                        $util.makeProp(message.all, keys[i]);
-                    if (!$util.isObject(object.all[keys[i]]))
-                        throw TypeError(".hermes.DictionaryList.all: object expected");
-                    message.all[keys[i]] = $root.hermes.DictionaryHead.fromObject(object.all[keys[i]], long + 1);
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a DictionaryList message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.DictionaryList
-         * @static
-         * @param {hermes.DictionaryList} message DictionaryList
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        DictionaryList.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.objects || options.defaults)
-                object.all = {};
-            var keys2;
-            if (message.all && (keys2 = Object.keys(message.all)).length) {
-                object.all = {};
-                for (var j = 0; j < keys2.length; ++j) {
-                    if (keys2[j] === "__proto__")
-                        $util.makeProp(object.all, keys2[j]);
-                    object.all[keys2[j]] = $root.hermes.DictionaryHead.toObject(message.all[keys2[j]], options, q + 1);
-                }
-            }
-            return object;
-        };
-
-        /**
-         * Converts this DictionaryList to JSON.
-         * @function toJSON
-         * @memberof hermes.DictionaryList
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        DictionaryList.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for DictionaryList
-         * @function getTypeUrl
-         * @memberof hermes.DictionaryList
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        DictionaryList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.DictionaryList";
-        };
-
-        return DictionaryList;
-    })();
-
-    hermes.Uplink = (function() {
-
-        /**
-         * Properties of an Uplink.
-         * @memberof hermes
-         * @interface IUplink
-         * @property {string|null} [id] Uplink id
-         * @property {hermes.ICommandValue|null} [cmd] Uplink cmd
-         * @property {hermes.IRawCommandValue|null} [parseCmd] Uplink parseCmd
-         * @property {hermes.ICommandSequence|null} [seq] Uplink seq
-         * @property {hermes.IRawCommandSequence|null} [parseSeq] Uplink parseSeq
-         * @property {hermes.IUplinkFileChunk|null} [file] Uplink file
-         * @property {hermes.IRequestValue|null} [request] Uplink request
-         * @property {google.protobuf.IEmpty|null} [cancel] Uplink cancel
-         * @property {google.protobuf.IEmpty|null} [final] Uplink final
-         */
-
-        /**
-         * Constructs a new Uplink.
-         * @memberof hermes
-         * @classdesc Represents an Uplink.
-         * @implements IUplink
-         * @constructor
-         * @param {hermes.IUplink=} [properties] Properties to set
-         */
-        function Uplink(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * Uplink id.
-         * @member {string} id
-         * @memberof hermes.Uplink
-         * @instance
-         */
-        Uplink.prototype.id = "";
-
-        /**
-         * Uplink cmd.
-         * @member {hermes.ICommandValue|null|undefined} cmd
-         * @memberof hermes.Uplink
-         * @instance
-         */
-        Uplink.prototype.cmd = null;
-
-        /**
-         * Uplink parseCmd.
-         * @member {hermes.IRawCommandValue|null|undefined} parseCmd
-         * @memberof hermes.Uplink
-         * @instance
-         */
-        Uplink.prototype.parseCmd = null;
-
-        /**
-         * Uplink seq.
-         * @member {hermes.ICommandSequence|null|undefined} seq
-         * @memberof hermes.Uplink
-         * @instance
-         */
-        Uplink.prototype.seq = null;
-
-        /**
-         * Uplink parseSeq.
-         * @member {hermes.IRawCommandSequence|null|undefined} parseSeq
-         * @memberof hermes.Uplink
-         * @instance
-         */
-        Uplink.prototype.parseSeq = null;
-
-        /**
-         * Uplink file.
-         * @member {hermes.IUplinkFileChunk|null|undefined} file
-         * @memberof hermes.Uplink
-         * @instance
-         */
-        Uplink.prototype.file = null;
-
-        /**
-         * Uplink request.
-         * @member {hermes.IRequestValue|null|undefined} request
-         * @memberof hermes.Uplink
-         * @instance
-         */
-        Uplink.prototype.request = null;
-
-        /**
-         * Uplink cancel.
-         * @member {google.protobuf.IEmpty|null|undefined} cancel
-         * @memberof hermes.Uplink
-         * @instance
-         */
-        Uplink.prototype.cancel = null;
-
-        /**
-         * Uplink final.
-         * @member {google.protobuf.IEmpty|null|undefined} final
-         * @memberof hermes.Uplink
-         * @instance
-         */
-        Uplink.prototype.final = null;
-
-        // OneOf field names bound to virtual getters and setters
-        var $oneOfFields;
-
-        /**
-         * Uplink value.
-         * @member {"cmd"|"parseCmd"|"seq"|"parseSeq"|"file"|"request"|"cancel"|"final"|undefined} value
-         * @memberof hermes.Uplink
-         * @instance
-         */
-        Object.defineProperty(Uplink.prototype, "value", {
-            get: $util.oneOfGetter($oneOfFields = ["cmd", "parseCmd", "seq", "parseSeq", "file", "request", "cancel", "final"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * Creates a new Uplink instance using the specified properties.
-         * @function create
-         * @memberof hermes.Uplink
-         * @static
-         * @param {hermes.IUplink=} [properties] Properties to set
-         * @returns {hermes.Uplink} Uplink instance
-         */
-        Uplink.create = function create(properties) {
-            return new Uplink(properties);
-        };
-
-        /**
-         * Encodes the specified Uplink message. Does not implicitly {@link hermes.Uplink.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.Uplink
-         * @static
-         * @param {hermes.IUplink} message Uplink message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Uplink.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
-            if (message.cmd != null && Object.hasOwnProperty.call(message, "cmd"))
-                $root.hermes.CommandValue.encode(message.cmd, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
-            if (message.parseCmd != null && Object.hasOwnProperty.call(message, "parseCmd"))
-                $root.hermes.RawCommandValue.encode(message.parseCmd, writer.uint32(/* id 3, wireType 2 =*/26).fork(), q + 1).ldelim();
-            if (message.seq != null && Object.hasOwnProperty.call(message, "seq"))
-                $root.hermes.CommandSequence.encode(message.seq, writer.uint32(/* id 4, wireType 2 =*/34).fork(), q + 1).ldelim();
-            if (message.parseSeq != null && Object.hasOwnProperty.call(message, "parseSeq"))
-                $root.hermes.RawCommandSequence.encode(message.parseSeq, writer.uint32(/* id 5, wireType 2 =*/42).fork(), q + 1).ldelim();
-            if (message.file != null && Object.hasOwnProperty.call(message, "file"))
-                $root.hermes.UplinkFileChunk.encode(message.file, writer.uint32(/* id 6, wireType 2 =*/50).fork(), q + 1).ldelim();
-            if (message.request != null && Object.hasOwnProperty.call(message, "request"))
-                $root.hermes.RequestValue.encode(message.request, writer.uint32(/* id 7, wireType 2 =*/58).fork(), q + 1).ldelim();
-            if (message.cancel != null && Object.hasOwnProperty.call(message, "cancel"))
-                $root.google.protobuf.Empty.encode(message.cancel, writer.uint32(/* id 99, wireType 2 =*/794).fork(), q + 1).ldelim();
-            if (message.final != null && Object.hasOwnProperty.call(message, "final"))
-                $root.google.protobuf.Empty.encode(message.final, writer.uint32(/* id 100, wireType 2 =*/802).fork(), q + 1).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified Uplink message, length delimited. Does not implicitly {@link hermes.Uplink.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.Uplink
-         * @static
-         * @param {hermes.IUplink} message Uplink message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        Uplink.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes an Uplink message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.Uplink
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.Uplink} Uplink
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Uplink.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.Uplink();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.id = reader.string();
-                        break;
-                    }
-                case 2: {
-                        message.cmd = $root.hermes.CommandValue.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 3: {
-                        message.parseCmd = $root.hermes.RawCommandValue.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 4: {
-                        message.seq = $root.hermes.CommandSequence.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 5: {
-                        message.parseSeq = $root.hermes.RawCommandSequence.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 6: {
-                        message.file = $root.hermes.UplinkFileChunk.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 7: {
-                        message.request = $root.hermes.RequestValue.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 99: {
-                        message.cancel = $root.google.protobuf.Empty.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 100: {
-                        message.final = $root.google.protobuf.Empty.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes an Uplink message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.Uplink
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.Uplink} Uplink
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        Uplink.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies an Uplink message.
-         * @function verify
-         * @memberof hermes.Uplink
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        Uplink.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            var properties = {};
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                if (!$util.isString(message.id))
-                    return "id: string expected";
-            if (message.cmd != null && Object.hasOwnProperty.call(message, "cmd")) {
-                properties.value = 1;
-                {
-                    var error = $root.hermes.CommandValue.verify(message.cmd, long + 1);
-                    if (error)
-                        return "cmd." + error;
-                }
-            }
-            if (message.parseCmd != null && Object.hasOwnProperty.call(message, "parseCmd")) {
-                if (properties.value === 1)
-                    return "value: multiple values";
-                properties.value = 1;
-                {
-                    var error = $root.hermes.RawCommandValue.verify(message.parseCmd, long + 1);
-                    if (error)
-                        return "parseCmd." + error;
-                }
-            }
-            if (message.seq != null && Object.hasOwnProperty.call(message, "seq")) {
-                if (properties.value === 1)
-                    return "value: multiple values";
-                properties.value = 1;
-                {
-                    var error = $root.hermes.CommandSequence.verify(message.seq, long + 1);
-                    if (error)
-                        return "seq." + error;
-                }
-            }
-            if (message.parseSeq != null && Object.hasOwnProperty.call(message, "parseSeq")) {
-                if (properties.value === 1)
-                    return "value: multiple values";
-                properties.value = 1;
-                {
-                    var error = $root.hermes.RawCommandSequence.verify(message.parseSeq, long + 1);
-                    if (error)
-                        return "parseSeq." + error;
-                }
-            }
-            if (message.file != null && Object.hasOwnProperty.call(message, "file")) {
-                if (properties.value === 1)
-                    return "value: multiple values";
-                properties.value = 1;
-                {
-                    var error = $root.hermes.UplinkFileChunk.verify(message.file, long + 1);
-                    if (error)
-                        return "file." + error;
-                }
-            }
-            if (message.request != null && Object.hasOwnProperty.call(message, "request")) {
-                if (properties.value === 1)
-                    return "value: multiple values";
-                properties.value = 1;
-                {
-                    var error = $root.hermes.RequestValue.verify(message.request, long + 1);
-                    if (error)
-                        return "request." + error;
-                }
-            }
-            if (message.cancel != null && Object.hasOwnProperty.call(message, "cancel")) {
-                if (properties.value === 1)
-                    return "value: multiple values";
-                properties.value = 1;
-                {
-                    var error = $root.google.protobuf.Empty.verify(message.cancel, long + 1);
-                    if (error)
-                        return "cancel." + error;
-                }
-            }
-            if (message.final != null && Object.hasOwnProperty.call(message, "final")) {
-                if (properties.value === 1)
-                    return "value: multiple values";
-                properties.value = 1;
-                {
-                    var error = $root.google.protobuf.Empty.verify(message.final, long + 1);
-                    if (error)
-                        return "final." + error;
-                }
-            }
-            return null;
-        };
-
-        /**
-         * Creates an Uplink message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.Uplink
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.Uplink} Uplink
-         */
-        Uplink.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.Uplink)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.Uplink: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.Uplink();
-            if (object.id != null)
-                message.id = String(object.id);
-            if (object.cmd != null) {
-                if (!$util.isObject(object.cmd))
-                    throw TypeError(".hermes.Uplink.cmd: object expected");
-                message.cmd = $root.hermes.CommandValue.fromObject(object.cmd, long + 1);
-            }
-            if (object.parseCmd != null) {
-                if (!$util.isObject(object.parseCmd))
-                    throw TypeError(".hermes.Uplink.parseCmd: object expected");
-                message.parseCmd = $root.hermes.RawCommandValue.fromObject(object.parseCmd, long + 1);
-            }
-            if (object.seq != null) {
-                if (!$util.isObject(object.seq))
-                    throw TypeError(".hermes.Uplink.seq: object expected");
-                message.seq = $root.hermes.CommandSequence.fromObject(object.seq, long + 1);
-            }
-            if (object.parseSeq != null) {
-                if (!$util.isObject(object.parseSeq))
-                    throw TypeError(".hermes.Uplink.parseSeq: object expected");
-                message.parseSeq = $root.hermes.RawCommandSequence.fromObject(object.parseSeq, long + 1);
-            }
-            if (object.file != null) {
-                if (!$util.isObject(object.file))
-                    throw TypeError(".hermes.Uplink.file: object expected");
-                message.file = $root.hermes.UplinkFileChunk.fromObject(object.file, long + 1);
-            }
-            if (object.request != null) {
-                if (!$util.isObject(object.request))
-                    throw TypeError(".hermes.Uplink.request: object expected");
-                message.request = $root.hermes.RequestValue.fromObject(object.request, long + 1);
-            }
-            if (object.cancel != null) {
-                if (!$util.isObject(object.cancel))
-                    throw TypeError(".hermes.Uplink.cancel: object expected");
-                message.cancel = $root.google.protobuf.Empty.fromObject(object.cancel, long + 1);
-            }
-            if (object.final != null) {
-                if (!$util.isObject(object.final))
-                    throw TypeError(".hermes.Uplink.final: object expected");
-                message.final = $root.google.protobuf.Empty.fromObject(object.final, long + 1);
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from an Uplink message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.Uplink
-         * @static
-         * @param {hermes.Uplink} message Uplink
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        Uplink.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults)
-                object.id = "";
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                object.id = message.id;
-            if (message.cmd != null && Object.hasOwnProperty.call(message, "cmd")) {
-                object.cmd = $root.hermes.CommandValue.toObject(message.cmd, options, q + 1);
-                if (options.oneofs)
-                    object.value = "cmd";
-            }
-            if (message.parseCmd != null && Object.hasOwnProperty.call(message, "parseCmd")) {
-                object.parseCmd = $root.hermes.RawCommandValue.toObject(message.parseCmd, options, q + 1);
-                if (options.oneofs)
-                    object.value = "parseCmd";
-            }
-            if (message.seq != null && Object.hasOwnProperty.call(message, "seq")) {
-                object.seq = $root.hermes.CommandSequence.toObject(message.seq, options, q + 1);
-                if (options.oneofs)
-                    object.value = "seq";
-            }
-            if (message.parseSeq != null && Object.hasOwnProperty.call(message, "parseSeq")) {
-                object.parseSeq = $root.hermes.RawCommandSequence.toObject(message.parseSeq, options, q + 1);
-                if (options.oneofs)
-                    object.value = "parseSeq";
-            }
-            if (message.file != null && Object.hasOwnProperty.call(message, "file")) {
-                object.file = $root.hermes.UplinkFileChunk.toObject(message.file, options, q + 1);
-                if (options.oneofs)
-                    object.value = "file";
-            }
-            if (message.request != null && Object.hasOwnProperty.call(message, "request")) {
-                object.request = $root.hermes.RequestValue.toObject(message.request, options, q + 1);
-                if (options.oneofs)
-                    object.value = "request";
-            }
-            if (message.cancel != null && Object.hasOwnProperty.call(message, "cancel")) {
-                object.cancel = $root.google.protobuf.Empty.toObject(message.cancel, options, q + 1);
-                if (options.oneofs)
-                    object.value = "cancel";
-            }
-            if (message.final != null && Object.hasOwnProperty.call(message, "final")) {
-                object.final = $root.google.protobuf.Empty.toObject(message.final, options, q + 1);
-                if (options.oneofs)
-                    object.value = "final";
-            }
-            return object;
-        };
-
-        /**
-         * Converts this Uplink to JSON.
-         * @function toJSON
-         * @memberof hermes.Uplink
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        Uplink.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for Uplink
-         * @function getTypeUrl
-         * @memberof hermes.Uplink
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        Uplink.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.Uplink";
-        };
-
-        return Uplink;
-    })();
-
-    hermes.UplinkReply = (function() {
-
-        /**
-         * Properties of an UplinkReply.
-         * @memberof hermes
-         * @interface IUplinkReply
-         * @property {string|null} [id] UplinkReply id
-         * @property {Uint8Array|null} [reply] UplinkReply reply
-         * @property {string|null} [error] UplinkReply error
-         */
-
-        /**
-         * Constructs a new UplinkReply.
-         * @memberof hermes
-         * @classdesc Represents an UplinkReply.
-         * @implements IUplinkReply
-         * @constructor
-         * @param {hermes.IUplinkReply=} [properties] Properties to set
-         */
-        function UplinkReply(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * UplinkReply id.
-         * @member {string} id
-         * @memberof hermes.UplinkReply
-         * @instance
-         */
-        UplinkReply.prototype.id = "";
-
-        /**
-         * UplinkReply reply.
-         * @member {Uint8Array|null|undefined} reply
-         * @memberof hermes.UplinkReply
-         * @instance
-         */
-        UplinkReply.prototype.reply = null;
-
-        /**
-         * UplinkReply error.
-         * @member {string|null|undefined} error
-         * @memberof hermes.UplinkReply
-         * @instance
-         */
-        UplinkReply.prototype.error = null;
-
-        // OneOf field names bound to virtual getters and setters
-        var $oneOfFields;
-
-        /**
-         * UplinkReply status.
-         * @member {"reply"|"error"|undefined} status
-         * @memberof hermes.UplinkReply
-         * @instance
-         */
-        Object.defineProperty(UplinkReply.prototype, "status", {
-            get: $util.oneOfGetter($oneOfFields = ["reply", "error"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * Creates a new UplinkReply instance using the specified properties.
-         * @function create
-         * @memberof hermes.UplinkReply
-         * @static
-         * @param {hermes.IUplinkReply=} [properties] Properties to set
-         * @returns {hermes.UplinkReply} UplinkReply instance
-         */
-        UplinkReply.create = function create(properties) {
-            return new UplinkReply(properties);
-        };
-
-        /**
-         * Encodes the specified UplinkReply message. Does not implicitly {@link hermes.UplinkReply.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.UplinkReply
-         * @static
-         * @param {hermes.IUplinkReply} message UplinkReply message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        UplinkReply.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
-            if (message.reply != null && Object.hasOwnProperty.call(message, "reply"))
-                writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.reply);
-            if (message.error != null && Object.hasOwnProperty.call(message, "error"))
-                writer.uint32(/* id 3, wireType 2 =*/26).string(message.error);
-            return writer;
-        };
-
-        /**
-         * Encodes the specified UplinkReply message, length delimited. Does not implicitly {@link hermes.UplinkReply.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.UplinkReply
-         * @static
-         * @param {hermes.IUplinkReply} message UplinkReply message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        UplinkReply.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes an UplinkReply message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.UplinkReply
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.UplinkReply} UplinkReply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        UplinkReply.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.UplinkReply();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.id = reader.string();
-                        break;
-                    }
-                case 2: {
-                        message.reply = reader.bytes();
-                        break;
-                    }
-                case 3: {
-                        message.error = reader.string();
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes an UplinkReply message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.UplinkReply
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.UplinkReply} UplinkReply
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        UplinkReply.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies an UplinkReply message.
-         * @function verify
-         * @memberof hermes.UplinkReply
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        UplinkReply.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            var properties = {};
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                if (!$util.isString(message.id))
-                    return "id: string expected";
-            if (message.reply != null && Object.hasOwnProperty.call(message, "reply")) {
-                properties.status = 1;
-                if (!(message.reply && typeof message.reply.length === "number" || $util.isString(message.reply)))
-                    return "reply: buffer expected";
-            }
-            if (message.error != null && Object.hasOwnProperty.call(message, "error")) {
-                if (properties.status === 1)
-                    return "status: multiple values";
-                properties.status = 1;
-                if (!$util.isString(message.error))
-                    return "error: string expected";
-            }
-            return null;
-        };
-
-        /**
-         * Creates an UplinkReply message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.UplinkReply
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.UplinkReply} UplinkReply
-         */
-        UplinkReply.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.UplinkReply)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.UplinkReply: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.UplinkReply();
-            if (object.id != null)
-                message.id = String(object.id);
-            if (object.reply != null)
-                if (typeof object.reply === "string")
-                    $util.base64.decode(object.reply, message.reply = $util.newBuffer($util.base64.length(object.reply)), 0);
-                else if (object.reply.length >= 0)
-                    message.reply = object.reply;
-            if (object.error != null)
-                message.error = String(object.error);
-            return message;
-        };
-
-        /**
-         * Creates a plain object from an UplinkReply message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.UplinkReply
-         * @static
-         * @param {hermes.UplinkReply} message UplinkReply
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        UplinkReply.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults)
-                object.id = "";
-            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
-                object.id = message.id;
-            if (message.reply != null && Object.hasOwnProperty.call(message, "reply")) {
-                object.reply = options.bytes === String ? $util.base64.encode(message.reply, 0, message.reply.length) : options.bytes === Array ? Array.prototype.slice.call(message.reply) : message.reply;
-                if (options.oneofs)
-                    object.status = "reply";
-            }
-            if (message.error != null && Object.hasOwnProperty.call(message, "error")) {
-                object.error = message.error;
-                if (options.oneofs)
-                    object.status = "error";
-            }
-            return object;
-        };
-
-        /**
-         * Converts this UplinkReply to JSON.
-         * @function toJSON
-         * @memberof hermes.UplinkReply
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        UplinkReply.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for UplinkReply
-         * @function getTypeUrl
-         * @memberof hermes.UplinkReply
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        UplinkReply.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.UplinkReply";
-        };
-
-        return UplinkReply;
-    })();
-
-    hermes.FswInitialPacket = (function() {
-
-        /**
-         * Properties of a FswInitialPacket.
-         * @memberof hermes
-         * @interface IFswInitialPacket
-         * @property {hermes.IFsw|null} [info] FswInitialPacket info
-         */
-
-        /**
-         * Constructs a new FswInitialPacket.
-         * @memberof hermes
-         * @classdesc Represents a FswInitialPacket.
-         * @implements IFswInitialPacket
-         * @constructor
-         * @param {hermes.IFswInitialPacket=} [properties] Properties to set
-         */
-        function FswInitialPacket(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * FswInitialPacket info.
-         * @member {hermes.IFsw|null|undefined} info
-         * @memberof hermes.FswInitialPacket
-         * @instance
-         */
-        FswInitialPacket.prototype.info = null;
-
-        /**
-         * Creates a new FswInitialPacket instance using the specified properties.
-         * @function create
-         * @memberof hermes.FswInitialPacket
-         * @static
-         * @param {hermes.IFswInitialPacket=} [properties] Properties to set
-         * @returns {hermes.FswInitialPacket} FswInitialPacket instance
-         */
-        FswInitialPacket.create = function create(properties) {
-            return new FswInitialPacket(properties);
-        };
-
-        /**
-         * Encodes the specified FswInitialPacket message. Does not implicitly {@link hermes.FswInitialPacket.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.FswInitialPacket
-         * @static
-         * @param {hermes.IFswInitialPacket} message FswInitialPacket message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FswInitialPacket.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.info != null && Object.hasOwnProperty.call(message, "info"))
-                $root.hermes.Fsw.encode(message.info, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified FswInitialPacket message, length delimited. Does not implicitly {@link hermes.FswInitialPacket.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.FswInitialPacket
-         * @static
-         * @param {hermes.IFswInitialPacket} message FswInitialPacket message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FswInitialPacket.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a FswInitialPacket message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.FswInitialPacket
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.FswInitialPacket} FswInitialPacket
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FswInitialPacket.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FswInitialPacket();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.info = $root.hermes.Fsw.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a FswInitialPacket message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.FswInitialPacket
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.FswInitialPacket} FswInitialPacket
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FswInitialPacket.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a FswInitialPacket message.
-         * @function verify
-         * @memberof hermes.FswInitialPacket
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        FswInitialPacket.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            if (message.info != null && Object.hasOwnProperty.call(message, "info")) {
-                var error = $root.hermes.Fsw.verify(message.info, long + 1);
-                if (error)
-                    return "info." + error;
-            }
-            return null;
-        };
-
-        /**
-         * Creates a FswInitialPacket message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.FswInitialPacket
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.FswInitialPacket} FswInitialPacket
-         */
-        FswInitialPacket.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.FswInitialPacket)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.FswInitialPacket: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.FswInitialPacket();
-            if (object.info != null) {
-                if (!$util.isObject(object.info))
-                    throw TypeError(".hermes.FswInitialPacket.info: object expected");
-                message.info = $root.hermes.Fsw.fromObject(object.info, long + 1);
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a FswInitialPacket message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.FswInitialPacket
-         * @static
-         * @param {hermes.FswInitialPacket} message FswInitialPacket
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        FswInitialPacket.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (options.defaults)
-                object.info = null;
-            if (message.info != null && Object.hasOwnProperty.call(message, "info"))
-                object.info = $root.hermes.Fsw.toObject(message.info, options, q + 1);
-            return object;
-        };
-
-        /**
-         * Converts this FswInitialPacket to JSON.
-         * @function toJSON
-         * @memberof hermes.FswInitialPacket
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        FswInitialPacket.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for FswInitialPacket
-         * @function getTypeUrl
-         * @memberof hermes.FswInitialPacket
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        FswInitialPacket.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.FswInitialPacket";
-        };
-
-        return FswInitialPacket;
-    })();
-
-    hermes.FswConnectionPacket = (function() {
-
-        /**
-         * Properties of a FswConnectionPacket.
-         * @memberof hermes
-         * @interface IFswConnectionPacket
-         * @property {hermes.IFswInitialPacket|null} [info] FswConnectionPacket info
-         * @property {hermes.IUplinkReply|null} [reply] FswConnectionPacket reply
-         */
-
-        /**
-         * Constructs a new FswConnectionPacket.
-         * @memberof hermes
-         * @classdesc Represents a FswConnectionPacket.
-         * @implements IFswConnectionPacket
-         * @constructor
-         * @param {hermes.IFswConnectionPacket=} [properties] Properties to set
-         */
-        function FswConnectionPacket(properties) {
-            if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                    if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                        this[keys[i]] = properties[keys[i]];
-        }
-
-        /**
-         * FswConnectionPacket info.
-         * @member {hermes.IFswInitialPacket|null|undefined} info
-         * @memberof hermes.FswConnectionPacket
-         * @instance
-         */
-        FswConnectionPacket.prototype.info = null;
-
-        /**
-         * FswConnectionPacket reply.
-         * @member {hermes.IUplinkReply|null|undefined} reply
-         * @memberof hermes.FswConnectionPacket
-         * @instance
-         */
-        FswConnectionPacket.prototype.reply = null;
-
-        // OneOf field names bound to virtual getters and setters
-        var $oneOfFields;
-
-        /**
-         * FswConnectionPacket value.
-         * @member {"info"|"reply"|undefined} value
-         * @memberof hermes.FswConnectionPacket
-         * @instance
-         */
-        Object.defineProperty(FswConnectionPacket.prototype, "value", {
-            get: $util.oneOfGetter($oneOfFields = ["info", "reply"]),
-            set: $util.oneOfSetter($oneOfFields)
-        });
-
-        /**
-         * Creates a new FswConnectionPacket instance using the specified properties.
-         * @function create
-         * @memberof hermes.FswConnectionPacket
-         * @static
-         * @param {hermes.IFswConnectionPacket=} [properties] Properties to set
-         * @returns {hermes.FswConnectionPacket} FswConnectionPacket instance
-         */
-        FswConnectionPacket.create = function create(properties) {
-            return new FswConnectionPacket(properties);
-        };
-
-        /**
-         * Encodes the specified FswConnectionPacket message. Does not implicitly {@link hermes.FswConnectionPacket.verify|verify} messages.
-         * @function encode
-         * @memberof hermes.FswConnectionPacket
-         * @static
-         * @param {hermes.IFswConnectionPacket} message FswConnectionPacket message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FswConnectionPacket.encode = function encode(message, writer, q) {
-            if (!writer)
-                writer = $Writer.create();
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            if (message.info != null && Object.hasOwnProperty.call(message, "info"))
-                $root.hermes.FswInitialPacket.encode(message.info, writer.uint32(/* id 1, wireType 2 =*/10).fork(), q + 1).ldelim();
-            if (message.reply != null && Object.hasOwnProperty.call(message, "reply"))
-                $root.hermes.UplinkReply.encode(message.reply, writer.uint32(/* id 2, wireType 2 =*/18).fork(), q + 1).ldelim();
-            return writer;
-        };
-
-        /**
-         * Encodes the specified FswConnectionPacket message, length delimited. Does not implicitly {@link hermes.FswConnectionPacket.verify|verify} messages.
-         * @function encodeDelimited
-         * @memberof hermes.FswConnectionPacket
-         * @static
-         * @param {hermes.IFswConnectionPacket} message FswConnectionPacket message or plain object to encode
-         * @param {$protobuf.Writer} [writer] Writer to encode to
-         * @returns {$protobuf.Writer} Writer
-         */
-        FswConnectionPacket.encodeDelimited = function encodeDelimited(message, writer) {
-            return this.encode(message, writer).ldelim();
-        };
-
-        /**
-         * Decodes a FswConnectionPacket message from the specified reader or buffer.
-         * @function decode
-         * @memberof hermes.FswConnectionPacket
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @param {number} [length] Message length if known beforehand
-         * @returns {hermes.FswConnectionPacket} FswConnectionPacket
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FswConnectionPacket.decode = function decode(reader, length, error, long) {
-            if (!(reader instanceof $Reader))
-                reader = $Reader.create(reader);
-            if (long === undefined)
-                long = 0;
-            if (long > $Reader.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.hermes.FswConnectionPacket();
-            while (reader.pos < end) {
-                var tag = reader.uint32();
-                if (tag === error)
-                    break;
-                switch (tag >>> 3) {
-                case 1: {
-                        message.info = $root.hermes.FswInitialPacket.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                case 2: {
-                        message.reply = $root.hermes.UplinkReply.decode(reader, reader.uint32(), undefined, long + 1);
-                        break;
-                    }
-                default:
-                    reader.skipType(tag & 7, long);
-                    break;
-                }
-            }
-            return message;
-        };
-
-        /**
-         * Decodes a FswConnectionPacket message from the specified reader or buffer, length delimited.
-         * @function decodeDelimited
-         * @memberof hermes.FswConnectionPacket
-         * @static
-         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {hermes.FswConnectionPacket} FswConnectionPacket
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        FswConnectionPacket.decodeDelimited = function decodeDelimited(reader) {
-            if (!(reader instanceof $Reader))
-                reader = new $Reader(reader);
-            return this.decode(reader, reader.uint32());
-        };
-
-        /**
-         * Verifies a FswConnectionPacket message.
-         * @function verify
-         * @memberof hermes.FswConnectionPacket
-         * @static
-         * @param {Object.<string,*>} message Plain object to verify
-         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-         */
-        FswConnectionPacket.verify = function verify(message, long) {
-            if (typeof message !== "object" || message === null)
-                return "object expected";
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                return "maximum nesting depth exceeded";
-            var properties = {};
-            if (message.info != null && Object.hasOwnProperty.call(message, "info")) {
-                properties.value = 1;
-                {
-                    var error = $root.hermes.FswInitialPacket.verify(message.info, long + 1);
-                    if (error)
-                        return "info." + error;
-                }
-            }
-            if (message.reply != null && Object.hasOwnProperty.call(message, "reply")) {
-                if (properties.value === 1)
-                    return "value: multiple values";
-                properties.value = 1;
-                {
-                    var error = $root.hermes.UplinkReply.verify(message.reply, long + 1);
-                    if (error)
-                        return "reply." + error;
-                }
-            }
-            return null;
-        };
-
-        /**
-         * Creates a FswConnectionPacket message from a plain object. Also converts values to their respective internal types.
-         * @function fromObject
-         * @memberof hermes.FswConnectionPacket
-         * @static
-         * @param {Object.<string,*>} object Plain object
-         * @returns {hermes.FswConnectionPacket} FswConnectionPacket
-         */
-        FswConnectionPacket.fromObject = function fromObject(object, long) {
-            if (object instanceof $root.hermes.FswConnectionPacket)
-                return object;
-            if (!$util.isObject(object))
-                throw TypeError(".hermes.FswConnectionPacket: object expected");
-            if (long === undefined)
-                long = 0;
-            if (long > $util.recursionLimit)
-                throw Error("maximum nesting depth exceeded");
-            var message = new $root.hermes.FswConnectionPacket();
-            if (object.info != null) {
-                if (!$util.isObject(object.info))
-                    throw TypeError(".hermes.FswConnectionPacket.info: object expected");
-                message.info = $root.hermes.FswInitialPacket.fromObject(object.info, long + 1);
-            }
-            if (object.reply != null) {
-                if (!$util.isObject(object.reply))
-                    throw TypeError(".hermes.FswConnectionPacket.reply: object expected");
-                message.reply = $root.hermes.UplinkReply.fromObject(object.reply, long + 1);
-            }
-            return message;
-        };
-
-        /**
-         * Creates a plain object from a FswConnectionPacket message. Also converts values to other types if specified.
-         * @function toObject
-         * @memberof hermes.FswConnectionPacket
-         * @static
-         * @param {hermes.FswConnectionPacket} message FswConnectionPacket
-         * @param {$protobuf.IConversionOptions} [options] Conversion options
-         * @returns {Object.<string,*>} Plain object
-         */
-        FswConnectionPacket.toObject = function toObject(message, options, q) {
-            if (!options)
-                options = {};
-            if (q === undefined)
-                q = 0;
-            if (q > $util.recursionLimit)
-                throw Error("max depth exceeded");
-            var object = {};
-            if (message.info != null && Object.hasOwnProperty.call(message, "info")) {
-                object.info = $root.hermes.FswInitialPacket.toObject(message.info, options, q + 1);
-                if (options.oneofs)
-                    object.value = "info";
-            }
-            if (message.reply != null && Object.hasOwnProperty.call(message, "reply")) {
-                object.reply = $root.hermes.UplinkReply.toObject(message.reply, options, q + 1);
-                if (options.oneofs)
-                    object.value = "reply";
-            }
-            return object;
-        };
-
-        /**
-         * Converts this FswConnectionPacket to JSON.
-         * @function toJSON
-         * @memberof hermes.FswConnectionPacket
-         * @instance
-         * @returns {Object.<string,*>} JSON object
-         */
-        FswConnectionPacket.prototype.toJSON = function toJSON() {
-            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-        };
-
-        /**
-         * Gets the default type url for FswConnectionPacket
-         * @function getTypeUrl
-         * @memberof hermes.FswConnectionPacket
-         * @static
-         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-         * @returns {string} The default type url
-         */
-        FswConnectionPacket.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-            if (typeUrlPrefix === undefined) {
-                typeUrlPrefix = "type.googleapis.com";
-            }
-            return typeUrlPrefix + "/hermes.FswConnectionPacket";
-        };
-
-        return FswConnectionPacket;
-    })();
-
     return hermes;
 })();
 
@@ -22066,195 +12886,6 @@ $root.google = (function() {
             };
 
             return Timestamp;
-        })();
-
-        protobuf.Empty = (function() {
-
-            /**
-             * Properties of an Empty.
-             * @memberof google.protobuf
-             * @interface IEmpty
-             */
-
-            /**
-             * Constructs a new Empty.
-             * @memberof google.protobuf
-             * @classdesc Represents an Empty.
-             * @implements IEmpty
-             * @constructor
-             * @param {google.protobuf.IEmpty=} [properties] Properties to set
-             */
-            function Empty(properties) {
-                if (properties)
-                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null && keys[i] !== "__proto__")
-                            this[keys[i]] = properties[keys[i]];
-            }
-
-            /**
-             * Creates a new Empty instance using the specified properties.
-             * @function create
-             * @memberof google.protobuf.Empty
-             * @static
-             * @param {google.protobuf.IEmpty=} [properties] Properties to set
-             * @returns {google.protobuf.Empty} Empty instance
-             */
-            Empty.create = function create(properties) {
-                return new Empty(properties);
-            };
-
-            /**
-             * Encodes the specified Empty message. Does not implicitly {@link google.protobuf.Empty.verify|verify} messages.
-             * @function encode
-             * @memberof google.protobuf.Empty
-             * @static
-             * @param {google.protobuf.IEmpty} message Empty message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            Empty.encode = function encode(message, writer, q) {
-                if (!writer)
-                    writer = $Writer.create();
-                if (q === undefined)
-                    q = 0;
-                if (q > $util.recursionLimit)
-                    throw Error("max depth exceeded");
-                return writer;
-            };
-
-            /**
-             * Encodes the specified Empty message, length delimited. Does not implicitly {@link google.protobuf.Empty.verify|verify} messages.
-             * @function encodeDelimited
-             * @memberof google.protobuf.Empty
-             * @static
-             * @param {google.protobuf.IEmpty} message Empty message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            Empty.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer).ldelim();
-            };
-
-            /**
-             * Decodes an Empty message from the specified reader or buffer.
-             * @function decode
-             * @memberof google.protobuf.Empty
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {google.protobuf.Empty} Empty
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            Empty.decode = function decode(reader, length, error, long) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                if (long === undefined)
-                    long = 0;
-                if (long > $Reader.recursionLimit)
-                    throw Error("maximum nesting depth exceeded");
-                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.protobuf.Empty();
-                while (reader.pos < end) {
-                    var tag = reader.uint32();
-                    if (tag === error)
-                        break;
-                    switch (tag >>> 3) {
-                    default:
-                        reader.skipType(tag & 7, long);
-                        break;
-                    }
-                }
-                return message;
-            };
-
-            /**
-             * Decodes an Empty message from the specified reader or buffer, length delimited.
-             * @function decodeDelimited
-             * @memberof google.protobuf.Empty
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {google.protobuf.Empty} Empty
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            Empty.decodeDelimited = function decodeDelimited(reader) {
-                if (!(reader instanceof $Reader))
-                    reader = new $Reader(reader);
-                return this.decode(reader, reader.uint32());
-            };
-
-            /**
-             * Verifies an Empty message.
-             * @function verify
-             * @memberof google.protobuf.Empty
-             * @static
-             * @param {Object.<string,*>} message Plain object to verify
-             * @returns {string|null} `null` if valid, otherwise the reason why it is not
-             */
-            Empty.verify = function verify(message, long) {
-                if (typeof message !== "object" || message === null)
-                    return "object expected";
-                if (long === undefined)
-                    long = 0;
-                if (long > $util.recursionLimit)
-                    return "maximum nesting depth exceeded";
-                return null;
-            };
-
-            /**
-             * Creates an Empty message from a plain object. Also converts values to their respective internal types.
-             * @function fromObject
-             * @memberof google.protobuf.Empty
-             * @static
-             * @param {Object.<string,*>} object Plain object
-             * @returns {google.protobuf.Empty} Empty
-             */
-            Empty.fromObject = function fromObject(object, long) {
-                if (object instanceof $root.google.protobuf.Empty)
-                    return object;
-                return new $root.google.protobuf.Empty();
-            };
-
-            /**
-             * Creates a plain object from an Empty message. Also converts values to other types if specified.
-             * @function toObject
-             * @memberof google.protobuf.Empty
-             * @static
-             * @param {google.protobuf.Empty} message Empty
-             * @param {$protobuf.IConversionOptions} [options] Conversion options
-             * @returns {Object.<string,*>} Plain object
-             */
-            Empty.toObject = function toObject() {
-                return {};
-            };
-
-            /**
-             * Converts this Empty to JSON.
-             * @function toJSON
-             * @memberof google.protobuf.Empty
-             * @instance
-             * @returns {Object.<string,*>} JSON object
-             */
-            Empty.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-            };
-
-            /**
-             * Gets the default type url for Empty
-             * @function getTypeUrl
-             * @memberof google.protobuf.Empty
-             * @static
-             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns {string} The default type url
-             */
-            Empty.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
-                if (typeUrlPrefix === undefined) {
-                    typeUrlPrefix = "type.googleapis.com";
-                }
-                return typeUrlPrefix + "/google.protobuf.Empty";
-            };
-
-            return Empty;
         })();
 
         return protobuf;
