@@ -1,0 +1,26 @@
+Copyright (c) 2026 California Institute of Technology ("Caltech"). U.S. Government sponsorship acknowledged.
+
+All rights reserved.
+
+Neither the name of Caltech nor its operating division, the Jet Propulsion Laboratory, nor the names of its
+contributors may be used to endorse or promote products derived from this software without specific prior written
+permission.
+
+This product includes Protocol Buffers definitions from Yamcs (https://yamcs.org), and code generated from them,
+licensed under the GNU Lesser General Public License v3.0.
+
+This product includes code adapted from Grafana (https://github.com/grafana/grafana), Copyright 2014-2021 Grafana
+Labs, licensed under the Apache License 2.0.
+
+This product includes code adapted from react-jsonschema-form (https://github.com/rjsf-team/react-jsonschema-form),
+Copyright 2015-2024 rjsf-team, licensed under the Apache License 2.0.
+
+This product includes code from Visual Studio Code (https://github.com/microsoft/vscode), Copyright (c) Microsoft
+Corporation, licensed under the MIT License.
+
+This product includes code adapted from the Visual Studio Code Webview UI Toolkit
+(https://github.com/microsoft/vscode-webview-ui-toolkit), Copyright (c) Microsoft Corporation, licensed under the MIT
+License.
+
+This product includes the rocket icon from Visual Studio Code Codicons (https://github.com/microsoft/vscode-codicons),
+Copyright (c) Microsoft Corporation, licensed under the Creative Commons Attribution 4.0 International License.
