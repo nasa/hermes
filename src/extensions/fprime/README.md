@@ -46,4 +46,4 @@ how the flight software responded.
 
 ## Limits
 
-- An absolute time tag (`A...`) doesn't wait. The command sends right away.
+- Cells ignore absolute time tags (`A...`). In a cell, a command with one sends as soon as the previous command passes.

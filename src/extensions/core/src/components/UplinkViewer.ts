@@ -148,7 +148,7 @@ class PendingFileUplink implements TreeEntry, vscode.Progress<number> {
         const target = await this.provider.api.getFsw(this.targetId, this._cancel.token);
 
         if (!target.uplink) {
-            throw new Error(`'${this.targetId} does not support file uplink'`);
+            throw new Error(`'${this.targetId}' does not support file uplink`);
         }
 
         const stat = await vscode.workspace.fs.stat(this.uri);
@@ -237,7 +237,7 @@ class PendingFileUplink implements TreeEntry, vscode.Progress<number> {
             const sizeS = prettyBytes(this.stat.size);
             const percentage = ((this.progress / this.stat.size) * 100).toFixed(0);
 
-            item.description = `${progressS} / ${sizeS} (${percentage})%`;
+            item.description = `${progressS} / ${sizeS} (${percentage}%)`;
         } else {
             // Pending file uplink
             item.contextValue = "hermes.uplink.pending";
@@ -344,7 +344,7 @@ export class UplinkProvider implements vscode.TreeDataProvider<TreeEntry>, vscod
                 try {
                     await item.start();
                 } catch (err) {
-                    vscode.window.showErrorMessage(`Failed to uplink file: ${err}`);
+                    vscode.window.showErrorMessage(`Failed to uplink file: ${err instanceof Error ? err.message : err}`);
                 }
             }),
             vscode.commands.registerCommand('hermes.uplink.add', () => {

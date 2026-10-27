@@ -153,7 +153,7 @@ export class TimeSpecifierToken extends Seq.TerminalToken<
         const out: vscode.Diagnostic[] = [];
         if (this.token.text[0] === 'R') {
             try {
-                annotateRelativeTime(this.token.text);
+                parseRelativeTime(this.token.text);
             } catch (e) {
                 out.push(
                     new vscode.Diagnostic(
@@ -167,17 +167,19 @@ export class TimeSpecifierToken extends Seq.TerminalToken<
             out.push(
                 new vscode.Diagnostic(
                     this.token.range,
-                    'Absolute timestrings are not recommended',
+                    'Cells ignore absolute time tags. When a cell runs, this command sends as soon as the previous one passes.',
                     vscode.DiagnosticSeverity.Warning
                 )
             );
 
             try {
-                annotateAbsoluteTime(this.token.text);
+                parseAbsoluteTime(this.token.text);
             } catch (e) {
-                new vscode.Diagnostic(
-                    this.token.range,
-                    (e as Error).message
+                out.push(
+                    new vscode.Diagnostic(
+                        this.token.range,
+                        (e as Error).message
+                    )
                 );
             }
         } else {

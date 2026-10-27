@@ -178,6 +178,7 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
         this.primaryItem.color = undefined;
         this.primaryItem.text = `$(${this.currentProvider.icon}) Hermes: ${this.currentProvider.title}`;
         this.primaryItem.backgroundColor = new vscode.ThemeColor("statusBarItem.errorBackground");
+        this.primaryItem.tooltip = "Change Mode or Restart";
         this.primaryItem.command = "hermes.host.changeMode";
 
         this.secondaryItem.color = undefined;

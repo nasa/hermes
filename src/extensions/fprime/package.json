@@ -2,7 +2,7 @@
     "name": "hermes-fprime",
     "publisher": "jet-propulsion-laboratory",
     "displayName": "Hermes FPrime",
-    "description": "Hermes FPrime C++ and Testbed Support",
+    "description": "F Prime command cells, sequence files and dictionaries for Hermes",
     "version": "4.0.0",
     "icon": "icons/hermes-fprime.png",
     "keywords": [
