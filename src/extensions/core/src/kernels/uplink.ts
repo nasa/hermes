@@ -69,7 +69,7 @@ export class UplinkLanguageProvider implements NotebookLanguageProvider {
                 if (!fsw) {
                     throw new Error(`FSW '${spl[0]}' not connected`);
                 } else if (!fsw.uplink) {
-                    throw new Error(`FSW '${spl[0]} does not support uplink`);
+                    throw new Error(`FSW '${spl[0]}' does not support uplink`);
                 }
 
                 let srcPath: vscode.Uri;
