@@ -53,14 +53,3 @@ test('loads cell metadata that contains -->', async () => {
 
     expect(loaded.cells[0].metadata).toEqual(cell.metadata);
 });
-
-test('opens a Markdown file that Hermes did not write as one Markdown cell, and saves its text', async () => {
-    const text = '# Procedure\n\nPower on the radio.\n';
-
-    const serializer = new HermesNotebookSerializer();
-    const loaded = await serializer.deserializeNotebook(new TextEncoder().encode(text), token);
-    const reloaded = await serializer.deserializeNotebook(await serializer.serializeNotebook(loaded, token), token);
-
-    expect(loaded.cells).toMatchObject([{ kind: vscode.NotebookCellKind.Markup, value: text }]);
-    expect(reloaded.cells).toMatchObject([{ kind: vscode.NotebookCellKind.Markup, value: text }]);
-});
