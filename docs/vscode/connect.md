@@ -54,7 +54,7 @@ Cells use its commands for completion, hovers and argument checks. Hermes loads 
 | --- | --- | --- |
 | F Prime JSON dictionaries in the workspace's `build-artifacts/**/dict/` folders | Automatically, and again when a build changes them | Found again |
 | A file you open with [Open Dictionary](#load-or-delete-a-dictionary) | When you open it | Kept, if a folder is open |
-| `<instance>` and `<instance> (F Prime)`, built from each YAMCS instance's commands | Each time YAMCS mode connects | Kept, if a folder is open |
+| `<instance>` and `<instance> (F Prime)`, built from each YAMCS instance's commands | Each time YAMCS mode connects | Kept, if a folder is open. It's saved under the instance name only, so an instance with the same name on another YAMCS replaces it |
 
 ### Pick a dictionary
 
