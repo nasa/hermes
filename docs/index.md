@@ -11,11 +11,6 @@ hide:
 
 # Hermes - A Command & Telemetry Framework
 
-!!! warning
-
-    Hermes is currently undergoing migration from our internal deployment to
-    public Github. Documentation is currently under construction and incomplete.
-
 Hermes is a system for spacecraft command and telemetry management, providing a modern interface for ground operators to interact with flight software. It features a [Visual Studio Code](https://code.visualstudio.com/) frontend for commanding and telemetry display, and talks to flight software through [YAMCS](https://yamcs.org), an open-source mission control server.
 
 ## Architecture
@@ -39,7 +34,7 @@ flowchart TB
     loki[("Loki")]
     graf["Grafana"]
 
-    fsw <--> yamcs
+    fsw <-->|"fprime-yamcs"| yamcs
     grpc <--> vsc
     grpc --> rec
     rec -->|"telemetry"| ts

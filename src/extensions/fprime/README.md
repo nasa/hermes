@@ -7,8 +7,8 @@ Markdown. It needs the [Hermes extension](https://github.com/nasa/hermes/tree/ma
 ## Features
 
 - F Prime commands with completion, hovers and argument checks from an F Prime dictionary, the file an F Prime build
-  writes that lists its commands, events and telemetry channels. To pick the dictionary, click the `{ }` item next to
-  the language name in the status bar.
+  writes that lists its commands, events and telemetry channels. To pick the dictionary, click into an F Prime cell or
+  `.seq` file, click `{ }` next to the language name in the status bar, then **Select**.
 - Reads dictionaries in JSON (F Prime 4.0 and newer) or XML (older), and finds JSON ones in the workspace's
   `build-artifacts` folders on its own.
 
@@ -47,3 +47,4 @@ how the flight software responded.
 ## Limits
 
 - Cells ignore absolute time tags (`A...`). In a cell, a command with one sends as soon as the previous command passes.
+- A `;` starts a comment even inside a string, so `"a;b"` sends `"a`.

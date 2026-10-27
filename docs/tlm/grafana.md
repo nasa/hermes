@@ -80,10 +80,13 @@ GF_INSTALL_PLUGINS: "https://github.com/nasa/hermes/releases/download/v<version>
 
     | Field | Value for the compose TimescaleDB |
     | --- | --- |
-    | Host | `localhost:5432` from a Grafana on the same machine |
+    | Host | `localhost:5432` from a Grafana on the same machine, or `host.docker.internal:5432` from a Grafana in Docker |
     | User | `postgres` |
     | Password | `password` |
     | Database | `hermes` |
+
+    With Docker Engine on Linux, `host.docker.internal` works only if the Grafana service has
+    `extra_hosts: ["host.docker.internal:host-gateway"]`.
 
 3. Click **Save & test** to check the connection.
 
@@ -103,7 +106,7 @@ each field.
 
 1. The Grafana that `docker compose up -d` starts already has a Loki datasource. In your own Grafana on the same
    machine, go to **Connections** > **Data sources**, add a new data source of type **Loki**, set its **URL** to
-   `http://localhost:3100`, and click **Save & test**.
+   `http://localhost:3100`, or `http://host.docker.internal:3100` from a Grafana in Docker, and click **Save & test**.
 2. Open **Explore**, Grafana's page for one-off queries, and pick the Loki datasource.
 3. Switch the query editor to **Code** and run this LogQL (Loki's query language) query. It shows every event from the
    `fprime-project` instance:

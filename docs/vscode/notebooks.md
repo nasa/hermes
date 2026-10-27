@@ -23,16 +23,21 @@ Add a code cell, then click the language name at the bottom right of the cell to
 
 ![Picking a code cell's language](../assets/code-cell-language-mode.png)
 
-| Language to pick | VS Code extension | Names a command by |
+| Language to pick | VS Code extension | A cell holds |
 | --- | --- | --- |
-| **YAMCS** | Hermes | Its [qualified name](../arch/core-concepts.md#yamcs-terms), the command's full path in YAMCS |
-| **fprime** | Hermes FPrime | Its F Prime name, after a time tag that says when to send it |
+| **YAMCS** | Hermes | Commands, each named by its [qualified name](../arch/core-concepts.md#yamcs-terms), the command's full path in YAMCS |
+| **fprime** | Hermes FPrime | Commands, each named by its F Prime name after a time tag that says when to send it |
+| **uplink** | Hermes | Files to [upload](upload-files.md#uplink-cells) |
+| **Python** | Hermes | Python code, run by the interpreter selected in the Python extension |
+| **Shell Script** | Hermes | Shell commands, run by `bash` |
 
 ## YAMCS cells
 
-Write one command per line: its qualified name, then its arguments, separated by spaces or commas. A line starting
-with `#` is a comment. The examples on this page use the Ref deployment from the
-[Quick Start](../getting-started/quick-start.md), whose commands sit under `/Ref_Ref`.
+Write one command per line: its qualified name, then its arguments, separated by spaces or commas. Write a struct
+argument as its members' values and an array argument as its elements' values, in order, with no brackets. An F Prime
+`bool` is an enumeration in fprime-yamcs, so write it as `True` or `False`. A line starting with `#` is a comment. The
+examples on this page use the Ref deployment from the [Quick Start](../getting-started/quick-start.md), whose commands
+sit under `/Ref_Ref`.
 
 ```
 # A no-op, then a no-op that carries a string
@@ -89,9 +94,9 @@ A cell checks its commands against a dictionary:
 
 ## Run a cell
 
-Click the run button to the left of the cell. The cell sends its commands one at a time, each once the one before it
-passes, and stops at the first command that fails. To stop it yourself, click the stop button that takes the run
-button's place.
+Click the run button to the left of the cell. The cell checks every line first and sends nothing if one has an error.
+Then it sends its commands one at a time, each once the one before it passes, and stops at the first command that
+fails. To stop it yourself, click the stop button that takes the run button's place.
 
 Whether a command passes can depend on its verifiers. A verifier is a check YAMCS runs on returning telemetry to decide
 whether a command worked.
@@ -105,6 +110,9 @@ whether a command worked.
 
 - Hermes has no timeout of its own. A cell waits as long as YAMCS takes, or until you stop it.
 - Stopping a cell doesn't withdraw a command YAMCS already has.
+- The check before a run skips the range and length of struct members and array elements. The editor underlines
+  such a value, but the cell still sends it.
+- **Run All** doesn't stop at a cell that fails. The cells after it still run.
 
 ### Command status
 

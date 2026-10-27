@@ -29,8 +29,8 @@ target, paths, start and finish times, duration and size, and the error if it fa
 
 To upload from a notebook, [add a code cell](notebooks.md#create-a-notebook) and pick **uplink** as its language. Write
 one file per line, as `<target> <file> <destination>`. The target is the instance, written `yamcs:<instance>`, and a
-relative `<file>` is relative to the first workspace folder. For the Ref deployment from the
-[Quick Start](../getting-started/quick-start.md):
+relative `<file>` is relative to the first workspace folder. Paths can't contain spaces, even in quotes. For the Ref
+deployment from the [Quick Start](../getting-started/quick-start.md):
 
 ```
 yamcs:fprime-project hello.txt /tmp/uplink/hello.txt
@@ -38,6 +38,14 @@ yamcs:fprime-project hello.txt /tmp/uplink/hello.txt
 
 The cell uploads its files one after another and shows each one's progress in a notification. The Uplink view lists
 each upload once it ends.
+
+## Compiled sequences
+
+In an [F Prime cell](notebooks.md#f-prime-cells), the file argument of `CS_RUN` and `CS_VALIDATE` completes from the
+workspace's `.seq` files. Picking the one for `foo.seq` inserts `"/seq/foo.bin"`, the path Hermes assumes the compiled
+sequence has on the spacecraft. Running the command doesn't compile or upload it. Compile it with
+`fprime-seqgen --dictionary <dictionary> foo.seq foo.bin`, [upload](#uplink-cells) `foo.bin` to that path, and set
+`hermes.fprime.sequenceUplinkRoot` if the folder isn't `/seq`, such as `/tmp/uplink` for the Ref deployment.
 
 ## Limits
 

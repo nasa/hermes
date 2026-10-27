@@ -133,9 +133,8 @@ telemetry like sensor arrays or image data.
 | Size        | static or dynamic | Fixed size or bounded range                          |
 | Length Type | unsigned integer  | Serialization type for dynamic array length prefix   |
 
-Bytes types decode to native array types: NumPy arrays in Python, TypedArrays in
-JavaScript/TypeScript. This provides efficient memory layout and compatibility
-with numeric computing libraries.
+Bytes types decode to TypedArrays in JavaScript/TypeScript. This provides efficient
+memory layout and compatibility with numeric computing libraries.
 
 ### Commands
 
@@ -298,7 +297,7 @@ The value represents the time elapsed since some "zero time" or **Epoch**.
 
 JPL uses two major epochs:
 
-- **J2000**: January 1 2000. This is the most common epoch used by our spacecraft
+- **J2000**: noon Terrestrial Time (11:58:55.816 UTC) on January 1 2000. This is the most common epoch used by our spacecraft
 - **Unix**: January 1 1970. This is the most common epoch used around the globe by many timekeeping systems.
 
 !!! example

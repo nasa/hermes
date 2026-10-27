@@ -127,8 +127,8 @@ running instance that has the processor set in [Settings](#settings), `realtime`
 **Hermes: YAMCS** and the address. Click the address to connect to another server.
 
 If the connection ends, for example because YAMCS stopped, the status bar turns red and the address's tooltip gives
-the reason. Run **Hermes: Reconnect to Backend** to connect again, or to add an instance started after Hermes
-connected.
+the reason. Stopping or restarting one instance disconnects all of them. Run **Hermes: Reconnect to Backend** to
+connect again, or to add an instance started after Hermes connected.
 
 ### Settings
 
@@ -166,9 +166,9 @@ Hermes can send a file to an instance that fprime-yamcs runs. In the **Uplink** 
 **+** and pick the file. Use the pencil buttons under it to set **Destination**, the path on the spacecraft, and
 **Target**, if the instance isn't the first one that can upload. Then click the file's **Uplink File** button. Once
 the upload ends, the view lists the file with its details, and YAMCS's reason if it failed, until you click **Clear
-Uplink Listing**. A cell in the `uplink` notebook language sends one file per line, written
-`<target> <file> <destination>`, with `<file>` relative to the first workspace folder, for example
-`yamcs:ref hello.txt /tmp/uplink/hello.txt`.
+Uplink Listing** or Hermes disconnects from YAMCS. A cell in the `uplink` notebook language sends one file per line,
+written `<target> <file> <destination>`, with `<file>` relative to the first workspace folder, for example
+`yamcs:fprime-project hello.txt /tmp/uplink/hello.txt`.
 
 - A finished upload only means fprime-yamcs sent every packet. F Prime's `FileReceived` event tells you it saved
   the file.
@@ -176,8 +176,8 @@ Uplink Listing**. A cell in the `uplink` notebook language sends one file per li
   `/tmp/uplink/`.
 - Files over about 4 MiB fail, because they exceed the yamcs-grpc plugin's default gRPC message size.
 - fprime-yamcs sends one file at a time, at about 20 KiB/s.
-- Stopping an `uplink` cell only stops Hermes waiting. fprime-yamcs still sends the file, and the Uplink view lists
-  it once YAMCS has.
+- Stopping an `uplink` cell skips its later files. fprime-yamcs still sends the current one, and the Uplink view
+  lists it once YAMCS has.
 
 ## Develop
 
