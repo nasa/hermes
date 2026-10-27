@@ -76,8 +76,13 @@ switches modes.
 | Value Transform                    | Collapsible. Rescales values or renames series, per parameter or per member. See below.                                                                                                                     |
 | From / To Override                 | Under Advanced. Pins the query to an absolute time range instead of the dashboard's.                                                                                                                        |
 
-`Average` and `Sum` don't work on string or enum parameters. On a boolean, `Average` is the fraction of true samples and
-`Sum` counts them.
+- `Average` and `Sum` don't work on string or enum parameters. On a boolean, `Average` is the fraction of true samples
+  and `Sum` counts them.
+- `Derivative` is the change per second between consecutive samples, whatever the panel's interval.
+- A dashboard variable in Parameter must hold one full parameter path, such as
+  `/Ref_Ref/CdhCore/version/FrameworkVersion`. Any other value matches no parameter.
+- fprime-yamcs reads each packet's F Prime time tag as Unix time, so Generation Time is right only if the flight clock
+  counts from 1970.
 
 #### Value Transform
 
@@ -93,12 +98,15 @@ transform applies to each sample before aggregation.
 
 - Transforms apply to numeric parameters only. Boolean, string and byte values pass through unchanged.
 - `Count` ignores the transform.
-- The Display name field under each input renames that series in the legend and tooltips.
+- The Display name field under each input renames that series in the legend and tooltips. With more than one
+  instance, every instance's series gets that same name.
 
 #### Code mode
 
-Switching to Code fills a SQL editor with the builder's query. Dashboard variables such as `$instance` are filled in
-before it runs; use `${instance:sqlstring}` to have them quoted, for example `WHERE p.instance IN (${instance:sqlstring})`.
+Switching to Code fills a SQL editor with the builder's query. Dashboard variables in the builder's fields become their
+current values, so the SQL no longer follows them. Variables you write in the SQL, such as `$instance`, are filled in
+before it runs; use `${instance:sqlstring}` to have them quoted, for example
+`WHERE p.instance IN (${instance:sqlstring})`.
 These macros are expanded on the server:
 
 | Macro                   | Expands to                                                            |

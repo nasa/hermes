@@ -4,7 +4,7 @@ icon: fontawesome/solid/box
 
 # Installation
 
-Hermes can be installed in multiple ways depending on your use case. For most users, the VSCode extension from the marketplace is the recommended approach. To command flight software you also need the yamcs-grpc plugin, which runs inside YAMCS.
+Hermes can be installed in multiple ways depending on your use case. For most users, the VSCode extension from the marketplace is the recommended approach. To command flight software or see its telemetry and events, you also need the yamcs-grpc plugin, which runs inside YAMCS.
 
 ## VSCode Marketplace (Recommended)
 
@@ -15,10 +15,6 @@ The easiest way to install Hermes is through the [Visual Studio Code](https://co
 3. Search for "Hermes"
 4. Install the **Hermes** extension (ID: `jet-propulsion-laboratory.hermes`)
 5. Optionally, install the **Hermes FPrime** [extension](https://marketplace.visualstudio.com/items?itemName=jet-propulsion-laboratory.hermes-fprime) for F' framework support.
-
-**What's included:**
-
-- Complete VSCode integration with telemetry viewers, command interfaces, and sequence editors
 
 ## GitHub Releases (for automation or offline environments)
 
@@ -50,4 +46,4 @@ loads them. The plugin needs no entry in `yamcs.yaml`.
 
 - [Getting Started Guide](./quick-start.md) - Connect Hermes to your flight software through YAMCS
 - [Core Concepts](../arch/core-concepts.md) - Learn about Hermes Core Concepts and Design Patterns
-- [Telemetry Monitoring](../tlm/index.md) - Setup your monitoring infrastructure
+- [Recording and Grafana](../tlm/index.md) - Setup your monitoring infrastructure

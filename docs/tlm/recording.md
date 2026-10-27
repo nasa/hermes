@@ -48,10 +48,10 @@ docker compose up -d
 
 ## Download the recorder
 
-yamcs-recorder comes in the `hermes-v<version>-<platform>.tar.gz` archive on the
-[Hermes releases page](https://github.com/nasa/hermes/releases). Download the one for your computer: `linux-amd64` for
-most Linux PCs and WSL, `linux-arm64` for ARM Linux, `darwin-amd64` for an Intel Mac or `darwin-arm64` for an Apple
-silicon Mac. Then unpack it:
+yamcs-recorder comes in the `hermes-v<version>-<platform>.tar.gz` archive of the
+[latest Hermes release](https://github.com/nasa/hermes/releases/latest). Download the one for your computer:
+`linux-amd64` for most Linux PCs and WSL, `linux-arm64` for ARM Linux, `darwin-amd64` for an Intel Mac or
+`darwin-arm64` for an Apple silicon Mac. Then unpack it:
 
 ```sh
 tar -xvf hermes-v<version>-<platform>.tar.gz
@@ -70,7 +70,7 @@ PGPASSWORD=password ./yamcs-recorder --instance fprime-project \
 | --- | --- |
 | `PGPASSWORD=password` | Gives TimescaleDB's password, which the `--postgresql` URL leaves out |
 | `--instance fprime-project` | Records the instance `fprime-project`, the name fprime-yamcs gives its instance |
-| `--postgresql ...` | Says where TimescaleDB is |
+| `--postgresql ...` | Says where TimescaleDB is. Keep `sslmode=disable`. Without it the recorder requires TLS, and the compose TimescaleDB has none. |
 | `--otlp localhost:4317` | Sends events to the collector over OTLP, OpenTelemetry's protocol. Leave it out to record telemetry only. |
 
 The recorder connects to the yamcs-grpc plugin at `localhost:8091` unless you pass `--yamcs`. Its README lists
@@ -118,8 +118,8 @@ entry that is already there:
 ```
 
 - If YAMCS can't run the command, YAMCS itself fails to start and logs `Could not start Yamcs`.
-- To keep the password out of the file, leave out `environment` and set `PGPASSWORD` before you start fprime-yamcs.
-  YAMCS passes its environment on to the recorder.
+- To keep the password out of the file, leave out `environment` and run `export PGPASSWORD=password` in the shell
+  where you start fprime-yamcs. YAMCS passes its environment on to the recorder.
 - If you set a port other than 8091 under `yamcs-grpc` in the same file, add `--yamcs, localhost:<port>` to the
   `command` list.
 - One recorder records one instance. To record more than one, add one entry per instance, each with its own `name` and

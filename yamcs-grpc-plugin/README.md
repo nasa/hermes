@@ -75,7 +75,16 @@ yamcs-grpc:
   port: 8095
 ```
 
-- With fprime-yamcs, that file is `etc/yamcs.yaml` in the directory you pass to `--yamcs-config-dir`.
+- With fprime-yamcs, that file is `etc/yamcs.yaml` in the directory you pass to `--yamcs-config-dir`. If you don't
+  have one yet, copy fprime-yamcs's built-in one with fprime-yamcs's Python environment active:
+
+  ```sh
+  config=$(python -c "from importlib.resources import files; print(files('fprime_yamcs') / 'yamcs/src/main/yamcs')")
+  cp -r "$config" yamcs-config
+  ```
+
+  Then pass `--yamcs-config-dir yamcs-config` along with `--yamcs-plugin-jars`.
+
 - With YAMCS security on, a client must send the same Basic or Bearer `authorization` header as for HTTP. Hermes
   and yamcs-recorder send none.
 
@@ -97,6 +106,7 @@ grpcurl -plaintext -import-path proto -proto yamcs/protobuf/processing/processin
 | --- | --- |
 | No TLS, and it listens on every network interface | Traffic is unencrypted, and any machine that can reach the port can connect |
 | Slow clients are cut off | A client more than 8 MiB behind on a stream gets a `RESOURCE_EXHAUSTED` error |
+| Requests are limited to 4 MiB, gRPC's default | A larger request, such as a Hermes upload of a file over about 4 MiB, fails with a `RESOURCE_EXHAUSTED` error |
 | Missing from YAMCS's connection list | `/api/http-traffic`, YAMCS's list of client connections, shows only HTTP clients |
 | No `SessionsApi/SubscribeSession` | That call fails with an `INTERNAL` error. Hermes doesn't use it. |
 | Relies on a YAMCS class that isn't public API | A YAMCS upgrade that changes it could break the plugin |

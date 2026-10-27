@@ -35,14 +35,16 @@ such as an F Prime channel.
 | 9 | Line style | Draws lines straight, smooth or in one of two step styles |
 | 10 | Time window | Shows the last 1m, 5m, 30m, 1h or 3h |
 
-Hermes keeps the newest 10,000 values of each row.
+Hermes keeps the newest 10,000 values of each row. The plot draws at most 10 lines, so while 10 are showing, a row
+you check is left out of the plot and its legend.
 
 ## Events panel
 
 ![The events panel](../assets/event-panel.png)
 
 When YAMCS mode connects, the panel lists each instance's newest 100 events from YAMCS's archive, the history YAMCS
-stores. Then it adds new events as YAMCS reports them.
+stores. With several instances, it lists one instance's archived events, oldest first, then the next instance's. Then
+it adds new events as YAMCS reports them.
 
 - An F Prime event shows its component, name and F Prime severity, such as `CdhCore.cmdDisp`, `OpCodeDispatched` and
   `COMMAND`. Any other event, such as one YAMCS raises itself, shows YAMCS's source, type and severity.
@@ -66,3 +68,6 @@ The table, the plot and the events panel show times in UTC. You can switch the t
 | Telemetry value | When YAMCS received it, its [Earth received time](../arch/core-concepts.md#earth-received-time) (ERT) | The flight software's clock reading from the packet that carried it. Blank until the value updates after Hermes connects. |
 | F Prime event | When the flight software raised it | The flight software's clock reading from when it raised it |
 | Other event | When it was raised | Blank |
+
+fprime-yamcs dates each F Prime packet by reading the packet's time tag as Unix time, and ignores the tag's time
+base. So an F Prime event's UTC and Local times are right only if the flight software's clock counts from 1970.

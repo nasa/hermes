@@ -58,7 +58,8 @@ On start it creates the `timescaledb` extension and its tables if they are missi
 `1792788948675946`. It is NULL for:
 
 - Values from outside F Prime.
-- The values YAMCS sends from its cache when the recorder subscribes, such as the `FrameworkVersion` Ref sent at boot.
+- The values YAMCS sends from its cache when the recorder subscribes, such as the `FrameworkVersion` that Ref, F Prime's
+  reference deployment, sent at boot.
   They come from different packets, so the recorder can't tell which time tag goes with which.
 
 ## Events
@@ -107,9 +108,11 @@ or worse:
 | YAMCS or TimescaleDB is unreachable at start, YAMCS stops, or the instance restarts | The recorder exits non-zero. Run it under a supervisor that restarts it. |
 | YAMCS requires a login | The recorder can't subscribe, because it sends no credentials. |
 | The recorder isn't running | Nothing is recorded. The recorder doesn't read missed values or events from the YAMCS archive later. |
+| Two recorders record one instance, for example one run by hand next to one that YAMCS's ProcessRunner starts | TimescaleDB stores each value twice, since `parameter_values` has no unique key. |
 | TimescaleDB is slower than YAMCS sends | Each write stores every message waiting for it, so writes grow as TimescaleDB slows. If 1024 messages are queued behind the write in progress, the recorder stops reading and the yamcs-grpc plugin holds newer ones. Once those pass 8 MiB, the plugin drops them and ends the subscription, and the recorder exits. `queued_messages` on the `recorder stats` log line, logged every 30 seconds, shows how many are queued, out of 1024. |
 | TimescaleDB goes down while the recorder runs | The recorder retries the write, waiting up to 5 seconds between attempts. Values wait in the recorder, up to 1024 messages queued behind the write it retries, then in the plugin up to 8 MiB. Past that, the plugin drops them, and the recorder exits once TimescaleDB is back. `insert_errors` on the `recorder stats` log line, logged every 30 seconds, counts the failed attempts, and `queued_messages` shows how many are queued, out of 1024. |
-| TimescaleDB rejects a write, or is still down when the recorder stops | The recorder drops the values in that write. If TimescaleDB rejects a write of several messages, the recorder first writes each message on its own, so it drops only the messages TimescaleDB rejects. `dropped_rows` on the `recorder stats` line counts the dropped values. |
+| TimescaleDB rejects a write | The recorder drops the values in that write. If TimescaleDB rejects a write of several messages, the recorder first writes each message on its own, so it drops only the messages TimescaleDB rejects. `dropped_rows` on the `recorder stats` line counts the dropped values. |
+| TimescaleDB is still down when the recorder stops | The recorder drops the write it retries and every message queued behind it. `dropped_rows` on the last `recorder stats` line counts them. |
 | The collector is unreachable | The recorder retries each batch of events for about 10 seconds, then drops it and logs `OpenTelemetry error`. |
 | The collector requires TLS | The recorder can't reach it, because it connects without TLS. |
 | Loki gets an event outside its time limits | Loki drops the event and the collector logs `Exporting failed`. With the repository's `config/loki.yml`, that is a generation time more than 10 minutes ahead, or more than about six months behind the newest event for the instance. |

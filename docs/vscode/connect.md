@@ -14,6 +14,7 @@ Hermes reaches the flight software through YAMCS, a mission control server. Herm
 
 Hermes connects through the [yamcs-grpc plugin](https://github.com/nasa/hermes/tree/main/yamcs-grpc-plugin), which
 runs inside YAMCS and listens on port 8091. The [Quick Start](../getting-started/quick-start.md) starts YAMCS with it.
+Hermes sends no credentials, so a YAMCS server that requires a login refuses it with `UNAUTHENTICATED`.
 
 1. Click **Hermes: Offline** in the status bar at the bottom of the window, or run **Hermes: Change Backend Mode**
    from the command palette. Hermes calls the server it connects to a backend.
@@ -25,8 +26,8 @@ processor, or the processor you [set](#settings). The status bar then shows **He
 address. To go back, pick **Offline** in the same list.
 
 If the connection fails or ends, for example because YAMCS stopped, the status bar turns red and Hermes works as in
-Offline mode. Hover over the address to see why. Run **Hermes: Reconnect to Backend** to connect again, which also
-picks up instances started since Hermes connected.
+Offline mode. Hover over the address to see why. Stopping or restarting one instance disconnects all of them. Run
+**Hermes: Reconnect to Backend** to connect again, which also picks up instances started since Hermes connected.
 
 ## Settings
 

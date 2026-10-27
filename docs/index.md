@@ -39,7 +39,7 @@ flowchart TB
     loki[("Loki")]
     graf["Grafana"]
 
-    fsw <--> yamcs
+    fsw <-->|"fprime-yamcs"| yamcs
     grpc <--> vsc
     grpc --> rec
     rec -->|"telemetry"| ts
