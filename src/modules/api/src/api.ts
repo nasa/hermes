@@ -58,22 +58,6 @@ export interface FileHeader {
     metadata?: Record<string, string>;
 }
 
-export interface Profile {
-    // Name of the profile
-    name: string;
-
-    // Profile this corresponds to
-    provider: string;
-
-    // JSON parameters that fill in the provider schema
-    settings: string;
-
-    // Directly provide an ID to the server
-    // If this ID overlaps with another profile.
-    // that profile will be stopped and deleted.
-    id?: string;
-}
-
 export interface Fsw {
     // Unique identifier, name of the FSW
     // This is usually a human readable value rather than a uid.
@@ -81,9 +65,6 @@ export interface Fsw {
 
     // FSW Type
     type: string;
-
-    // Profile that this connection belongs to
-    profileId: string;
 
     // Telemetry from these FSW IDs should be treated as though they
     // also came from this FSW. Useful for when you need a custom language
@@ -158,50 +139,6 @@ export interface Api extends vscode.Disposable {
     allFsw(token?: vscode.CancellationToken): Promise<Fsw[]>;
 
     /**
-     * Start a profile and return once it's connected (cancellable)
-     */
-    startProfile(id: string, token?: vscode.CancellationToken): Promise<void>;
-
-    /**
-     * Stop profile given its name/id and reutrn once its stopped (cancellable)
-     */
-    stopProfile(id: string, token?: vscode.CancellationToken): Promise<void>;
-
-    /**
-     * Update a profile
-     */
-    updateProfile(
-        id: string,
-        settings: string,
-        token?: vscode.CancellationToken,
-    ): Promise<void>
-
-    /**
-     * Create a new profile, returns it's registered ID
-     * @param profile Profile to add to registery
-     */
-    addProfile(
-        profile: Profile,
-        token?: vscode.CancellationToken,
-    ): Promise<string>;
-
-    /**
-     * Delete a profile by its id
-     * @param id Profile id
-     */
-    removeProfile(id: string, token?: vscode.CancellationToken): Promise<void>;
-
-    /**
-     * Get all the profiles
-     */
-    allProfiles(token?: vscode.CancellationToken): Promise<Record<string, Proto.IStatefulProfile>>;
-
-    /**
-     * Get all the registered profile providers
-     */
-    allProviders(token?: vscode.CancellationToken): Promise<Proto.IProfileProvider[]>;
-
-    /**
      * Get a registered dictionary
      * @param id dictionary id
      * @param sections of the dictionary to include in reply
@@ -262,16 +199,6 @@ export interface Api extends vscode.Disposable {
      * Subscribe to any changes to FSW connections state
      */
     onFswChange: vscode.Event<Fsw[]>;
-
-    /**
-     * Get notified when the set of profile providers updates
-     */
-    onProvidersChange: vscode.Event<Proto.IProfileProvider[]>;
-
-    /**
-     * Get notified when the set of profile or their internal state updates
-     */
-    onProfilesChange: vscode.Event<Record<string, Proto.IStatefulProfile>>;
 
     /**
      * Subscribe to changes to the dictionary state. streams { id, type }

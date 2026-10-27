@@ -1,5 +1,6 @@
 import { expect, jest, test } from '@jest/globals';
 import type { Api } from '@gov.nasa.jpl.hermes/api';
+import type { Proto } from '@gov.nasa.jpl.hermes/types';
 
 // Jest swaps 'vscode' for the stub in src/fallback/vscode, which can't register commands or webviews.
 // ConnectionViewer registers both when it's constructed, so we mock registrations that do nothing.
@@ -13,24 +14,15 @@ import type * as Connections from '../common/connections';
 import { ConnectionViewer } from '../src/components/ConnectionViewer';
 import type { VscodeHermes } from '../src/context';
 
-// The posted lists that have a change listener
-type Lists = Required<Pick<Connections.State, 'profileProviders' | 'profiles' | 'dictionaries'>>;
-
-test.each(['profileProviders', 'profiles', 'dictionaries'] as const)('a refresh keeps the %s that changed while it waited on its lookups', async (list) => {
-    const lists: Lists = { profileProviders: [], profiles: {}, dictionaries: {} };
-    const changed: Lists = { profileProviders: [{ name: 'added' }], profiles: { added: {} }, dictionaries: { added: {} } };
-    // The listeners the panel registers for changes to each list
-    const listeners: { [L in keyof Lists]: ((reported: Lists[L]) => void)[] } = { profileProviders: [], profiles: [], dictionaries: [] };
+test('a refresh keeps the dictionaries that changed while it waited on its lookup', async () => {
+    let dictionaries: Record<string, Proto.IDictionaryHead> = {};
+    // The listeners the panel registers for dictionary changes
+    const listeners: ((reported: Record<string, Proto.IDictionaryHead>) => void)[] = [];
     const none = () => ({ dispose: () => { } });
     const api: Partial<Api> = {
         onFswChange: none,
-        onProvidersChange: (listener) => { listeners.profileProviders.push(listener); return none(); },
-        onProfilesChange: (listener) => { listeners.profiles.push(listener); return none(); },
-        onDictionaryChange: (listener) => { listeners.dictionaries.push(listener); return none(); },
-        allFsw: async () => [],
-        allProviders: async () => lists.profileProviders,
-        allProfiles: async () => lists.profiles,
-        allDictionaries: async () => lists.dictionaries,
+        onDictionaryChange: (listener) => { listeners.push(listener); return none(); },
+        allDictionaries: async () => dictionaries,
     };
     const vscodeApi: Partial<VscodeHermes> = { dictionaryProviders: new Map(), onDictionaryProvidersChanged: none };
     const viewer = new ConnectionViewer('', api as Api, vscodeApi as VscodeHermes);
@@ -41,15 +33,11 @@ test.each(['profileProviders', 'profiles', 'dictionaries'] as const)('a refresh 
     // The panel normally creates msg when VS Code first shows the view
     viewer.msg = msg as ConnectionViewer['msg'];
 
-    // The backend replaces one list and reports the change
-    const change = <L extends keyof Lists>(name: L) => {
-        lists[name] = changed[name];
-        listeners[name].forEach((listener) => listener(changed[name]));
-    };
-
     const refreshing = viewer.refresh();
-    change(list);
+    // The backend replaces the dictionaries and reports the change
+    dictionaries = { added: {} };
+    listeners.forEach((listener) => listener(dictionaries));
     await refreshing;
 
-    expect(shown[list]).toEqual(changed[list]);
+    expect(shown.dictionaries).toEqual({ added: {} });
 });

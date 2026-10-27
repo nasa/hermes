@@ -119,7 +119,7 @@ test('adds an F Prime dictionary for each YAMCS dictionary with opcodes that has
 function yamcs(refused?: string) {
     const sent: CommandValue[] = [];
     const fsw: Hermes.Fsw = {
-        id: 'yamcs:fprime-project', type: 'yamcs', profileId: '',
+        id: 'yamcs:fprime-project', type: 'yamcs',
         command: async (value) => {
             if (refused !== undefined && value.args[0] === refused) {
                 throw new Error(`YAMCS refused ${refused}`);

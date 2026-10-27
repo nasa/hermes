@@ -42,8 +42,6 @@ const log = { debug: () => { }, info: () => { }, warn: () => { }, error: () => {
 // A backend with no dictionaries, which reports no changes
 const quiet: Partial<Hermes.Api> = {
     onFswChange: none,
-    onProvidersChange: none,
-    onProfilesChange: none,
     onDictionaryChange: none,
     onFileDownlink: none,
     onFileUplink: none,
@@ -54,7 +52,7 @@ const quiet: Partial<Hermes.Api> = {
 };
 
 test('says the connections are gone when it drops a backend, before the next backend reports its own', async () => {
-    const fsw: Hermes.Fsw = { id: 'yamcs:fprime-project', type: 'yamcs', profileId: '' };
+    const fsw: Hermes.Fsw = { id: 'yamcs:fprime-project', type: 'yamcs' };
     // A backend with one connection, which it reports as soon as someone listens and still lists after it's
     // disposed, as YAMCS mode does
     const backend: Partial<Hermes.Api> = {

@@ -109,7 +109,6 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
         this.fsws = instances.map(({ name, dictionary, canUpload }) => ({
             id: `yamcs:${name}`,
             type: 'yamcs',
-            profileId: '',
             dictionary: dictionary.id!,
             command: (value, token, onState) => this.command(name, value, token, onState),
             sequence: (value, token, onState) => this.sequence(name, value, token, onState),

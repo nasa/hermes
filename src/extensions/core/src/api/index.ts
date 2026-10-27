@@ -19,8 +19,6 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
     private providers: Map<string, BackendProvider<any>>;
 
     private _onFswChange = new vscode.EventEmitter<Hermes.Fsw[]>();
-    private _onProvidersChange = new vscode.EventEmitter<Proto.IProfileProvider[]>();
-    private _onProfilesChange = new vscode.EventEmitter<Record<string, Proto.IStatefulProfile>>();
     private _onDictionaryChange = new vscode.EventEmitter<Record<string, Proto.IDictionaryHead>>();
     private _onDownlink = new vscode.EventEmitter<Proto.IFileDownlink>();
     private _onUplink = new vscode.EventEmitter<Proto.IFileUplink>();
@@ -38,8 +36,6 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
     private yamcsEventSubscriptions = new Map<YamcsEventHandler, vscode.Disposable>();
 
     onFswChange = this._onFswChange.event;
-    onProvidersChange = this._onProvidersChange.event;
-    onProfilesChange = this._onProfilesChange.event;
     onDictionaryChange = this._onDictionaryChange.event;
     onFileDownlink = this._onDownlink.event;
     onFileUplink = this._onUplink.event;
@@ -273,8 +269,6 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
         // Wire up event forwarding for simple events
         this.apiSubscriptions.push(
             this.currentApi.onFswChange(data => this._onFswChange.fire(data)),
-            this.currentApi.onProvidersChange(data => this._onProvidersChange.fire(data)),
-            this.currentApi.onProfilesChange(data => this._onProfilesChange.fire(data)),
             this.currentApi.onDictionaryChange(data => this._onDictionaryChange.fire(data)),
             this.currentApi.onFileDownlink(data => this._onDownlink.fire(data)),
             this.currentApi.onFileUplink(data => this._onUplink.fire(data)),
@@ -480,55 +474,6 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
         return this.currentApi.allFsw(token);
     }
 
-    startProfile(id: string, token?: vscode.CancellationToken): Promise<void> {
-        if (!this.currentApi) {
-            return Promise.reject(new Error('No API available'));
-        }
-        return this.currentApi.startProfile(id, token);
-    }
-
-    stopProfile(id: string, token?: vscode.CancellationToken): Promise<void> {
-        if (!this.currentApi) {
-            return Promise.reject(new Error('No API available'));
-        }
-        return this.currentApi.stopProfile(id, token);
-    }
-
-    updateProfile(id: string, settings: string, token?: vscode.CancellationToken): Promise<void> {
-        if (!this.currentApi) {
-            return Promise.reject(new Error('No API available'));
-        }
-        return this.currentApi.updateProfile(id, settings, token);
-    }
-
-    addProfile(profile: Hermes.Profile, token?: vscode.CancellationToken): Promise<string> {
-        if (!this.currentApi) {
-            return Promise.reject(new Error('No API available'));
-        }
-        return this.currentApi.addProfile(profile, token);
-    }
-
-    removeProfile(id: string, token?: vscode.CancellationToken): Promise<void> {
-        if (!this.currentApi) {
-            return Promise.reject(new Error('No API available'));
-        }
-        return this.currentApi.removeProfile(id, token);
-    }
-
-    allProfiles(token?: vscode.CancellationToken): Promise<Record<string, Proto.IStatefulProfile>> {
-        if (!this.currentApi) {
-            return Promise.resolve({});
-        }
-        return this.currentApi.allProfiles(token);
-    }
-
-    allProviders(token?: vscode.CancellationToken): Promise<Proto.IProfileProvider[]> {
-        if (!this.currentApi) {
-            return Promise.resolve([]);
-        }
-        return this.currentApi.allProviders(token);
-    }
-
     getDictionary(id: string, sections?: readonly string[], token?: vscode.CancellationToken): Promise<Proto.IDictionary> {
         if (!this.currentApi) {
             return Promise.reject(new Error('No API available'));
@@ -588,8 +533,6 @@ export class VscodeApi implements Hermes.Api, YamcsParameterSource, YamcsEventSo
         this.apiSubscriptions = [];
 
         this._onFswChange.dispose();
-        this._onProvidersChange.dispose();
-        this._onProfilesChange.dispose();
         this._onDictionaryChange.dispose();
         this._onDownlink.dispose();
         this._onUplink.dispose();
