@@ -9,10 +9,10 @@ mkdir -p out/lib
 # out/lib is YAMCS's lib/ext, so jars from an older gRPC version must not stay behind
 find out/lib -name 'grpc-*.jar' ! -name "*-$GRPC.jar" -delete
 for a in grpc-api grpc-core grpc-netty-shaded grpc-stub grpc-util; do
-    [ -f "out/lib/$a-$GRPC.jar" ] || curl -sfL -o "out/lib/$a-$GRPC.jar" \
+    [ -f "out/lib/$a-$GRPC.jar" ] || curl -sSfL -o "out/lib/$a-$GRPC.jar" \
         "https://repo1.maven.org/maven2/io/grpc/$a/$GRPC/$a-$GRPC.jar"
 done
-[ -f out/lib/perfmark-api-0.27.0.jar ] || curl -sfL -o out/lib/perfmark-api-0.27.0.jar \
+[ -f out/lib/perfmark-api-0.27.0.jar ] || curl -sSfL -o out/lib/perfmark-api-0.27.0.jar \
     https://repo1.maven.org/maven2/io/perfmark/perfmark-api/0.27.0/perfmark-api-0.27.0.jar
 
 # pwd -W gives a Windows path under Git Bash, which Docker Desktop needs for the mount

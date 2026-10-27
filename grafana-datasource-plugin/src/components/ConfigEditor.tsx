@@ -47,7 +47,7 @@ export function ConfigEditor(props: Props) {
 
   return (
     <>
-      <InlineField label="Host" labelWidth={14} tooltip="TimescaleDB host and port (e.g. localhost:5432, or timescaledb:5432 if using docker)" required>
+      <InlineField label="Host" labelWidth={14} tooltip="TimescaleDB host and port, e.g. localhost:5432. Use timescaledb:5432 if Grafana runs in the Hermes Docker Compose, or host.docker.internal:5432 if it runs in another container on Docker Desktop." required>
         <Input
           id="config-editor-host"
           onChange={onHostChange}

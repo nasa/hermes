@@ -226,7 +226,11 @@ func subscribe(ctx context.Context, conn grpc.ClientConnInterface, cfg config, l
 	}
 	names, excluded := recordedParameters(names, cfg.includeTopLevel)
 	if len(names) == 0 {
-		return nil, fmt.Errorf("instance %s has no TELEMETERED parameters to record (%d excluded)", cfg.instance, excluded)
+		msg := fmt.Sprintf("instance %s has no TELEMETERED parameters to record (%d excluded)", cfg.instance, excluded)
+		if excluded > 0 {
+			msg += "; use --include-top-level to record the excluded top-level parameters"
+		}
+		return nil, errors.New(msg)
 	}
 	stream, err := yamcs.Subscribe(ctx, conn, cfg.instance, cfg.processor, names)
 	if err != nil {
