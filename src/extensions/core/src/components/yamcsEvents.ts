@@ -9,13 +9,12 @@ import { millis } from './yamcsRows';
  * time or already in seen, and add the rest to seen.
  */
 export function yamcsEventRows(instance: string, events: readonly YamcsEvent[], seen: Set<string>): EventRow[] {
-    const source = `yamcs:${instance}`;
     const rows: EventRow[] = [];
     for (const e of events) {
         // We show when the flight software raised the event
         const time = millis(e.generationTime);
         // YAMCS tells events apart by generation time, source and sequence number
-        const key = JSON.stringify([source, e.generationTime?.seconds, e.generationTime?.nanos, e.source, e.seqNumber]);
+        const key = JSON.stringify([instance, e.generationTime?.seconds, e.generationTime?.nanos, e.source, e.seqNumber]);
         if (time === undefined || seen.has(key)) {
             continue;
         }
@@ -26,7 +25,7 @@ export function yamcsEventRows(instance: string, events: readonly YamcsEvent[], 
             // fprime-yamcs puts an F Prime event's SCLK, in seconds, in its extra fields. Any other
             // event has none, so Number gives NaN, which shows a blank SCLK.
             sclk: Number(e.extra?.fprime_sclk),
-            source,
+            source: instance,
             ...componentAndName(e),
             // fprime-yamcs puts an F Prime event's own severity, like ACTIVITY_HI, in its extra fields
             severity: (e.extra?.fprime_severity as EvrSeverity | undefined) ?? severity(e.severity),

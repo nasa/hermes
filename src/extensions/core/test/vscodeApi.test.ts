@@ -52,7 +52,7 @@ const quiet: Partial<Hermes.Api> = {
 };
 
 test('says the connections are gone when it drops a backend, before the next backend reports its own', async () => {
-    const fsw: Hermes.Fsw = { id: 'yamcs:fprime-project', type: 'yamcs' };
+    const fsw: Hermes.Fsw = { id: 'fprime-project', type: 'yamcs' };
     // A backend with one connection, which it reports as soon as someone listens and still lists after it's
     // disposed, as YAMCS mode does
     const backend: Partial<Hermes.Api> = {
@@ -76,7 +76,7 @@ test('says the connections are gone when it drops a backend, before the next bac
 });
 
 test('sends the dictionaries and uploads of a new backend to listeners that subscribed before it connected', async () => {
-    const dictionaries = { 'yamcs:fprime-project': { name: 'fprime-project', type: 'yamcs' } };
+    const dictionaries = { 'fprime-project': { name: 'fprime-project', type: 'yamcs' } };
     const uploads = { uplinkCompleted: [{ sourcePath: '/home/ops/hello.txt' }] };
     // This backend has its dictionaries and uploads before anyone listens, and reports only later changes
     const backend: Partial<Hermes.Api> = { ...quiet, allDictionaries: async () => dictionaries, getFileTransferState: async () => uploads };

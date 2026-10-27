@@ -39,7 +39,7 @@ but YAMCS mode isn't released there yet. Until it is, run the extensions from th
 3. Connect to YAMCS ([YAMCS mode](#yamcs-mode)) and run the cell.
 
 Each cell sends its commands to its target, the [YAMCS instance](#connect) it runs on. The cell's status bar shows
-the target as `yamcs:<instance>`. Click it to pick another. On **Automatic**, the default, a cell uses the only
+the target as the instance's name. Click it to pick another. On **Automatic**, the default, a cell uses the only
 connected instance, and refuses to run while several are connected. **Set Target for All Cells** in the notebook
 toolbar gives every F Prime and YAMCS cell the same target.
 
@@ -144,7 +144,7 @@ Set these as keys of the `hermes.host.yamcs` setting in VS Code's settings:
 
 | View | In YAMCS mode |
 | --- | --- |
-| Telemetry table and plot | A row for each parameter of each instance, timed by when YAMCS received it, with source `yamcs:<instance>`. Structs and arrays get a row per member or element, for example `comQueueDepth[1]`. |
+| Telemetry table and plot | A row for each parameter of each instance, timed by when YAMCS received it, with the instance's name as its source. Structs and arrays get a row per member or element, for example `comQueueDepth[1]`. |
 | Events panel | Each instance's newest 100 events in YAMCS's archive, then live ones. An F Prime event shows its component and name, for example `CdhCore.cmdDisp` and `OpCodeDispatched`, and any other event YAMCS's source and type. |
 | Connections view, in the Hermes sidebar | Each instance's [dictionaries](#dictionaries). Deleting `<instance>` also deletes `<instance> (F Prime)`. |
 | Times | UTC by default, including in cell event lists (`hermes.notebook.evr.timeFormat`). Under SCLK, telemetry and F Prime events show the flight software's clock reading, and other events show none. See [Times](https://github.com/nasa/hermes/blob/main/docs/vscode/telemetry-and-events.md#times). |
@@ -168,7 +168,7 @@ Hermes can send a file to an instance that fprime-yamcs runs. In the **Uplink** 
 the upload ends, the view lists the file with its details, and YAMCS's reason if it failed, until you click **Clear
 Uplink Listing** or Hermes disconnects from YAMCS. A cell in the `uplink` notebook language sends one file per line,
 written `<target> <file> <destination>`, with `<file>` relative to the first workspace folder, for example
-`yamcs:fprime-project hello.txt /tmp/uplink/hello.txt`.
+`fprime-project hello.txt /tmp/uplink/hello.txt`.
 
 - A finished upload only means fprime-yamcs sent every packet. F Prime's `FileReceived` event tells you it saved
   the file.

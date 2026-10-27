@@ -56,12 +56,12 @@ function yamcsDictionary() {
         metadata: { qualifiedName: '/BigData_YamcsDeployment/Demo/switches/SET', assignments: { OpCode: '25165826' } },
     });
     dict.get('').addCommand('/YSS/SIMULATOR/SWITCH_VOLTAGE_ON', switchVoltageOn);
-    return { ...dict.toProto(), id: 'yamcs:fprime-project' };
+    return { ...dict.toProto(), id: 'fprime-project' };
 }
 
 test('names YAMCS commands the F Prime way, with their opcodes and booleans', () => {
     const proto = fprimeDictionary(yamcsDictionary())!;
-    expect(proto.id).toBe('yamcs:fprime-project:fprime');
+    expect(proto.id).toBe('fprime-project:fprime');
     expect(proto.head).toMatchObject({ name: 'fprime-project (F Prime)', type: 'fprime' });
 
     const dict = Dictionary.fromProto(proto).get('');
@@ -84,7 +84,7 @@ test('names YAMCS commands the F Prime way, with their opcodes and booleans', ()
 function simulatorDictionary() {
     const dict = new Dictionary({ name: 'simulator', type: 'yamcs' });
     dict.get('').addCommand('/YSS/SIMULATOR/SWITCH_VOLTAGE_ON', switchVoltageOn);
-    return { ...dict.toProto(), id: 'yamcs:simulator' };
+    return { ...dict.toProto(), id: 'simulator' };
 }
 
 test('builds no F Prime dictionary from an instance without opcodes', () => {
@@ -92,26 +92,26 @@ test('builds no F Prime dictionary from an instance without opcodes', () => {
 });
 
 test('adds an F Prime dictionary for each YAMCS dictionary with opcodes that has none yet, and removes one whose YAMCS dictionary is gone', async () => {
-    const stored: Record<string, Proto.IDictionary> = { 'yamcs:fprime-project': yamcsDictionary(), 'yamcs:simulator': simulatorDictionary() };
+    const stored: Record<string, Proto.IDictionary> = { 'fprime-project': yamcsDictionary(), 'simulator': simulatorDictionary() };
     const added: Proto.IDictionary[] = [];
     const removed: string[] = [];
     const api: Partial<Hermes.Api> = {
         allDictionaries: async () => ({
-            'yamcs:fprime-project': { type: 'yamcs' },
-            'yamcs:simulator': { type: 'yamcs' },
+            'fprime-project': { type: 'yamcs' },
+            'simulator': { type: 'yamcs' },
             // This one already has its F Prime dictionary, so getDictionary is never asked for it
-            'yamcs:other': { type: 'yamcs' },
-            'yamcs:other:fprime': { type: 'fprime' },
+            'other': { type: 'yamcs' },
+            'other:fprime': { type: 'fprime' },
             // This one's YAMCS dictionary is gone
-            'yamcs:deleted:fprime': { type: 'fprime' },
+            'deleted:fprime': { type: 'fprime' },
         }),
         getDictionary: async (id) => stored[id],
         addDictionary: async (dict) => { added.push(dict); return dict.id!; },
         removeDictionary: async (id) => { removed.push(id); },
     };
     await updateFprimeDictionaries(api as Hermes.Api);
-    expect(added.map((dict) => dict.id)).toEqual(['yamcs:fprime-project:fprime']);
-    expect(removed).toEqual(['yamcs:deleted:fprime']);
+    expect(added.map((dict) => dict.id)).toEqual(['fprime-project:fprime']);
+    expect(removed).toEqual(['deleted:fprime']);
 });
 
 // A fake of YAMCS mode's connection, which records each command it sends. It refuses a command whose first
@@ -119,7 +119,7 @@ test('adds an F Prime dictionary for each YAMCS dictionary with opcodes that has
 function yamcs(refused?: string) {
     const sent: CommandValue[] = [];
     const fsw: Hermes.Fsw = {
-        id: 'yamcs:fprime-project', type: 'yamcs',
+        id: 'fprime-project', type: 'yamcs',
         command: async (value) => {
             if (refused !== undefined && value.args[0] === refused) {
                 throw new Error(`YAMCS refused ${refused}`);

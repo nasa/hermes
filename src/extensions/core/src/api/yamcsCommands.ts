@@ -27,7 +27,7 @@ export function yamcsDictionary(instance: string, commands: readonly Rpc.YamcsCo
             namespace.addCommand(info.qualifiedName, yamcsCommand(info));
         }
     }
-    return { ...dictionary.toProto(), id: `yamcs:${instance}` };
+    return { ...dictionary.toProto(), id: instance };
 }
 
 function yamcsCommand(info: Rpc.YamcsCommandInfo): Def.Command {

@@ -28,12 +28,12 @@ target, paths, start and finish times, duration and size, and the error if it fa
 ## Uplink cells
 
 To upload from a notebook, [add a code cell](notebooks.md#create-a-notebook) and pick **uplink** as its language. Write
-one file per line, as `<target> <file> <destination>`. The target is the instance, written `yamcs:<instance>`, and a
-relative `<file>` is relative to the first workspace folder. Paths can't contain spaces, even in quotes. For the Ref
-deployment from the [Quick Start](../getting-started/quick-start.md):
+one file per line, as `<target> <file> <destination>`. The target is the instance's name, and a relative `<file>` is
+relative to the first workspace folder. Paths can't contain spaces, even in quotes. For the Ref deployment from the
+[Quick Start](../getting-started/quick-start.md):
 
 ```
-yamcs:fprime-project hello.txt /tmp/uplink/hello.txt
+fprime-project hello.txt /tmp/uplink/hello.txt
 ```
 
 The cell uploads its files one after another and shows each one's progress in a notification. The Uplink view lists

@@ -218,10 +218,9 @@ export class FPrimeExtension extends Language.SequenceLanguage<FPrimeCommandExpr
         return psuedoToken.completionItems();
     }
 
-    // In YAMCS mode we build an F Prime dictionary from an instance's dictionary, and give it that dictionary's id plus
-    // :fprime. A cell that targets a connection outside YAMCS mode uses the selected dictionary.
+    // We build an F Prime dictionary from each instance's dictionary, and give it that dictionary's id plus :fprime
     protected targetDictionaryId(target: string): string | undefined {
-        return target.startsWith('yamcs:') ? `${target}:fprime` : undefined;
+        return `${target}:fprime`;
     }
 
     protected parse(document: vscode.TextDocument, dictionary: Dictionary | undefined, nextExpr: Seq.NextTokenExpression) {
