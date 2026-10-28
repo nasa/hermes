@@ -26,6 +26,7 @@ import { UplinkLanguageProvider } from './kernels/uplink';
 import { YamcsLanguage, YamcsNotebookLanguageProvider } from './kernels/yamcs';
 import { UplinkProvider } from './components/UplinkViewer';
 import { VscodeApi } from './api';
+import { HermesDictionaryProvider } from './api/Offline';
 import { DebounceEmitter } from './utils/DebounceEmitter';
 
 export class VscodeHermes implements CoreApi {
@@ -129,6 +130,7 @@ export class VscodeHermes implements CoreApi {
             this.registerNotebookLanguageProvider('uplink', new UplinkLanguageProvider(this.api)),
             this.registerNotebookLanguageProvider('yamcs', yamcsNotebook),
             this.registerLanguageDictionaryItem(yamcsDictionaryItem),
+            this.registerDictionaryProvider('hermes', new HermesDictionaryProvider()),
             // Each YAMCS mode connection holds the id of the dictionary built from its instance. We select the first
             // connection's dictionary whenever YAMCS mode connects.
             this.api.onFswChange((fsws) => {

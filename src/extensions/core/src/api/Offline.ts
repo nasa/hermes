@@ -2,9 +2,17 @@ import { randomBytes } from 'crypto';
 import * as vscode from 'vscode';
 
 import * as Hermes from '@gov.nasa.jpl.hermes/api';
-import { Proto } from '@gov.nasa.jpl.hermes/types';
+import { Dictionary, Proto } from '@gov.nasa.jpl.hermes/types';
+import { FileDictionaryProvider } from '@gov.nasa.jpl.hermes/vscode';
 
 const nullDisposable: vscode.Disposable = { dispose: () => { } };
+
+// In a message that protobufjs decodes, a field missing from the file reads as its default, so a YAMCS command, which
+// has no opcode, would read as opcode 0. toObject leaves those fields out. With longs: Number it also turns each int64
+// into a number, because Dictionary.fromProto drops an integer's min and max unless they're numbers.
+function decodeDictionary(bytes: Uint8Array): Proto.IDictionary {
+    return Proto.Dictionary.toObject(Proto.Dictionary.decode(bytes), { longs: Number });
+}
 
 export class Offline implements Hermes.Api {
     private dictionaryCache = new Map<string, Proto.IDictionary>();
@@ -38,11 +46,7 @@ export class Offline implements Hermes.Api {
                         const id = decodeURIComponent(name.replace(".dictionary.pb", ""));
 
                         try {
-                            // In a message that protobufjs decodes, a field missing from the file reads as its default,
-                            // so a YAMCS command, which has no opcode, would read as opcode 0. toObject leaves those
-                            // fields out. With longs: Number it also turns each int64 into a number, because
-                            // Dictionary.fromProto drops an integer's min and max unless they're numbers.
-                            const dict: Proto.IDictionary = Proto.Dictionary.toObject(Proto.Dictionary.decode(dictContent), { longs: Number });
+                            const dict = decodeDictionary(dictContent);
                             this.log.info(`registering dictionary ${id}: ${dict.head?.name} (version=${dict.head?.version}, type=${dict.head?.type})`);
                             this.dictionaryCache.set(id, dict);
                         } catch (e) {
@@ -184,4 +188,27 @@ export class Offline implements Hermes.Api {
     onFileTransfer: vscode.Event<Proto.IFileTransferState> = () => { return nullDisposable; };
 
     dispose() { }
+}
+
+export class HermesDictionaryProvider extends FileDictionaryProvider {
+    title = "Hermes dictionary";
+
+    constructor() {
+        super({ filters: { 'Hermes dictionary': ['pb'] } });
+    }
+
+    async parse(file: vscode.Uri): Promise<Dictionary> {
+        const proto = decodeDictionary(await vscode.workspace.fs.readFile(file));
+        // An empty file, or a protobuf file of another kind, can decode without an error
+        if (!proto.head?.type || !proto.content) {
+            throw new Error(`${file.fsPath} is not a Hermes dictionary`);
+        }
+        const out = Dictionary.fromProto(proto);
+        // We keep a YAMCS dictionary's id, like yamcs:ref, so cells that target its instance find it. We add any other
+        // dictionary without its id, so addDictionary gives it a new one and saves it.
+        if (proto.head?.type === 'yamcs') {
+            out.id = proto.id ?? undefined;
+        }
+        return out;
+    }
 }
