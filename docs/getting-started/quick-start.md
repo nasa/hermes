@@ -31,6 +31,12 @@ This guide will walk you through:
 
 By the end of this guide, you'll have Hermes connected to your F Prime deployment and ready to send commands and receive telemetry.
 
+<p align="center">
+    <img    src="../assets/communication.png" 
+                alt="Hermes Offline to Remote"
+                style="max-width: 100%; height: auto; cursor: pointer;"
+                onclick="openLightbox(this)"/>
+</p>
 ## Starting the Hermes Backend
 
 The Hermes VSCode extension starts in **offline mode** by default. This
@@ -247,3 +253,38 @@ system.
 
 You can read about the [workflow](workflow.md) in VSCode and set up
 [telemetry monitoring](../tlm/index.md) infrastructure.
+
+
+
+<div id="imageLightbox"
+     style="display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;"
+     onclick="closeLightbox()">
+
+  <img id="lightboxImage"
+       style="max-width: 95%;
+              max-height: 95%;
+              object-fit: contain;
+              cursor: default;"
+       onclick="event.stopPropagation()">
+</div>
+
+<script>
+function openLightbox(image) {
+  document.getElementById("lightboxImage").src = image.src;
+  document.getElementById("imageLightbox").style.display = "flex";
+}
+
+function closeLightbox() {
+  document.getElementById("imageLightbox").style.display = "none";
+}
+</script>
