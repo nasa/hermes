@@ -86,8 +86,8 @@ export function evrOutput(
         // archived events in the cell's list.
         const listing = (api as Hermes.Api & YamcsEventSource).onYamcsEvents((instance, events) => {
             // We list only the events of the cell's instance. YAMCS mode sends every instance's events to each
-            // handler, and names an instance's connection yamcs:<instance>.
-            if (fsw.id !== `yamcs:${instance}`) {
+            // handler, and names an instance's connection after the instance.
+            if (fsw.id !== instance) {
                 return;
             }
             const shown = events.map((event) => yamcsDisplayEvent(fsw.id, event)).filter((evr) => showEvr(evr.severity));
@@ -141,7 +141,7 @@ function severalYamcs(fsws: Hermes.Fsw[]): boolean {
 /** Lists the YAMCS instances that have a dictionary but no connection. A cell can target one, but can't run on it. */
 export async function unconnectedYamcsTargets(api: Hermes.Api, connected: string[], token?: vscode.CancellationToken): Promise<string[]> {
     return Object.entries(await api.allDictionaries(token))
-        // YAMCS mode gives an instance's connection and its dictionary the same id, yamcs:<instance>
+        // YAMCS mode gives an instance's connection and its dictionary the same id, the instance's name
         .filter(([id, head]) => head.type === 'yamcs' && !connected.includes(id))
         .map(([id]) => id)
         .sort();
@@ -218,8 +218,8 @@ export abstract class FswNotebookLanguageProvider implements NotebookLanguagePro
                         if (value.selectCustom) {
                             vscode.window.showInputBox({
                                 title: 'Cell target',
-                                placeHolder: 'yamcs:<instance>',
-                                prompt: 'Target ID, such as yamcs:fprime-project'
+                                placeHolder: '<instance>',
+                                prompt: 'Target ID, such as fprime-project'
                             }).then((manualId) => {
                                 if (manualId) {
                                     setCellFsw(cell, manualId);

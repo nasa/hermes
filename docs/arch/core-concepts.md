@@ -266,7 +266,7 @@ come up in the VS Code pages.
 
 | Term | Meaning |
 | ---- | ------- |
-| Instance | A self-contained part of a YAMCS server, with its own commands, telemetry and archive. A server can run several, such as one per vehicle. Hermes names each instance `yamcs:<instance>`. Cells pick it as their target, and the telemetry table and events panel show it as each row's source. |
+| Instance | A self-contained part of a YAMCS server, with its own commands, telemetry and archive. A server can run several, such as one per vehicle. Cells pick it by name as their target, and the telemetry table and events panel show its name as each row's source. |
 | Processor | The part of an instance that handles live telemetry and commands. Hermes uses the one called `realtime` unless the `processor` key of the `hermes.host.yamcs` setting names another. |
 | Qualified name | A command's or parameter's full path in YAMCS, such as `/Ref_Ref/CdhCore/cmdDisp/CMD_NO_OP` |
 | Verifier | A check YAMCS runs on returning telemetry to decide whether a command worked. The mission database, which defines an instance's commands, gives each command its verifiers. |

@@ -70,16 +70,16 @@ as the previous command passes.
 
 ## Pick a cell target
 
-A cell's target is the YAMCS instance it sends commands to. Hermes names each instance `yamcs:<instance>`, such as
-`yamcs:fprime-project` in the Quick Start. The cell's status bar, below its code, shows the target. Click it to pick
+A cell's target is the YAMCS instance it sends commands to. Hermes names each target after its instance, such as
+`fprime-project` in the Quick Start. The cell's status bar, below its code, shows the target. Click it to pick
 another:
 
 | Choice | Target |
 | --- | --- |
 | Automatic | The only connected instance. A cell on Automatic refuses to run while several instances are connected. |
-| Custom | The name you type, such as `yamcs:fprime-project` |
-| `yamcs:<instance>` | An instance Hermes is connected to |
-| `yamcs:<instance>`, not connected | An instance whose dictionary Hermes saved the last time it connected. The cell can't run until that instance is connected. |
+| Custom | The name you type, such as `fprime-project` |
+| `<instance>` | An instance Hermes is connected to |
+| `<instance>`, not connected | An instance whose dictionary Hermes saved the last time it connected. The cell can't run until that instance is connected. |
 
 To give every F Prime and YAMCS cell in a notebook the same target, click **Set Target for All Cells** in the
 notebook toolbar and pick an instance, connected or not. Cells added afterwards start on Automatic.

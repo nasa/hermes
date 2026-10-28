@@ -107,7 +107,7 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
     ) {
         super(context, log);
         this.fsws = instances.map(({ name, dictionary, canUpload }) => ({
-            id: `yamcs:${name}`,
+            id: name,
             type: 'yamcs',
             dictionary: dictionary.id!,
             command: (value, token, onState) => this.command(name, value, token, onState),
@@ -352,7 +352,7 @@ export class Yamcs extends Offline implements YamcsParameterSource, YamcsEventSo
             this.uplinks.push({
                 timeStart: timestamp(timeStart),
                 timeEnd: timestamp(new Date()),
-                fswId: `yamcs:${instance}`,
+                fswId: instance,
                 sourcePath: header.sourcePath,
                 destinationPath: header.destinationPath,
                 size: header.size,

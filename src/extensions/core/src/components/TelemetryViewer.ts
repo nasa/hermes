@@ -134,7 +134,6 @@ export class TelemetryDatabase implements vscode.Disposable {
      * it, as F Prime telemetry uses the time it reached the extension.
      */
     private addYamcs(instance: string, values: YamcsParameterValue[], fprimeTime?: YamcsParameterValue) {
-        const source = `yamcs:${instance}`;
         const sclk = packetSclk(fprimeTime);
         for (const pv of values) {
             const time = millis(pv.acquisitionTime);
@@ -144,13 +143,13 @@ export class TelemetryDatabase implements vscode.Disposable {
 
             // The table has component and name columns. For a YAMCS value, the space system fills
             // component, and each struct member or array element becomes its own row, named like
-            // comQueueDepth[1]. Prefixing the key with yamcs:<instance> keeps those rows apart from
+            // comQueueDepth[1]. Prefixing the key with the instance keeps those rows apart from
             // F Prime channels and from the same parameter in another instance.
             const [component, name] = splitName(pv.id.name);
             for (const leaf of leaves(pv.engValue)) {
-                const key = `${source}:${pv.id.name}${leaf.memberPath}`;
+                const key = `${instance}:${pv.id.name}${leaf.memberPath}`;
                 if (!this.series.has(key)) {
-                    this.series.set(key, { source, component, name: name + leaf.memberPath });
+                    this.series.set(key, { source: instance, component, name: name + leaf.memberPath });
                 }
 
                 let data = this.data.get(key);

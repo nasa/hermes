@@ -116,8 +116,8 @@ export class Offline implements Hermes.Api {
         if (save && this.context.storageUri) {
             try {
                 await vscode.workspace.fs.createDirectory(this.context.storageUri);
-                // On Windows, a colon in a file name starts a stream name, so yamcs:fprime-project.dictionary.pb would
-                // write to a hidden stream of a file called yamcs, which the loader never finds. We escape the id instead.
+                // On Windows, a colon in a file name starts a stream name, so a:b.dictionary.pb would write to a
+                // hidden stream of a file called a, which the loader never finds. We escape the id instead.
                 const dictPath = vscode.Uri.joinPath(
                     this.context.storageUri,
                     `${encodeURIComponent(id)}.dictionary.pb`
@@ -204,7 +204,7 @@ export class HermesDictionaryProvider extends FileDictionaryProvider {
             throw new Error(`${file.fsPath} is not a Hermes dictionary`);
         }
         const out = Dictionary.fromProto(proto);
-        // We keep a YAMCS dictionary's id, like yamcs:ref, so cells that target its instance find it. We add any other
+        // We keep a YAMCS dictionary's id, like ref, so cells that target its instance find it. We add any other
         // dictionary without its id, so addDictionary gives it a new one and saves it.
         if (proto.head?.type === 'yamcs') {
             out.id = proto.id ?? undefined;

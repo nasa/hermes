@@ -5,8 +5,8 @@ icon: fontawesome/solid/chart-line
 # Telemetry and Events
 
 Hermes adds two tabs to the VS Code panel, where the terminal is: **Hermes: Telemetry** and **Hermes: Events**. In
-YAMCS mode they show the telemetry and events of every connected YAMCS instance. Each row's source is its instance,
-`yamcs:<instance>`. Once more than one instance is connected, a source filter appears.
+YAMCS mode they show the telemetry and events of every connected YAMCS instance. Each row's source is its instance.
+Once more than one instance is connected, a source filter appears.
 
 ## Telemetry table and plot
 

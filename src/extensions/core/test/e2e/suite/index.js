@@ -80,7 +80,7 @@ exports.run = async function () {
         step('table panel sent update rows');
 
         // The newest archived YAMCS events reach the events panel on connecting
-        const yamcsEvents = () => core.eventPanel.panelEvents.filter((e) => e.source === `yamcs:${instance}`);
+        const yamcsEvents = () => core.eventPanel.panelEvents.filter((e) => e.source === instance);
         await waitFor('a YAMCS event in the events panel', () => yamcsEvents().length > 0, 10000);
         result.yamcsEvents = yamcsEvents().length;
         result.newestYamcsEvent = yamcsEvents()[result.yamcsEvents - 1];
@@ -120,7 +120,7 @@ exports.run = async function () {
         // the qualified name in its metadata, which getDictionary returns as JSON text, so we parse the metadata first.
         const fsws = await core.api.allFsw();
         result.fsws = fsws.map((f) => ({ id: f.id, type: f.type, dictionary: f.dictionary }));
-        const fsw = fsws.find((f) => f.id === `yamcs:${instance}`);
+        const fsw = fsws.find((f) => f.id === instance);
         const dictionary = await core.api.getDictionary(fsw.dictionary);
         const proto = Object.values(dictionary.content[''].commands).find((c) => c.mnemonic === 'CMD_NO_OP_STRING');
         const def = { ...proto, metadata: JSON.parse(proto.metadata) };

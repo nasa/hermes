@@ -376,10 +376,10 @@ describe('TelemetryDatabase with YAMCS parameters', () => {
             pv('/Ref_Ref/CdhCore/version/FrameworkVersion', 500, { type: 'STRING', stringValue: '7d8f579' }),
         ]);
 
-        const key = 'yamcs:fprime-project:/Ref_Ref/CCSDS_Packet_Sequence.GroupFlags';
-        expect(db.series.get(key)).toEqual({ source: 'yamcs:fprime-project', component: '/Ref_Ref', name: 'CCSDS_Packet_Sequence.GroupFlags' });
+        const key = 'fprime-project:/Ref_Ref/CCSDS_Packet_Sequence.GroupFlags';
+        expect(db.series.get(key)).toEqual({ source: 'fprime-project', component: '/Ref_Ref', name: 'CCSDS_Packet_Sequence.GroupFlags' });
         expect(db.get(key)).toEqual({ time: [1000], sclk: [NaN], valueStr: ['Standalone'], valueNum: [3] });
-        expect(db.get('yamcs:fprime-project:/Ref_Ref/CdhCore/version/FrameworkVersion')?.time).toEqual([500]);
+        expect(db.get('fprime-project:/Ref_Ref/CdhCore/version/FrameworkVersion')?.time).toEqual([500]);
         db.dispose();
     });
 
@@ -395,7 +395,7 @@ describe('TelemetryDatabase with YAMCS parameters', () => {
         send([pv(name, 2999, packetId)]);
         await new Promise((resolve) => setTimeout(resolve, 200));
 
-        expect(db.get(`yamcs:fprime-project:${name}.APID`)!.time).toEqual([1000, 3000]);
+        expect(db.get(`fprime-project:${name}.APID`)!.time).toEqual([1000, 3000]);
         expect(changed).toHaveLength(1);
         sub.dispose();
         db.dispose();
@@ -406,7 +406,7 @@ describe('TelemetryDatabase with YAMCS parameters', () => {
         const name = '/Ref_Ref/ComCcsds/comQueue/comQueueDepth';
         send([pv(name, 1000, comQueueDepth)]);
         send([pv(name, 1000, comQueueDepth)]);
-        expect(db.get(`yamcs:fprime-project:${name}[1]`)?.time).toEqual([1000]);
+        expect(db.get(`fprime-project:${name}[1]`)?.time).toEqual([1000]);
         db.dispose();
     });
 
@@ -425,7 +425,7 @@ describe('TelemetryDatabase with YAMCS parameters', () => {
         send([pv(name, 1000, comQueueDepth), pv(name, 2000, comQueueDepth)]);
         await new Promise((resolve) => setTimeout(resolve, 200));
 
-        expect(changed).toEqual([new Set([`yamcs:fprime-project:${name}[0]`, `yamcs:fprime-project:${name}[1]`])]);
+        expect(changed).toEqual([new Set([`fprime-project:${name}[0]`, `fprime-project:${name}[1]`])]);
         sub.dispose();
         db.dispose();
     });
@@ -462,7 +462,7 @@ describe('yamcsEventRows', () => {
             {
                 time: 1790873434505,
                 sclk: 1790873434.505713,
-                source: 'yamcs:fprime-project',
+                source: 'fprime-project',
                 component: 'CdhCore.cmdDisp',
                 name: 'OpCodeDispatched',
                 severity: 'COMMAND',
@@ -471,7 +471,7 @@ describe('yamcsEventRows', () => {
             {
                 time: 1790722468095,
                 sclk: NaN,
-                source: 'yamcs:fprime-project',
+                source: 'fprime-project',
                 component: 'FprimePacketPreprocessor',
                 name: 'SEQ_COUNT_JUMP',
                 severity: 'WARNING',
@@ -611,8 +611,8 @@ describe('YAMCS event source', () => {
         for (const includeTopLevel of [false, true]) {
             const { api } = await backend(['ref'], includeTopLevel);
             const db = new TelemetryDatabase(api);
-            expect(db.get('yamcs:ref:/ref/Demo/x[1]')!.sclk).toEqual([NaN, 2000.145838]);
-            expect(db.series.has('yamcs:ref:/ref/FPrimeTime.seconds')).toBe(includeTopLevel);
+            expect(db.get('ref:/ref/Demo/x[1]')!.sclk).toEqual([NaN, 2000.145838]);
+            expect(db.series.has('ref:/ref/FPrimeTime.seconds')).toBe(includeTopLevel);
             db.dispose();
             api.dispose();
         }
@@ -626,7 +626,7 @@ describe('YAMCS event source', () => {
         const { api } = await backend();
         const cells = new Cells(api, []);
         const [item] = await cells.provideCellStatusBarItems(notebookCell().cell, tokenSource().token);
-        expect(item.text).toBe('$(vm) yamcs:fprime-project');
+        expect(item.text).toBe('$(vm) fprime-project');
         cells.dispose();
         api.dispose();
     });
@@ -669,7 +669,7 @@ describe('YAMCS event source', () => {
         await settle();
 
         const { cell, execution, outputs } = notebookCell();
-        cell.metadata = { hermes: { fsw: 'yamcs:fprime-project' } };
+        cell.metadata = { hermes: { fsw: 'fprime-project' } };
         mockSettings['hermes.notebook.evrCommand'] = false;
         await cells.execute(cell, execution, tokenSource().token);
         // The cell has ended, so it doesn't list this one
@@ -682,7 +682,7 @@ describe('YAMCS event source', () => {
             time: 1790722468095,
             // The row has NaN here, which JSON writes as null
             sclk: null,
-            source: 'yamcs:fprime-project',
+            source: 'fprime-project',
             component: 'FprimePacketPreprocessor',
             name: 'SEQ_COUNT_JUMP',
             severity: 'WARNING',
@@ -693,7 +693,7 @@ describe('YAMCS event source', () => {
         // With evrCommand on, a cell also lists opCodeDispatched, with its SCLK, under its F Prime component and event name
         mockSettings['hermes.notebook.evrCommand'] = true;
         const evrCommandOn = notebookCell();
-        evrCommandOn.cell.metadata = { hermes: { fsw: 'yamcs:fprime-project' } };
+        evrCommandOn.cell.metadata = { hermes: { fsw: 'fprime-project' } };
         await cells.execute(evrCommandOn.cell, evrCommandOn.execution, tokenSource().token);
         const rows = evrCommandOn.outputs()[0].split('\n').map((row) => JSON.parse(row));
         expect(rows).toMatchObject([seqCountJumpRow, { sclk: 1790873434.505713, component: 'CdhCore.cmdDisp', name: 'OpCodeDispatched' }, seqCountJumpRow]);
@@ -705,7 +705,7 @@ describe('YAMCS event source', () => {
             return true;
         });
         const disconnected = notebookCell();
-        disconnected.cell.metadata = { hermes: { fsw: 'yamcs:fprime-project' } };
+        disconnected.cell.metadata = { hermes: { fsw: 'fprime-project' } };
         await cells.execute(disconnected.cell, disconnected.execution, tokenSource().token);
         expect(disconnected.outputs()).toEqual(['']);
         api.dispose();
@@ -848,7 +848,7 @@ function command(info: YamcsCommandInfo, args: CommandValue['args']): CommandVal
 describe('yamcsDictionary', () => {
     test('keys commands by qualified name and leaves out assigned arguments', () => {
         const proto = yamcsDictionary('fprime-project', [noOpString]);
-        expect(proto.id).toBe('yamcs:fprime-project');
+        expect(proto.id).toBe('fprime-project');
         expect(proto.head?.type).toBe('yamcs');
 
         const def = Dictionary.fromProto(proto).get('').getCommand('/BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING');
@@ -932,12 +932,12 @@ test('Offline mode keeps a YAMCS dictionary with its id and commands, and removi
     // Two commands without opcodes, where ccsdsPacket's 11-bit argument has a range
     const dictionary = yamcsDictionary('fprime-project', [noOpString, ccsdsPacket]);
     await (await Offline.activate(context, log)).addDictionary(dictionary);
-    expect([...mockFiles.keys()]).toEqual(['/storage/yamcs%3Afprime-project.dictionary.pb']);
+    expect([...mockFiles.keys()]).toEqual(['/storage/fprime-project.dictionary.pb']);
 
     const offline = await Offline.activate(context, log);
     const commands = (dict: Proto.IDictionary) => [...Dictionary.fromProto(dict).get('').getCommands()];
-    expect(commands(await offline.getDictionary('yamcs:fprime-project'))).toEqual(commands(dictionary));
-    await offline.removeDictionary('yamcs:fprime-project');
+    expect(commands(await offline.getDictionary('fprime-project'))).toEqual(commands(dictionary));
+    await offline.removeDictionary('fprime-project');
     expect(mockFiles.size).toBe(0);
 });
 
@@ -946,11 +946,11 @@ test('Offline mode deletes the file of a removed dictionary only if it saved one
     // Offline mode saves a dictionary added without an id. It keeps the F Prime dictionary built from a YAMCS
     // dictionary in memory only.
     const saved = await offline.addDictionary({ head: { name: 'saved', type: 'fprime' } });
-    await offline.addDictionary({ id: 'yamcs:fprime-project:fprime', head: { name: 'fprime-project (F Prime)', type: 'fprime' } });
+    await offline.addDictionary({ id: 'fprime-project:fprime', head: { name: 'fprime-project (F Prime)', type: 'fprime' } });
     expect(mockFiles.size).toBe(1);
 
     await offline.removeDictionary(saved);
-    await offline.removeDictionary('yamcs:fprime-project:fprime');
+    await offline.removeDictionary('fprime-project:fprime');
     expect(mockFiles.size).toBe(0);
 });
 
@@ -968,8 +968,8 @@ test('YAMCS mode connects with its dictionary and warns when it cannot save the 
         { storageUri: { path: '/storage' } } as vscode.ExtensionContext,
         { debug: () => { }, info: () => { }, warn, error: () => { } },
     );
-    expect(Object.keys(await api.allDictionaries())).toEqual(['yamcs:fprime-project']);
-    expect(warn).toHaveBeenCalledWith('Could not save YAMCS dictionary yamcs:fprime-project: Error: disk full');
+    expect(Object.keys(await api.allDictionaries())).toEqual(['fprime-project']);
+    expect(warn).toHaveBeenCalledWith('Could not save YAMCS dictionary fprime-project: Error: disk full');
     api.dispose();
 });
 
@@ -1165,11 +1165,11 @@ describe('YAMCS commands', () => {
         const { api } = await backend();
         const fsws = await api.allFsw();
         expect(fsws.map(({ id, type, dictionary, uplink }) => ({ id, type, dictionary, uplink: !!uplink }))).toEqual([
-            { id: 'yamcs:fprime-project', type: 'yamcs', dictionary: 'yamcs:fprime-project', uplink: true },
-            { id: 'yamcs:other-instance', type: 'yamcs', dictionary: 'yamcs:other-instance', uplink: false },
+            { id: 'fprime-project', type: 'yamcs', dictionary: 'fprime-project', uplink: true },
+            { id: 'other-instance', type: 'yamcs', dictionary: 'other-instance', uplink: false },
         ]);
-        expect(await api.getFsw('yamcs:other-instance')).toBe(fsws[1]);
-        expect((await api.allDictionaries())['yamcs:other-instance']).toMatchObject({ name: 'other-instance', type: 'yamcs' });
+        expect(await api.getFsw('other-instance')).toBe(fsws[1]);
+        expect((await api.allDictionaries())['other-instance']).toMatchObject({ name: 'other-instance', type: 'yamcs' });
         const lists: Hermes.Fsw[][] = [];
         api.onFswChange((fsws) => lists.push(fsws));
         expect(lists).toEqual([fsws]);
@@ -1178,7 +1178,7 @@ describe('YAMCS commands', () => {
 
     test('issues a command in its connection\'s instance', async () => {
         const { api, issue, get } = await backend();
-        const fsw = await api.getFsw('yamcs:other-instance');
+        const fsw = await api.getFsw('other-instance');
         // F Prime cells issue each command through fsw.command, and YAMCS cells through fsw.sequence
         await fsw.command!(command(noOpString, ['a']));
         await fsw.sequence!({ language: 'yamcs', commands: [command(noOpString, ['b'])] });
@@ -1228,12 +1228,12 @@ describe('YAMCS commands', () => {
         const cells = new Cells(api, []);
         const { token } = tokenSource();
         const shown: string[] = [];
-        for (const fsw of ['yamcs:fprime-project', 'yamcs:other-instance']) {
+        for (const fsw of ['fprime-project', 'other-instance']) {
             const cell: Partial<vscode.NotebookCell> = { metadata: { hermes: { fsw } } };
             const [item] = await cells.provideCellStatusBarItems(cell as vscode.NotebookCell, token);
             shown.push(item.text);
         }
-        expect(shown).toEqual(['$(vm-active) yamcs:fprime-project', '$(vm-active) yamcs:other-instance']);
+        expect(shown).toEqual(['$(vm-active) fprime-project', '$(vm-active) other-instance']);
         expect(allFsw).toHaveBeenCalledTimes(1);
         cells.dispose();
         api.dispose();
@@ -1243,12 +1243,12 @@ describe('YAMCS commands', () => {
         const { api } = await backend();
         // The stopped instance has no connection, only its dictionary and the F Prime dictionary built from it
         await api.addDictionary(yamcsDictionary('stopped', [noOpString]));
-        await api.addDictionary({ ...new Dictionary({ name: 'stopped (F Prime)', type: 'fprime' }).toProto(), id: 'yamcs:stopped:fprime' });
+        await api.addDictionary({ ...new Dictionary({ name: 'stopped (F Prime)', type: 'fprime' }).toProto(), id: 'stopped:fprime' });
         NotebookController.registerCommands(api);
         const cell = (index: number, languageId: string, metadata = {}): Partial<vscode.NotebookCell> =>
             ({ index, metadata, document: { languageId } as vscode.TextDocument });
         // The F Prime cell already has a target, and other metadata that the command should keep
-        const cells = [cell(0, 'fprime', { owner: 'ops', hermes: { fsw: 'yamcs:fprime-project', note: 'x' } }), cell(1, 'python'), cell(2, 'yamcs')];
+        const cells = [cell(0, 'fprime', { owner: 'ops', hermes: { fsw: 'fprime-project', note: 'x' } }), cell(1, 'python'), cell(2, 'yamcs')];
         const notebook: Partial<vscode.NotebookDocument> = { uri: {} as vscode.Uri, getCells: () => cells as vscode.NotebookCell[] };
         jest.replaceProperty(vscode.window, 'activeNotebookEditor', { notebook } as vscode.NotebookEditor);
         // The user picks the second connection
@@ -1258,11 +1258,11 @@ describe('YAMCS commands', () => {
 
         await mockCommands.get('hermes.notebook.setCellTargets')!();
         expect(pick.mock.calls[0][0]).toEqual([
-            { label: 'yamcs:fprime-project' }, { label: 'yamcs:other-instance' }, { label: 'yamcs:stopped', description: 'not connected' },
+            { label: 'fprime-project' }, { label: 'other-instance' }, { label: 'stopped', description: 'not connected' },
         ]);
         expect((applyEdit.mock.calls[0][0] as vscode.WorkspaceEdit & { edits: vscode.NotebookEdit[] }).edits).toEqual([
-            { index: 0, newCellMetadata: { owner: 'ops', hermes: { fsw: 'yamcs:other-instance', note: 'x' } } },
-            { index: 2, newCellMetadata: { hermes: { fsw: 'yamcs:other-instance' } } },
+            { index: 0, newCellMetadata: { owner: 'ops', hermes: { fsw: 'other-instance', note: 'x' } } },
+            { index: 2, newCellMetadata: { hermes: { fsw: 'other-instance' } } },
         ]);
         api.dispose();
     });
@@ -1272,7 +1272,7 @@ describe('YAMCS commands', () => {
         const offline = await Offline.activate({} as vscode.ExtensionContext, { debug: () => { }, info: () => { }, warn: () => { }, error: () => { } });
         const pick = jest.mocked(vscode.window.showQuickPick as (items: Promise<vscode.QuickPickItem[]>) => Thenable<undefined>)
             .mockResolvedValue(undefined);
-        const cell: Partial<vscode.NotebookCell> = { metadata: { hermes: { fsw: 'yamcs:stopped' } }, document: {} as vscode.TextDocument };
+        const cell: Partial<vscode.NotebookCell> = { metadata: { hermes: { fsw: 'stopped' } }, document: {} as vscode.TextDocument };
         const { token } = tokenSource();
 
         const offered: vscode.QuickPickItem[][] = [];
@@ -1288,8 +1288,8 @@ describe('YAMCS commands', () => {
             cells.dispose();
         }
         expect(offered).toEqual([
-            [{ label: 'yamcs:stopped', description: 'not connected' }],
-            [{ label: 'yamcs:fprime-project' }, { label: 'yamcs:other-instance' }, { label: 'yamcs:stopped', description: 'not connected' }],
+            [{ label: 'stopped', description: 'not connected' }],
+            [{ label: 'fprime-project' }, { label: 'other-instance' }, { label: 'stopped', description: 'not connected' }],
         ]);
         expect(issue).not.toHaveBeenCalled();
         yamcs.dispose();
@@ -1320,7 +1320,7 @@ describe('YAMCS commands', () => {
 
         // A notebook with a cell that targets an instance and a cell on Automatic
         const document = (uri: string) => ({ uri: { toString: () => uri }, version: 1 } as vscode.TextDocument);
-        const target = { fsw: 'yamcs:other-instance' };
+        const target = { fsw: 'other-instance' };
         const cells: Partial<vscode.NotebookCell>[] = [{ metadata: { hermes: target }, document: document('targeted') }, { metadata: {}, document: document('automatic') }];
         const notebook: Partial<vscode.NotebookDocument> = { getCells: () => cells as vscode.NotebookCell[] };
         jest.replaceProperty(vscode.workspace, 'notebookDocuments', [notebook as vscode.NotebookDocument]);
@@ -1339,7 +1339,7 @@ describe('YAMCS commands', () => {
         expect(await parsedWith('automatic')).toBe('selected');
 
         // Picking another target changes the cell's metadata, and the cell parses again with that target's dictionary
-        target.fsw = 'yamcs:fprime-project';
+        target.fsw = 'fprime-project';
         const change: Partial<vscode.NotebookDocumentCellChange> = { metadata: { hermes: target } };
         const event: Partial<vscode.NotebookDocumentChangeEvent> = { cellChanges: [change as vscode.NotebookDocumentCellChange] };
         const [onNotebookChange] = jest.mocked(vscode.workspace.onDidChangeNotebookDocument).mock.lastCall!;
@@ -1348,10 +1348,10 @@ describe('YAMCS commands', () => {
         expect(await parsedWith('targeted')).toBe('fprime-project');
 
         // A cell whose instance has no dictionary parses with none, until a dictionary for that instance is added
-        target.fsw = 'yamcs:stopped';
+        target.fsw = 'stopped';
         expect(await parsedWith('targeted')).toBeUndefined();
         const added = new Promise((resolve) => api.onDictionaryChange(resolve));
-        await api.addDictionary({ ...new Dictionary({ name: 'stopped' }).toProto(), id: 'yamcs:stopped' });
+        await api.addDictionary({ ...new Dictionary({ name: 'stopped' }).toProto(), id: 'stopped' });
         await added;
         expect(tokensChanged).toHaveBeenCalledTimes(3);
         expect(await parsedWith('targeted')).toBe('stopped');
@@ -1476,7 +1476,7 @@ describe('YAMCS commands', () => {
             return failed;
         });
         const { cell, execution, decorations, statuses, outputs } = notebookCell('CMD a', 'CMD b', 'CMD c');
-        cell.metadata = { hermes: { fsw: 'yamcs:fprime-project' } };
+        cell.metadata = { hermes: { fsw: 'fprime-project' } };
         const edits = new vscode.EventEmitter<vscode.TextDocumentChangeEvent>();
         jest.spyOn(vscode.workspace, 'onDidChangeTextDocument').mockImplementation(edits.event);
         const cells = new Cells(api, [command(verified, ['a']), command(noOpString, ['b']), command(noOpString, ['c'])]);
@@ -1492,7 +1492,7 @@ describe('YAMCS commands', () => {
         expect(vscode.workspace.applyEdit).toHaveBeenCalledTimes(1);
         expect(cell.metadata).toEqual({
             hermes: {
-                fsw: 'yamcs:fprime-project',
+                fsw: 'fprime-project',
                 statuses: [
                     { line: 0, text: 'CMD a', status: '✓ completed · 0.0 s', detail: commandState(completed, one).detail },
                     { line: 1, text: 'CMD b', status: '✗ failed · EXECUTION_ERROR', detail: commandState(failed, []).detail },
@@ -1526,10 +1526,10 @@ describe('YAMCS commands', () => {
         // As a connection in Local or Remote mode does, this one sends the cell's commands and reports nothing
         jest.spyOn(fsw, 'sequence').mockResolvedValue(true);
         const { cell, execution, statuses } = notebookCell('CMD a');
-        cell.metadata = { hermes: { fsw: 'yamcs:fprime-project', statuses: [{ line: 0, text: 'CMD a', status: '✓ completed · 0.0 s', detail: '' }] } };
+        cell.metadata = { hermes: { fsw: 'fprime-project', statuses: [{ line: 0, text: 'CMD a', status: '✓ completed · 0.0 s', detail: '' }] } };
         await new Cells(api, [command(noOpString, ['a'])]).execute(cell, execution, tokenSource().token);
         expect(statuses()).toEqual([]);
-        expect(cell.metadata).toEqual({ hermes: { fsw: 'yamcs:fprime-project', statuses: [] } });
+        expect(cell.metadata).toEqual({ hermes: { fsw: 'fprime-project', statuses: [] } });
         api.dispose();
     });
 
@@ -1537,7 +1537,7 @@ describe('YAMCS commands', () => {
         const { api, get } = await backend();
         get.mockResolvedValue(sentCommand({ Complete: 'PENDING' }));
         const { cell, execution, decorations, statuses } = notebookCell('CMD a');
-        cell.metadata = { hermes: { fsw: 'yamcs:fprime-project' } };
+        cell.metadata = { hermes: { fsw: 'fprime-project' } };
         const now = jest.spyOn(Date, 'now').mockReturnValue(0);
         const { token, cancel } = tokenSource();
         const run = new Cells(api, [command(verified, ['a'])]).execute(cell, execution, token);
@@ -1562,7 +1562,7 @@ describe('YAMCS commands', () => {
     test('counts down the wait before a command, and shows not sent when the cell is stopped during the wait', async () => {
         const { api } = await backend();
         const { cell, execution, statuses } = notebookCell('CMD a', 'CMD b');
-        cell.metadata = { hermes: { fsw: 'yamcs:fprime-project' } };
+        cell.metadata = { hermes: { fsw: 'fprime-project' } };
         const cells = new Cells(api, [command(noOpString, ['a']), command(noOpString, ['b'])]);
         // The cell waits 12.34 s before its first command, and is stopped during the wait
         const sequence = jest.spyOn(cells, 'executeSequence').mockImplementation(async (_cell, _fsw, _seq, _token, _onState, onWait) => {
@@ -1629,7 +1629,7 @@ describe('YAMCS commands', () => {
 
         await fsw.uplink!(header, Readable.from([]), { report: () => { } });
         await expect(fsw.uplink!(header, Readable.from([]), { report: () => { } })).rejects.toThrow();
-        const uplink = { fswId: 'yamcs:fprime-project', ...header };
+        const uplink = { fswId: 'fprime-project', ...header };
         expect(listed).toHaveBeenLastCalledWith({
             uplinkCompleted: [
                 expect.objectContaining({ ...uplink, error: '' }),
@@ -1843,7 +1843,7 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
             console.log(JSON.stringify(row, null, 2));
 
             expect(event).toMatchObject({ source: created.source, seqNumber: created.seqNumber });
-            expect(row).toMatchObject({ source: `yamcs:${instance}`, component: 'hermes test', severity: 'INFO', message });
+            expect(row).toMatchObject({ source: instance, component: 'hermes test', severity: 'INFO', message });
         } finally {
             client.close();
             dispose();
@@ -1907,7 +1907,7 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
         const client = new YamcsClient(address!);
         const text = `hermes live test ${Date.now()}`;
         try {
-            const fsw = await api.getFsw(`yamcs:${instance}`);
+            const fsw = await api.getFsw(instance);
             const commands = Dictionary.fromProto(await api.getDictionary(fsw.dictionary!)).get('');
             const def = [...commands.getCommands()].find((c) => c.mnemonic === 'CMD_NO_OP_STRING')!;
             expect(def.arguments.map((a) => a.name)).toEqual(['arg1']);
@@ -1930,7 +1930,7 @@ async function waitFor<T>(get: () => T | false | undefined, timeoutMs: number): 
             log,
         );
         try {
-            const fsw = await api.getFsw(`yamcs:${instance}`);
+            const fsw = await api.getFsw(instance);
             const commands = Dictionary.fromProto(await api.getDictionary(fsw.dictionary!)).get('');
             const def = [...commands.getCommands()].find((c) => c.mnemonic === 'CMD_NO_OP_STRING')!;
             // CMD_NO_OP_STRING's argument holds at most 40 bytes. YAMCS refuses a longer one when it

@@ -44,8 +44,8 @@ export async function updateFprimeDictionaries(api: Hermes.Api): Promise<void> {
                 await api.addDictionary(dictionary);
             }
         }
-        // We remove an F Prime dictionary like yamcs:fprime-project:fprime once yamcs:fprime-project is gone
-        const yamcsId = id.match(/^(yamcs:.+):fprime$/)?.[1];
+        // We remove an F Prime dictionary like fprime-project:fprime once fprime-project is gone
+        const yamcsId = id.match(/^(.+):fprime$/)?.[1];
         if (yamcsId && !dictionaries[yamcsId]) {
             await api.removeDictionary(id);
         }
