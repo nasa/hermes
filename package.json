@@ -28,6 +28,8 @@
         "proto": "npm run proto-js && npm run proto-ts && npm run proto-ts-yamcs && npm run proto-json-yamcs",
         "package": "sh -c 'cd src/extensions/${0} && yarn package'",
         "package-all": "yarn package core && yarn package fprime",
+        "build-save-dictionaries": "esbuild src/extensions/core/src/saveDictionaries.ts --bundle --platform=node --log-level=warning --outfile=out/save-dictionaries.js",
+        "save-dictionaries": "yarn -s build-save-dictionaries && node out/save-dictionaries.js",
         "postinstall": "patch-package"
     },
     "dependencies": {
