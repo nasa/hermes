@@ -186,8 +186,19 @@ yarn install
 yarn test      # unit tests
 ```
 
-To try a change, open the repository in VS Code, pick **All** in the **Run and Debug** view and press F5. It builds
-the extensions and opens a VS Code window with Hermes and Hermes FPrime loaded.
+To run Hermes from this repository without installing it:
+
+1. Open the repository folder in VS Code.
+2. Open the **Run and Debug** view (Cmd+Shift+D on macOS) and pick a configuration from the dropdown at the top:
+   - **Core** loads Hermes alone.
+   - **All** loads Hermes and Hermes FPrime.
+3. Press F5.
+
+VS Code starts a second window, the Extension Development Host, with the extensions loaded. Open a Hermes notebook or
+the Hermes sidebar in that window.
+
+F5 also starts the `npm: watch` task, which rebuilds the extensions when you save a source file. After a change, run
+**Developer: Reload Window** in the Extension Development Host (Cmd+R) to load it.
 
 ### Live tests
 
