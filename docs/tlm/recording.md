@@ -4,7 +4,7 @@ icon: fontawesome/solid/database
 
 # Recording from YAMCS
 
-yamcs-recorder copies one YAMCS instance's telemetry into TimescaleDB and, with `--otlp`, its events into Loki.
+yamcs-recorder copies one YAMCS instance's telemetry into TimescaleDB and, with `--otlp`, its events into Loki, a log database.
 
 !!! abstract "Before you start"
 
