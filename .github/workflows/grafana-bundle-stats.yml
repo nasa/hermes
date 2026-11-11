@@ -39,6 +39,6 @@ jobs:
         working-directory: ./grafana-datasource-plugin
         run: npm ci
 
-      - uses: grafana/plugin-actions/bundle-size@bundle-size/v1.1.1
+      - uses: grafana/plugin-actions/bundle-size@bundle-size/v1.1.2
         with:
           working-directory: ./grafana-datasource-plugin
