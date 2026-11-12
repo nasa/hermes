@@ -17,7 +17,8 @@ source"), a plugin for one kind of database:
 The `docker compose up -d` in [Start the databases](recording.md#start-the-databases) also starts Grafana, which
 installs the Hermes datasource from the latest Hermes release as it starts. Open
 [localhost:3000](http://localhost:3000) and log in with user `admin` and password `admin`. Both datasources are
-already set up, as `Hermes Datasource` and `Loki`.
+already set up, as `Hermes Datasource` and `Loki`. Grafana also provisions a **Hermes Events** dashboard, with a
+dropdown for the YAMCS instance, from the repository's `config/` folder.
 
 ## Use your own Grafana
 
