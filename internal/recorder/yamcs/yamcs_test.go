@@ -39,9 +39,9 @@ func TestSubscribeTelemetered(t *testing.T) {
 	defer cancel()
 	instance := cmp.Or(os.Getenv("YAMCS_INSTANCE"), "fprime-project")
 
-	names, err := TelemeteredParameters(ctx, conn, instance)
+	names, err := RecordedParameters(ctx, conn, instance)
 	require.NoError(t, err)
-	t.Logf("%d TELEMETERED parameters", len(names))
+	t.Logf("%d TELEMETERED and LOCAL parameters", len(names))
 	require.NotEmpty(t, names)
 	for _, n := range names {
 		assert.False(t, strings.HasPrefix(n, "/yamcs/"), "system parameter %s listed", n)
@@ -118,35 +118,40 @@ func serve(t *testing.T, register func(*grpc.Server)) *grpc.ClientConn {
 }
 
 // mdbServer answers each ListParameters request with the page its continuation
-// token names. YAMCS lists every source when the request names none, so we
-// reject requests that don't ask for TELEMETERED.
+// token names, for the source the request asks for. YAMCS lists every source
+// when the request names none, so we reject requests that name no source.
 type mdbServer struct {
 	mdb.UnimplementedMdbApiServer
-	pages map[string]*mdb.ListParametersResponse
+	pages map[mdb.DataSourceType]map[string]*mdb.ListParametersResponse
 }
 
 func (s mdbServer) ListParameters(_ context.Context, req *mdb.ListParametersRequest) (*mdb.ListParametersResponse, error) {
 	// TELEMETERED is the enum's zero value, so GetSource can't tell it from unset.
-	if req.Source == nil || *req.Source != mdb.DataSourceType_TELEMETERED {
-		return nil, status.Error(codes.InvalidArgument, "want TELEMETERED")
+	if req.Source == nil {
+		return nil, status.Error(codes.InvalidArgument, "want a source")
 	}
-	return s.pages[req.GetNext()], nil
+	return s.pages[*req.Source][req.GetNext()], nil
 }
 
-func TestTelemeteredParametersFollowsPages(t *testing.T) {
+func TestRecordedParametersFollowsPagesOfBothSources(t *testing.T) {
 	param := func(name string) *mdb.ParameterInfo { return &mdb.ParameterInfo{QualifiedName: proto.String(name)} }
 	conn := serve(t, func(s *grpc.Server) {
-		mdb.RegisterMdbApiServer(s, mdbServer{pages: map[string]*mdb.ListParametersResponse{
-			"":   {Parameters: []*mdb.ParameterInfo{param("/Ref/a"), param("/Ref/b")}, ContinuationToken: proto.String("p2")},
-			"p2": {Parameters: []*mdb.ParameterInfo{param("/Ref/c")}},
+		mdb.RegisterMdbApiServer(s, mdbServer{pages: map[mdb.DataSourceType]map[string]*mdb.ListParametersResponse{
+			mdb.DataSourceType_TELEMETERED: {
+				"":   {Parameters: []*mdb.ParameterInfo{param("/Ref/a"), param("/Ref/b")}, ContinuationToken: proto.String("p2")},
+				"p2": {Parameters: []*mdb.ParameterInfo{param("/Ref/c")}},
+			},
+			mdb.DataSourceType_LOCAL: {
+				"": {Parameters: []*mdb.ParameterInfo{param("/Ref/dpo")}},
+			},
 		}})
 	})
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	names, err := TelemeteredParameters(ctx, conn, "fprime-project")
+	names, err := RecordedParameters(ctx, conn, "fprime-project")
 	require.NoError(t, err)
-	assert.Equal(t, []string{"/Ref/a", "/Ref/b", "/Ref/c"}, names)
+	assert.Equal(t, []string{"/Ref/a", "/Ref/b", "/Ref/c", "/Ref/dpo"}, names)
 }
 
 // processingServer acts like YAMCS while the instance restarts: the parameter
