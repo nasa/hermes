@@ -24,10 +24,31 @@ class YamcsParser extends Seq.CommandParserMixin(Seq.TypeParser) {
 }
 
 /**
+ * Returns the line without its comment. A # starts a comment unless it is inside a
+ * "..." or '...' string, so a string argument can hold a #.
+ */
+export function stripComment(text: string): string {
+    let quote: string | undefined;
+    for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (quote) {
+            if (c === quote) {
+                quote = undefined;
+            }
+        } else if (c === '"' || c === "'") {
+            quote = c;
+        } else if (c === '#') {
+            return text.substring(0, i);
+        }
+    }
+    return text;
+}
+
+/**
  * A YAMCS cell: one command per line, the command's qualified name and then its
  * arguments, for example
- * /BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING "hello". A line
- * starting with # is a comment.
+ * /BigData_YamcsDeployment/CdhCore/cmdDisp/CMD_NO_OP_STRING "hello". A # outside
+ * a string starts a comment.
  */
 export class YamcsLanguage extends Language.SequenceLanguage<Seq.CommandExpression> {
     private readonly context = new Seq.ParsingContext();
@@ -45,11 +66,11 @@ export class YamcsLanguage extends Language.SequenceLanguage<Seq.CommandExpressi
         const dictionary = dict?.namespaces.get('');
         for (let lineNo = 0; lineNo < document.lineCount; lineNo++) {
             const line = document.lineAt(lineNo);
-            // tokenizeLine cuts a line at its comment prefix even inside a quoted string, and a YAMCS
-            // string argument can hold a #. So we skip comment lines ourselves and pass a newline as
-            // the comment prefix, which no line contains.
-            if (!line.isEmptyOrWhitespace && !line.text.trimStart().startsWith('#')) {
-                this.context.set(Seq.tokenizeLine(line.text, line.lineNumber, { commentPrefix: '\n' }), line.lineNumber);
+            // We cut the comment ourselves, because tokenizeLine cuts at its comment prefix even inside a
+            // quoted string. So we pass a newline as the prefix, which no line contains.
+            const text = stripComment(line.text);
+            if (text.trim().length > 0) {
+                this.context.set(Seq.tokenizeLine(text, line.lineNumber, { commentPrefix: '\n' }), line.lineNumber);
                 if (!this.context.empty()) {
                     out.push(this.parser.command(this.context, dictionary));
                     if (this.context.next) {
