@@ -217,10 +217,10 @@ func openDatabase(ctx context.Context, dbURL string, logger *slog.Logger) (*sql.
 	return db, nil
 }
 
-// subscribe asks YAMCS for the instance's TELEMETERED parameters and subscribes
-// to the ones recordedParameters keeps.
+// subscribe asks YAMCS for the instance's TELEMETERED and LOCAL parameters and
+// subscribes to the ones recordedParameters keeps.
 func subscribe(ctx context.Context, conn grpc.ClientConnInterface, cfg config, logger *slog.Logger) (processing.ProcessingApi_SubscribeParametersClient, error) {
-	names, err := yamcs.TelemeteredParameters(ctx, conn, cfg.instance)
+	names, err := yamcs.RecordedParameters(ctx, conn, cfg.instance)
 	if err != nil {
 		return nil, err
 	}

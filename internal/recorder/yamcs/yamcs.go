@@ -35,15 +35,29 @@ func Dial(addr string) (*grpc.ClientConn, error) {
 	)
 }
 
-// TelemeteredParameters returns the full names of instance's TELEMETERED
-// parameters, the ones YAMCS decodes from telemetry. YAMCS lists them a page at
-// a time, so we keep asking, passing back each page's continuation token, until
-// a page comes without one.
-func TelemeteredParameters(ctx context.Context, conn grpc.ClientConnInterface, instance string) ([]string, error) {
+// RecordedParameters returns the full names of instance's TELEMETERED
+// parameters, the ones YAMCS decodes from telemetry, and its LOCAL parameters,
+// the ones a YAMCS service sets in-process, such as a reassembled data product.
+func RecordedParameters(ctx context.Context, conn grpc.ClientConnInterface, instance string) ([]string, error) {
+	telemetered, err := parametersOfSource(ctx, conn, instance, mdb.DataSourceType_TELEMETERED)
+	if err != nil {
+		return nil, err
+	}
+	local, err := parametersOfSource(ctx, conn, instance, mdb.DataSourceType_LOCAL)
+	if err != nil {
+		return nil, err
+	}
+	return append(telemetered, local...), nil
+}
+
+// parametersOfSource returns the full names of instance's parameters of one
+// data source. YAMCS lists them a page at a time, so we keep asking, passing
+// back each page's continuation token, until a page comes without one.
+func parametersOfSource(ctx context.Context, conn grpc.ClientConnInterface, instance string, source mdb.DataSourceType) ([]string, error) {
 	client := mdb.NewMdbApiClient(conn)
 	req := &mdb.ListParametersRequest{
 		Instance: proto.String(instance),
-		Source:   mdb.DataSourceType_TELEMETERED.Enum(),
+		Source:   source.Enum(),
 	}
 	var names []string
 	for {

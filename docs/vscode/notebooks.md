@@ -35,7 +35,7 @@ Add a code cell, then click the language name at the bottom right of the cell to
 
 Write one command per line: its qualified name, then its arguments, separated by spaces or commas. Write a struct
 argument as its members' values and an array argument as its elements' values, in order, with no brackets. An F Prime
-`bool` is an enumeration in fprime-yamcs, so write it as `True` or `False`. A line starting with `#` is a comment. The
+`bool` is an enumeration in fprime-yamcs, so write it as `True` or `False`. A `#` outside a string starts a comment, so a line can end with one. The
 examples on this page use the Ref deployment from the [Quick Start](../getting-started/quick-start.md), whose commands
 sit under `/Ref_Ref`.
 
