@@ -50,8 +50,8 @@ Then:
 
 Go to **Connections** > **Data sources** > **Add new data source**, search for Hermes, and fill in every field:
 
-| Field    | Value                            | With Hermes's [`docker-compose.yml`](https://github.com/nasa/hermes/blob/main/docker-compose.yml) |
-| -------- | -------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Field    | Value                            | With the root [`docker-compose.yml`](https://github.com/nasa/hermes/blob/main/docker-compose.yml) |
+| -------- | -------------------------------- | ------------------------------------------------------------------------------------------------- |
 | Host     | TimescaleDB's `host:port`        | `localhost:5432`, or `timescaledb:5432` from a Grafana in the same compose project              |
 | User     | The database user                | `postgres`                                                                                      |
 | Password | That user's password             | `password`                                                                                      |

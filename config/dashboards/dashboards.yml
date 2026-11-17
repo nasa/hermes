@@ -1,0 +1,9 @@
+apiVersion: 1
+
+providers:
+  - name: Hermes
+    type: file
+    disableDeletion: true
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/json
