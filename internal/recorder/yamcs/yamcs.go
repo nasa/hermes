@@ -28,6 +28,7 @@ func Dial(addr string) (*grpc.ClientConn, error) {
 	return grpc.NewClient(addr,
 		// The plugin doesn't use TLS.
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(64<<20)),
 		// Ping the plugin after 5 quiet minutes so we notice a dead connection.
 		// The plugin, like any grpc-java server, closes the connection of a client
 		// that pings more often than that.
