@@ -87,6 +87,7 @@ export class YamcsClient {
             // The plugin, like any grpc-java server, closes the connection of a client that pings
             // more often than that.
             'grpc.keepalive_time_ms': 5 * 60 * 1000,
+            'grpc.max_receive_message_length': 64 * 1024 * 1024,
         });
         // The other APIs share ProcessingApi's channel, so we only need to wait on and close processing.
         this.mdb = new yamcsPackage.yamcs.protobuf.mdb.MdbApi(address, credentials, {
