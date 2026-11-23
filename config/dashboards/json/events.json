@@ -1,0 +1,48 @@
+{
+  "uid": "hermes-events",
+  "title": "Hermes Events",
+  "editable": true,
+  "schemaVersion": 39,
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "instance",
+        "label": "YAMCS instance",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "loki" },
+        "query": "label_values(service_name)",
+        "definition": "label_values(service_name)",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".+",
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] },
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "logs",
+      "title": "Events",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 20 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "{service_name=~\"$instance\"}",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true
+      }
+    }
+  ]
+}
