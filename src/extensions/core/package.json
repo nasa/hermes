@@ -341,6 +341,13 @@
                 "configuration": "./syntax/yamcs.language.json"
             }
         ],
+        "configurationDefaults": {
+            "[yamcs]": {
+                "editor.quickSuggestions": {
+                    "other": "on"
+                }
+            }
+        },
         "grammars": [
             {
                 "language": "uplink",

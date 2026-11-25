@@ -75,6 +75,13 @@
                 "configuration": "./syntax/fprime.language.json"
             }
         ],
+        "configurationDefaults": {
+            "[fprime]": {
+                "editor.quickSuggestions": {
+                    "other": "on"
+                }
+            }
+        },
         "menus": {
             "notebook/cell/title": [
                 {
