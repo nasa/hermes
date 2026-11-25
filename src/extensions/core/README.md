@@ -174,7 +174,8 @@ written `<target> <file> <destination>`, with `<file>` relative to the first wor
   the file.
 - The deployment decides which destination paths it accepts. The F Prime Ref deployment saves files only under
   `/tmp/uplink/`.
-- Files over about 4 MiB fail, because they exceed the yamcs-grpc plugin's default gRPC message size.
+- Hermes keeps every upload in YAMCS's `user.guest` bucket, which holds 100 MiB in all. Once it fills, uploads fail
+  until you delete old files from it in yamcs-web.
 - fprime-yamcs sends one file at a time, at about 20 KiB/s.
 - Stopping an `uplink` cell skips its later files. fprime-yamcs still sends the current one, and the Uplink view
   lists it once YAMCS has.

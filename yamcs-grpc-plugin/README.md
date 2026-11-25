@@ -106,7 +106,7 @@ grpcurl -plaintext -import-path proto -proto yamcs/protobuf/processing/processin
 | --- | --- |
 | No TLS, and it listens on every network interface | Traffic is unencrypted, and any machine that can reach the port can connect |
 | Slow clients are cut off | A client more than 8 MiB behind on a stream gets a `RESOURCE_EXHAUSTED` error |
-| Requests are limited to 4 MiB, gRPC's default | A larger request, such as a Hermes upload of a file over about 4 MiB, fails with a `RESOURCE_EXHAUSTED` error |
+| Requests are limited to 128 MiB | A larger request fails with a `RESOURCE_EXHAUSTED` error. To change the limit, set `maxInboundMessageSize`, in bytes, in the `yamcs-grpc` section. |
 | Missing from YAMCS's connection list | `/api/http-traffic`, YAMCS's list of client connections, shows only HTTP clients |
 | No `SessionsApi/SubscribeSession` | That call fails with an `INTERNAL` error. Hermes doesn't use it. |
 | Relies on a YAMCS class that isn't public API | A YAMCS upgrade that changes it could break the plugin |
