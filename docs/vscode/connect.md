@@ -29,6 +29,21 @@ If the connection fails or ends, for example because YAMCS stopped, the status b
 Offline mode. Hover over the address to see why. Stopping or restarting one instance disconnects all of them. Run
 **Hermes: Reconnect to Backend** to connect again, which also picks up instances started since Hermes connected.
 
+## Link health
+
+While Hermes is connected, the status bar shows how YAMCS's links are doing, right after the address of the
+yamcs-grpc plugin. A link is the connection YAMCS uses to receive telemetry or send commands. An instance is healthy
+when every one of its links is OK and data arrived in the last 10 s.
+
+| Status bar shows, for example | Meaning |
+| --- | --- |
+| **2 healthy** | Every instance is healthy |
+| **1 of 2 healthy** | Some instances aren't healthy |
+| **ref: UDP_TM_IN UNAVAIL**, on a warning background | A link isn't OK. It names the instance, the link and the link's status. |
+| Down and up arrows | Light up while any instance receives or sends data |
+
+Hover over any of them for each instance's traffic in and out over the last 15 s.
+
 ## Settings
 
 To change how Hermes connects, set keys in the `hermes.host.yamcs` setting. For example, in `settings.json`:

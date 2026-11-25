@@ -146,6 +146,7 @@ Set these as keys of the `hermes.host.yamcs` setting in VS Code's settings:
 | --- | --- |
 | Telemetry table and plot | A row for each parameter of each instance, timed by when YAMCS received it, with the instance's name as its source. Structs and arrays get a row per member or element, for example `comQueueDepth[1]`. |
 | Events panel | Each instance's newest 100 events in YAMCS's archive, then live ones. An F Prime event shows its component and name, for example `CdhCore.cmdDisp` and `OpCodeDispatched`, and any other event YAMCS's source and type. |
+| Status bar | How many instances are healthy, where healthy means every link is OK and data arrived in the last 10 s. If a link isn't OK, the status bar names it instead. Arrows light up while data comes in or goes out. See [Link health](https://github.com/nasa/hermes/blob/main/docs/vscode/connect.md#link-health). |
 | Connections view, in the Hermes sidebar | Each instance's [dictionaries](#dictionaries). Deleting `<instance>` also deletes `<instance> (F Prime)`. |
 | Times | UTC by default, including in cell event lists (`hermes.notebook.evr.timeFormat`). Under SCLK, telemetry and F Prime events show the flight software's clock reading, and other events show none. See [Times](https://github.com/nasa/hermes/blob/main/docs/vscode/telemetry-and-events.md#times). |
 
