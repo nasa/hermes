@@ -1086,6 +1086,9 @@ describe('commandState', () => {
     test('labels a command issued, then with its newest step that passed, then with YAMCS\'s verdict', () => {
         expect(commandState(history(), fprime).label).toBe('issued');
         expect(commandState(waiting, fprime).label).toBe('Sent');
+        // With a link that sends at once, YAMCS can list Acknowledge_Sent before Acknowledge_Released with the same time
+        const sentFirst = history(...at('Acknowledge_Queued', 'OK', 0), ...at('Acknowledge_Sent', 'OK', 1), ...at('Acknowledge_Released', 'OK', 1));
+        expect(commandState(sentFirst, fprime).label).toBe('Sent');
         expect(commandState(history(...released, ...at('CommandComplete', 'OK', 946)), fprime).label).toBe('completed');
         expect(commandState(failed, fprime)).toMatchObject({ label: 'failed · EXECUTION_ERROR', passed: false });
         expect(commandState(history(...at('CommandComplete', 'NOK', 0)), fprime).label).toBe('failed');
