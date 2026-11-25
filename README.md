@@ -8,8 +8,8 @@ in Grafana. It talks to flight software through [YAMCS](https://yamcs.org), an o
 has built-in support for [F Prime](https://github.com/nasa/fprime), NASA's flight software framework. Hermes is
 developed at [NASA JPL](https://www.jpl.nasa.gov).
 
-The [documentation site](https://nasa.github.io/hermes/) still describes an earlier Hermes that doesn't use YAMCS. To
-use Hermes with YAMCS, follow the READMEs linked below.
+The [documentation site](https://nasa.github.io/hermes/) covers installing and using Hermes. The READMEs linked below
+cover each part.
 
 ![Hermes in YAMCS mode: a notebook cell sends two F Prime commands through YAMCS and shows each command's status and the events they raised, above the telemetry table and a plot of three CPU channels](docs/assets/yamcs-mode.png)
 

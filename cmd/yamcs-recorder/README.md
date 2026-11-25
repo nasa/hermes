@@ -1,10 +1,11 @@
 # yamcs-recorder
 
-yamcs-recorder records the values of a YAMCS instance's telemetered parameters in TimescaleDB, a PostgreSQL database
-for time series, where Grafana charts them with the [Hermes datasource](../../grafana-datasource-plugin/src/README.md).
-A parameter is YAMCS's name for a telemetry value, and a telemetered one is decoded from downlinked telemetry, such as
-an F Prime telemetry channel. With `--otlp`, the recorder also sends the instance's events through an OpenTelemetry
-collector to Loki, a log database.
+yamcs-recorder records the values of a YAMCS instance's telemetered and LOCAL parameters in TimescaleDB, a
+PostgreSQL database for time series, where Grafana charts them with the
+[Hermes datasource](../../grafana-datasource-plugin/src/README.md). A parameter is a named value in YAMCS. A
+telemetered one is decoded from downlinked telemetry, such as an F Prime telemetry channel. A LOCAL one is set by a
+service inside YAMCS. With `--otlp`, the recorder also sends the instance's events through an OpenTelemetry collector
+to Loki, a log database.
 
 ```mermaid
 flowchart LR
