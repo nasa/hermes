@@ -191,6 +191,9 @@ const failedStatuses = ['NOK', 'TIMEOUT'];
 // YAMCS runs a verifier only inside its check window. The verifier is SCHEDULED until the window opens, then
 // PENDING until it has a result.
 const waitingStatuses = ['SCHEDULED', 'PENDING'];
+// YAMCS's queue steps. YAMCS records Acknowledge_Released after the link has taken the command, so with a link that
+// sends at once it can list Acknowledge_Sent first with the same time.
+const queueSteps = ['Acknowledge_Queued', 'TransmissionConstraints', 'Acknowledge_Released'];
 
 // A step YAMCS has recorded for a command, such as Acknowledge_Sent
 interface CommandStep {
@@ -215,8 +218,9 @@ function commandSteps(entry: Rpc.YamcsCommandHistoryEntry): CommandStep[] {
         return { name, status, time: attributes.get(`${name}_Time`) ?? '', message: attributes.get(`${name}_Message`) };
     });
     // A step's time is text like 2026-10-12T23:57:36.420Z, which sorts in time order. Steps with the same time
-    // stay in the order YAMCS lists them, because sort leaves items that compare equal in their original order.
-    return steps.sort((a, b) => a.time.localeCompare(b.time));
+    // stay in the order YAMCS lists them, because sort is stable, except that we put the queue steps first.
+    const rank = (step: CommandStep) => queueSteps.includes(step.name) ? 0 : 1;
+    return steps.sort((a, b) => a.time.localeCompare(b.time) || rank(a) - rank(b));
 }
 
 // A step as text, like Acknowledge_Sent NOK, no link available
