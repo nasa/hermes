@@ -75,7 +75,7 @@ export class FieldToken extends TerminalToken<Def.Field, PrimitiveValue> {
                     this.schema.type.values.get(this.token.text.toUpperCase()) ??
                     this.schema.type.values.get(this.token.text.toLowerCase());
                 if (item) {
-                    return item.value;
+                    return item.name;
                 }
 
                 // Attempt to parse as an integer

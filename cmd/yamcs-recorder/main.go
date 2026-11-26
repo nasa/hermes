@@ -1,5 +1,5 @@
-// Command yamcs-recorder records the TELEMETERED parameters of a YAMCS
-// instance into TimescaleDB, by default leaving out the packet header fields
+// Command yamcs-recorder records the TELEMETERED and LOCAL parameters of a
+// YAMCS instance into TimescaleDB, by default leaving out the packet header fields
 // fprime-yamcs defines. Given --otlp, it also exports the instance's events as
 // OpenTelemetry log records to a collector. It exits non-zero when its
 // parameter or event subscription ends, so run it under a supervisor that
@@ -226,7 +226,7 @@ func subscribe(ctx context.Context, conn grpc.ClientConnInterface, cfg config, l
 	}
 	names, excluded := recordedParameters(names, cfg.includeTopLevel)
 	if len(names) == 0 {
-		msg := fmt.Sprintf("instance %s has no TELEMETERED parameters to record (%d excluded)", cfg.instance, excluded)
+		msg := fmt.Sprintf("instance %s has no TELEMETERED or LOCAL parameters to record (%d excluded)", cfg.instance, excluded)
 		if excluded > 0 {
 			msg += "; use --include-top-level to record the excluded top-level parameters"
 		}
